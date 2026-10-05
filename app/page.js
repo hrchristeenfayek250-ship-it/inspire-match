@@ -111,7 +111,25 @@ export default function Home() {
       setJdLoading(false);
     }
   }
+async function saveCandidate(result) {
+  const c = result?.candidate || {};
 
+  const { error } = await supabase.from("candidates").insert([
+    {
+      full_name: c.name || null,
+      location: c.location || null,
+      current_title: c.currentTitle || null,
+      years_experience: c.yearsExperience ?? null,
+      cv_file_name: result.fileName || null,
+      consent_confirmed: true,
+      blind_screening: blind,
+      status: "Screening",
+      source: "Inspire Match",
+    },
+  ]);
+
+  if (error) console.error("Could not save candidate:", error);
+}
   function updateCriterion(id, patch) {
     setCriteria((list) => list.map((c) => (c.id === id ? { ...c, ...patch } : c)));
   }
