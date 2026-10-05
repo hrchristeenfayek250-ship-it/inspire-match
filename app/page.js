@@ -275,6 +275,38 @@ export default function Home() {
                       Total weight: {weightTotal}%{weightTotal !== 100 && " — scores still work, but 100% keeps them easy to read."}
                     </p>
                     <p className="hint">Change weights any time, even after scoring. The ranking updates on the spot.</p>
+                      <div className="row">
+  <button
+    className="btn"
+    onClick={async () => {
+      try {
+        const description = [
+          jd.summary || "",
+          ...criteria.map(
+            (c) =>
+              `${c.name}: ${c.detail || ""} [${c.importance || "nice"}; weight ${c.weight || 0}%]`
+          ),
+        ].filter(Boolean).join("\n");
+
+        const { error } = await supabase.from("jobs").insert([
+          {
+            title: jd.title || "Untitled Job",
+            description,
+            status: "Open",
+          },
+        ]);
+
+        if (error) throw error;
+
+        alert("Job saved successfully ✓");
+      } catch (error) {
+        alert("Could not save job: " + error.message);
+      }
+    }}
+  >
+    Save Job
+  </button>
+</div>
                   </div>
                 )}
               </div>
