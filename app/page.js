@@ -164,7 +164,7 @@ async function saveCandidate(result, fileName) {
           const data = await res.json();
           if (!res.ok) throw new Error(data.error || "Scoring failed.");
          update(index, { status: "done", ...data });
-await saveCandidate(data);
+await saveCandidate(data, file.name);
 } catch (e) {
   update(index, { status: "error", error: e.message });
 }
