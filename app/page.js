@@ -111,7 +111,7 @@ export default function Home() {
       setJdLoading(false);
     }
   }
-async function saveCandidate(result) {
+async function saveCandidate(result, fileName) {
   const c = result?.candidate || {};
 
   const { error } = await supabase.from("candidates").insert([
