@@ -163,10 +163,11 @@ async function saveCandidate(result) {
           const res = await fetch("/api/score-cv", { method: "POST", body: fd });
           const data = await res.json();
           if (!res.ok) throw new Error(data.error || "Scoring failed.");
-          update(index, { status: "done", ...data });
-        } catch (e) {
-          update(index, { status: "error", error: e.message });
-        }
+         update(index, { status: "done", ...data });
+await saveCandidate(data);
+} catch (e) {
+  update(index, { status: "error", error: e.message });
+}
       }
     };
     await Promise.all(Array.from({ length: CONCURRENCY }, worker));
