@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useRef, useState } from "react";
+import { supabase } from "@/lib/supabase";
 
 const ACCEPT = ".pdf,.docx,.txt";
 const CONCURRENCY = 3;
