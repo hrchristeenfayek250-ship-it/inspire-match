@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import Link from "next/link";
 import { supabase } from "@/lib/supabase";
 
 export default function CandidatesPage() {
@@ -17,6 +18,8 @@ export default function CandidatesPage() {
   }, []);
 
   async function loadCandidates() {
+    setLoading(true);
+
     const { data, error } = await supabase
       .from("candidates")
       .select("*")
@@ -24,6 +27,7 @@ export default function CandidatesPage() {
 
     if (error) {
       console.error("Could not load candidates:", error);
+      setCandidates([]);
     } else {
       setCandidates(data || []);
     }
@@ -31,27 +35,16 @@ export default function CandidatesPage() {
     setLoading(false);
   }
 
-  const statusOptions = useMemo(() => {
-    return [...new Set(
-      candidates
-        .map((candidate) => candidate.status)
-        .filter(Boolean)
-        .map((status) => String(status).trim())
-    )].sort();
-  }, [candidates]);
-
   const filteredCandidates = useMemo(() => {
-    const query = search.trim().toLowerCase();
-    const locationQuery = locationFilter.trim().toLowerCase();
-    const minimumExperience =
-      minExperience === "" ? null : Number(minExperience);
-
     return candidates.filter((candidate) => {
+      const searchText = search.toLowerCase().trim();
+
       const searchableText = [
         candidate.full_name,
         candidate.current_title,
         candidate.location,
-        candidate.status,
+        candidate.skills,
+        candidate.cv_text,
         candidate.cv_file_name,
       ]
         .filter(Boolean)
@@ -59,24 +52,22 @@ export default function CandidatesPage() {
         .toLowerCase();
 
       const matchesSearch =
-        !query || searchableText.includes(query);
+        !searchText || searchableText.includes(searchText);
 
       const matchesStatus =
-        !statusFilter ||
-        String(candidate.status || "").trim() === statusFilter;
+        !statusFilter || candidate.status === statusFilter;
 
       const matchesLocation =
-        !locationQuery ||
-        String(candidate.location || "")
+        !locationFilter ||
+        (candidate.location || "")
           .toLowerCase()
-          .includes(locationQuery);
+          .includes(locationFilter.toLowerCase().trim());
 
-      const experience = Number(candidate.years_experience);
+      const experience = Number(candidate.years_experience || 0);
 
       const matchesExperience =
-        minimumExperience === null ||
-        (Number.isFinite(experience) &&
-          experience >= minimumExperience);
+        !minExperience ||
+        experience >= Number(minExperience);
 
       return (
         matchesSearch &&
@@ -100,125 +91,191 @@ export default function CandidatesPage() {
     setMinExperience("");
   }
 
+  const statuses = [
+    "Applied",
+    "Screening",
+    "Interview",
+    "Shortlisted",
+    "Hired",
+    "Rejected",
+  ];
+
   return (
     <main
       style={{
-        maxWidth: 1200,
-        margin: "0 auto",
-        padding: "40px 24px",
+        minHeight: "100vh",
+        background: "#faf9f6",
+        padding: "40px 24px 80px",
         fontFamily: "Arial, sans-serif",
       }}
     >
       <div
         style={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-          gap: 20,
-          marginBottom: 30,
-          flexWrap: "wrap",
+          maxWidth: 1200,
+          margin: "0 auto",
         }}
       >
-        <div>
-          <h1 style={{ margin: 0 }}>
-            Candidate Database
-          </h1>
-
-          <p style={{ color: "#666" }}>
-            Manage and review your saved candidates.
-          </p>
-        </div>
-
-        <a
-          href="/"
-          style={{
-            textDecoration: "none",
-            padding: "10px 18px",
-            borderRadius: 8,
-            border: "1px solid #ddd",
-            color: "#222",
-            background: "#fff",
-          }}
-        >
-          ← Back to ATS
-        </a>
-      </div>
-
-      {!loading && candidates.length > 0 && (
+        {/* HEADER */}
         <div
           style={{
-            border: "1px solid #e5e5e5",
-            borderRadius: 14,
-            padding: 18,
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+            gap: 20,
+            marginBottom: 30,
+            flexWrap: "wrap",
+          }}
+        >
+          <div>
+            <p
+              style={{
+                margin: "0 0 8px",
+                fontSize: 13,
+                letterSpacing: 1,
+                color: "#777",
+                textTransform: "uppercase",
+              }}
+            >
+              Inspire Match
+            </p>
+
+            <h1
+              style={{
+                margin: 0,
+                fontSize: 38,
+                color: "#222",
+              }}
+            >
+              Candidate Database
+            </h1>
+
+            <p
+              style={{
+                marginTop: 10,
+                color: "#777",
+                fontSize: 15,
+              }}
+            >
+              Manage and review your saved candidates.
+            </p>
+          </div>
+
+          <Link
+            href="/"
+            style={{
+              textDecoration: "none",
+              padding: "12px 20px",
+              borderRadius: 9,
+              border: "1px solid #ddd",
+              background: "#fff",
+              color: "#222",
+              fontSize: 14,
+            }}
+          >
+            ← Back to ATS
+          </Link>
+        </div>
+
+        {/* FILTERS */}
+        <section
+          style={{
+            background: "#fff",
+            border: "1px solid #e8e5df",
+            borderRadius: 16,
+            padding: 22,
             marginBottom: 24,
-            background: "#fafafa",
           }}
         >
           <div
             style={{
               display: "grid",
               gridTemplateColumns:
-                "minmax(240px, 2fr) repeat(3, minmax(150px, 1fr)) auto",
+                "minmax(220px, 2fr) minmax(150px, 1fr) minmax(150px, 1fr) minmax(120px, 1fr) auto",
               gap: 12,
               alignItems: "end",
             }}
           >
-            <label style={{ display: "grid", gap: 7 }}>
-              <span style={{ fontWeight: 600, fontSize: 13 }}>
+            {/* SEARCH */}
+            <div>
+              <label
+                style={{
+                  display: "block",
+                  marginBottom: 7,
+                  fontSize: 13,
+                  fontWeight: 600,
+                  color: "#555",
+                }}
+              >
                 Search
-              </span>
+              </label>
 
               <input
-                type="text"
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 placeholder="Name, title, CV, location..."
                 style={{
                   width: "100%",
                   boxSizing: "border-box",
-                  padding: "11px 12px",
-                  border: "1px solid #d8d8d8",
+                  padding: "12px 13px",
+                  border: "1px solid #ddd",
                   borderRadius: 8,
-                  background: "#fff",
+                  fontSize: 14,
+                  outline: "none",
                 }}
               />
-            </label>
+            </div>
 
-            <label style={{ display: "grid", gap: 7 }}>
-              <span style={{ fontWeight: 600, fontSize: 13 }}>
+            {/* STATUS */}
+            <div>
+              <label
+                style={{
+                  display: "block",
+                  marginBottom: 7,
+                  fontSize: 13,
+                  fontWeight: 600,
+                  color: "#555",
+                }}
+              >
                 Status
-              </span>
+              </label>
 
               <select
                 value={statusFilter}
-                onChange={(e) =>
-                  setStatusFilter(e.target.value)
-                }
+                onChange={(e) => setStatusFilter(e.target.value)}
                 style={{
                   width: "100%",
-                  padding: "11px 12px",
-                  border: "1px solid #d8d8d8",
+                  padding: "12px 13px",
+                  border: "1px solid #ddd",
                   borderRadius: 8,
                   background: "#fff",
+                  fontSize: 14,
                 }}
               >
                 <option value="">All statuses</option>
 
-                {statusOptions.map((status) => (
+                {statuses.map((status) => (
                   <option key={status} value={status}>
                     {status}
                   </option>
                 ))}
               </select>
-            </label>
+            </div>
 
-            <label style={{ display: "grid", gap: 7 }}>
-              <span style={{ fontWeight: 600, fontSize: 13 }}>
+            {/* LOCATION */}
+            <div>
+              <label
+                style={{
+                  display: "block",
+                  marginBottom: 7,
+                  fontSize: 13,
+                  fontWeight: 600,
+                  color: "#555",
+                }}
+              >
                 Location
-              </span>
+              </label>
 
               <input
-                type="text"
                 value={locationFilter}
                 onChange={(e) =>
                   setLocationFilter(e.target.value)
@@ -227,18 +284,27 @@ export default function CandidatesPage() {
                 style={{
                   width: "100%",
                   boxSizing: "border-box",
-                  padding: "11px 12px",
-                  border: "1px solid #d8d8d8",
+                  padding: "12px 13px",
+                  border: "1px solid #ddd",
                   borderRadius: 8,
-                  background: "#fff",
+                  fontSize: 14,
                 }}
               />
-            </label>
+            </div>
 
-            <label style={{ display: "grid", gap: 7 }}>
-              <span style={{ fontWeight: 600, fontSize: 13 }}>
+            {/* EXPERIENCE */}
+            <div>
+              <label
+                style={{
+                  display: "block",
+                  marginBottom: 7,
+                  fontSize: 13,
+                  fontWeight: 600,
+                  color: "#555",
+                }}
+              >
                 Min. Experience
-              </span>
+              </label>
 
               <input
                 type="number"
@@ -251,23 +317,24 @@ export default function CandidatesPage() {
                 style={{
                   width: "100%",
                   boxSizing: "border-box",
-                  padding: "11px 12px",
-                  border: "1px solid #d8d8d8",
+                  padding: "12px 13px",
+                  border: "1px solid #ddd",
                   borderRadius: 8,
-                  background: "#fff",
+                  fontSize: 14,
                 }}
               />
-            </label>
+            </div>
 
+            {/* CLEAR */}
             <button
-              type="button"
               onClick={clearFilters}
               style={{
-                padding: "11px 14px",
+                padding: "12px 16px",
                 borderRadius: 8,
                 border: "1px solid #ddd",
                 background: "#fff",
                 cursor: "pointer",
+                fontSize: 14,
               }}
             >
               Clear
@@ -276,109 +343,179 @@ export default function CandidatesPage() {
 
           <div
             style={{
-              marginTop: 14,
-              color: "#666",
+              marginTop: 15,
               fontSize: 13,
+              color: "#777",
             }}
           >
-            Showing{" "}
-            <strong>{filteredCandidates.length}</strong>{" "}
-            of <strong>{candidates.length}</strong>{" "}
-            candidates
+            Showing {filteredCandidates.length} of{" "}
+            {candidates.length} candidates
           </div>
-        </div>
-      )}
+        </section>
 
-      {loading ? (
-        <p>Loading candidates...</p>
-      ) : candidates.length === 0 ? (
-        <div
-          style={{
-            padding: 40,
-            textAlign: "center",
-            border: "1px solid #eee",
-            borderRadius: 12,
-          }}
-        >
-          <h3>No candidates yet</h3>
-          <p>
-            Score a CV from the ATS and it will appear here.
-          </p>
-        </div>
-      ) : filteredCandidates.length === 0 ? (
-        <div
-          style={{
-            padding: 40,
-            textAlign: "center",
-            border: "1px solid #eee",
-            borderRadius: 12,
-          }}
-        >
-          <h3>No matching candidates</h3>
-
-          <p>
-            Try changing your search or filters.
-          </p>
-
-          <button
-            type="button"
-            onClick={clearFilters}
+        {/* CANDIDATES */}
+        {loading ? (
+          <div
             style={{
-              padding: "10px 16px",
-              borderRadius: 8,
-              border: "1px solid #ddd",
               background: "#fff",
-              cursor: "pointer",
+              borderRadius: 16,
+              padding: 30,
+              textAlign: "center",
+              color: "#777",
             }}
           >
-            Clear filters
-          </button>
-        </div>
-      ) : (
-        <div style={{ display: "grid", gap: 16 }}>
-          {filteredCandidates.map((candidate) => (
-            <div
-              key={candidate.id}
-              style={{
-                border: "1px solid #e5e5e5",
-                borderRadius: 12,
-                padding: 20,
-                background: "#fff",
-              }}
-            >
-              <h2 style={{ marginTop: 0 }}>
-                {candidate.full_name ||
-                  "Unnamed Candidate"}
-              </h2>
+            Loading candidates...
+          </div>
+        ) : filteredCandidates.length === 0 ? (
+          <div
+            style={{
+              background: "#fff",
+              borderRadius: 16,
+              padding: 50,
+              textAlign: "center",
+              border: "1px solid #eee",
+            }}
+          >
+            <h3 style={{ marginTop: 0 }}>
+              No candidates found
+            </h3>
 
-              <p>
-                <strong>Current Title:</strong>{" "}
-                {candidate.current_title || "—"}
-              </p>
+            <p style={{ color: "#777" }}>
+              Try changing your filters or search terms.
+            </p>
+          </div>
+        ) : (
+          <div
+            style={{
+              display: "grid",
+              gap: 16,
+            }}
+          >
+            {filteredCandidates.map((candidate) => (
+              <Link
+                key={candidate.id}
+                href={`/app/candidates/${candidate.id}`}
+                style={{
+                  textDecoration: "none",
+                  color: "inherit",
+                }}
+              >
+                <article
+                  style={{
+                    background: "#fff",
+                    border: "1px solid #e8e5df",
+                    borderRadius: 16,
+                    padding: 24,
+                    cursor: "pointer",
+                    transition: "all 0.2s ease",
+                  }}
+                >
+                  <div
+                    style={{
+                      display: "flex",
+                      justifyContent: "space-between",
+                      alignItems: "flex-start",
+                      gap: 20,
+                      flexWrap: "wrap",
+                    }}
+                  >
+                    <div style={{ flex: 1 }}>
+                      <h2
+                        style={{
+                          margin: "0 0 12px",
+                          fontSize: 21,
+                          color: "#222",
+                        }}
+                      >
+                        {candidate.full_name ||
+                          "Unnamed Candidate"}
+                      </h2>
 
-              <p>
-                <strong>Experience:</strong>{" "}
-                {candidate.years_experience ?? "—"} years
-              </p>
+                      <p
+                        style={{
+                          margin: "0 0 8px",
+                          color: "#555",
+                          fontSize: 14,
+                        }}
+                      >
+                        <strong>Current Title:</strong>{" "}
+                        {candidate.current_title || "—"}
+                      </p>
 
-              <p>
-                <strong>Location:</strong>{" "}
-                {candidate.location || "—"}
-              </p>
+                      <p
+                        style={{
+                          margin: "0 0 8px",
+                          color: "#555",
+                          fontSize: 14,
+                        }}
+                      >
+                        <strong>Experience:</strong>{" "}
+                        {candidate.years_experience
+                          ? `${candidate.years_experience} years`
+                          : "—"}
+                      </p>
 
-              <p>
-                <strong>Status:</strong>{" "}
-                {candidate.status || "—"}
-              </p>
+                      <p
+                        style={{
+                          margin: "0 0 8px",
+                          color: "#555",
+                          fontSize: 14,
+                        }}
+                      >
+                        <strong>Location:</strong>{" "}
+                        {candidate.location || "—"}
+                      </p>
 
-              <p>
-                <strong>CV:</strong>{" "}
-                {candidate.cv_file_name || "—"}
-              </p>
-            </div>
-          ))}
-        </div>
-      )}
+                      <p
+                        style={{
+                          margin: "0 0 8px",
+                          color: "#555",
+                          fontSize: 14,
+                        }}
+                      >
+                        <strong>CV:</strong>{" "}
+                        {candidate.cv_file_name || "—"}
+                      </p>
+                    </div>
+
+                    <div
+                      style={{
+                        display: "flex",
+                        flexDirection: "column",
+                        alignItems: "flex-end",
+                        gap: 12,
+                      }}
+                    >
+                      <span
+                        style={{
+                          display: "inline-block",
+                          padding: "7px 12px",
+                          borderRadius: 20,
+                          background: "#f2f0eb",
+                          color: "#333",
+                          fontSize: 13,
+                          fontWeight: 600,
+                        }}
+                      >
+                        {candidate.status || "Screening"}
+                      </span>
+
+                      <span
+                        style={{
+                          fontSize: 13,
+                          color: "#777",
+                        }}
+                      >
+                        View Profile →
+                      </span>
+                    </div>
+                  </div>
+                </article>
+              </Link>
+            ))}
+          </div>
+        )}
+      </div>
     </main>
   );
 }
