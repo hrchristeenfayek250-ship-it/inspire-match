@@ -25,7 +25,7 @@ export default function DashboardPage() {
   async function loadDashboard() {
     setLoading(true);
 
-    const [candidateResult, jobsResult] = await Promise.all([
+    const [candidateResponse, jobResponse] = await Promise.all([
       supabase
         .from("candidates")
         .select("*")
@@ -37,22 +37,22 @@ export default function DashboardPage() {
         .order("created_at", { ascending: false }),
     ]);
 
-    if (candidateResult.error) {
+    if (candidateResponse.error) {
       console.error(
         "Could not load candidates:",
-        candidateResult.error
+        candidateResponse.error
       );
     } else {
-      setCandidates(candidateResult.data || []);
+      setCandidates(candidateResponse.data || []);
     }
 
-    if (jobsResult.error) {
+    if (jobResponse.error) {
       console.error(
         "Could not load jobs:",
-        jobsResult.error
+        jobResponse.error
       );
     } else {
-      setJobs(jobsResult.data || []);
+      setJobs(jobResponse.data || []);
     }
 
     setLoading(false);
@@ -60,48 +60,35 @@ export default function DashboardPage() {
 
   function countStage(stage) {
     return candidates.filter(
-      (candidate) => candidate.status === stage
+      (candidate) =>
+        String(candidate.status || "").toLowerCase() ===
+        stage.toLowerCase()
     ).length;
   }
 
   const totalCandidates = candidates.length;
-  const activeJobs = jobs.length;
-  const screeningCount = countStage("Screening");
-  const interviewCount = countStage("Interview");
-  const shortlistedCount = countStage("Shortlisted");
-  const hiredCount = countStage("Hired");
+  const activeJobs = jobs.filter(
+    (job) => job.status !== "Closed"
+  ).length;
 
-  const pipelineTotal =
-    countStage("Applied") +
-    countStage("Screening") +
-    countStage("Interview") +
-    countStage("Shortlisted") +
-    countStage("Hired") +
-    countStage("Rejected");
-
-  function percentage(count) {
-    if (!pipelineTotal) return 0;
-    return Math.round((count / pipelineTotal) * 100);
-  }
+  const screening = countStage("Screening");
+  const interviews = countStage("Interview");
+  const shortlisted = countStage("Shortlisted");
+  const hired = countStage("Hired");
 
   if (loading) {
     return (
       <main
         style={{
           minHeight: "100vh",
-          padding: "50px 30px",
+          padding: "60px 24px",
           background: "#faf9f6",
           fontFamily: "Arial, sans-serif",
         }}
       >
-        <div
-          style={{
-            maxWidth: 1400,
-            margin: "0 auto",
-          }}
-        >
+        <div style={{ maxWidth: 1400, margin: "0 auto" }}>
           <h1>Recruitment Dashboard</h1>
-          <p>Loading recruitment data...</p>
+          <p>Loading dashboard...</p>
         </div>
       </main>
     );
@@ -111,7 +98,7 @@ export default function DashboardPage() {
     <main
       style={{
         minHeight: "100vh",
-        padding: "50px 30px",
+        padding: "50px 24px",
         background: "#faf9f6",
         fontFamily: "Arial, sans-serif",
         color: "#222",
@@ -129,9 +116,9 @@ export default function DashboardPage() {
           style={{
             display: "flex",
             justifyContent: "space-between",
-            alignItems: "flex-start",
-            gap: 20,
+            alignItems: "center",
             marginBottom: 30,
+            gap: 20,
           }}
         >
           <div>
@@ -148,9 +135,9 @@ export default function DashboardPage() {
 
             <h1
               style={{
-                margin: 0,
-                fontSize: 38,
                 fontFamily: "Georgia, serif",
+                fontSize: 42,
+                margin: 0,
               }}
             >
               Recruitment Dashboard
@@ -158,8 +145,8 @@ export default function DashboardPage() {
 
             <p
               style={{
+                color: "#666",
                 marginTop: 10,
-                color: "#777",
               }}
             >
               Your recruitment activity at a glance.
@@ -175,29 +162,28 @@ export default function DashboardPage() {
               borderRadius: 10,
               background: "#fff",
               color: "#222",
-              fontWeight: 600,
             }}
           >
             ← ATS Home
           </Link>
         </div>
 
-        {/* QUICK NAVIGATION */}
+        {/* NAVIGATION */}
 
         <div
           style={{
             display: "flex",
             gap: 12,
             flexWrap: "wrap",
-            marginBottom: 30,
+            marginBottom: 35,
           }}
         >
           <Link
             href="/app/pipeline"
             style={{
               textDecoration: "none",
-              padding: "12px 20px",
-              borderRadius: 9,
+              padding: "14px 22px",
+              borderRadius: 10,
               background: "#222",
               color: "#fff",
               fontWeight: 600,
@@ -210,8 +196,8 @@ export default function DashboardPage() {
             href="/app/candidates"
             style={{
               textDecoration: "none",
-              padding: "12px 20px",
-              borderRadius: 9,
+              padding: "14px 22px",
+              borderRadius: 10,
               background: "#fff",
               color: "#222",
               border: "1px solid #ddd",
@@ -225,8 +211,8 @@ export default function DashboardPage() {
             href="/"
             style={{
               textDecoration: "none",
-              padding: "12px 20px",
-              borderRadius: 9,
+              padding: "14px 22px",
+              borderRadius: 10,
               background: "#fff",
               color: "#222",
               border: "1px solid #ddd",
@@ -248,51 +234,51 @@ export default function DashboardPage() {
             marginBottom: 35,
           }}
         >
-          <KpiCard
+          <StatCard
             icon="👥"
             number={totalCandidates}
             label="Total Candidates"
           />
 
-          <KpiCard
+          <StatCard
             icon="💼"
             number={activeJobs}
             label="Active Jobs"
           />
 
-          <KpiCard
+          <StatCard
             icon="🔎"
-            number={screeningCount}
+            number={screening}
             label="In Screening"
           />
 
-          <KpiCard
+          <StatCard
             icon="🎤"
-            number={interviewCount}
+            number={interviews}
             label="Interviews"
           />
 
-          <KpiCard
+          <StatCard
             icon="⭐"
-            number={shortlistedCount}
+            number={shortlisted}
             label="Shortlisted"
           />
 
-          <KpiCard
+          <StatCard
             icon="🎉"
-            number={hiredCount}
+            number={hired}
             label="Hired"
           />
         </div>
 
-        {/* PIPELINE */}
+        {/* PIPELINE SUMMARY */}
 
         <section
           style={{
             background: "#fff",
-            border: "1px solid #e5e5e5",
+            border: "1px solid #eee",
             borderRadius: 16,
-            padding: 28,
+            padding: 25,
             marginBottom: 30,
           }}
         >
@@ -301,14 +287,14 @@ export default function DashboardPage() {
               display: "flex",
               justifyContent: "space-between",
               alignItems: "center",
-              marginBottom: 25,
+              marginBottom: 20,
             }}
           >
             <div>
               <h2
                 style={{
-                  margin: 0,
                   fontFamily: "Georgia, serif",
+                  margin: 0,
                 }}
               >
                 Recruitment Pipeline
@@ -316,8 +302,8 @@ export default function DashboardPage() {
 
               <p
                 style={{
-                  margin: "7px 0 0",
                   color: "#777",
+                  margin: "6px 0 0",
                 }}
               >
                 Current candidate distribution
@@ -340,72 +326,39 @@ export default function DashboardPage() {
             style={{
               display: "grid",
               gridTemplateColumns:
-                "repeat(auto-fit, minmax(130px, 1fr))",
+                "repeat(auto-fit, minmax(140px, 1fr))",
               gap: 12,
             }}
           >
-            {stages.map((stage) => {
-              const count = countStage(stage);
-
-              return (
+            {stages.map((stage) => (
+              <div
+                key={stage}
+                style={{
+                  background: "#f7f7f5",
+                  borderRadius: 12,
+                  padding: 18,
+                }}
+              >
                 <div
-                  key={stage}
                   style={{
-                    padding: 18,
-                    background: "#f7f7f5",
-                    borderRadius: 12,
+                    fontSize: 13,
+                    color: "#777",
+                    marginBottom: 8,
                   }}
                 >
-                  <div
-                    style={{
-                      fontSize: 28,
-                      fontWeight: 700,
-                      marginBottom: 5,
-                    }}
-                  >
-                    {count}
-                  </div>
-
-                  <div
-                    style={{
-                      fontSize: 14,
-                      color: "#555",
-                      marginBottom: 12,
-                    }}
-                  >
-                    {stage}
-                  </div>
-
-                  <div
-                    style={{
-                      height: 6,
-                      background: "#e3e3e3",
-                      borderRadius: 10,
-                      overflow: "hidden",
-                    }}
-                  >
-                    <div
-                      style={{
-                        width: `${percentage(count)}%`,
-                        height: "100%",
-                        background: "#222",
-                        borderRadius: 10,
-                      }}
-                    />
-                  </div>
-
-                  <div
-                    style={{
-                      marginTop: 7,
-                      fontSize: 12,
-                      color: "#888",
-                    }}
-                  >
-                    {percentage(count)}%
-                  </div>
+                  {stage}
                 </div>
-              );
-            })}
+
+                <div
+                  style={{
+                    fontSize: 28,
+                    fontWeight: 700,
+                  }}
+                >
+                  {countStage(stage)}
+                </div>
+              </div>
+            ))}
           </div>
         </section>
 
@@ -414,9 +367,9 @@ export default function DashboardPage() {
         <section
           style={{
             background: "#fff",
-            border: "1px solid #e5e5e5",
+            border: "1px solid #eee",
             borderRadius: 16,
-            padding: 28,
+            padding: 25,
           }}
         >
           <div
@@ -430,8 +383,8 @@ export default function DashboardPage() {
             <div>
               <h2
                 style={{
-                  margin: 0,
                   fontFamily: "Georgia, serif",
+                  margin: 0,
                 }}
               >
                 Recent Candidates
@@ -439,11 +392,11 @@ export default function DashboardPage() {
 
               <p
                 style={{
-                  margin: "7px 0 0",
                   color: "#777",
+                  margin: "6px 0 0",
                 }}
               >
-                Latest candidates added to your ATS
+                Latest candidates added to your database
               </p>
             </div>
 
@@ -455,12 +408,12 @@ export default function DashboardPage() {
                 textDecoration: "none",
               }}
             >
-              View All →
+              View Database →
             </Link>
           </div>
 
           {candidates.length === 0 ? (
-            <p style={{ color: "#888" }}>
+            <p style={{ color: "#777" }}>
               No candidates yet.
             </p>
           ) : (
@@ -484,102 +437,64 @@ export default function DashboardPage() {
                       display: "flex",
                       justifyContent: "space-between",
                       alignItems: "center",
-                      gap: 15,
                       padding: 16,
                       border: "1px solid #eee",
                       borderRadius: 12,
+                      gap: 15,
                     }}
                   >
                     <div>
-                      <div
-                        style={{
-                          fontWeight: 700,
-                          marginBottom: 5,
-                        }}
-                      >
+                      <strong>
                         {candidate.full_name ||
                           "Unnamed Candidate"}
-                      </div>
+                      </strong>
 
                       <div
                         style={{
                           fontSize: 13,
                           color: "#666",
+                          marginTop: 5,
                         }}
                       >
-                        {candidate.current_title || "No title"}
-                      </div>
-
-                      <div
-                        style={{
-                          fontSize: 13,
-                          color: "#888",
-                          marginTop: 4,
-                        }}
-                      >
-                        {candidate.location || "No location"}
+                        {candidate.current_title || "—"}
                       </div>
                     </div>
 
-                    <div
+                    <span
                       style={{
-                        padding: "7px 12px",
+                        padding: "6px 10px",
                         borderRadius: 20,
                         background: "#f1f1ee",
                         fontSize: 12,
-                        fontWeight: 600,
                       }}
                     >
                       {candidate.status || "Screening"}
-                    </div>
+                    </span>
                   </div>
                 </Link>
               ))}
             </div>
           )}
         </section>
-
-        {/* REFRESH */}
-
-        <div
-          style={{
-            textAlign: "center",
-            marginTop: 25,
-          }}
-        >
-          <button
-            onClick={loadDashboard}
-            style={{
-              padding: "10px 18px",
-              borderRadius: 8,
-              border: "1px solid #ddd",
-              background: "#fff",
-              cursor: "pointer",
-              fontWeight: 600,
-            }}
-          >
-            ↻ Refresh Dashboard
-          </button>
-        </div>
       </div>
     </main>
   );
 }
 
-function KpiCard({ icon, number, label }) {
+function StatCard({ icon, number, label }) {
   return (
     <div
       style={{
         background: "#fff",
-        border: "1px solid #e5e5e5",
+        border: "1px solid #eee",
         borderRadius: 16,
         padding: 24,
-        minHeight: 125,
+        minHeight: 130,
       }}
     >
       <div
         style={{
-          fontSize: 25,
+          fontSize: 28,
           marginBottom: 15,
         }}
       >
@@ -588,9 +503,9 @@ function KpiCard({ icon, number, label }) {
 
       <div
         style={{
-          fontSize: 30,
+          fontSize: 34,
           fontWeight: 700,
-          marginBottom: 5,
+          marginBottom: 8,
         }}
       >
         {number}
