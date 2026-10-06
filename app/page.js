@@ -218,6 +218,19 @@ await saveCandidate(data, file.name);
           <div className="topbar-inner">
             <a href="https://hireandinspirebychristine.com/" className="wordmark" style={{ textDecoration: "none" }}>Hire <span className="amp">&amp;</span> Inspire<span className="by">by Christine</span></a>
             <div className="product">Inspire Match</div>
+  <div style={{ display: "flex", gap: "8px", marginTop: "10px", flexWrap: "wrap" }}>
+  <a href="/app/dashboard" style={{ textDecoration: "none", padding: "8px 12px", borderRadius: "8px", border: "1px solid var(--line)", background: "#fff", color: "#222", fontSize: "13px" }}>
+    Dashboard
+  </a>
+
+  <a href="/app/pipeline" style={{ textDecoration: "none", padding: "8px 12px", borderRadius: "8px", border: "1px solid var(--line)", background: "#fff", color: "#222", fontSize: "13px" }}>
+    Candidate Pipeline
+  </a>
+
+  <a href="/app/candidates" style={{ textDecoration: "none", padding: "8px 12px", borderRadius: "8px", border: "1px solid var(--line)", background: "#fff", color: "#222", fontSize: "13px" }}>
+    Candidate Database
+  </a>
+</div>
           </div>
         </header>
 
