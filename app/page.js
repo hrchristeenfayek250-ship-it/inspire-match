@@ -132,9 +132,8 @@ async function saveCandidate(result, fileName) {
     throw new Error(`Could not save candidate: ${error.message}`);
   }
 }
-  if (error) console.error("Could not save candidate:", error);
 }
-  function updateCriterion(id, patch) {
+
     setCriteria((list) => list.map((c) => (c.id === id ? { ...c, ...patch } : c)));
   }
 
