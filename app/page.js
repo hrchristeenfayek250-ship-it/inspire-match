@@ -120,7 +120,7 @@ async function saveCandidate(result, fileName) {
       location: c.location || null,
       current_title: c.currentTitle || null,
       years_experience: c.yearsExperience ?? null,
-      cv_file_name: result.fileName || null,
+      cv_file_name: fileName || null,
       consent_confirmed: true,
       blind_screening: blind,
       status: "Screening",
@@ -128,6 +128,10 @@ async function saveCandidate(result, fileName) {
     },
   ]);
 
+  if (error) {
+    throw new Error(`Could not save candidate: ${error.message}`);
+  }
+}
   if (error) console.error("Could not save candidate:", error);
 }
   function updateCriterion(id, patch) {
