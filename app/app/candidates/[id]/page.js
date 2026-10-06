@@ -1,8 +1,18 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Link from "next/link";
 import { useParams } from "next/navigation";
 import { supabase } from "@/lib/supabase";
+
+const stages = [
+  "Applied",
+  "Screening",
+  "Interview",
+  "Shortlisted",
+  "Hired",
+  "Rejected",
+];
 
 export default function CandidateProfilePage() {
   const params = useParams();
@@ -10,6 +20,10 @@ export default function CandidateProfilePage() {
 
   const [candidate, setCandidate] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [savingStatus, setSavingStatus] = useState(false);
+  const [savingNotes, setSavingNotes] = useState(false);
+  const [notes, setNotes] = useState("");
+  const [message, setMessage] = useState("");
 
   useEffect(() => {
     if (candidateId) {
@@ -18,6 +32,9 @@ export default function CandidateProfilePage() {
   }, [candidateId]);
 
   async function loadCandidate() {
+    setLoading(true);
+    setMessage("");
+
     const { data, error } = await supabase
       .from("candidates")
       .select("*")
@@ -26,265 +43,696 @@ export default function CandidateProfilePage() {
 
     if (error) {
       console.error("Could not load candidate:", error);
+      setMessage(`Could not load candidate: ${error.message}`);
     } else {
       setCandidate(data);
+      setNotes(data?.notes || "");
     }
 
     setLoading(false);
   }
 
   async function changeStatus(status) {
+    if (!candidate) return;
+
+    setSavingStatus(true);
+    setMessage("");
+
     const { error } = await supabase
       .from("candidates")
       .update({ status })
-      .eq("id", candidateId);
+      .eq("id", candidate.id);
 
     if (error) {
-      alert(`Could not update status: ${error.message}`);
-      return;
+      console.error("Could not update status:", error);
+      setMessage(`Could not update status: ${error.message}`);
+    } else {
+      setCandidate((current) => ({
+        ...current,
+        status,
+      }));
+
+      setMessage("Status updated successfully.");
     }
 
-    setCandidate((current) => ({
-      ...current,
-      status,
-    }));
+    setSavingStatus(false);
+  }
+
+  async function saveNotes() {
+    if (!candidate) return;
+
+    setSavingNotes(true);
+    setMessage("");
+
+    const { error } = await supabase
+      .from("candidates")
+      .update({
+        notes: notes,
+      })
+      .eq("id", candidate.id);
+
+    if (error) {
+      console.error("Could not save notes:", error);
+      setMessage(`Could not save notes: ${error.message}`);
+    } else {
+      setCandidate((current) => ({
+        ...current,
+        notes,
+      }));
+
+      setMessage("Notes saved successfully.");
+    }
+
+    setSavingNotes(false);
   }
 
   if (loading) {
     return (
-      <main style={styles.page}>
-        <p>Loading candidate...</p>
+      <main
+        style={{
+          minHeight: "100vh",
+          padding: "60px 24px",
+          background: "#faf9f6",
+          fontFamily: "Arial, sans-serif",
+          color: "#222",
+        }}
+      >
+        <div
+          style={{
+            maxWidth: 1100,
+            margin: "0 auto",
+          }}
+        >
+          <h1
+            style={{
+              fontFamily: "Georgia, serif",
+            }}
+          >
+            Candidate Profile
+          </h1>
+
+          <p style={{ color: "#777" }}>
+            Loading candidate...
+          </p>
+        </div>
       </main>
     );
   }
 
   if (!candidate) {
     return (
-      <main style={styles.page}>
-        <h1>Candidate not found</h1>
-        <a href="/app/pipeline" style={styles.backButton}>
-          ← Back to Pipeline
-        </a>
+      <main
+        style={{
+          minHeight: "100vh",
+          padding: "60px 24px",
+          background: "#faf9f6",
+          fontFamily: "Arial, sans-serif",
+          color: "#222",
+        }}
+      >
+        <div
+          style={{
+            maxWidth: 1100,
+            margin: "0 auto",
+          }}
+        >
+          <h1
+            style={{
+              fontFamily: "Georgia, serif",
+            }}
+          >
+            Candidate Not Found
+          </h1>
+
+          <p style={{ color: "#777" }}>
+            We could not find this candidate.
+          </p>
+
+          <Link
+            href="/app/candidates"
+            style={{
+              display: "inline-block",
+              marginTop: 20,
+              textDecoration: "none",
+              padding: "12px 18px",
+              borderRadius: 10,
+              background: "#222",
+              color: "#fff",
+            }}
+          >
+            ← Candidate Database
+          </Link>
+        </div>
       </main>
     );
   }
 
-  return (
-    <main style={styles.page}>
-      <div style={styles.container}>
+  const candidateName =
+    candidate.full_name || "Unnamed Candidate";
 
-        <div style={styles.topBar}>
+  const currentStatus =
+    candidate.status || "Screening";
+
+  return (
+    <main
+      style={{
+        minHeight: "100vh",
+        padding: "45px 24px",
+        background: "#faf9f6",
+        fontFamily: "Arial, sans-serif",
+        color: "#222",
+      }}
+    >
+      <div
+        style={{
+          maxWidth: 1150,
+          margin: "0 auto",
+        }}
+      >
+        {/* Header */}
+
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+            gap: 20,
+            marginBottom: 30,
+            flexWrap: "wrap",
+          }}
+        >
           <div>
-            <h1 style={styles.title}>
-              {candidate.full_name || "Unnamed Candidate"}
+            <div
+              style={{
+                fontSize: 13,
+                letterSpacing: 2,
+                color: "#777",
+                marginBottom: 8,
+              }}
+            >
+              INSPIRE MATCH
+            </div>
+
+            <h1
+              style={{
+                fontFamily: "Georgia, serif",
+                fontSize: 42,
+                margin: 0,
+              }}
+            >
+              Candidate Profile
             </h1>
 
-            <p style={styles.subtitle}>
-              {candidate.current_title || "Candidate Profile"}
+            <p
+              style={{
+                color: "#777",
+                marginTop: 8,
+              }}
+            >
+              Candidate information and recruitment notes.
             </p>
           </div>
 
-          <a href="/app/pipeline" style={styles.backButton}>
-            ← Back to Pipeline
-          </a>
+          <div
+            style={{
+              display: "flex",
+              gap: 10,
+              flexWrap: "wrap",
+            }}
+          >
+            <Link
+              href="/app/pipeline"
+              style={{
+                textDecoration: "none",
+                padding: "11px 17px",
+                borderRadius: 9,
+                border: "1px solid #ddd",
+                background: "#fff",
+                color: "#222",
+              }}
+            >
+              ← Pipeline
+            </Link>
+
+            <Link
+              href="/app/candidates"
+              style={{
+                textDecoration: "none",
+                padding: "11px 17px",
+                borderRadius: 9,
+                border: "1px solid #ddd",
+                background: "#fff",
+                color: "#222",
+              }}
+            >
+              Candidate Database
+            </Link>
+          </div>
         </div>
 
-        <div style={styles.grid}>
+        {/* Candidate Header Card */}
 
-          <section style={styles.card}>
-            <h2 style={styles.cardTitle}>Candidate Information</h2>
+        <section
+          style={{
+            background: "#fff",
+            border: "1px solid #eee",
+            borderRadius: 18,
+            padding: 28,
+            marginBottom: 20,
+          }}
+        >
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "flex-start",
+              gap: 25,
+              flexWrap: "wrap",
+            }}
+          >
+            <div>
+              <div
+                style={{
+                  width: 64,
+                  height: 64,
+                  borderRadius: "50%",
+                  background: "#f1f1ee",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  fontSize: 28,
+                  marginBottom: 16,
+                }}
+              >
+                👤
+              </div>
 
-            <Info label="Full Name" value={candidate.full_name} />
-            <Info label="Current Title" value={candidate.current_title} />
-            <Info label="Location" value={candidate.location} />
-            <Info
-              label="Years of Experience"
-              value={candidate.years_experience}
-            />
-            <Info label="Email" value={candidate.email} />
-            <Info label="Phone" value={candidate.phone} />
-            <Info label="LinkedIn" value={candidate.linkedin_url} />
-          </section>
+              <h2
+                style={{
+                  fontFamily: "Georgia, serif",
+                  fontSize: 30,
+                  margin: 0,
+                }}
+              >
+                {candidateName}
+              </h2>
 
-          <section style={styles.card}>
-            <h2 style={styles.cardTitle}>Recruitment Status</h2>
-
-            <p style={styles.label}>Current Stage</p>
-
-            <select
-              value={candidate.status || "Screening"}
-              onChange={(e) => changeStatus(e.target.value)}
-              style={styles.select}
-            >
-              <option value="Applied">Applied</option>
-              <option value="Screening">Screening</option>
-              <option value="Interview">Interview</option>
-              <option value="Shortlisted">Shortlisted</option>
-              <option value="Hired">Hired</option>
-              <option value="Rejected">Rejected</option>
-            </select>
-
-            <div style={styles.statusBox}>
-              {candidate.status || "Screening"}
+              <p
+                style={{
+                  fontSize: 17,
+                  color: "#555",
+                  margin: "8px 0 0",
+                }}
+              >
+                {candidate.current_title || "No current title available"}
+              </p>
             </div>
-          </section>
 
-          <section style={{ ...styles.card, gridColumn: "1 / -1" }}>
-            <h2 style={styles.cardTitle}>Skills</h2>
+            <div
+              style={{
+                minWidth: 220,
+              }}
+            >
+              <label
+                style={{
+                  display: "block",
+                  fontSize: 13,
+                  color: "#777",
+                  marginBottom: 7,
+                }}
+              >
+                Recruitment Status
+              </label>
 
-            <p style={styles.text}>
-              {candidate.skills || "No skills information available."}
-            </p>
-          </section>
+              <select
+                value={currentStatus}
+                onChange={(e) =>
+                  changeStatus(e.target.value)
+                }
+                disabled={savingStatus}
+                style={{
+                  width: "100%",
+                  padding: "12px 14px",
+                  borderRadius: 10,
+                  border: "1px solid #ddd",
+                  background: "#fff",
+                  fontSize: 15,
+                }}
+              >
+                {stages.map((stage) => (
+                  <option key={stage} value={stage}>
+                    {stage}
+                  </option>
+                ))}
+              </select>
 
-          <section style={{ ...styles.card, gridColumn: "1 / -1" }}>
-            <h2 style={styles.cardTitle}>CV Information</h2>
+              {savingStatus && (
+                <div
+                  style={{
+                    fontSize: 12,
+                    color: "#777",
+                    marginTop: 6,
+                  }}
+                >
+                  Saving status...
+                </div>
+              )}
+            </div>
+          </div>
+        </section>
 
-            <Info
-              label="CV File"
-              value={candidate.cv_file_name}
+        {/* Message */}
+
+        {message && (
+          <div
+            style={{
+              background: "#f1f1ee",
+              border: "1px solid #e5e5df",
+              borderRadius: 10,
+              padding: "12px 15px",
+              marginBottom: 20,
+              color: "#555",
+              fontSize: 14,
+            }}
+          >
+            {message}
+          </div>
+        )}
+
+        {/* Main Grid */}
+
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns:
+              "minmax(0, 1.3fr) minmax(300px, 0.7fr)",
+            gap: 20,
+          }}
+        >
+          {/* Candidate Information */}
+
+          <section
+            style={{
+              background: "#fff",
+              border: "1px solid #eee",
+              borderRadius: 18,
+              padding: 26,
+            }}
+          >
+            <h2
+              style={{
+                fontFamily: "Georgia, serif",
+                marginTop: 0,
+                marginBottom: 20,
+              }}
+            >
+              Candidate Information
+            </h2>
+
+            <InfoRow
+              label="Full Name"
+              value={candidate.full_name}
             />
 
-            <Info
+            <InfoRow
+              label="Current Title"
+              value={candidate.current_title}
+            />
+
+            <InfoRow
+              label="Location"
+              value={candidate.location}
+            />
+
+            <InfoRow
+              label="Years of Experience"
+              value={
+                candidate.years_experience !== null &&
+                candidate.years_experience !== undefined
+                  ? `${candidate.years_experience} years`
+                  : null
+              }
+            />
+
+            <InfoRow
+              label="Email"
+              value={candidate.email}
+            />
+
+            <InfoRow
+              label="Phone"
+              value={candidate.phone}
+            />
+
+            <InfoRow
+              label="LinkedIn"
+              value={candidate.linkedin_url}
+              link={candidate.linkedin_url}
+            />
+
+            <InfoRow
+              label="Skills"
+              value={candidate.skills}
+            />
+
+            <InfoRow
               label="Source"
               value={candidate.source}
             />
 
-            <Info
+            <InfoRow
+              label="CV File"
+              value={candidate.cv_file_name}
+            />
+
+            <InfoRow
               label="Blind Screening"
-              value={candidate.blind_screening ? "Enabled" : "Disabled"}
+              value={
+                candidate.blind_screening ? "Enabled" : "Disabled"
+              }
             />
 
-            <Info
-              label="Consent Confirmed"
-              value={candidate.consent_confirmed ? "Yes" : "No"}
+            <InfoRow
+              label="Added"
+              value={
+                candidate.created_at
+                  ? new Date(
+                      candidate.created_at
+                    ).toLocaleDateString()
+                  : null
+              }
             />
           </section>
 
-          <section style={{ ...styles.card, gridColumn: "1 / -1" }}>
-            <h2 style={styles.cardTitle}>Recruiter Notes</h2>
+          {/* Notes */}
 
-            <p style={styles.text}>
-              {candidate.notes || "No recruiter notes added yet."}
+          <section
+            style={{
+              background: "#fff",
+              border: "1px solid #eee",
+              borderRadius: 18,
+              padding: 26,
+              alignSelf: "start",
+            }}
+          >
+            <h2
+              style={{
+                fontFamily: "Georgia, serif",
+                marginTop: 0,
+                marginBottom: 8,
+              }}
+            >
+              Recruitment Notes
+            </h2>
+
+            <p
+              style={{
+                color: "#777",
+                fontSize: 14,
+                lineHeight: 1.6,
+                marginTop: 0,
+              }}
+            >
+              Add your private recruitment notes,
+              interview observations, follow-ups, or
+              hiring feedback.
             </p>
-          </section>
 
+            <textarea
+              value={notes}
+              onChange={(e) => setNotes(e.target.value)}
+              placeholder="Write your recruitment notes here..."
+              rows={12}
+              style={{
+                width: "100%",
+                boxSizing: "border-box",
+                padding: 14,
+                borderRadius: 10,
+                border: "1px solid #ddd",
+                resize: "vertical",
+                fontFamily: "Arial, sans-serif",
+                fontSize: 14,
+                lineHeight: 1.6,
+                outline: "none",
+              }}
+            />
+
+            <button
+              onClick={saveNotes}
+              disabled={savingNotes}
+              style={{
+                width: "100%",
+                marginTop: 12,
+                padding: "13px 18px",
+                borderRadius: 10,
+                border: "none",
+                background: "#222",
+                color: "#fff",
+                fontSize: 15,
+                fontWeight: 600,
+                cursor: savingNotes
+                  ? "not-allowed"
+                  : "pointer",
+                opacity: savingNotes ? 0.7 : 1,
+              }}
+            >
+              {savingNotes ? "Saving..." : "Save Notes"}
+            </button>
+          </section>
         </div>
+
+        {/* Recruitment Summary */}
+
+        <section
+          style={{
+            background: "#fff",
+            border: "1px solid #eee",
+            borderRadius: 18,
+            padding: 26,
+            marginTop: 20,
+          }}
+        >
+          <h2
+            style={{
+              fontFamily: "Georgia, serif",
+              marginTop: 0,
+              marginBottom: 8,
+            }}
+          >
+            Recruitment Summary
+          </h2>
+
+          <p
+            style={{
+              color: "#777",
+              marginTop: 0,
+              lineHeight: 1.6,
+            }}
+          >
+            Use this profile to review the candidate,
+            update their recruitment stage, and keep
+            important hiring notes in one place.
+          </p>
+
+          <div
+            style={{
+              display: "flex",
+              gap: 12,
+              flexWrap: "wrap",
+              marginTop: 18,
+            }}
+          >
+            <div
+              style={{
+                padding: "12px 16px",
+                borderRadius: 10,
+                background: "#f7f7f5",
+              }}
+            >
+              <div
+                style={{
+                  fontSize: 12,
+                  color: "#777",
+                  marginBottom: 4,
+                }}
+              >
+                Current Stage
+              </div>
+
+              <strong>{currentStatus}</strong>
+            </div>
+
+            <div
+              style={{
+                padding: "12px 16px",
+                borderRadius: 10,
+                background: "#f7f7f5",
+              }}
+            >
+              <div
+                style={{
+                  fontSize: 12,
+                  color: "#777",
+                  marginBottom: 4,
+                }}
+              >
+                Candidate ID
+              </div>
+
+              <strong>#{candidate.id}</strong>
+            </div>
+          </div>
+        </section>
       </div>
     </main>
   );
 }
 
-function Info({ label, value }) {
+function InfoRow({ label, value, link }) {
   return (
-    <div style={styles.infoRow}>
-      <span style={styles.label}>{label}</span>
-      <span style={styles.value}>{value || "—"}</span>
+    <div
+      style={{
+        display: "grid",
+        gridTemplateColumns: "180px 1fr",
+        gap: 15,
+        padding: "13px 0",
+        borderBottom: "1px solid #f0f0ed",
+      }}
+    >
+      <div
+        style={{
+          color: "#777",
+          fontSize: 14,
+        }}
+      >
+        {label}
+      </div>
+
+      <div
+        style={{
+          color: "#222",
+          fontSize: 14,
+          wordBreak: "break-word",
+        }}
+      >
+        {!value ? (
+          "—"
+        ) : link ? (
+          <a
+            href={link}
+            target="_blank"
+            rel="noreferrer"
+            style={{
+              color: "#222",
+              textDecoration: "underline",
+            }}
+          >
+            {value}
+          </a>
+        ) : (
+          value
+        )}
+      </div>
     </div>
   );
 }
-
-const styles = {
-  page: {
-    minHeight: "100vh",
-    background: "#faf9f6",
-    padding: "40px 24px",
-    fontFamily: "Arial, sans-serif",
-  },
-
-  container: {
-    maxWidth: 1100,
-    margin: "0 auto",
-  },
-
-  topBar: {
-    display: "flex",
-    justifyContent: "space-between",
-    alignItems: "center",
-    marginBottom: 30,
-    gap: 20,
-  },
-
-  title: {
-    margin: 0,
-    fontSize: 32,
-    color: "#222",
-  },
-
-  subtitle: {
-    marginTop: 8,
-    color: "#666",
-    fontSize: 16,
-  },
-
-  backButton: {
-    textDecoration: "none",
-    padding: "10px 18px",
-    borderRadius: 8,
-    border: "1px solid #ddd",
-    background: "#fff",
-    color: "#222",
-  },
-
-  grid: {
-    display: "grid",
-    gridTemplateColumns: "1fr 1fr",
-    gap: 20,
-  },
-
-  card: {
-    background: "#fff",
-    borderRadius: 16,
-    padding: 24,
-    boxShadow: "0 2px 10px rgba(0,0,0,0.05)",
-  },
-
-  cardTitle: {
-    marginTop: 0,
-    marginBottom: 20,
-    fontSize: 20,
-    color: "#222",
-  },
-
-  infoRow: {
-    display: "flex",
-    justifyContent: "space-between",
-    gap: 20,
-    padding: "12px 0",
-    borderBottom: "1px solid #eee",
-  },
-
-  label: {
-    color: "#777",
-    fontSize: 13,
-  },
-
-  value: {
-    color: "#222",
-    fontSize: 14,
-    textAlign: "right",
-  },
-
-  select: {
-    width: "100%",
-    padding: 12,
-    borderRadius: 8,
-    border: "1px solid #ddd",
-    background: "#fff",
-    fontSize: 14,
-  },
-
-  statusBox: {
-    marginTop: 20,
-    padding: 16,
-    borderRadius: 10,
-    background: "#f1f1ee",
-    textAlign: "center",
-    fontWeight: "bold",
-  },
-
-  text: {
-    color: "#555",
-    lineHeight: 1.7,
-  },
-};
