@@ -19,25 +19,24 @@ export default function CandidateProfilePage() {
   const candidateId = params?.id;
 
   const [candidate, setCandidate] = useState(null);
+  const [notesHistory, setNotesHistory] = useState([]);
+  const [newNote, setNewNote] = useState("");
+
   const [loading, setLoading] = useState(true);
-
   const [savingStatus, setSavingStatus] = useState(false);
-  const [savingNotes, setSavingNotes] = useState(false);
-
-  const [notes, setNotes] = useState("");
-  const [notesSaved, setNotesSaved] = useState(false);
+  const [savingNote, setSavingNote] = useState(false);
 
   const [message, setMessage] = useState("");
 
   useEffect(() => {
     if (candidateId) {
       loadCandidate();
+      loadNotes();
     }
   }, [candidateId]);
 
   async function loadCandidate() {
     setLoading(true);
-    setMessage("");
 
     const { data, error } = await supabase
       .from("candidates")
@@ -46,18 +45,28 @@ export default function CandidateProfilePage() {
       .single();
 
     if (error) {
-      console.error("Could not load candidate:", error);
+      console.error(error);
       setMessage(`Could not load candidate: ${error.message}`);
     } else {
       setCandidate(data);
-
-      const savedNotes = data?.notes || "";
-
-      setNotes(savedNotes);
-      setNotesSaved(Boolean(savedNotes.trim()));
     }
 
     setLoading(false);
+  }
+
+  async function loadNotes() {
+    const { data, error } = await supabase
+      .from("notes")
+      .select("*")
+      .eq("candidate_id", candidateId)
+      .order("created_at", { ascending: false });
+
+    if (error) {
+      console.error("Could not load notes:", error);
+      return;
+    }
+
+    setNotesHistory(data || []);
   }
 
   async function changeStatus(status) {
@@ -72,7 +81,6 @@ export default function CandidateProfilePage() {
       .eq("id", candidate.id);
 
     if (error) {
-      console.error("Could not update status:", error);
       setMessage(`Could not update status: ${error.message}`);
     } else {
       setCandidate((current) => ({
@@ -86,40 +94,44 @@ export default function CandidateProfilePage() {
     setSavingStatus(false);
   }
 
-  function handleNotesChange(e) {
-    setNotes(e.target.value);
-    setNotesSaved(false);
-    setMessage("");
-  }
+  async function saveNote() {
+    const trimmedNote = newNote.trim();
 
-  async function saveNotes() {
+    if (!trimmedNote) {
+      setMessage("Please write a note first.");
+      return;
+    }
+
     if (!candidate) return;
 
-    setSavingNotes(true);
+    setSavingNote(true);
     setMessage("");
 
-    const { error } = await supabase
-      .from("candidates")
-      .update({
-        notes: notes,
-      })
-      .eq("id", candidate.id);
+    const { data, error } = await supabase
+      .from("notes")
+      .insert([
+        {
+          candidate_id: candidate.id,
+          note: trimmedNote,
+        },
+      ])
+      .select()
+      .single();
 
     if (error) {
-      console.error("Could not save notes:", error);
-      setMessage(`Could not save notes: ${error.message}`);
-      setNotesSaved(false);
+      console.error("Could not save note:", error);
+      setMessage(`Could not save note: ${error.message}`);
     } else {
-      setCandidate((current) => ({
+      setNotesHistory((current) => [
+        data,
         ...current,
-        notes,
-      }));
+      ]);
 
-      setNotesSaved(true);
+      setNewNote("");
       setMessage("Note saved successfully.");
     }
 
-    setSavingNotes(false);
+    setSavingNote(false);
   }
 
   if (loading) {
@@ -130,17 +142,11 @@ export default function CandidateProfilePage() {
           padding: "60px 24px",
           background: "#faf9f6",
           fontFamily: "Arial, sans-serif",
-          color: "#222",
         }}
       >
         <div style={{ maxWidth: 1100, margin: "0 auto" }}>
-          <h1 style={{ fontFamily: "Georgia, serif" }}>
-            Candidate Profile
-          </h1>
-
-          <p style={{ color: "#777" }}>
-            Loading candidate...
-          </p>
+          <h1>Candidate Profile</h1>
+          <p>Loading candidate...</p>
         </div>
       </main>
     );
@@ -154,28 +160,21 @@ export default function CandidateProfilePage() {
           padding: "60px 24px",
           background: "#faf9f6",
           fontFamily: "Arial, sans-serif",
-          color: "#222",
         }}
       >
         <div style={{ maxWidth: 1100, margin: "0 auto" }}>
-          <h1 style={{ fontFamily: "Georgia, serif" }}>
-            Candidate Not Found
-          </h1>
-
-          <p style={{ color: "#777" }}>
-            We could not find this candidate.
-          </p>
+          <h1>Candidate Not Found</h1>
 
           <Link
             href="/app/candidates"
             style={{
               display: "inline-block",
               marginTop: 20,
-              textDecoration: "none",
               padding: "12px 18px",
               borderRadius: 10,
               background: "#222",
               color: "#fff",
+              textDecoration: "none",
             }}
           >
             ← Candidate Database
@@ -241,12 +240,7 @@ export default function CandidateProfilePage() {
               Candidate Profile
             </h1>
 
-            <p
-              style={{
-                color: "#777",
-                marginTop: 8,
-              }}
-            >
+            <p style={{ color: "#777" }}>
               Candidate information and recruitment notes.
             </p>
           </div>
@@ -339,11 +333,9 @@ export default function CandidateProfilePage() {
                 style={{
                   fontSize: 17,
                   color: "#555",
-                  margin: "8px 0 0",
                 }}
               >
-                {candidate.current_title ||
-                  "No current title available"}
+                {candidate.current_title || "No current title"}
               </p>
             </div>
 
@@ -371,7 +363,6 @@ export default function CandidateProfilePage() {
                   borderRadius: 10,
                   border: "1px solid #ddd",
                   background: "#fff",
-                  fontSize: 15,
                 }}
               >
                 {stages.map((stage) => (
@@ -380,18 +371,6 @@ export default function CandidateProfilePage() {
                   </option>
                 ))}
               </select>
-
-              {savingStatus && (
-                <div
-                  style={{
-                    fontSize: 12,
-                    color: "#777",
-                    marginTop: 6,
-                  }}
-                >
-                  Saving status...
-                </div>
-              )}
             </div>
           </div>
         </section>
@@ -401,23 +380,18 @@ export default function CandidateProfilePage() {
         {message && (
           <div
             style={{
-              background: notesSaved
-                ? "#eef8ef"
-                : "#f1f1ee",
-              border: "1px solid #e5e5df",
-              borderRadius: 10,
               padding: "12px 15px",
               marginBottom: 20,
-              color: notesSaved ? "#397344" : "#555",
-              fontSize: 14,
+              borderRadius: 10,
+              background: "#f1f1ee",
+              color: "#555",
             }}
           >
-            {notesSaved ? "✅ " : ""}
             {message}
           </div>
         )}
 
-        {/* MAIN GRID */}
+        {/* MAIN */}
 
         <div
           style={{
@@ -427,7 +401,7 @@ export default function CandidateProfilePage() {
             gap: 20,
           }}
         >
-          {/* CANDIDATE INFORMATION */}
+          {/* INFORMATION */}
 
           <section
             style={{
@@ -441,7 +415,6 @@ export default function CandidateProfilePage() {
               style={{
                 fontFamily: "Georgia, serif",
                 marginTop: 0,
-                marginBottom: 20,
               }}
             >
               Candidate Information
@@ -465,8 +438,7 @@ export default function CandidateProfilePage() {
             <InfoRow
               label="Years of Experience"
               value={
-                candidate.years_experience !== null &&
-                candidate.years_experience !== undefined
+                candidate.years_experience != null
                   ? `${candidate.years_experience} years`
                   : null
               }
@@ -502,29 +474,9 @@ export default function CandidateProfilePage() {
               label="CV File"
               value={candidate.cv_file_name}
             />
-
-            <InfoRow
-              label="Blind Screening"
-              value={
-                candidate.blind_screening
-                  ? "Enabled"
-                  : "Disabled"
-              }
-            />
-
-            <InfoRow
-              label="Added"
-              value={
-                candidate.created_at
-                  ? new Date(
-                      candidate.created_at
-                    ).toLocaleDateString()
-                  : null
-              }
-            />
           </section>
 
-          {/* RECRUITMENT NOTES */}
+          {/* NOTES */}
 
           <section
             style={{
@@ -539,7 +491,6 @@ export default function CandidateProfilePage() {
               style={{
                 fontFamily: "Georgia, serif",
                 marginTop: 0,
-                marginBottom: 8,
               }}
             >
               Recruitment Notes
@@ -550,18 +501,22 @@ export default function CandidateProfilePage() {
                 color: "#777",
                 fontSize: 14,
                 lineHeight: 1.6,
-                marginTop: 0,
               }}
             >
-              Add interview observations, follow-ups, or
-              hiring feedback.
+              Add a new recruitment note. Each note will
+              be saved separately.
             </p>
 
+            {/* NEW NOTE — ALWAYS EMPTY */}
+
             <textarea
-              value={notes}
-              onChange={handleNotesChange}
-              placeholder="Write your recruitment notes here..."
-              rows={12}
+              value={newNote}
+              onChange={(e) => {
+                setNewNote(e.target.value);
+                setMessage("");
+              }}
+              placeholder="Write a new note..."
+              rows={7}
               style={{
                 width: "100%",
                 boxSizing: "border-box",
@@ -572,125 +527,99 @@ export default function CandidateProfilePage() {
                 fontFamily: "Arial, sans-serif",
                 fontSize: 14,
                 lineHeight: 1.6,
-                outline: "none",
               }}
             />
 
             <button
-              onClick={saveNotes}
-              disabled={savingNotes || notesSaved}
+              onClick={saveNote}
+              disabled={savingNote}
               style={{
                 width: "100%",
                 marginTop: 12,
                 padding: "13px 18px",
                 borderRadius: 10,
                 border: "none",
-                background: notesSaved
-                  ? "#eaf5ec"
-                  : "#222",
-                color: notesSaved
-                  ? "#397344"
-                  : "#fff",
+                background: "#222",
+                color: "#fff",
                 fontSize: 15,
                 fontWeight: 600,
-                cursor:
-                  savingNotes || notesSaved
-                    ? "default"
-                    : "pointer",
-                opacity: savingNotes ? 0.7 : 1,
+                cursor: savingNote
+                  ? "not-allowed"
+                  : "pointer",
+                opacity: savingNote ? 0.7 : 1,
               }}
             >
-              {savingNotes
-                ? "Saving..."
-                : notesSaved
-                ? "✓ Saved"
-                : "Save Notes"}
+              {savingNote ? "Saving..." : "Save Note"}
             </button>
+
+            {/* PREVIOUS NOTES */}
+
+            <div style={{ marginTop: 28 }}>
+              <h3
+                style={{
+                  fontFamily: "Georgia, serif",
+                  marginBottom: 14,
+                }}
+              >
+                Previous Notes
+              </h3>
+
+              {notesHistory.length === 0 ? (
+                <p
+                  style={{
+                    color: "#999",
+                    fontSize: 14,
+                  }}
+                >
+                  No previous notes yet.
+                </p>
+              ) : (
+                <div
+                  style={{
+                    display: "grid",
+                    gap: 12,
+                  }}
+                >
+                  {notesHistory.map((item) => (
+                    <div
+                      key={item.id}
+                      style={{
+                        background: "#f7f7f5",
+                        borderRadius: 12,
+                        padding: 14,
+                      }}
+                    >
+                      <div
+                        style={{
+                          fontSize: 13,
+                          color: "#333",
+                          lineHeight: 1.6,
+                          whiteSpace: "pre-wrap",
+                        }}
+                      >
+                        {item.note}
+                      </div>
+
+                      <div
+                        style={{
+                          marginTop: 9,
+                          fontSize: 11,
+                          color: "#999",
+                        }}
+                      >
+                        {item.created_at
+                          ? new Date(
+                              item.created_at
+                            ).toLocaleString()
+                          : ""}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
           </section>
         </div>
-
-        {/* RECRUITMENT SUMMARY */}
-
-        <section
-          style={{
-            background: "#fff",
-            border: "1px solid #eee",
-            borderRadius: 18,
-            padding: 26,
-            marginTop: 20,
-          }}
-        >
-          <h2
-            style={{
-              fontFamily: "Georgia, serif",
-              marginTop: 0,
-              marginBottom: 8,
-            }}
-          >
-            Recruitment Summary
-          </h2>
-
-          <p
-            style={{
-              color: "#777",
-              marginTop: 0,
-              lineHeight: 1.6,
-            }}
-          >
-            Review the candidate, update their recruitment
-            stage, and keep important hiring notes in one
-            place.
-          </p>
-
-          <div
-            style={{
-              display: "flex",
-              gap: 12,
-              flexWrap: "wrap",
-              marginTop: 18,
-            }}
-          >
-            <div
-              style={{
-                padding: "12px 16px",
-                borderRadius: 10,
-                background: "#f7f7f5",
-              }}
-            >
-              <div
-                style={{
-                  fontSize: 12,
-                  color: "#777",
-                  marginBottom: 4,
-                }}
-              >
-                Current Stage
-              </div>
-
-              <strong>{currentStatus}</strong>
-            </div>
-
-            <div
-              style={{
-                padding: "12px 16px",
-                borderRadius: 10,
-                background: "#f7f7f5",
-              }}
-            >
-              <div
-                style={{
-                  fontSize: 12,
-                  color: "#777",
-                  marginBottom: 4,
-                }}
-              >
-                Candidate ID
-              </div>
-
-              <strong>#{candidate.id}</strong>
-            </div>
-          </div>
-        </section>
       </div>
     </main>
   );
@@ -718,7 +647,6 @@ function InfoRow({ label, value, link }) {
 
       <div
         style={{
-          color: "#222",
           fontSize: 14,
           wordBreak: "break-word",
         }}
@@ -744,4 +672,3 @@ function InfoRow({ label, value, link }) {
     </div>
   );
 }
-``
