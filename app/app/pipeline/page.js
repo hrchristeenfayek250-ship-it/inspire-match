@@ -167,7 +167,6 @@ export default function PipelinePage() {
                           boxShadow: "0 2px 8px rgba(0,0,0,0.05)",
                         }}
                       >
-                        <h4 style={{ margin: "0 0 8px" }}>
                           <Link
   href={`/candidates/${candidate.id}`}
   style={{
