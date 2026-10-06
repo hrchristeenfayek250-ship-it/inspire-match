@@ -4,18 +4,18 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { supabase } from "@/lib/supabase";
 
-export default function DashboardPage() {
-  const [stats, setStats] = useState({
-    candidates: 0,
-    jobs: 0,
-    screening: 0,
-    interviews: 0,
-    shortlisted: 0,
-    hired: 0,
-    rejected: 0,
-  });
+const stages = [
+  "Applied",
+  "Screening",
+  "Interview",
+  "Shortlisted",
+  "Hired",
+  "Rejected",
+];
 
-  const [recentCandidates, setRecentCandidates] = useState([]);
+export default function DashboardPage() {
+  const [candidates, setCandidates] = useState([]);
+  const [jobs, setJobs] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -23,132 +23,101 @@ export default function DashboardPage() {
   }, []);
 
   async function loadDashboard() {
-    const [
-      candidatesResult,
-      jobsResult,
-      screeningResult,
-      interviewsResult,
-      shortlistedResult,
-      hiredResult,
-      rejectedResult,
-    ] = await Promise.all([
-      supabase.from("candidates").select("*", { count: "exact", head: false }),
-      supabase.from("jobs").select("*", { count: "exact", head: true }),
+    setLoading(true);
+
+    const [candidateResult, jobResult] = await Promise.all([
       supabase
         .from("candidates")
-        .select("*", { count: "exact", head: true })
-        .eq("status", "Screening"),
+        .select("*")
+        .order("created_at", { ascending: false }),
+
       supabase
-        .from("candidates")
-        .select("*", { count: "exact", head: true })
-        .eq("status", "Interview"),
-      supabase
-        .from("candidates")
-        .select("*", { count: "exact", head: true })
-        .eq("status", "Shortlisted"),
-      supabase
-        .from("candidates")
-        .select("*", { count: "exact", head: true })
-        .eq("status", "Hired"),
-      supabase
-        .from("candidates")
-        .select("*", { count: "exact", head: true })
-        .eq("status", "Rejected"),
+        .from("jobs")
+        .select("*")
+        .order("created_at", { ascending: false }),
     ]);
 
-    setStats({
-      candidates: candidatesResult.count || 0,
-      jobs: jobsResult.count || 0,
-      screening: screeningResult.count || 0,
-      interviews: interviewsResult.count || 0,
-      shortlisted: shortlistedResult.count || 0,
-      hired: hiredResult.count || 0,
-      rejected: rejectedResult.count || 0,
-    });
+    if (candidateResult.error) {
+      console.error(
+        "Could not load candidates:",
+        candidateResult.error
+      );
+    } else {
+      setCandidates(candidateResult.data || []);
+    }
 
-    if (!candidatesResult.error) {
-      setRecentCandidates((candidatesResult.data || []).slice(0, 5));
+    if (jobResult.error) {
+      console.error(
+        "Could not load jobs:",
+        jobResult.error
+      );
+    } else {
+      setJobs(jobResult.data || []);
     }
 
     setLoading(false);
   }
 
-  const cards = [
-    {
-      title: "Total Candidates",
-      value: stats.candidates,
-      icon: "👥",
-      link: "/app/candidates",
-    },
-    {
-      title: "Active Jobs",
-      value: stats.jobs,
-      icon: "💼",
-      link: "/app",
-    },
-    {
-      title: "In Screening",
-      value: stats.screening,
-      icon: "🔍",
-      link: "/app/pipeline",
-    },
-    {
-      title: "Interviews",
-      value: stats.interviews,
-      icon: "🎤",
-      link: "/app/pipeline",
-    },
-    {
-      title: "Shortlisted",
-      value: stats.shortlisted,
-      icon: "⭐",
-      link: "/app/pipeline",
-    },
-    {
-      title: "Hired",
-      value: stats.hired,
-      icon: "🎉",
-      link: "/app/pipeline",
-    },
-  ];
+  function countStage(stage) {
+    return candidates.filter(
+      (candidate) => candidate.status === stage
+    ).length;
+  }
+
+  const totalCandidates = candidates.length;
+
+  const activeJobs = jobs.filter(
+    (job) => !job.status || job.status === "Active"
+  ).length;
+
+  const screeningCount = countStage("Screening");
+  const interviewCount = countStage("Interview");
+  const shortlistedCount = countStage("Shortlisted");
+  const hiredCount = countStage("Hired");
 
   return (
     <main
       style={{
         minHeight: "100vh",
         background: "#faf9f6",
+        padding: "50px 24px",
         fontFamily: "Arial, sans-serif",
-        padding: "40px 24px",
+        color: "#222",
       }}
     >
-      <div style={{ maxWidth: 1400, margin: "0 auto" }}>
-
+      <div
+        style={{
+          maxWidth: 1200,
+          margin: "0 auto",
+        }}
+      >
         {/* Header */}
         <div
           style={{
             display: "flex",
             justifyContent: "space-between",
             alignItems: "center",
-            marginBottom: 35,
+            marginBottom: 30,
             gap: 20,
           }}
         >
           <div>
-            <p
+            <div
               style={{
-                margin: "0 0 8px",
+                fontSize: 13,
+                letterSpacing: 1,
                 color: "#777",
-                fontSize: 14,
+                marginBottom: 8,
               }}
             >
               INSPIRE MATCH
-            </p>
+            </div>
 
             <h1
               style={{
+                fontFamily: "Georgia, serif",
+                fontSize: 38,
                 margin: 0,
-                fontSize: 34,
-                color: "#222",
               }}
             >
               Recruitment Dashboard
@@ -156,8 +125,8 @@ export default function DashboardPage() {
 
             <p
               style={{
+                color: "#666",
                 marginTop: 10,
-                color: "#777",
               }}
             >
               Your recruitment activity at a glance.
@@ -168,18 +137,18 @@ export default function DashboardPage() {
             href="/"
             style={{
               textDecoration: "none",
-              padding: "11px 18px",
-              borderRadius: 8,
               border: "1px solid #ddd",
               background: "#fff",
               color: "#222",
+              padding: "11px 18px",
+              borderRadius: 8,
             }}
           >
             ← ATS Home
           </Link>
         </div>
 
-        {/* Quick Actions */}
+        {/* Navigation */}
         <div
           style={{
             display: "flex",
@@ -192,11 +161,10 @@ export default function DashboardPage() {
             href="/app/pipeline"
             style={{
               textDecoration: "none",
-              padding: "12px 18px",
-              borderRadius: 9,
               background: "#222",
               color: "#fff",
-              fontWeight: 600,
+              padding: "12px 18px",
+              borderRadius: 8,
             }}
           >
             🔄 Candidate Pipeline
@@ -206,12 +174,11 @@ export default function DashboardPage() {
             href="/app/candidates"
             style={{
               textDecoration: "none",
-              padding: "12px 18px",
-              borderRadius: 9,
               background: "#fff",
               color: "#222",
+              padding: "12px 18px",
+              borderRadius: 8,
               border: "1px solid #ddd",
-              fontWeight: 600,
             }}
           >
             👥 Candidate Database
@@ -221,83 +188,73 @@ export default function DashboardPage() {
             href="/"
             style={{
               textDecoration: "none",
-              padding: "12px 18px",
-              borderRadius: 9,
               background: "#fff",
               color: "#222",
+              padding: "12px 18px",
+              borderRadius: 8,
               border: "1px solid #ddd",
-              fontWeight: 600,
             }}
           >
             🤖 AI Matching
           </Link>
         </div>
 
-        {/* Stats */}
         {loading ? (
           <p>Loading dashboard...</p>
         ) : (
           <>
+            {/* KPI Cards */}
             <div
               style={{
                 display: "grid",
                 gridTemplateColumns:
                   "repeat(auto-fit, minmax(190px, 1fr))",
                 gap: 18,
-                marginBottom: 30,
+                marginBottom: 35,
               }}
             >
-              {cards.map((card) => (
-                <Link
-                  key={card.title}
-                  href={card.link}
-                  style={{
-                    textDecoration: "none",
-                    color: "inherit",
-                    background: "#fff",
-                    border: "1px solid #e8e6e1",
-                    borderRadius: 14,
-                    padding: 22,
-                    boxShadow: "0 2px 8px rgba(0,0,0,0.04)",
-                  }}
-                >
-                  <div
-                    style={{
-                      fontSize: 26,
-                      marginBottom: 15,
-                    }}
-                  >
-                    {card.icon}
-                  </div>
+              <KpiCard
+                icon="👥"
+                number={totalCandidates}
+                label="Total Candidates"
+              />
 
-                  <div
-                    style={{
-                      fontSize: 30,
-                      fontWeight: 700,
-                      color: "#222",
-                    }}
-                  >
-                    {card.value}
-                  </div>
+              <KpiCard
+                icon="💼"
+                number={activeJobs}
+                label="Active Jobs"
+              />
 
-                  <div
-                    style={{
-                      marginTop: 6,
-                      color: "#777",
-                      fontSize: 14,
-                    }}
-                  >
-                    {card.title}
-                  </div>
-                </Link>
-              ))}
+              <KpiCard
+                icon="🔎"
+                number={screeningCount}
+                label="In Screening"
+              />
+
+              <KpiCard
+                icon="🎤"
+                number={interviewCount}
+                label="Interviews"
+              />
+
+              <KpiCard
+                icon="⭐"
+                number={shortlistedCount}
+                label="Shortlisted"
+              />
+
+              <KpiCard
+                icon="🎉"
+                number={hiredCount}
+                label="Hired"
+              />
             </div>
 
-            {/* Pipeline Overview */}
+            {/* Recruitment Pipeline */}
             <section
               style={{
                 background: "#fff",
-                border: "1px solid #e8e6e1",
+                border: "1px solid #e5e5e5",
                 borderRadius: 14,
                 padding: 24,
                 marginBottom: 30,
@@ -312,13 +269,19 @@ export default function DashboardPage() {
                 }}
               >
                 <div>
-                  <h2 style={{ margin: 0 }}>
+                  <h2
+                    style={{
+                      fontFamily: "Georgia, serif",
+                      margin: 0,
+                    }}
+                  >
                     Recruitment Pipeline
                   </h2>
 
                   <p
                     style={{
                       color: "#777",
+                      margin: "6px 0 0",
                       fontSize: 14,
                     }}
                   >
@@ -329,8 +292,8 @@ export default function DashboardPage() {
                 <Link
                   href="/app/pipeline"
                   style={{
-                    textDecoration: "none",
                     color: "#222",
+                    textDecoration: "none",
                     fontWeight: 600,
                   }}
                 >
@@ -342,38 +305,32 @@ export default function DashboardPage() {
                 style={{
                   display: "grid",
                   gridTemplateColumns:
-                    "repeat(auto-fit, minmax(140px, 1fr))",
+                    "repeat(auto-fit, minmax(130px, 1fr))",
                   gap: 12,
                 }}
               >
-                {[
-                  ["Screening", stats.screening],
-                  ["Interview", stats.interviews],
-                  ["Shortlisted", stats.shortlisted],
-                  ["Hired", stats.hired],
-                  ["Rejected", stats.rejected],
-                ].map(([stage, count]) => (
+                {stages.map((stage) => (
                   <div
                     key={stage}
                     style={{
-                      background: "#f5f4f1",
+                      background: "#f7f7f4",
                       borderRadius: 10,
                       padding: 16,
                     }}
                   >
                     <div
                       style={{
-                        fontSize: 24,
+                        fontSize: 25,
                         fontWeight: 700,
+                        marginBottom: 5,
                       }}
                     >
-                      {count}
+                      {countStage(stage)}
                     </div>
 
                     <div
                       style={{
                         color: "#777",
-                        marginTop: 5,
                         fontSize: 13,
                       }}
                     >
@@ -388,7 +345,7 @@ export default function DashboardPage() {
             <section
               style={{
                 background: "#fff",
-                border: "1px solid #e8e6e1",
+                border: "1px solid #e5e5e5",
                 borderRadius: 14,
                 padding: 24,
               }}
@@ -401,15 +358,32 @@ export default function DashboardPage() {
                   marginBottom: 20,
                 }}
               >
-                <h2 style={{ margin: 0 }}>
-                  Recent Candidates
-                </h2>
+                <div>
+                  <h2
+                    style={{
+                      fontFamily: "Georgia, serif",
+                      margin: 0,
+                    }}
+                  >
+                    Recent Candidates
+                  </h2>
+
+                  <p
+                    style={{
+                      color: "#777",
+                      margin: "6px 0 0",
+                      fontSize: 14,
+                    }}
+                  >
+                    Latest candidates added to your database
+                  </p>
+                </div>
 
                 <Link
                   href="/app/candidates"
                   style={{
-                    textDecoration: "none",
                     color: "#222",
+                    textDecoration: "none",
                     fontWeight: 600,
                   }}
                 >
@@ -417,68 +391,115 @@ export default function DashboardPage() {
                 </Link>
               </div>
 
-              {recentCandidates.length === 0 ? (
-                <p style={{ color: "#999" }}>
+              {candidates.length === 0 ? (
+                <p style={{ color: "#777" }}>
                   No candidates yet.
                 </p>
               ) : (
-                recentCandidates.map((candidate) => (
-                  <Link
-                    key={candidate.id}
-                    href={`/app/candidates/${candidate.id}`}
-                    style={{
-                      display: "block",
-                      textDecoration: "none",
-                      color: "inherit",
-                      padding: "15px 0",
-                      borderBottom: "1px solid #eee",
-                    }}
-                  >
-                    <div
+                <div
+                  style={{
+                    display: "grid",
+                    gap: 12,
+                  }}
+                >
+                  {candidates.slice(0, 5).map((candidate) => (
+                    <Link
+                      key={candidate.id}
+                      href={`/app/candidates/${candidate.id}`}
                       style={{
-                        display: "flex",
-                        justifyContent: "space-between",
-                        gap: 20,
+                        textDecoration: "none",
+                        color: "#222",
                       }}
                     >
-                      <div>
-                        <strong>
-                          {candidate.full_name ||
-                            "Unnamed Candidate"}
-                        </strong>
-
-                        <div
-                          style={{
-                            color: "#777",
-                            fontSize: 13,
-                            marginTop: 5,
-                          }}
-                        >
-                          {candidate.current_title || "—"}
-                          {" · "}
-                          {candidate.location || "—"}
-                        </div>
-                      </div>
-
-                      <span
+                      <div
                         style={{
-                          fontSize: 12,
-                          background: "#f1f1ee",
-                          padding: "5px 9px",
-                          borderRadius: 20,
-                          height: "fit-content",
+                          border: "1px solid #eee",
+                          borderRadius: 10,
+                          padding: 16,
+                          display: "flex",
+                          justifyContent: "space-between",
+                          alignItems: "center",
+                          gap: 15,
                         }}
                       >
-                        {candidate.status || "Screening"}
-                      </span>
-                    </div>
-                  </Link>
-                ))
+                        <div>
+                          <strong>
+                            {candidate.full_name ||
+                              "Unnamed Candidate"}
+                          </strong>
+
+                          <div
+                            style={{
+                              color: "#777",
+                              fontSize: 13,
+                              marginTop: 5,
+                            }}
+                          >
+                            {candidate.current_title || "—"}
+                          </div>
+                        </div>
+
+                        <span
+                          style={{
+                            background: "#f2f2ef",
+                            padding: "6px 10px",
+                            borderRadius: 20,
+                            fontSize: 12,
+                          }}
+                        >
+                          {candidate.status || "Screening"}
+                        </span>
+                      </div>
+                    </Link>
+                  ))}
+                </div>
               )}
             </section>
           </>
         )}
       </div>
     </main>
+  );
+}
+
+function KpiCard({ icon, number, label }) {
+  return (
+    <div
+      style={{
+        background: "#fff",
+        border: "1px solid #e5e5e5",
+        borderRadius: 14,
+        padding: 22,
+        minHeight: 120,
+      }}
+    >
+      <div
+        style={{
+          fontSize: 24,
+          marginBottom: 12,
+        }}
+      >
+        {icon}
+      </div>
+
+      <div
+        style={{
+          fontSize: 28,
+          fontWeight: 700,
+          marginBottom: 5,
+        }}
+      >
+        {number}
+      </div>
+
+      <div
+        style={{
+          color: "#777",
+          fontSize: 13,
+        }}
+      >
+        {label}
+      </div>
+    </div>
   );
 }
