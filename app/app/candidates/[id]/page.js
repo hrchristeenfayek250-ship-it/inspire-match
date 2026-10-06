@@ -19,14 +19,11 @@ export default function CandidateProfilePage() {
   const candidateId = params?.id;
 
   const [candidate, setCandidate] = useState(null);
-  const [notesHistory, setNotesHistory] = useState([]);
+  const [notes, setNotes] = useState([]);
   const [newNote, setNewNote] = useState("");
-
   const [loading, setLoading] = useState(true);
-  const [savingStatus, setSavingStatus] = useState(false);
   const [savingNote, setSavingNote] = useState(false);
-
-  const [message, setMessage] = useState("");
+  const [statusSaving, setStatusSaving] = useState(false);
 
   useEffect(() => {
     if (candidateId) {
@@ -45,8 +42,7 @@ export default function CandidateProfilePage() {
       .single();
 
     if (error) {
-      console.error(error);
-      setMessage(`Could not load candidate: ${error.message}`);
+      console.error("Could not load candidate:", error);
     } else {
       setCandidate(data);
     }
@@ -63,90 +59,63 @@ export default function CandidateProfilePage() {
 
     if (error) {
       console.error("Could not load notes:", error);
-      return;
+    } else {
+      setNotes(data || []);
     }
-
-    setNotesHistory(data || []);
   }
 
-  async function changeStatus(status) {
-    if (!candidate) return;
-
-    setSavingStatus(true);
-    setMessage("");
+  async function updateStatus(status) {
+    setStatusSaving(true);
 
     const { error } = await supabase
       .from("candidates")
       .update({ status })
-      .eq("id", candidate.id);
+      .eq("id", candidateId);
 
     if (error) {
-      setMessage(`Could not update status: ${error.message}`);
+      alert(`Could not update status: ${error.message}`);
     } else {
       setCandidate((current) => ({
         ...current,
         status,
       }));
-
-      setMessage("Status updated successfully.");
     }
 
-    setSavingStatus(false);
+    setStatusSaving(false);
   }
 
   async function saveNote() {
-    const trimmedNote = newNote.trim();
-
-    if (!trimmedNote) {
-      setMessage("Please write a note first.");
-      return;
-    }
-
-    if (!candidate) return;
+    if (!newNote.trim()) return;
 
     setSavingNote(true);
-    setMessage("");
 
     const { data, error } = await supabase
       .from("notes")
       .insert([
         {
-          candidate_id: candidate.id,
-          note: trimmedNote,
+          candidate_id: Number(candidateId),
+          note: newNote.trim(),
         },
       ])
       .select()
       .single();
 
     if (error) {
-      console.error("Could not save note:", error);
-      setMessage(`Could not save note: ${error.message}`);
-    } else {
-      setNotesHistory((current) => [
-        data,
-        ...current,
-      ]);
-
-      setNewNote("");
-      setMessage("Note saved successfully.");
+      alert(`Could not save note: ${error.message}`);
+      setSavingNote(false);
+      return;
     }
 
+    setNotes((current) => [data, ...current]);
+    setNewNote("");
     setSavingNote(false);
   }
 
   if (loading) {
     return (
-      <main
-        style={{
-          minHeight: "100vh",
-          padding: "60px 24px",
-          background: "#faf9f6",
-          fontFamily: "Arial, sans-serif",
-        }}
-      >
-        <div style={{ maxWidth: 1100, margin: "0 auto" }}>
-          <h1>Candidate Profile</h1>
-          <p>Loading candidate...</p>
+      <main style={pageStyle}>
+        <div style={containerStyle}>
+          <p>Loading candidate profile...</p>
         </div>
       </main>
     );
@@ -154,29 +123,11 @@ export default function CandidateProfilePage() {
 
   if (!candidate) {
     return (
-      <main
-        style={{
-          minHeight: "100vh",
-          padding: "60px 24px",
-          background: "#faf9f6",
-          fontFamily: "Arial, sans-serif",
-        }}
-      >
-        <div style={{ maxWidth: 1100, margin: "0 auto" }}>
-          <h1>Candidate Not Found</h1>
+      <main style={pageStyle}>
+        <div style={containerStyle}>
+          <h1>Candidate not found</h1>
 
-          <Link
-            href="/app/candidates"
-            style={{
-              display: "inline-block",
-              marginTop: 20,
-              padding: "12px 18px",
-              borderRadius: 10,
-              background: "#222",
-              color: "#fff",
-              textDecoration: "none",
-            }}
-          >
+          <Link href="/app/candidates">
             ← Candidate Database
           </Link>
         </div>
@@ -184,28 +135,37 @@ export default function CandidateProfilePage() {
     );
   }
 
-  const candidateName =
-    candidate.full_name || "Unnamed Candidate";
+  const matchScore =
+    candidate.match_score !== null &&
+    candidate.match_score !== undefined
+      ? Number(candidate.match_score)
+      : null;
 
-  const currentStatus =
-    candidate.status || "Screening";
+  const verdict =
+    candidate.match_verdict || null;
+
+  const strengths = Array.isArray(candidate.strengths)
+    ? candidate.strengths
+    : [];
+
+  const gaps = Array.isArray(candidate.gaps)
+    ? candidate.gaps
+    : [];
+
+  const redFlags = Array.isArray(candidate.red_flags)
+    ? candidate.red_flags
+    : [];
+
+  const interviewQuestions = Array.isArray(
+    candidate.interview_questions
+  )
+    ? candidate.interview_questions
+    : [];
 
   return (
-    <main
-      style={{
-        minHeight: "100vh",
-        padding: "45px 24px",
-        background: "#faf9f6",
-        fontFamily: "Arial, sans-serif",
-        color: "#222",
-      }}
-    >
-      <div
-        style={{
-          maxWidth: 1150,
-          margin: "0 auto",
-        }}
-      >
+    <main style={pageStyle}>
+      <div style={containerStyle}>
+
         {/* HEADER */}
 
         <div
@@ -215,7 +175,6 @@ export default function CandidateProfilePage() {
             alignItems: "center",
             gap: 20,
             marginBottom: 30,
-            flexWrap: "wrap",
           }}
         >
           <div>
@@ -240,8 +199,9 @@ export default function CandidateProfilePage() {
               Candidate Profile
             </h1>
 
-            <p style={{ color: "#777" }}>
-              Candidate information and recruitment notes.
+            <p style={{ color: "#666" }}>
+              Candidate information, AI assessment and
+              recruitment activity.
             </p>
           </div>
 
@@ -254,28 +214,14 @@ export default function CandidateProfilePage() {
           >
             <Link
               href="/app/pipeline"
-              style={{
-                textDecoration: "none",
-                padding: "11px 17px",
-                borderRadius: 9,
-                border: "1px solid #ddd",
-                background: "#fff",
-                color: "#222",
-              }}
+              style={buttonSecondary}
             >
               ← Pipeline
             </Link>
 
             <Link
               href="/app/candidates"
-              style={{
-                textDecoration: "none",
-                padding: "11px 17px",
-                borderRadius: 9,
-                border: "1px solid #ddd",
-                background: "#fff",
-                color: "#222",
-              }}
+              style={buttonSecondary}
             >
               Candidate Database
             </Link>
@@ -284,62 +230,68 @@ export default function CandidateProfilePage() {
 
         {/* CANDIDATE HEADER */}
 
-        <section
-          style={{
-            background: "#fff",
-            border: "1px solid #eee",
-            borderRadius: 18,
-            padding: 28,
-            marginBottom: 20,
-          }}
-        >
+        <section style={cardStyle}>
           <div
             style={{
               display: "flex",
               justifyContent: "space-between",
-              alignItems: "flex-start",
+              alignItems: "center",
               gap: 25,
               flexWrap: "wrap",
             }}
           >
-            <div>
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: 18,
+              }}
+            >
               <div
                 style={{
-                  width: 64,
-                  height: 64,
+                  width: 70,
+                  height: 70,
                   borderRadius: "50%",
-                  background: "#f1f1ee",
+                  background: "#f0eee8",
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "center",
-                  fontSize: 28,
-                  marginBottom: 16,
+                  fontSize: 32,
                 }}
               >
                 👤
               </div>
 
-              <h2
-                style={{
-                  fontFamily: "Georgia, serif",
-                  fontSize: 30,
-                  margin: 0,
-                }}
-              >
-                {candidateName}
-              </h2>
+              <div>
+                <h2
+                  style={{
+                    margin: "0 0 8px",
+                    fontFamily: "Georgia, serif",
+                  }}
+                >
+                  {candidate.full_name ||
+                    "Unnamed Candidate"}
+                </h2>
 
-              <p
-                style={{
-                  fontSize: 17,
-                  color: "#555",
-                }}
-              >
-                {candidate.current_title || "No current title"}
-              </p>
+                <div style={{ color: "#666" }}>
+                  {candidate.current_title || "—"}
+                </div>
+
+                {candidate.location && (
+                  <div
+                    style={{
+                      color: "#777",
+                      marginTop: 5,
+                      fontSize: 14,
+                    }}
+                  >
+                    📍 {candidate.location}
+                  </div>
+                )}
+              </div>
             </div>
 
-            <div style={{ minWidth: 220 }}>
+            <div>
               <label
                 style={{
                   display: "block",
@@ -352,18 +304,12 @@ export default function CandidateProfilePage() {
               </label>
 
               <select
-                value={currentStatus}
+                value={candidate.status || "Screening"}
                 onChange={(e) =>
-                  changeStatus(e.target.value)
+                  updateStatus(e.target.value)
                 }
-                disabled={savingStatus}
-                style={{
-                  width: "100%",
-                  padding: "12px 14px",
-                  borderRadius: 10,
-                  border: "1px solid #ddd",
-                  background: "#fff",
-                }}
+                disabled={statusSaving}
+                style={selectStyle}
               >
                 {stages.map((stage) => (
                   <option key={stage} value={stage}>
@@ -375,271 +321,413 @@ export default function CandidateProfilePage() {
           </div>
         </section>
 
-        {/* MESSAGE */}
+        {/* AI MATCH */}
 
-        {message && (
-          <div
-            style={{
-              padding: "12px 15px",
-              marginBottom: 20,
-              borderRadius: 10,
-              background: "#f1f1ee",
-              color: "#555",
-            }}
-          >
-            {message}
+        <section style={cardStyle}>
+          <div style={sectionHeader}>
+            <div>
+              <h2 style={sectionTitle}>
+                🤖 AI Match Assessment
+              </h2>
+
+              <p style={hintStyle}>
+                AI-powered evaluation for the candidate.
+              </p>
+            </div>
+
+            {candidate.matched_job_title && (
+              <div
+                style={{
+                  padding: "8px 12px",
+                  background: "#f5f3ed",
+                  borderRadius: 20,
+                  fontSize: 13,
+                }}
+              >
+                💼 {candidate.matched_job_title}
+              </div>
+            )}
           </div>
-        )}
 
-        {/* MAIN */}
+          {matchScore !== null ? (
+            <>
+              <div
+                style={{
+                  display: "grid",
+                  gridTemplateColumns:
+                    "minmax(180px, 250px) 1fr",
+                  gap: 25,
+                  alignItems: "center",
+                }}
+              >
+                <div
+                  style={{
+                    textAlign: "center",
+                    padding: 25,
+                    background: "#faf9f6",
+                    borderRadius: 16,
+                  }}
+                >
+                  <div
+                    style={{
+                      fontSize: 52,
+                      fontWeight: 700,
+                    }}
+                  >
+                    {matchScore}%
+                  </div>
 
-        <div
-          style={{
-            display: "grid",
-            gridTemplateColumns:
-              "minmax(0, 1.3fr) minmax(300px, 0.7fr)",
-            gap: 20,
-          }}
-        >
-          {/* INFORMATION */}
+                  <div
+                    style={{
+                      color: "#777",
+                      marginTop: 5,
+                    }}
+                  >
+                    Match Score
+                  </div>
 
-          <section
-            style={{
-              background: "#fff",
-              border: "1px solid #eee",
-              borderRadius: 18,
-              padding: 26,
-            }}
-          >
-            <h2
+                  {verdict && (
+                    <div
+                      style={{
+                        display: "inline-block",
+                        marginTop: 15,
+                        padding: "8px 14px",
+                        borderRadius: 20,
+                        background:
+                          verdict === "Strong fit"
+                            ? "#e7f4ea"
+                            : verdict === "Potential"
+                            ? "#fff3d6"
+                            : "#f4e4e4",
+                        fontWeight: 600,
+                      }}
+                    >
+                      {verdict}
+                    </div>
+                  )}
+                </div>
+
+                <div>
+                  <h3>AI Summary</h3>
+
+                  <p
+                    style={{
+                      color: "#555",
+                      lineHeight: 1.7,
+                    }}
+                  >
+                    {candidate.ai_summary ||
+                      "No AI summary available yet."}
+                  </p>
+                </div>
+              </div>
+
+              <div
+                style={{
+                  display: "grid",
+                  gridTemplateColumns:
+                    "repeat(auto-fit, minmax(250px, 1fr))",
+                  gap: 18,
+                  marginTop: 25,
+                }}
+              >
+                <AIList
+                  title="💪 Strengths"
+                  items={strengths}
+                  empty="No strengths recorded."
+                />
+
+                <AIList
+                  title="⚠️ Gaps"
+                  items={gaps}
+                  empty="No gaps recorded."
+                />
+
+                <AIList
+                  title="🚩 Red Flags"
+                  items={redFlags}
+                  empty="No red flags found."
+                />
+              </div>
+
+              {interviewQuestions.length > 0 && (
+                <div style={{ marginTop: 25 }}>
+                  <h3>🎤 Interview Questions</h3>
+
+                  <ol
+                    style={{
+                      lineHeight: 1.8,
+                      color: "#555",
+                    }}
+                  >
+                    {interviewQuestions.map(
+                      (question, index) => (
+                        <li key={index}>
+                          {question}
+                        </li>
+                      )
+                    )}
+                  </ol>
+                </div>
+              )}
+            </>
+          ) : (
+            <div
               style={{
-                fontFamily: "Georgia, serif",
-                marginTop: 0,
+                padding: 25,
+                background: "#faf9f6",
+                borderRadius: 12,
+                color: "#777",
               }}
             >
-              Candidate Information
-            </h2>
+              <strong>
+                No AI Match Assessment saved yet.
+              </strong>
 
-            <InfoRow
+              <p style={{ marginBottom: 0 }}>
+                Once this candidate is screened against a
+                saved job, the AI score and assessment will
+                appear here.
+              </p>
+            </div>
+          )}
+        </section>
+
+        {/* CANDIDATE INFORMATION */}
+
+        <section style={cardStyle}>
+          <h2 style={sectionTitle}>
+            Candidate Information
+          </h2>
+
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns:
+                "repeat(auto-fit, minmax(280px, 1fr))",
+              gap: 15,
+            }}
+          >
+            <InfoItem
               label="Full Name"
               value={candidate.full_name}
             />
 
-            <InfoRow
+            <InfoItem
               label="Current Title"
               value={candidate.current_title}
             />
 
-            <InfoRow
+            <InfoItem
               label="Location"
               value={candidate.location}
             />
 
-            <InfoRow
+            <InfoItem
               label="Years of Experience"
               value={
-                candidate.years_experience != null
+                candidate.years_experience
                   ? `${candidate.years_experience} years`
-                  : null
+                  : "—"
               }
             />
 
-            <InfoRow
+            <InfoItem
               label="Email"
               value={candidate.email}
             />
 
-            <InfoRow
+            <InfoItem
               label="Phone"
               value={candidate.phone}
             />
 
-            <InfoRow
+            <InfoItem
               label="LinkedIn"
               value={candidate.linkedin_url}
-              link={candidate.linkedin_url}
             />
 
-            <InfoRow
-              label="Skills"
-              value={candidate.skills}
+            <InfoItem
+              label="CV"
+              value={candidate.cv_file_name}
             />
 
-            <InfoRow
+            <InfoItem
               label="Source"
               value={candidate.source}
             />
+          </div>
+        </section>
 
-            <InfoRow
-              label="CV File"
-              value={candidate.cv_file_name}
-            />
-          </section>
+        {/* RECRUITMENT NOTES */}
 
-          {/* NOTES */}
+        <section style={cardStyle}>
+          <h2 style={sectionTitle}>
+            📝 Recruitment Notes
+          </h2>
 
-          <section
+          <p style={hintStyle}>
+            Add a new recruitment note. Each note is saved
+            separately.
+          </p>
+
+          <textarea
+            value={newNote}
+            onChange={(e) =>
+              setNewNote(e.target.value)
+            }
+            placeholder="Write a new note..."
+            rows={5}
             style={{
-              background: "#fff",
-              border: "1px solid #eee",
-              borderRadius: 18,
-              padding: 26,
-              alignSelf: "start",
+              width: "100%",
+              boxSizing: "border-box",
+              padding: 14,
+              borderRadius: 10,
+              border: "1px solid #ddd",
+              resize: "vertical",
+              fontSize: 14,
             }}
-          >
-            <h2
-              style={{
-                fontFamily: "Georgia, serif",
-                marginTop: 0,
-              }}
-            >
-              Recruitment Notes
-            </h2>
+          />
 
-            <p
-              style={{
-                color: "#777",
-                fontSize: 14,
-                lineHeight: 1.6,
-              }}
-            >
-              Add a new recruitment note. Each note will
-              be saved separately.
-            </p>
-
-            {/* NEW NOTE — ALWAYS EMPTY */}
-
-            <textarea
-              value={newNote}
-              onChange={(e) => {
-                setNewNote(e.target.value);
-                setMessage("");
-              }}
-              placeholder="Write a new note..."
-              rows={7}
-              style={{
-                width: "100%",
-                boxSizing: "border-box",
-                padding: 14,
-                borderRadius: 10,
-                border: "1px solid #ddd",
-                resize: "vertical",
-                fontFamily: "Arial, sans-serif",
-                fontSize: 14,
-                lineHeight: 1.6,
-              }}
-            />
-
-            <button
-              onClick={saveNote}
-              disabled={savingNote}
-              style={{
-                width: "100%",
-                marginTop: 12,
-                padding: "13px 18px",
-                borderRadius: 10,
-                border: "none",
-                background: "#222",
-                color: "#fff",
-                fontSize: 15,
-                fontWeight: 600,
-                cursor: savingNote
+          <button
+            onClick={saveNote}
+            disabled={
+              savingNote || !newNote.trim()
+            }
+            style={{
+              marginTop: 12,
+              padding: "12px 20px",
+              border: "none",
+              borderRadius: 9,
+              background: "#222",
+              color: "#fff",
+              fontWeight: 600,
+              cursor:
+                savingNote || !newNote.trim()
                   ? "not-allowed"
                   : "pointer",
-                opacity: savingNote ? 0.7 : 1,
-              }}
-            >
-              {savingNote ? "Saving..." : "Save Note"}
-            </button>
+              opacity:
+                savingNote || !newNote.trim()
+                  ? 0.6
+                  : 1,
+            }}
+          >
+            {savingNote
+              ? "Saving..."
+              : "Save Note"}
+          </button>
 
-            {/* PREVIOUS NOTES */}
+          {notes.length > 0 && (
+            <div style={{ marginTop: 30 }}>
+              <h3>Previous Notes</h3>
 
-            <div style={{ marginTop: 28 }}>
-              <h3
+              <div
                 style={{
-                  fontFamily: "Georgia, serif",
-                  marginBottom: 14,
+                  display: "grid",
+                  gap: 12,
                 }}
               >
-                Previous Notes
-              </h3>
-
-              {notesHistory.length === 0 ? (
-                <p
-                  style={{
-                    color: "#999",
-                    fontSize: 14,
-                  }}
-                >
-                  No previous notes yet.
-                </p>
-              ) : (
-                <div
-                  style={{
-                    display: "grid",
-                    gap: 12,
-                  }}
-                >
-                  {notesHistory.map((item) => (
+                {notes.map((item) => (
+                  <div
+                    key={item.id}
+                    style={{
+                      padding: 16,
+                      background: "#faf9f6",
+                      borderRadius: 10,
+                      border: "1px solid #eee",
+                    }}
+                  >
                     <div
-                      key={item.id}
                       style={{
-                        background: "#f7f7f5",
-                        borderRadius: 12,
-                        padding: 14,
+                        color: "#333",
+                        lineHeight: 1.6,
+                        whiteSpace: "pre-wrap",
                       }}
                     >
-                      <div
-                        style={{
-                          fontSize: 13,
-                          color: "#333",
-                          lineHeight: 1.6,
-                          whiteSpace: "pre-wrap",
-                        }}
-                      >
-                        {item.note}
-                      </div>
-
-                      <div
-                        style={{
-                          marginTop: 9,
-                          fontSize: 11,
-                          color: "#999",
-                        }}
-                      >
-                        {item.created_at
-                          ? new Date(
-                              item.created_at
-                            ).toLocaleString()
-                          : ""}
-                      </div>
+                      {item.note}
                     </div>
-                  ))}
-                </div>
-              )}
+
+                    <div
+                      style={{
+                        color: "#999",
+                        fontSize: 12,
+                        marginTop: 8,
+                      }}
+                    >
+                      {item.created_at
+                        ? new Date(
+                            item.created_at
+                          ).toLocaleString()
+                        : ""}
+                    </div>
+                  </div>
+                ))}
+              </div>
             </div>
-          </section>
-        </div>
+          )}
+        </section>
+
       </div>
     </main>
   );
 }
 
-function InfoRow({ label, value, link }) {
+function AIList({ title, items, empty }) {
   return (
     <div
       style={{
-        display: "grid",
-        gridTemplateColumns: "180px 1fr",
-        gap: 15,
-        padding: "13px 0",
-        borderBottom: "1px solid #f0f0ed",
+        background: "#faf9f6",
+        borderRadius: 12,
+        padding: 18,
+      }}
+    >
+      <h3 style={{ marginTop: 0 }}>
+        {title}
+      </h3>
+
+      {items.length > 0 ? (
+        <ul
+          style={{
+            marginBottom: 0,
+            paddingLeft: 20,
+            lineHeight: 1.7,
+            color: "#555",
+          }}
+        >
+          {items.map((item, index) => (
+            <li key={index}>{item}</li>
+          ))}
+        </ul>
+      ) : (
+        <p
+          style={{
+            color: "#999",
+            marginBottom: 0,
+          }}
+        >
+          {empty}
+        </p>
+      )}
+    </div>
+  );
+}
+
+function InfoItem({ label, value }) {
+  return (
+    <div
+      style={{
+        padding: 16,
+        background: "#faf9f6",
+        borderRadius: 10,
       }}
     >
       <div
         style={{
-          color: "#777",
-          fontSize: 14,
+          fontSize: 12,
+          color: "#888",
+          marginBottom: 6,
+          textTransform: "uppercase",
+          letterSpacing: 0.5,
         }}
       >
         {label}
@@ -648,27 +736,70 @@ function InfoRow({ label, value, link }) {
       <div
         style={{
           fontSize: 14,
+          color: "#333",
           wordBreak: "break-word",
         }}
       >
-        {!value ? (
-          "—"
-        ) : link ? (
-          <a
-            href={link}
-            target="_blank"
-            rel="noreferrer"
-            style={{
-              color: "#222",
-              textDecoration: "underline",
-            }}
-          >
-            {value}
-          </a>
-        ) : (
-          value
-        )}
+        {value || "—"}
       </div>
     </div>
   );
 }
+
+const pageStyle = {
+  minHeight: "100vh",
+  padding: "50px 24px",
+  background: "#faf9f6",
+  fontFamily: "Arial, sans-serif",
+  color: "#222",
+};
+
+const containerStyle = {
+  maxWidth: 1200,
+  margin: "0 auto",
+};
+
+const cardStyle = {
+  background: "#fff",
+  border: "1px solid #eee",
+  borderRadius: 16,
+  padding: 25,
+  marginBottom: 22,
+};
+
+const sectionTitle = {
+  fontFamily: "Georgia, serif",
+  marginTop: 0,
+  marginBottom: 8,
+};
+
+const sectionHeader = {
+  display: "flex",
+  justifyContent: "space-between",
+  alignItems: "center",
+  gap: 20,
+  flexWrap: "wrap",
+  marginBottom: 20,
+};
+
+const hintStyle = {
+  color: "#777",
+  marginTop: 5,
+};
+
+const buttonSecondary = {
+  textDecoration: "none",
+  padding: "11px 17px",
+  border: "1px solid #ddd",
+  borderRadius: 9,
+  background: "#fff",
+  color: "#222",
+};
+
+const selectStyle = {
+  padding: "11px 14px",
+  borderRadius: 9,
+  border: "1px solid #ddd",
+  background: "#fff",
+  minWidth: 170,
+};
