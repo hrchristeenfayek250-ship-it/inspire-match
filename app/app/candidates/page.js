@@ -4,12 +4,22 @@ import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { supabase } from "@/lib/supabase";
 
+const STATUSES = [
+  "All statuses",
+  "Applied",
+  "Screening",
+  "Interview",
+  "Shortlisted",
+  "Hired",
+  "Rejected",
+];
+
 export default function CandidatesPage() {
   const [candidates, setCandidates] = useState([]);
   const [loading, setLoading] = useState(true);
 
   const [search, setSearch] = useState("");
-  const [statusFilter, setStatusFilter] = useState("");
+  const [statusFilter, setStatusFilter] = useState("All statuses");
   const [locationFilter, setLocationFilter] = useState("");
   const [minExperience, setMinExperience] = useState("");
 
@@ -36,38 +46,41 @@ export default function CandidatesPage() {
   }
 
   const filteredCandidates = useMemo(() => {
-    return candidates.filter((candidate) => {
-      const searchText = search.toLowerCase().trim();
+    const searchValue = search.trim().toLowerCase();
+    const locationValue = locationFilter.trim().toLowerCase();
+    const experienceValue = Number(minExperience);
 
+    return candidates.filter((candidate) => {
       const searchableText = [
         candidate.full_name,
         candidate.current_title,
         candidate.location,
         candidate.skills,
-        candidate.cv_text,
         candidate.cv_file_name,
+        candidate.cv_text,
+        candidate.email,
       ]
         .filter(Boolean)
         .join(" ")
         .toLowerCase();
 
       const matchesSearch =
-        !searchText || searchableText.includes(searchText);
+        !searchValue || searchableText.includes(searchValue);
 
       const matchesStatus =
-        !statusFilter || candidate.status === statusFilter;
+        statusFilter === "All statuses" ||
+        candidate.status === statusFilter;
 
       const matchesLocation =
-        !locationFilter ||
-        (candidate.location || "")
-          .toLowerCase()
-          .includes(locationFilter.toLowerCase().trim());
+        !locationValue ||
+        (candidate.location || "").toLowerCase().includes(locationValue);
 
-      const experience = Number(candidate.years_experience || 0);
+      const candidateExperience = Number(
+        candidate.years_experience || 0
+      );
 
       const matchesExperience =
-        !minExperience ||
-        experience >= Number(minExperience);
+        !minExperience || candidateExperience >= experienceValue;
 
       return (
         matchesSearch &&
@@ -86,32 +99,60 @@ export default function CandidatesPage() {
 
   function clearFilters() {
     setSearch("");
-    setStatusFilter("");
+    setStatusFilter("All statuses");
     setLocationFilter("");
     setMinExperience("");
   }
 
-  const statuses = [
-    "Applied",
-    "Screening",
-    "Interview",
-    "Shortlisted",
-    "Hired",
-    "Rejected",
-  ];
+  function getStatusStyle(status) {
+    const styles = {
+      Applied: {
+        background: "#eef2ff",
+        color: "#3730a3",
+      },
+      Screening: {
+        background: "#fff7ed",
+        color: "#c2410c",
+      },
+      Interview: {
+        background: "#eff6ff",
+        color: "#1d4ed8",
+      },
+      Shortlisted: {
+        background: "#f0fdf4",
+        color: "#15803d",
+      },
+      Hired: {
+        background: "#ecfdf5",
+        color: "#047857",
+      },
+      Rejected: {
+        background: "#fef2f2",
+        color: "#b91c1c",
+      },
+    };
+
+    return (
+      styles[status] || {
+        background: "#f3f4f6",
+        color: "#374151",
+      }
+    );
+  }
 
   return (
     <main
       style={{
         minHeight: "100vh",
         background: "#faf9f6",
-        padding: "40px 24px 80px",
+        padding: "50px 24px",
         fontFamily: "Arial, sans-serif",
+        color: "#222",
       }}
     >
       <div
         style={{
-          maxWidth: 1200,
+          maxWidth: 1400,
           margin: "0 auto",
         }}
       >
@@ -122,28 +163,28 @@ export default function CandidatesPage() {
             justifyContent: "space-between",
             alignItems: "center",
             gap: 20,
-            marginBottom: 30,
+            marginBottom: 35,
             flexWrap: "wrap",
           }}
         >
           <div>
-            <p
+            <div
               style={{
-                margin: "0 0 8px",
                 fontSize: 13,
                 letterSpacing: 1,
                 color: "#777",
+                marginBottom: 8,
                 textTransform: "uppercase",
               }}
             >
               Inspire Match
-            </p>
+            </div>
 
             <h1
               style={{
                 margin: 0,
                 fontSize: 38,
-                color: "#222",
+                fontWeight: 600,
               }}
             >
               Candidate Database
@@ -152,8 +193,8 @@ export default function CandidatesPage() {
             <p
               style={{
                 marginTop: 10,
-                color: "#777",
-                fontSize: 15,
+                color: "#666",
+                fontSize: 16,
               }}
             >
               Manage and review your saved candidates.
@@ -180,18 +221,18 @@ export default function CandidatesPage() {
         <section
           style={{
             background: "#fff",
-            border: "1px solid #e8e5df",
+            border: "1px solid #e8e6df",
             borderRadius: 16,
             padding: 22,
-            marginBottom: 24,
+            marginBottom: 25,
           }}
         >
           <div
             style={{
               display: "grid",
               gridTemplateColumns:
-                "minmax(220px, 2fr) minmax(150px, 1fr) minmax(150px, 1fr) minmax(120px, 1fr) auto",
-              gap: 12,
+                "minmax(220px, 2fr) minmax(160px, 1fr) minmax(160px, 1fr) minmax(130px, 1fr) auto",
+              gap: 14,
               alignItems: "end",
             }}
           >
@@ -200,10 +241,9 @@ export default function CandidatesPage() {
               <label
                 style={{
                   display: "block",
-                  marginBottom: 7,
                   fontSize: 13,
                   fontWeight: 600,
-                  color: "#555",
+                  marginBottom: 7,
                 }}
               >
                 Search
@@ -218,7 +258,7 @@ export default function CandidatesPage() {
                   boxSizing: "border-box",
                   padding: "12px 13px",
                   border: "1px solid #ddd",
-                  borderRadius: 8,
+                  borderRadius: 9,
                   fontSize: 14,
                   outline: "none",
                 }}
@@ -230,10 +270,9 @@ export default function CandidatesPage() {
               <label
                 style={{
                   display: "block",
-                  marginBottom: 7,
                   fontSize: 13,
                   fontWeight: 600,
-                  color: "#555",
+                  marginBottom: 7,
                 }}
               >
                 Status
@@ -244,16 +283,15 @@ export default function CandidatesPage() {
                 onChange={(e) => setStatusFilter(e.target.value)}
                 style={{
                   width: "100%",
+                  boxSizing: "border-box",
                   padding: "12px 13px",
                   border: "1px solid #ddd",
-                  borderRadius: 8,
+                  borderRadius: 9,
                   background: "#fff",
                   fontSize: 14,
                 }}
               >
-                <option value="">All statuses</option>
-
-                {statuses.map((status) => (
+                {STATUSES.map((status) => (
                   <option key={status} value={status}>
                     {status}
                   </option>
@@ -266,10 +304,9 @@ export default function CandidatesPage() {
               <label
                 style={{
                   display: "block",
-                  marginBottom: 7,
                   fontSize: 13,
                   fontWeight: 600,
-                  color: "#555",
+                  marginBottom: 7,
                 }}
               >
                 Location
@@ -277,16 +314,14 @@ export default function CandidatesPage() {
 
               <input
                 value={locationFilter}
-                onChange={(e) =>
-                  setLocationFilter(e.target.value)
-                }
+                onChange={(e) => setLocationFilter(e.target.value)}
                 placeholder="e.g. Cairo"
                 style={{
                   width: "100%",
                   boxSizing: "border-box",
                   padding: "12px 13px",
                   border: "1px solid #ddd",
-                  borderRadius: 8,
+                  borderRadius: 9,
                   fontSize: 14,
                 }}
               />
@@ -297,10 +332,9 @@ export default function CandidatesPage() {
               <label
                 style={{
                   display: "block",
-                  marginBottom: 7,
                   fontSize: 13,
                   fontWeight: 600,
-                  color: "#555",
+                  marginBottom: 7,
                 }}
               >
                 Min. Experience
@@ -310,16 +344,14 @@ export default function CandidatesPage() {
                 type="number"
                 min="0"
                 value={minExperience}
-                onChange={(e) =>
-                  setMinExperience(e.target.value)
-                }
+                onChange={(e) => setMinExperience(e.target.value)}
                 placeholder="Years"
                 style={{
                   width: "100%",
                   boxSizing: "border-box",
                   padding: "12px 13px",
                   border: "1px solid #ddd",
-                  borderRadius: 8,
+                  borderRadius: 9,
                   fontSize: 14,
                 }}
               />
@@ -329,12 +361,13 @@ export default function CandidatesPage() {
             <button
               onClick={clearFilters}
               style={{
-                padding: "12px 16px",
-                borderRadius: 8,
+                padding: "12px 18px",
+                borderRadius: 9,
                 border: "1px solid #ddd",
                 background: "#fff",
                 cursor: "pointer",
                 fontSize: 14,
+                whiteSpace: "nowrap",
               }}
             >
               Clear
@@ -343,71 +376,85 @@ export default function CandidatesPage() {
 
           <div
             style={{
-              marginTop: 15,
-              fontSize: 13,
+              marginTop: 14,
               color: "#777",
+              fontSize: 13,
             }}
           >
-            Showing {filteredCandidates.length} of{" "}
-            {candidates.length} candidates
+            Showing {filteredCandidates.length} of {candidates.length}{" "}
+            candidates
           </div>
         </section>
 
-        {/* CANDIDATES */}
+        {/* CONTENT */}
         {loading ? (
-          <div
+          <section
             style={{
               background: "#fff",
+              border: "1px solid #e8e6df",
               borderRadius: 16,
-              padding: 30,
+              padding: 40,
               textAlign: "center",
-              color: "#777",
             }}
           >
-            Loading candidates...
-          </div>
+            <p style={{ color: "#777" }}>
+              Loading candidates...
+            </p>
+          </section>
         ) : filteredCandidates.length === 0 ? (
-          <div
+          <section
             style={{
               background: "#fff",
+              border: "1px solid #e8e6df",
               borderRadius: 16,
-              padding: 50,
+              padding: 60,
               textAlign: "center",
-              border: "1px solid #eee",
             }}
           >
-            <h3 style={{ marginTop: 0 }}>
+            <div
+              style={{
+                fontSize: 40,
+                marginBottom: 15,
+              }}
+            >
+              👤
+            </div>
+
+            <h3 style={{ margin: "0 0 8px" }}>
               No candidates found
             </h3>
 
-            <p style={{ color: "#777" }}>
-              Try changing your filters or search terms.
+            <p
+              style={{
+                color: "#777",
+                margin: 0,
+              }}
+            >
+              Try changing your filters or upload a new CV.
             </p>
-          </div>
+          </section>
         ) : (
           <div
             style={{
               display: "grid",
-              gap: 16,
+              gap: 18,
             }}
           >
-            {filteredCandidates.map((candidate) => (
-              <Link
-                key={candidate.id}
-                href={`/app/candidates/${candidate.id}`}
-                style={{
-                  textDecoration: "none",
-                  color: "inherit",
-                }}
-              >
+            {filteredCandidates.map((candidate) => {
+              const statusStyle = getStatusStyle(
+                candidate.status
+              );
+
+              return (
                 <article
+                  key={candidate.id}
                   style={{
                     background: "#fff",
-                    border: "1px solid #e8e5df",
+                    border: "1px solid #e8e6df",
                     borderRadius: 16,
                     padding: 24,
-                    cursor: "pointer",
-                    transition: "all 0.2s ease",
+                    boxShadow:
+                      "0 2px 8px rgba(0,0,0,0.03)",
                   }}
                 >
                   <div
@@ -419,100 +466,171 @@ export default function CandidatesPage() {
                       flexWrap: "wrap",
                     }}
                   >
-                    <div style={{ flex: 1 }}>
-                      <h2
+                    {/* CANDIDATE INFO */}
+                    <div
+                      style={{
+                        flex: 1,
+                        minWidth: 250,
+                      }}
+                    >
+                      <Link
+                        href={`/app/candidates/${candidate.id}`}
                         style={{
-                          margin: "0 0 12px",
-                          fontSize: 21,
+                          textDecoration: "none",
                           color: "#222",
                         }}
                       >
-                        {candidate.full_name ||
-                          "Unnamed Candidate"}
-                      </h2>
+                        <h2
+                          style={{
+                            margin: "0 0 10px",
+                            fontSize: 23,
+                            fontWeight: 600,
+                          }}
+                        >
+                          {candidate.full_name ||
+                            "Unnamed Candidate"}
+                        </h2>
+                      </Link>
 
-                      <p
+                      <div
                         style={{
-                          margin: "0 0 8px",
+                          display: "grid",
+                          gap: 7,
                           color: "#555",
                           fontSize: 14,
                         }}
                       >
-                        <strong>Current Title:</strong>{" "}
-                        {candidate.current_title || "—"}
-                      </p>
+                        <div>
+                          <strong>
+                            Current Title:
+                          </strong>{" "}
+                          {candidate.current_title || "—"}
+                        </div>
 
-                      <p
-                        style={{
-                          margin: "0 0 8px",
-                          color: "#555",
-                          fontSize: 14,
-                        }}
-                      >
-                        <strong>Experience:</strong>{" "}
-                        {candidate.years_experience
-                          ? `${candidate.years_experience} years`
-                          : "—"}
-                      </p>
+                        <div>
+                          <strong>
+                            Experience:
+                          </strong>{" "}
+                          {candidate.years_experience !==
+                            null &&
+                          candidate.years_experience !==
+                            undefined
+                            ? `${candidate.years_experience} years`
+                            : "—"}
+                        </div>
 
-                      <p
-                        style={{
-                          margin: "0 0 8px",
-                          color: "#555",
-                          fontSize: 14,
-                        }}
-                      >
-                        <strong>Location:</strong>{" "}
-                        {candidate.location || "—"}
-                      </p>
+                        <div>
+                          <strong>Location:</strong>{" "}
+                          {candidate.location || "—"}
+                        </div>
 
-                      <p
-                        style={{
-                          margin: "0 0 8px",
-                          color: "#555",
-                          fontSize: 14,
-                        }}
-                      >
-                        <strong>CV:</strong>{" "}
-                        {candidate.cv_file_name || "—"}
-                      </p>
+                        {candidate.email && (
+                          <div>
+                            <strong>Email:</strong>{" "}
+                            {candidate.email}
+                          </div>
+                        )}
+
+                        {candidate.phone && (
+                          <div>
+                            <strong>Phone:</strong>{" "}
+                            {candidate.phone}
+                          </div>
+                        )}
+                      </div>
                     </div>
 
-                    <div
-                      style={{
-                        display: "flex",
-                        flexDirection: "column",
-                        alignItems: "flex-end",
-                        gap: 12,
-                      }}
-                    >
+                    {/* STATUS */}
+                    <div>
                       <span
                         style={{
                           display: "inline-block",
                           padding: "7px 12px",
                           borderRadius: 20,
-                          background: "#f2f0eb",
-                          color: "#333",
                           fontSize: 13,
                           fontWeight: 600,
+                          ...statusStyle,
                         }}
                       >
-                        {candidate.status || "Screening"}
-                      </span>
-
-                      <span
-                        style={{
-                          fontSize: 13,
-                          color: "#777",
-                        }}
-                      >
-                        View Profile →
+                        {candidate.status ||
+                          "Screening"}
                       </span>
                     </div>
                   </div>
+
+                  {/* SKILLS */}
+                  {candidate.skills && (
+                    <div
+                      style={{
+                        marginTop: 18,
+                        paddingTop: 16,
+                        borderTop: "1px solid #eee",
+                      }}
+                    >
+                      <div
+                        style={{
+                          fontSize: 13,
+                          fontWeight: 600,
+                          marginBottom: 7,
+                        }}
+                      >
+                        Skills
+                      </div>
+
+                      <div
+                        style={{
+                          fontSize: 14,
+                          color: "#666",
+                          lineHeight: 1.6,
+                        }}
+                      >
+                        {candidate.skills}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* CV + ACTION */}
+                  <div
+                    style={{
+                      marginTop: 18,
+                      paddingTop: 16,
+                      borderTop: "1px solid #eee",
+                      display: "flex",
+                      justifyContent: "space-between",
+                      alignItems: "center",
+                      gap: 15,
+                      flexWrap: "wrap",
+                    }}
+                  >
+                    <div
+                      style={{
+                        fontSize: 13,
+                        color: "#777",
+                      }}
+                    >
+                      <strong>CV:</strong>{" "}
+                      {candidate.cv_file_name ||
+                        "No CV file"}
+                    </div>
+
+                    <Link
+                      href={`/app/candidates/${candidate.id}`}
+                      style={{
+                        textDecoration: "none",
+                        padding: "10px 16px",
+                        borderRadius: 8,
+                        background: "#222",
+                        color: "#fff",
+                        fontSize: 13,
+                        fontWeight: 600,
+                      }}
+                    >
+                      View Candidate →
+                    </Link>
+                  </div>
                 </article>
-              </Link>
-            ))}
+              );
+            })}
           </div>
         )}
       </div>
