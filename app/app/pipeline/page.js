@@ -168,9 +168,17 @@ export default function PipelinePage() {
                         }}
                       >
                         <h4 style={{ margin: "0 0 8px" }}>
-                          {candidate.full_name || "Unnamed Candidate"}
-                        </h4>
-
+                          <Link
+  href={`/candidates/${candidate.id}`}
+  style={{
+    textDecoration: "none",
+    color: "#222",
+  }}
+>
+  <h4 style={{ margin: "0 0 8px" }}>
+    {candidate.full_name || "Unnamed Candidate"}
+  </h4>
+</Link>
                         <p
                           style={{
                             margin: "0 0 6px",
