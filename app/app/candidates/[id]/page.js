@@ -14,6 +14,37 @@ const stages = [
   "Rejected",
 ];
 
+const pageStyle = {
+  minHeight: "100vh",
+  padding: "50px 24px",
+  background: "#faf9f6",
+  fontFamily: "Arial, sans-serif",
+  color: "#222",
+};
+
+const containerStyle = {
+  maxWidth: 1250,
+  margin: "0 auto",
+};
+
+const cardStyle = {
+  background: "#fff",
+  border: "1px solid #eee",
+  borderRadius: 18,
+  padding: 26,
+  marginBottom: 22,
+};
+
+const buttonStyle = {
+  display: "inline-block",
+  padding: "11px 18px",
+  borderRadius: 9,
+  border: "1px solid #ddd",
+  background: "#fff",
+  color: "#222",
+  textDecoration: "none",
+};
+
 export default function CandidateProfilePage() {
   const params = useParams();
   const candidateId = params?.id;
@@ -21,9 +52,11 @@ export default function CandidateProfilePage() {
   const [candidate, setCandidate] = useState(null);
   const [notes, setNotes] = useState([]);
   const [newNote, setNewNote] = useState("");
+
   const [loading, setLoading] = useState(true);
   const [savingNote, setSavingNote] = useState(false);
-  const [statusSaving, setStatusSaving] = useState(false);
+  const [updatingStatus, setUpdatingStatus] =
+    useState(false);
 
   useEffect(() => {
     if (candidateId) {
@@ -42,7 +75,10 @@ export default function CandidateProfilePage() {
       .single();
 
     if (error) {
-      console.error("Could not load candidate:", error);
+      console.error(
+        "Could not load candidate:",
+        error
+      );
     } else {
       setCandidate(data);
     }
@@ -55,17 +91,22 @@ export default function CandidateProfilePage() {
       .from("notes")
       .select("*")
       .eq("candidate_id", candidateId)
-      .order("created_at", { ascending: false });
+      .order("created_at", {
+        ascending: false,
+      });
 
     if (error) {
-      console.error("Could not load notes:", error);
+      console.error(
+        "Could not load notes:",
+        error
+      );
     } else {
       setNotes(data || []);
     }
   }
 
   async function updateStatus(status) {
-    setStatusSaving(true);
+    setUpdatingStatus(true);
 
     const { error } = await supabase
       .from("candidates")
@@ -73,7 +114,9 @@ export default function CandidateProfilePage() {
       .eq("id", candidateId);
 
     if (error) {
-      alert(`Could not update status: ${error.message}`);
+      alert(
+        `Could not update status: ${error.message}`
+      );
     } else {
       setCandidate((current) => ({
         ...current,
@@ -81,7 +124,7 @@ export default function CandidateProfilePage() {
       }));
     }
 
-    setStatusSaving(false);
+    setUpdatingStatus(false);
   }
 
   async function saveNote() {
@@ -101,13 +144,18 @@ export default function CandidateProfilePage() {
       .single();
 
     if (error) {
-      alert(`Could not save note: ${error.message}`);
-      setSavingNote(false);
-      return;
+      alert(
+        `Could not save note: ${error.message}`
+      );
+    } else {
+      setNotes((current) => [
+        data,
+        ...current,
+      ]);
+
+      setNewNote("");
     }
 
-    setNotes((current) => [data, ...current]);
-    setNewNote("");
     setSavingNote(false);
   }
 
@@ -115,7 +163,8 @@ export default function CandidateProfilePage() {
     return (
       <main style={pageStyle}>
         <div style={containerStyle}>
-          <p>Loading candidate profile...</p>
+          <h1>Candidate Profile</h1>
+          <p>Loading candidate...</p>
         </div>
       </main>
     );
@@ -125,9 +174,12 @@ export default function CandidateProfilePage() {
     return (
       <main style={pageStyle}>
         <div style={containerStyle}>
-          <h1>Candidate not found</h1>
+          <h1>Candidate Not Found</h1>
 
-          <Link href="/app/candidates">
+          <Link
+            href="/app/candidates"
+            style={buttonStyle}
+          >
             ← Candidate Database
           </Link>
         </div>
@@ -135,16 +187,15 @@ export default function CandidateProfilePage() {
     );
   }
 
-  const matchScore =
+  const score =
     candidate.match_score !== null &&
     candidate.match_score !== undefined
       ? Number(candidate.match_score)
       : null;
 
-  const verdict =
-    candidate.match_verdict || null;
-
-  const strengths = Array.isArray(candidate.strengths)
+  const strengths = Array.isArray(
+    candidate.strengths
+  )
     ? candidate.strengths
     : [];
 
@@ -152,15 +203,18 @@ export default function CandidateProfilePage() {
     ? candidate.gaps
     : [];
 
-  const redFlags = Array.isArray(candidate.red_flags)
+  const redFlags = Array.isArray(
+    candidate.red_flags
+  )
     ? candidate.red_flags
     : [];
 
-  const interviewQuestions = Array.isArray(
-    candidate.interview_questions
-  )
-    ? candidate.interview_questions
-    : [];
+  const interviewQuestions =
+    Array.isArray(
+      candidate.interview_questions
+    )
+      ? candidate.interview_questions
+      : [];
 
   return (
     <main style={pageStyle}>
@@ -172,9 +226,10 @@ export default function CandidateProfilePage() {
           style={{
             display: "flex",
             justifyContent: "space-between",
-            alignItems: "center",
+            alignItems: "flex-start",
             gap: 20,
             marginBottom: 30,
+            flexWrap: "wrap",
           }}
         >
           <div>
@@ -199,9 +254,14 @@ export default function CandidateProfilePage() {
               Candidate Profile
             </h1>
 
-            <p style={{ color: "#666" }}>
-              Candidate information, AI assessment and
-              recruitment activity.
+            <p
+              style={{
+                color: "#666",
+                marginTop: 10,
+              }}
+            >
+              Candidate information, AI evaluation
+              and recruitment activity.
             </p>
           </div>
 
@@ -214,14 +274,14 @@ export default function CandidateProfilePage() {
           >
             <Link
               href="/app/pipeline"
-              style={buttonSecondary}
+              style={buttonStyle}
             >
               ← Pipeline
             </Link>
 
             <Link
               href="/app/candidates"
-              style={buttonSecondary}
+              style={buttonStyle}
             >
               Candidate Database
             </Link>
@@ -249,14 +309,14 @@ export default function CandidateProfilePage() {
             >
               <div
                 style={{
-                  width: 70,
-                  height: 70,
+                  width: 64,
+                  height: 64,
                   borderRadius: "50%",
                   background: "#f0eee8",
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "center",
-                  fontSize: 32,
+                  fontSize: 28,
                 }}
               >
                 👤
@@ -265,29 +325,40 @@ export default function CandidateProfilePage() {
               <div>
                 <h2
                   style={{
-                    margin: "0 0 8px",
                     fontFamily: "Georgia, serif",
+                    margin: 0,
+                    fontSize: 28,
                   }}
                 >
                   {candidate.full_name ||
                     "Unnamed Candidate"}
                 </h2>
 
-                <div style={{ color: "#666" }}>
-                  {candidate.current_title || "—"}
-                </div>
+                <p
+                  style={{
+                    color: "#666",
+                    margin: "7px 0",
+                  }}
+                >
+                  {candidate.current_title ||
+                    "Candidate"}
+                </p>
 
-                {candidate.location && (
-                  <div
-                    style={{
-                      color: "#777",
-                      marginTop: 5,
-                      fontSize: 14,
-                    }}
-                  >
-                    📍 {candidate.location}
-                  </div>
-                )}
+                <div
+                  style={{
+                    color: "#777",
+                    fontSize: 13,
+                  }}
+                >
+                  {candidate.location &&
+                    `📍 ${candidate.location}`}
+
+                  {candidate.years_experience !==
+                    null &&
+                    candidate.years_experience !==
+                      undefined &&
+                    `  •  ${candidate.years_experience} years experience`}
+                </div>
               </div>
             </div>
 
@@ -295,7 +366,7 @@ export default function CandidateProfilePage() {
               <label
                 style={{
                   display: "block",
-                  fontSize: 13,
+                  fontSize: 12,
                   color: "#777",
                   marginBottom: 7,
                 }}
@@ -304,15 +375,29 @@ export default function CandidateProfilePage() {
               </label>
 
               <select
-                value={candidate.status || "Screening"}
-                onChange={(e) =>
-                  updateStatus(e.target.value)
+                value={
+                  candidate.status ||
+                  "Screening"
                 }
-                disabled={statusSaving}
-                style={selectStyle}
+                onChange={(e) =>
+                  updateStatus(
+                    e.target.value
+                  )
+                }
+                disabled={updatingStatus}
+                style={{
+                  padding: "11px 14px",
+                  borderRadius: 9,
+                  border: "1px solid #ddd",
+                  background: "#fff",
+                  minWidth: 170,
+                }}
               >
                 {stages.map((stage) => (
-                  <option key={stage} value={stage}>
+                  <option
+                    key={stage}
+                    value={stage}
+                  >
                     {stage}
                   </option>
                 ))}
@@ -321,182 +406,365 @@ export default function CandidateProfilePage() {
           </div>
         </section>
 
-        {/* AI MATCH */}
+        {/* AI MATCH PROFILE */}
 
         <section style={cardStyle}>
-          <div style={sectionHeader}>
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+              marginBottom: 25,
+              gap: 20,
+            }}
+          >
             <div>
-              <h2 style={sectionTitle}>
-                🤖 AI Match Assessment
-              </h2>
-
-              <p style={hintStyle}>
-                AI-powered evaluation for the candidate.
-              </p>
-            </div>
-
-            {candidate.matched_job_title && (
               <div
                 style={{
-                  padding: "8px 12px",
-                  background: "#f5f3ed",
-                  borderRadius: 20,
-                  fontSize: 13,
+                  fontSize: 12,
+                  letterSpacing: 1.5,
+                  color: "#777",
+                  marginBottom: 6,
                 }}
               >
-                💼 {candidate.matched_job_title}
+                AI RECRUITMENT INTELLIGENCE
               </div>
-            )}
-          </div>
 
-          {matchScore !== null ? (
-            <>
+              <h2
+                style={{
+                  fontFamily: "Georgia, serif",
+                  margin: 0,
+                }}
+              >
+                AI Match Profile
+              </h2>
+            </div>
+
+            {score !== null && (
               <div
                 style={{
-                  display: "grid",
-                  gridTemplateColumns:
-                    "minmax(180px, 250px) 1fr",
-                  gap: 25,
-                  alignItems: "center",
+                  textAlign: "center",
+                  minWidth: 120,
                 }}
               >
                 <div
                   style={{
-                    textAlign: "center",
-                    padding: 25,
-                    background: "#faf9f6",
-                    borderRadius: 16,
+                    fontSize: 42,
+                    fontWeight: 700,
                   }}
                 >
-                  <div
-                    style={{
-                      fontSize: 52,
-                      fontWeight: 700,
-                    }}
-                  >
-                    {matchScore}%
-                  </div>
-
-                  <div
-                    style={{
-                      color: "#777",
-                      marginTop: 5,
-                    }}
-                  >
-                    Match Score
-                  </div>
-
-                  {verdict && (
-                    <div
-                      style={{
-                        display: "inline-block",
-                        marginTop: 15,
-                        padding: "8px 14px",
-                        borderRadius: 20,
-                        background:
-                          verdict === "Strong fit"
-                            ? "#e7f4ea"
-                            : verdict === "Potential"
-                            ? "#fff3d6"
-                            : "#f4e4e4",
-                        fontWeight: 600,
-                      }}
-                    >
-                      {verdict}
-                    </div>
-                  )}
+                  {score}%
                 </div>
 
-                <div>
-                  <h3>AI Summary</h3>
-
-                  <p
-                    style={{
-                      color: "#555",
-                      lineHeight: 1.7,
-                    }}
-                  >
-                    {candidate.ai_summary ||
-                      "No AI summary available yet."}
-                  </p>
+                <div
+                  style={{
+                    fontSize: 13,
+                    color: "#777",
+                  }}
+                >
+                  Match Score
                 </div>
+              </div>
+            )}
+          </div>
+
+          {/* SCORE / VERDICT */}
+
+          {score !== null ? (
+            <div
+              style={{
+                display: "grid",
+                gridTemplateColumns:
+                  "repeat(auto-fit, minmax(220px, 1fr))",
+                gap: 15,
+                marginBottom: 25,
+              }}
+            >
+              <div
+                style={{
+                  padding: 20,
+                  background: "#f7f7f5",
+                  borderRadius: 13,
+                }}
+              >
+                <div
+                  style={{
+                    fontSize: 12,
+                    color: "#777",
+                    marginBottom: 8,
+                  }}
+                >
+                  MATCH SCORE
+                </div>
+
+                <strong
+                  style={{
+                    fontSize: 28,
+                  }}
+                >
+                  {score}%
+                </strong>
               </div>
 
               <div
                 style={{
-                  display: "grid",
-                  gridTemplateColumns:
-                    "repeat(auto-fit, minmax(250px, 1fr))",
-                  gap: 18,
-                  marginTop: 25,
+                  padding: 20,
+                  background: "#f7f7f5",
+                  borderRadius: 13,
                 }}
               >
-                <AIList
-                  title="💪 Strengths"
-                  items={strengths}
-                  empty="No strengths recorded."
-                />
+                <div
+                  style={{
+                    fontSize: 12,
+                    color: "#777",
+                    marginBottom: 8,
+                  }}
+                >
+                  AI VERDICT
+                </div>
 
-                <AIList
-                  title="⚠️ Gaps"
-                  items={gaps}
-                  empty="No gaps recorded."
-                />
-
-                <AIList
-                  title="🚩 Red Flags"
-                  items={redFlags}
-                  empty="No red flags found."
-                />
+                <strong
+                  style={{
+                    fontSize: 20,
+                  }}
+                >
+                  {candidate.match_verdict ||
+                    "Not available"}
+                </strong>
               </div>
 
-              {interviewQuestions.length > 0 && (
-                <div style={{ marginTop: 25 }}>
-                  <h3>🎤 Interview Questions</h3>
-
-                  <ol
-                    style={{
-                      lineHeight: 1.8,
-                      color: "#555",
-                    }}
-                  >
-                    {interviewQuestions.map(
-                      (question, index) => (
-                        <li key={index}>
-                          {question}
-                        </li>
-                      )
-                    )}
-                  </ol>
+              <div
+                style={{
+                  padding: 20,
+                  background: "#f7f7f5",
+                  borderRadius: 13,
+                }}
+              >
+                <div
+                  style={{
+                    fontSize: 12,
+                    color: "#777",
+                    marginBottom: 8,
+                  }}
+                >
+                  MATCHED JOB
                 </div>
-              )}
-            </>
+
+                <strong>
+                  {candidate.matched_job_title ||
+                    "Not available"}
+                </strong>
+              </div>
+            </div>
           ) : (
             <div
               style={{
-                padding: 25,
-                background: "#faf9f6",
-                borderRadius: 12,
-                color: "#777",
+                padding: 20,
+                background: "#f7f7f5",
+                borderRadius: 13,
+                color: "#666",
+                marginBottom: 20,
               }}
             >
-              <strong>
-                No AI Match Assessment saved yet.
-              </strong>
-
-              <p style={{ marginBottom: 0 }}>
-                Once this candidate is screened against a
-                saved job, the AI score and assessment will
-                appear here.
-              </p>
+              This candidate has not yet been
+              linked to an AI screening result.
             </div>
           )}
+
+          {/* AI SUMMARY */}
+
+          <div
+            style={{
+              marginBottom: 25,
+            }}
+          >
+            <h3>AI Summary</h3>
+
+            <p
+              style={{
+                color: "#555",
+                lineHeight: 1.7,
+                whiteSpace: "pre-wrap",
+              }}
+            >
+              {candidate.ai_summary ||
+                "No AI summary available yet."}
+            </p>
+          </div>
+
+          {/* STRENGTHS / GAPS / RED FLAGS */}
+
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns:
+                "repeat(auto-fit, minmax(260px, 1fr))",
+              gap: 18,
+            }}
+          >
+            <div
+              style={{
+                padding: 20,
+                border: "1px solid #eee",
+                borderRadius: 13,
+              }}
+            >
+              <h3 style={{ marginTop: 0 }}>
+                💪 Strengths
+              </h3>
+
+              {strengths.length ? (
+                <ul
+                  style={{
+                    lineHeight: 1.8,
+                    paddingLeft: 20,
+                  }}
+                >
+                  {strengths.map(
+                    (item, index) => (
+                      <li key={index}>
+                        {item}
+                      </li>
+                    )
+                  )}
+                </ul>
+              ) : (
+                <p
+                  style={{
+                    color: "#777",
+                  }}
+                >
+                  No strengths available yet.
+                </p>
+              )}
+            </div>
+
+            <div
+              style={{
+                padding: 20,
+                border: "1px solid #eee",
+                borderRadius: 13,
+              }}
+            >
+              <h3 style={{ marginTop: 0 }}>
+                ⚠️ Gaps
+              </h3>
+
+              {gaps.length ? (
+                <ul
+                  style={{
+                    lineHeight: 1.8,
+                    paddingLeft: 20,
+                  }}
+                >
+                  {gaps.map(
+                    (item, index) => (
+                      <li key={index}>
+                        {item}
+                      </li>
+                    )
+                  )}
+                </ul>
+              ) : (
+                <p
+                  style={{
+                    color: "#777",
+                  }}
+                >
+                  No gaps available yet.
+                </p>
+              )}
+            </div>
+
+            <div
+              style={{
+                padding: 20,
+                border: "1px solid #eee",
+                borderRadius: 13,
+              }}
+            >
+              <h3 style={{ marginTop: 0 }}>
+                🚩 Red Flags
+              </h3>
+
+              {redFlags.length ? (
+                <ul
+                  style={{
+                    lineHeight: 1.8,
+                    paddingLeft: 20,
+                  }}
+                >
+                  {redFlags.map(
+                    (item, index) => (
+                      <li key={index}>
+                        {item}
+                      </li>
+                    )
+                  )}
+                </ul>
+              ) : (
+                <p
+                  style={{
+                    color: "#777",
+                  }}
+                >
+                  No red flags identified.
+                </p>
+              )}
+            </div>
+          </div>
+
+          {/* INTERVIEW QUESTIONS */}
+
+          <div
+            style={{
+              marginTop: 25,
+              padding: 20,
+              background: "#f7f7f5",
+              borderRadius: 13,
+            }}
+          >
+            <h3 style={{ marginTop: 0 }}>
+              🎤 AI Interview Questions
+            </h3>
+
+            {interviewQuestions.length ? (
+              <ol
+                style={{
+                  lineHeight: 1.8,
+                  paddingLeft: 22,
+                }}
+              >
+                {interviewQuestions.map(
+                  (question, index) => (
+                    <li key={index}>
+                      {question}
+                    </li>
+                  )
+                )}
+              </ol>
+            ) : (
+              <p
+                style={{
+                  color: "#777",
+                }}
+              >
+                No AI interview questions
+                available yet.
+              </p>
+            )}
+          </div>
         </section>
 
         {/* CANDIDATE INFORMATION */}
 
         <section style={cardStyle}>
-          <h2 style={sectionTitle}>
+          <h2
+            style={{
+              fontFamily: "Georgia, serif",
+              marginTop: 0,
+            }}
+          >
             Candidate Information
           </h2>
 
@@ -504,55 +772,63 @@ export default function CandidateProfilePage() {
             style={{
               display: "grid",
               gridTemplateColumns:
-                "repeat(auto-fit, minmax(280px, 1fr))",
+                "repeat(auto-fit, minmax(260px, 1fr))",
               gap: 15,
             }}
           >
-            <InfoItem
+            <Info
               label="Full Name"
-              value={candidate.full_name}
-            />
-
-            <InfoItem
-              label="Current Title"
-              value={candidate.current_title}
-            />
-
-            <InfoItem
-              label="Location"
-              value={candidate.location}
-            />
-
-            <InfoItem
-              label="Years of Experience"
               value={
-                candidate.years_experience
-                  ? `${candidate.years_experience} years`
-                  : "—"
+                candidate.full_name
               }
             />
 
-            <InfoItem
+            <Info
+              label="Current Title"
+              value={
+                candidate.current_title
+              }
+            />
+
+            <Info
+              label="Location"
+              value={
+                candidate.location
+              }
+            />
+
+            <Info
+              label="Years of Experience"
+              value={
+                candidate.years_experience
+              }
+            />
+
+            <Info
               label="Email"
               value={candidate.email}
             />
 
-            <InfoItem
+            <Info
               label="Phone"
               value={candidate.phone}
             />
 
-            <InfoItem
+            <Info
               label="LinkedIn"
-              value={candidate.linkedin_url}
+              value={
+                candidate.linkedin_url
+              }
             />
 
-            <InfoItem
-              label="CV"
-              value={candidate.cv_file_name}
+            <Info
+              label="CV File"
+              value={
+                candidate.cv_file_name
+              }
             />
 
-            <InfoItem
+            <Info
               label="Source"
               value={candidate.source}
             />
@@ -562,14 +838,35 @@ export default function CandidateProfilePage() {
         {/* RECRUITMENT NOTES */}
 
         <section style={cardStyle}>
-          <h2 style={sectionTitle}>
-            📝 Recruitment Notes
-          </h2>
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+              marginBottom: 15,
+            }}
+          >
+            <div>
+              <h2
+                style={{
+                  fontFamily: "Georgia, serif",
+                  margin: 0,
+                }}
+              >
+                Recruitment Notes
+              </h2>
 
-          <p style={hintStyle}>
-            Add a new recruitment note. Each note is saved
-            separately.
-          </p>
+              <p
+                style={{
+                  color: "#777",
+                  marginTop: 7,
+                }}
+              >
+                Add a new recruitment note.
+                Each note is saved separately.
+              </p>
+            </div>
+          </div>
 
           <textarea
             value={newNote}
@@ -582,9 +879,10 @@ export default function CandidateProfilePage() {
               width: "100%",
               boxSizing: "border-box",
               padding: 14,
-              borderRadius: 10,
               border: "1px solid #ddd",
+              borderRadius: 10,
               resize: "vertical",
+              fontFamily: "Arial, sans-serif",
               fontSize: 14,
             }}
           />
@@ -592,30 +890,35 @@ export default function CandidateProfilePage() {
           <button
             onClick={saveNote}
             disabled={
-              savingNote || !newNote.trim()
+              savingNote ||
+              !newNote.trim()
             }
             style={{
               marginTop: 12,
-              padding: "12px 20px",
+              padding: "12px 22px",
               border: "none",
               borderRadius: 9,
               background: "#222",
               color: "#fff",
-              fontWeight: 600,
               cursor:
-                savingNote || !newNote.trim()
+                savingNote ||
+                !newNote.trim()
                   ? "not-allowed"
                   : "pointer",
               opacity:
-                savingNote || !newNote.trim()
+                savingNote ||
+                !newNote.trim()
                   ? 0.6
                   : 1,
+              fontWeight: 600,
             }}
           >
             {savingNote
               ? "Saving..."
               : "Save Note"}
           </button>
+
+          {/* PREVIOUS NOTES */}
 
           {notes.length > 0 && (
             <div style={{ marginTop: 30 }}>
@@ -627,14 +930,14 @@ export default function CandidateProfilePage() {
                   gap: 12,
                 }}
               >
-                {notes.map((item) => (
+                {notes.map((note) => (
                   <div
-                    key={item.id}
+                    key={note.id}
                     style={{
                       padding: 16,
-                      background: "#faf9f6",
-                      borderRadius: 10,
                       border: "1px solid #eee",
+                      borderRadius: 12,
+                      background: "#faf9f6",
                     }}
                   >
                     <div
@@ -644,20 +947,22 @@ export default function CandidateProfilePage() {
                         whiteSpace: "pre-wrap",
                       }}
                     >
-                      {item.note}
+                      {note.note}
                     </div>
 
                     <div
                       style={{
-                        color: "#999",
-                        fontSize: 12,
                         marginTop: 8,
+                        fontSize: 12,
+                        color: "#888",
                       }}
                     >
-                      {item.created_at
+                      {note.created_at
                         ? new Date(
-                            item.created_at
-                          ).toLocaleString()
+                            note.created_at
+                          ).toLocaleString(
+                            "en-GB"
+                          )
                         : ""}
                     </div>
                   </div>
@@ -672,62 +977,20 @@ export default function CandidateProfilePage() {
   );
 }
 
-function AIList({ title, items, empty }) {
-  return (
-    <div
-      style={{
-        background: "#faf9f6",
-        borderRadius: 12,
-        padding: 18,
-      }}
-    >
-      <h3 style={{ marginTop: 0 }}>
-        {title}
-      </h3>
-
-      {items.length > 0 ? (
-        <ul
-          style={{
-            marginBottom: 0,
-            paddingLeft: 20,
-            lineHeight: 1.7,
-            color: "#555",
-          }}
-        >
-          {items.map((item, index) => (
-            <li key={index}>{item}</li>
-          ))}
-        </ul>
-      ) : (
-        <p
-          style={{
-            color: "#999",
-            marginBottom: 0,
-          }}
-        >
-          {empty}
-        </p>
-      )}
-    </div>
-  );
-}
-
-function InfoItem({ label, value }) {
+function Info({ label, value }) {
   return (
     <div
       style={{
         padding: 16,
-        background: "#faf9f6",
-        borderRadius: 10,
+        background: "#f7f7f5",
+        borderRadius: 11,
       }}
     >
       <div
         style={{
           fontSize: 12,
-          color: "#888",
+          color: "#777",
           marginBottom: 6,
-          textTransform: "uppercase",
-          letterSpacing: 0.5,
         }}
       >
         {label}
@@ -735,8 +998,7 @@ function InfoItem({ label, value }) {
 
       <div
         style={{
-          fontSize: 14,
-          color: "#333",
+          fontWeight: 600,
           wordBreak: "break-word",
         }}
       >
@@ -745,61 +1007,3 @@ function InfoItem({ label, value }) {
     </div>
   );
 }
-
-const pageStyle = {
-  minHeight: "100vh",
-  padding: "50px 24px",
-  background: "#faf9f6",
-  fontFamily: "Arial, sans-serif",
-  color: "#222",
-};
-
-const containerStyle = {
-  maxWidth: 1200,
-  margin: "0 auto",
-};
-
-const cardStyle = {
-  background: "#fff",
-  border: "1px solid #eee",
-  borderRadius: 16,
-  padding: 25,
-  marginBottom: 22,
-};
-
-const sectionTitle = {
-  fontFamily: "Georgia, serif",
-  marginTop: 0,
-  marginBottom: 8,
-};
-
-const sectionHeader = {
-  display: "flex",
-  justifyContent: "space-between",
-  alignItems: "center",
-  gap: 20,
-  flexWrap: "wrap",
-  marginBottom: 20,
-};
-
-const hintStyle = {
-  color: "#777",
-  marginTop: 5,
-};
-
-const buttonSecondary = {
-  textDecoration: "none",
-  padding: "11px 17px",
-  border: "1px solid #ddd",
-  borderRadius: 9,
-  background: "#fff",
-  color: "#222",
-};
-
-const selectStyle = {
-  padding: "11px 14px",
-  borderRadius: 9,
-  border: "1px solid #ddd",
-  background: "#fff",
-  minWidth: 170,
-};
