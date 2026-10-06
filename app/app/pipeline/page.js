@@ -167,8 +167,9 @@ export default function PipelinePage() {
                           boxShadow: "0 2px 8px rgba(0,0,0,0.05)",
                         }}
                       >
-                          <Link
-  href={`/candidates/${candidate.id}`}
+    
+  <Link
+  href={`/app/candidates/${candidate.id}`}
   style={{
     textDecoration: "none",
     color: "#222",
@@ -178,16 +179,15 @@ export default function PipelinePage() {
     {candidate.full_name || "Unnamed Candidate"}
   </h4>
 </Link>
-                        <p
-                          style={{
-                            margin: "0 0 6px",
-                            fontSize: 13,
-                            color: "#555",
-                          }}
-                        >
-                          {candidate.current_title || "—"}
-                        </p>
-
+                          <p
+  style={{
+    margin: "0 0 6px",
+    fontSize: 13,
+    color: "#555",
+  }}
+>
+  {candidate.current_title || "—"}
+</p>
                         <p
                           style={{
                             margin: "0 0 12px",
