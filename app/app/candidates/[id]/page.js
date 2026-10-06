@@ -33,7 +33,6 @@ export default function CandidateProfilePage() {
 
   async function loadCandidate() {
     setLoading(true);
-    setMessage("");
 
     const { data, error } = await supabase
       .from("candidates")
@@ -64,14 +63,12 @@ export default function CandidateProfilePage() {
       .eq("id", candidate.id);
 
     if (error) {
-      console.error("Could not update status:", error);
       setMessage(`Could not update status: ${error.message}`);
     } else {
       setCandidate((current) => ({
         ...current,
         status,
       }));
-
       setMessage("Status updated successfully.");
     }
 
@@ -100,7 +97,7 @@ export default function CandidateProfilePage() {
         notes,
       }));
 
-      setMessage("Notes saved successfully.");
+      setMessage("Note saved successfully.");
     }
 
     setSavingNotes(false);
@@ -111,30 +108,13 @@ export default function CandidateProfilePage() {
       <main
         style={{
           minHeight: "100vh",
-          padding: "60px 24px",
+          padding: 60,
           background: "#faf9f6",
           fontFamily: "Arial, sans-serif",
-          color: "#222",
         }}
       >
-        <div
-          style={{
-            maxWidth: 1100,
-            margin: "0 auto",
-          }}
-        >
-          <h1
-            style={{
-              fontFamily: "Georgia, serif",
-            }}
-          >
-            Candidate Profile
-          </h1>
-
-          <p style={{ color: "#777" }}>
-            Loading candidate...
-          </p>
-        </div>
+        <h1>Candidate Profile</h1>
+        <p>Loading candidate...</p>
       </main>
     );
   }
@@ -144,45 +124,13 @@ export default function CandidateProfilePage() {
       <main
         style={{
           minHeight: "100vh",
-          padding: "60px 24px",
+          padding: 60,
           background: "#faf9f6",
           fontFamily: "Arial, sans-serif",
-          color: "#222",
         }}
       >
-        <div
-          style={{
-            maxWidth: 1100,
-            margin: "0 auto",
-          }}
-        >
-          <h1
-            style={{
-              fontFamily: "Georgia, serif",
-            }}
-          >
-            Candidate Not Found
-          </h1>
-
-          <p style={{ color: "#777" }}>
-            We could not find this candidate.
-          </p>
-
-          <Link
-            href="/app/candidates"
-            style={{
-              display: "inline-block",
-              marginTop: 20,
-              textDecoration: "none",
-              padding: "12px 18px",
-              borderRadius: 10,
-              background: "#222",
-              color: "#fff",
-            }}
-          >
-            ← Candidate Database
-          </Link>
-        </div>
+        <h1>Candidate Not Found</h1>
+        <Link href="/app/candidates">← Candidate Database</Link>
       </main>
     );
   }
@@ -243,23 +191,12 @@ export default function CandidateProfilePage() {
               Candidate Profile
             </h1>
 
-            <p
-              style={{
-                color: "#777",
-                marginTop: 8,
-              }}
-            >
+            <p style={{ color: "#777" }}>
               Candidate information and recruitment notes.
             </p>
           </div>
 
-          <div
-            style={{
-              display: "flex",
-              gap: 10,
-              flexWrap: "wrap",
-            }}
-          >
+          <div style={{ display: "flex", gap: 10 }}>
             <Link
               href="/app/pipeline"
               style={{
@@ -290,7 +227,7 @@ export default function CandidateProfilePage() {
           </div>
         </div>
 
-        {/* Candidate Header Card */}
+        {/* Candidate Header */}
 
         <section
           style={{
@@ -337,22 +274,12 @@ export default function CandidateProfilePage() {
                 {candidateName}
               </h2>
 
-              <p
-                style={{
-                  fontSize: 17,
-                  color: "#555",
-                  margin: "8px 0 0",
-                }}
-              >
+              <p style={{ color: "#555" }}>
                 {candidate.current_title || "No current title available"}
               </p>
             </div>
 
-            <div
-              style={{
-                minWidth: 220,
-              }}
-            >
+            <div style={{ minWidth: 220 }}>
               <label
                 style={{
                   display: "block",
@@ -366,9 +293,7 @@ export default function CandidateProfilePage() {
 
               <select
                 value={currentStatus}
-                onChange={(e) =>
-                  changeStatus(e.target.value)
-                }
+                onChange={(e) => changeStatus(e.target.value)}
                 disabled={savingStatus}
                 style={{
                   width: "100%",
@@ -385,41 +310,11 @@ export default function CandidateProfilePage() {
                   </option>
                 ))}
               </select>
-
-              {savingStatus && (
-                <div
-                  style={{
-                    fontSize: 12,
-                    color: "#777",
-                    marginTop: 6,
-                  }}
-                >
-                  Saving status...
-                </div>
-              )}
             </div>
           </div>
         </section>
 
-        {/* Message */}
-
-        {message && (
-          <div
-            style={{
-              background: "#f1f1ee",
-              border: "1px solid #e5e5df",
-              borderRadius: 10,
-              padding: "12px 15px",
-              marginBottom: 20,
-              color: "#555",
-              fontSize: 14,
-            }}
-          >
-            {message}
-          </div>
-        )}
-
-        {/* Main Grid */}
+        {/* Main Content */}
 
         <div
           style={{
@@ -443,46 +338,27 @@ export default function CandidateProfilePage() {
               style={{
                 fontFamily: "Georgia, serif",
                 marginTop: 0,
-                marginBottom: 20,
               }}
             >
               Candidate Information
             </h2>
 
-            <InfoRow
-              label="Full Name"
-              value={candidate.full_name}
-            />
-
+            <InfoRow label="Full Name" value={candidate.full_name} />
             <InfoRow
               label="Current Title"
               value={candidate.current_title}
             />
-
-            <InfoRow
-              label="Location"
-              value={candidate.location}
-            />
-
+            <InfoRow label="Location" value={candidate.location} />
             <InfoRow
               label="Years of Experience"
               value={
-                candidate.years_experience !== null &&
-                candidate.years_experience !== undefined
+                candidate.years_experience != null
                   ? `${candidate.years_experience} years`
                   : null
               }
             />
-
-            <InfoRow
-              label="Email"
-              value={candidate.email}
-            />
-
-            <InfoRow
-              label="Phone"
-              value={candidate.phone}
-            />
+            <InfoRow label="Email" value={candidate.email} />
+            <InfoRow label="Phone" value={candidate.phone} />
 
             <InfoRow
               label="LinkedIn"
@@ -490,26 +366,11 @@ export default function CandidateProfilePage() {
               link={candidate.linkedin_url}
             />
 
-            <InfoRow
-              label="Skills"
-              value={candidate.skills}
-            />
-
-            <InfoRow
-              label="Source"
-              value={candidate.source}
-            />
-
+            <InfoRow label="Skills" value={candidate.skills} />
+            <InfoRow label="Source" value={candidate.source} />
             <InfoRow
               label="CV File"
               value={candidate.cv_file_name}
-            />
-
-            <InfoRow
-              label="Blind Screening"
-              value={
-                candidate.blind_screening ? "Enabled" : "Disabled"
-              }
             />
 
             <InfoRow
@@ -524,7 +385,7 @@ export default function CandidateProfilePage() {
             />
           </section>
 
-          {/* Notes */}
+          {/* Recruitment Notes */}
 
           <section
             style={{
@@ -550,12 +411,10 @@ export default function CandidateProfilePage() {
                 color: "#777",
                 fontSize: 14,
                 lineHeight: 1.6,
-                marginTop: 0,
               }}
             >
-              Add your private recruitment notes,
-              interview observations, follow-ups, or
-              hiring feedback.
+              Add interview observations, follow-ups,
+              or hiring feedback.
             </p>
 
             <textarea
@@ -573,7 +432,6 @@ export default function CandidateProfilePage() {
                 fontFamily: "Arial, sans-serif",
                 fontSize: 14,
                 lineHeight: 1.6,
-                outline: "none",
               }}
             />
 
@@ -593,15 +451,37 @@ export default function CandidateProfilePage() {
                 cursor: savingNotes
                   ? "not-allowed"
                   : "pointer",
-                opacity: savingNotes ? 0.7 : 1,
               }}
             >
               {savingNotes ? "Saving..." : "Save Notes"}
             </button>
+
+            {/* SAVE FEEDBACK */}
+
+            {message && (
+              <div
+                style={{
+                  marginTop: 12,
+                  padding: "12px 14px",
+                  borderRadius: 10,
+                  background: message.includes("successfully")
+                    ? "#eef8f0"
+                    : "#fff2f2",
+                  color: message.includes("successfully")
+                    ? "#24733a"
+                    : "#a33",
+                  fontSize: 14,
+                  fontWeight: 600,
+                  textAlign: "center",
+                }}
+              >
+                {message}
+              </div>
+            )}
           </section>
         </div>
 
-        {/* Recruitment Summary */}
+        {/* Summary */}
 
         <section
           style={{
@@ -616,22 +496,14 @@ export default function CandidateProfilePage() {
             style={{
               fontFamily: "Georgia, serif",
               marginTop: 0,
-              marginBottom: 8,
             }}
           >
             Recruitment Summary
           </h2>
 
-          <p
-            style={{
-              color: "#777",
-              marginTop: 0,
-              lineHeight: 1.6,
-            }}
-          >
-            Use this profile to review the candidate,
-            update their recruitment stage, and keep
-            important hiring notes in one place.
+          <p style={{ color: "#777", lineHeight: 1.6 }}>
+            Review the candidate, update their recruitment
+            stage, and keep hiring notes in one place.
           </p>
 
           <div
@@ -639,7 +511,6 @@ export default function CandidateProfilePage() {
               display: "flex",
               gap: 12,
               flexWrap: "wrap",
-              marginTop: 18,
             }}
           >
             <div
