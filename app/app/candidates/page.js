@@ -353,20 +353,20 @@ async function loadCandidates() {
               </label>
 
               <input
-                type="number"
-                min="0"
-                value={minExperience}
-                onChange={(e) => setMinExperience(e.target.value)}
-                placeholder="Years"
-                style={{
-                  width: "100%",
-                  boxSizing: "border-box",
-                  padding: "12px 13px",
-                  border: "1px solid #ddd",
-                  borderRadius: 9,
-                  fontSize: 14,
-                }}
-             async function saveCandidate(
+  type="number"
+  min="0"
+  value={minExperience}
+  onChange={(e) => setMinExperience(e.target.value)}
+  placeholder="Years"
+  style={{
+    width: "100%",
+    boxSizing: "border-box",
+    padding: "12px 13px",
+    border: "1px solid #ddd",
+    borderRadius: 9,
+    fontSize: 14,
+  }}
+/>
   result,
   fileName
 ) {
