@@ -22,20 +22,30 @@ export default function PipelinePage() {
   }, []);
 
   async function loadCandidates() {
-    const { data, error } = await supabase
-      .from("candidates")
-      .select("*")
-      .order("created_at", { ascending: false });
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
 
-    if (error) {
-      console.error("Could not load candidates:", error);
-    } else {
-      setCandidates(data || []);
-    }
-
+  if (!user) {
+    setCandidates([]);
     setLoading(false);
+    return;
   }
 
+  const { data, error } = await supabase
+    .from("candidates")
+    .select("*")
+    .eq("user_id", user.id)
+    .order("created_at", { ascending: false });
+
+  if (error) {
+    console.error("Could not load candidates:", error);
+  } else {
+    setCandidates(data || []);
+  }
+
+  setLoading(false);
+}
   async function changeStage(id, stage) {
     const { error } = await supabase
       .from("candidates")
