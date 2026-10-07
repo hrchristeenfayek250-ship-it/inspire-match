@@ -18,9 +18,11 @@ export default function DashboardPage() {
   const [jobs, setJobs] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
+    useEffect(() => {
     loadDashboard();
-   async function loadDashboard() {
+  }, []);
+
+  async function loadDashboard() {
     setLoading(true);
 
     const {
@@ -59,9 +61,7 @@ export default function DashboardPage() {
         candidateResponse.error
       );
     } else {
-      setCandidates(
-        candidateResponse.data || []
-      );
+      setCandidates(candidateResponse.data || []);
     }
 
     if (jobResponse.error) {
@@ -75,11 +75,6 @@ export default function DashboardPage() {
 
     setLoading(false);
   }
-
-  setLoading(false);
-}
-  }
-
   function countStage(stage) {
     return candidates.filter(
       (candidate) =>
