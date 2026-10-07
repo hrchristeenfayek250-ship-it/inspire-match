@@ -32,19 +32,43 @@ export default function JobsPage() {
 
   useEffect(() => {
     loadJobs();
-  }, []);
+ async function loadJobs() {
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
 
-  async function loadJobs() {
-    const { data, error } = await supabase
-      .from("jobs")
-      .select("*")
-      .order("created_at", { ascending: false });
+  if (!user) {
+    setJobs([]);
+    setLoading(false);
+    return;
+  }
 
-    if (error) {
-      console.error("Could not load jobs:", error);
-    } else {
-      setJobs(data || []);
-    }
+  const { data, error } = await supabase
+    .from("jobs")
+    .select("*")
+    .eq("user_id", user.id)
+    .order("created_at", { ascending: false });
+
+  if (error) {
+    console.error("Could not load jobs:", error);
+  } else {
+    setJobs(data || []);
+  }
+
+  setLoading(false);
+}
+    .select("*")
+    .eq("user_id", user.id)
+    .order("created_at", { ascending: false });
+
+  if (error) {
+    console.error("Could not load jobs:", error);
+  } else {
+    setJobs(data || []);
+  }
+
+  setLoading(false);
+}
 
     setLoading(false);
   }
@@ -75,6 +99,7 @@ export default function JobsPage() {
       .from("jobs")
       .insert([
         {
+          user_id: (await supabase.auth.getUser()).data.user.id,
           title: form.title.trim(),
           department: form.department.trim() || null,
           location: form.location.trim() || null,
