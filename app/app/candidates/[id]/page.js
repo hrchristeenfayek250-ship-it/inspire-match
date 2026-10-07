@@ -126,7 +126,8 @@ export default function CandidateProfilePage() {
       setNotes(data || []);
     }
   }
-    setUpdatingStatus(true);
+  async function updateStatus(status) {
+  setUpdatingStatus(true);
 
     const { error } = await supabase
       .from("candidates")
