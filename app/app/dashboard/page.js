@@ -23,39 +23,61 @@ export default function DashboardPage() {
   }, []);
 
   async function loadDashboard() {
-    setLoading(true);
+    async function loadDashboard() {
+  setLoading(true);
 
-    const [candidateResponse, jobResponse] = await Promise.all([
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    setCandidates([]);
+    setJobs([]);
+    setLoading(false);
+    return;
+  }
+
+  const [candidateResponse, jobResponse] =
+    await Promise.all([
       supabase
         .from("candidates")
         .select("*")
-        .order("created_at", { ascending: false }),
+        .eq("user_id", user.id)
+        .order("created_at", {
+          ascending: false,
+        }),
 
       supabase
         .from("jobs")
         .select("*")
-        .order("created_at", { ascending: false }),
+        .eq("user_id", user.id)
+        .order("created_at", {
+          ascending: false,
+        }),
     ]);
 
-    if (candidateResponse.error) {
-      console.error(
-        "Could not load candidates:",
-        candidateResponse.error
-      );
-    } else {
-      setCandidates(candidateResponse.data || []);
-    }
+  if (candidateResponse.error) {
+    console.error(
+      "Could not load candidates:",
+      candidateResponse.error
+    );
+  } else {
+    setCandidates(
+      candidateResponse.data || []
+    );
+  }
 
-    if (jobResponse.error) {
-      console.error(
-        "Could not load jobs:",
-        jobResponse.error
-      );
-    } else {
-      setJobs(jobResponse.data || []);
-    }
+  if (jobResponse.error) {
+    console.error(
+      "Could not load jobs:",
+      jobResponse.error
+    );
+  } else {
+    setJobs(jobResponse.data || []);
+  }
 
-    setLoading(false);
+  setLoading(false);
+}
   }
 
   function countStage(stage) {
