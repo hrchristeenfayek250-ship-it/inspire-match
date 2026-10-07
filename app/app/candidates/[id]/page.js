@@ -150,13 +150,26 @@ export default function CandidateProfilePage() {
 
   async function saveNote() {
     if (!newNote.trim()) return;
+  async function saveNote() {
+    if (!newNote.trim()) return;
 
     setSavingNote(true);
+
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+
+    if (!user) {
+      alert("You must be logged in to save a note.");
+      setSavingNote(false);
+      return;
+    }
 
     const { data, error } = await supabase
       .from("notes")
       .insert([
         {
+          user_id: user.id,
           candidate_id: Number(candidateId),
           note: newNote.trim(),
         },
@@ -179,9 +192,6 @@ export default function CandidateProfilePage() {
 
     setSavingNote(false);
   }
-
-  if (loading) {
-    return (
       <main style={pageStyle}>
         <div style={containerStyle}>
           <h1>Candidate Profile</h1>
