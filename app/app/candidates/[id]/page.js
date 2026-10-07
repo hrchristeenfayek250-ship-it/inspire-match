@@ -63,15 +63,24 @@ export default function CandidateProfilePage() {
       loadCandidate();
       loadNotes();
     }
-  }, [candidateId]);
-
-  async function loadCandidate() {
+    async function loadCandidate() {
     setLoading(true);
+
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+
+    if (!user) {
+      setCandidate(null);
+      setLoading(false);
+      return;
+    }
 
     const { data, error } = await supabase
       .from("candidates")
       .select("*")
       .eq("id", candidateId)
+      .eq("user_id", user.id)
       .single();
 
     if (error) {
@@ -79,10 +88,13 @@ export default function CandidateProfilePage() {
         "Could not load candidate:",
         error
       );
+      setCandidate(null);
     } else {
       setCandidate(data);
     }
 
+    setLoading(false);
+  }
     setLoading(false);
   }
 
