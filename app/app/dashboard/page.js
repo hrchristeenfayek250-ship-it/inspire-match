@@ -170,20 +170,44 @@ export default function DashboardPage() {
             </p>
           </div>
 
-          <Link
-            href="/"
-            style={{
-              textDecoration: "none",
-              padding: "12px 20px",
-              border: "1px solid #ddd",
-              borderRadius: 10,
-              background: "#fff",
-              color: "#222",
-            }}
-          >
-            ← ATS Home
-          </Link>
-        </div>
+          <div
+  style={{
+    display: "flex",
+    alignItems: "center",
+    gap: 10,
+  }}
+>
+  <Link
+    href="/"
+    style={{
+      textDecoration: "none",
+      padding: "12px 20px",
+      border: "1px solid #ddd",
+      borderRadius: 10,
+      background: "#fff",
+      color: "#222",
+    }}
+  >
+    ← ATS Home
+  </Link>
+
+  <button
+    onClick={async () => {
+      await supabase.auth.signOut();
+      window.location.href = "/app/login";
+    }}
+    style={{
+      padding: "12px 20px",
+      border: "1px solid #222",
+      borderRadius: 10,
+      background: "#222",
+      color: "#fff",
+      cursor: "pointer",
+    }}
+  >
+    Logout
+  </button>
+</div>
 
         {/* NAVIGATION */}
 
