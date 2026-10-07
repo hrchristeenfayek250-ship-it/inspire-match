@@ -126,13 +126,23 @@ export default function CandidateProfilePage() {
       setNotes(data || []);
     }
   }
-  async function updateStatus(status) {
-  setUpdatingStatus(true);
+    async function updateStatus(status) {
+    setUpdatingStatus(true);
+
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+
+    if (!user) {
+      setUpdatingStatus(false);
+      return;
+    }
 
     const { error } = await supabase
       .from("candidates")
       .update({ status })
-      .eq("id", candidateId);
+      .eq("id", candidateId)
+      .eq("user_id", user.id);
 
     if (error) {
       alert(
@@ -147,7 +157,6 @@ export default function CandidateProfilePage() {
 
     setUpdatingStatus(false);
   }
-
     async function saveNote() {
     if (!newNote.trim()) return;
 
