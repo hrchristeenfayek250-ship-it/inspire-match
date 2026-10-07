@@ -116,8 +116,6 @@ export default function CandidateProfilePage() {
       setNotes(data || []);
     }
   }
-    }
-  }
 
   async function updateStatus(status) {
     setUpdatingStatus(true);
