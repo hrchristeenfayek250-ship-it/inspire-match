@@ -57,21 +57,7 @@ export default function JobsPage() {
 
   setLoading(false);
 }
-    .select("*")
-    .eq("user_id", user.id)
-    .order("created_at", { ascending: false });
-
-  if (error) {
-    console.error("Could not load jobs:", error);
-  } else {
-    setJobs(data || []);
-  }
-
-  setLoading(false);
-}
-
-    setLoading(false);
-  }
+    
 
   function updateField(field, value) {
     setForm((current) => ({
