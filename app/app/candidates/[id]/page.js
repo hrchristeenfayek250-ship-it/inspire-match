@@ -58,12 +58,14 @@ export default function CandidateProfilePage() {
   const [updatingStatus, setUpdatingStatus] =
     useState(false);
 
-  useEffect(() => {
+    useEffect(() => {
     if (candidateId) {
       loadCandidate();
       loadNotes();
     }
-      async function loadCandidate() {
+  }, [candidateId]);
+
+  async function loadCandidate() {
     setLoading(true);
 
     const {
@@ -97,7 +99,6 @@ export default function CandidateProfilePage() {
   }
 
   async function loadNotes() {
-  async function loadNotes() {
     const { data, error } = await supabase
       .from("notes")
       .select("*")
@@ -113,6 +114,8 @@ export default function CandidateProfilePage() {
       );
     } else {
       setNotes(data || []);
+    }
+  }
     }
   }
 
