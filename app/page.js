@@ -368,12 +368,17 @@ ${job.description || ""}
      SAVE CANDIDATE
   ========================= */
 
-  async function saveCandidate(
+    async function saveCandidate(
     result,
     fileName
   ) {
     const candidate =
       result?.candidate || {};
+
+    const scoring = computeOverall(
+      result?.scores || [],
+      criteria
+    );
 
     const { error } = await supabase
       .from("candidates")
@@ -403,6 +408,30 @@ ${job.description || ""}
           status: "Screening",
 
           source: "Inspire Match",
+
+          match_score:
+            scoring.overall,
+
+          match_verdict:
+            scoring.verdict.label,
+
+          matched_job_title:
+            jd?.title || null,
+
+          ai_summary:
+            result?.summary || null,
+
+          strengths:
+            result?.strengths || [],
+
+          gaps:
+            result?.gaps || [],
+
+          red_flags:
+            result?.redFlags || [],
+
+          interview_questions:
+            result?.interviewQuestions || [],
         },
       ]);
 
