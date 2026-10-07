@@ -20,60 +20,60 @@ export default function DashboardPage() {
 
   useEffect(() => {
     loadDashboard();
-  }, []);
+   async function loadDashboard() {
+    setLoading(true);
 
-  async function loadDashboard() {
-    async function loadDashboard() {
-  setLoading(true);
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
 
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+    if (!user) {
+      setCandidates([]);
+      setJobs([]);
+      setLoading(false);
+      return;
+    }
 
-  if (!user) {
-    setCandidates([]);
-    setJobs([]);
+    const [candidateResponse, jobResponse] =
+      await Promise.all([
+        supabase
+          .from("candidates")
+          .select("*")
+          .eq("user_id", user.id)
+          .order("created_at", {
+            ascending: false,
+          }),
+
+        supabase
+          .from("jobs")
+          .select("*")
+          .eq("user_id", user.id)
+          .order("created_at", {
+            ascending: false,
+          }),
+      ]);
+
+    if (candidateResponse.error) {
+      console.error(
+        "Could not load candidates:",
+        candidateResponse.error
+      );
+    } else {
+      setCandidates(
+        candidateResponse.data || []
+      );
+    }
+
+    if (jobResponse.error) {
+      console.error(
+        "Could not load jobs:",
+        jobResponse.error
+      );
+    } else {
+      setJobs(jobResponse.data || []);
+    }
+
     setLoading(false);
-    return;
-  }
-
-  const [candidateResponse, jobResponse] =
-    await Promise.all([
-      supabase
-        .from("candidates")
-        .select("*")
-        .eq("user_id", user.id)
-        .order("created_at", {
-          ascending: false,
-        }),
-
-      supabase
-        .from("jobs")
-        .select("*")
-        .eq("user_id", user.id)
-        .order("created_at", {
-          ascending: false,
-        }),
-    ]);
-
-  if (candidateResponse.error) {
-    console.error(
-      "Could not load candidates:",
-      candidateResponse.error
-    );
-  } else {
-    setCandidates(
-      candidateResponse.data || []
-    );
-  }
-
-  if (jobResponse.error) {
-    console.error(
-      "Could not load jobs:",
-      jobResponse.error
-    );
-  } else {
-    setJobs(jobResponse.data || []);
   }
 
   setLoading(false);
