@@ -26,22 +26,34 @@ export default function CandidatesPage() {
   useEffect(() => {
     loadCandidates();
   }, []);
+async function loadCandidates() {
+  setLoading(true);
 
-  async function loadCandidates() {
-    setLoading(true);
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
 
-    const { data, error } = await supabase
-      .from("candidates")
-      .select("*")
-      .order("created_at", { ascending: false });
+  if (!user) {
+    setCandidates([]);
+    setLoading(false);
+    return;
+  }
 
-    if (error) {
-      console.error("Could not load candidates:", error);
-      setCandidates([]);
-    } else {
-      setCandidates(data || []);
-    }
+  const { data, error } = await supabase
+    .from("candidates")
+    .select("*")
+    .eq("user_id", user.id)
+    .order("created_at", { ascending: false });
 
+  if (error) {
+    console.error("Could not load candidates:", error);
+    setCandidates([]);
+  } else {
+    setCandidates(data || []);
+  }
+
+  setLoading(false);
+}
     setLoading(false);
   }
 
