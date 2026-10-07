@@ -63,7 +63,7 @@ export default function CandidateProfilePage() {
       loadCandidate();
       loadNotes();
     }
-    async function loadCandidate() {
+      async function loadCandidate() {
     setLoading(true);
 
     const {
@@ -95,9 +95,8 @@ export default function CandidateProfilePage() {
 
     setLoading(false);
   }
-    setLoading(false);
-  }
 
+  async function loadNotes() {
   async function loadNotes() {
     const { data, error } = await supabase
       .from("notes")
