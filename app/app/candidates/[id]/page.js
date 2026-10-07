@@ -196,12 +196,11 @@ export default function CandidateProfilePage() {
         <div style={containerStyle}>
           <h1>Candidate Profile</h1>
           <p>Loading candidate...</p>
+                 <p>Loading candidate...</p>
         </div>
       </main>
     );
   }
-          <p>Loading candidate...</p>
-        </div>
       </main>
     );
   }
