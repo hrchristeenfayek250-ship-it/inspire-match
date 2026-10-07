@@ -98,11 +98,21 @@ export default function CandidateProfilePage() {
     setLoading(false);
   }
 
-  async function loadNotes() {
+    async function loadNotes() {
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+
+    if (!user) {
+      setNotes([]);
+      return;
+    }
+
     const { data, error } = await supabase
       .from("notes")
       .select("*")
       .eq("candidate_id", candidateId)
+      .eq("user_id", user.id)
       .order("created_at", {
         ascending: false,
       });
@@ -116,8 +126,6 @@ export default function CandidateProfilePage() {
       setNotes(data || []);
     }
   }
-
-  async function updateStatus(status) {
     setUpdatingStatus(true);
 
     const { error } = await supabase
