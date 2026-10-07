@@ -366,8 +366,6 @@ ${job.description || ""}
 
   /* =========================
      SAVE CANDIDATE
-  ========================= */
-
     async function saveCandidate(
     result,
     fileName
@@ -380,10 +378,22 @@ ${job.description || ""}
       criteria
     );
 
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+
+    if (!user) {
+      throw new Error(
+        "You must be logged in to save a candidate."
+      );
+    }
+
     const { error } = await supabase
       .from("candidates")
       .insert([
         {
+          user_id: user.id,
+
           full_name:
             candidate.name || null,
 
@@ -423,6 +433,24 @@ ${job.description || ""}
 
           strengths:
             result?.strengths || [],
+
+          gaps:
+            result?.gaps || [],
+
+          red_flags:
+            result?.redFlags || [],
+
+          interview_questions:
+            result?.interviewQuestions || [],
+        },
+      ]);
+
+    if (error) {
+      throw new Error(
+        `Could not save candidate: ${error.message}`
+      );
+    }
+  }
 
           gaps:
             result?.gaps || [],
