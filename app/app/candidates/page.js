@@ -366,63 +366,125 @@ async function loadCandidates() {
                   borderRadius: 9,
                   fontSize: 14,
                 }}
-              />
-            </div>
+             async function saveCandidate(
+  result,
+  fileName
+) {
+  const candidate =
+    result?.candidate || {};
 
-            {/* CLEAR */}
-            <button
-              onClick={clearFilters}
-              style={{
-                padding: "12px 18px",
-                borderRadius: 9,
-                border: "1px solid #ddd",
-                background: "#fff",
-                cursor: "pointer",
-                fontSize: 14,
-                whiteSpace: "nowrap",
-              }}
-            >
-              Clear
-            </button>
-          </div>
+  const scoring = computeOverall(
+    result?.scores || [],
+    criteria
+  );
 
-          <div
-            style={{
-              marginTop: 14,
-              color: "#777",
-              fontSize: 13,
-            }}
-          >
-            Showing {filteredCandidates.length} of {candidates.length}{" "}
-            candidates
-          </div>
-        </section>
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
 
-        {/* CONTENT */}
-        {loading ? (
-          <section
-            style={{
-              background: "#fff",
-              border: "1px solid #e8e6df",
-              borderRadius: 16,
-              padding: 40,
-              textAlign: "center",
-            }}
-          >
-            <p style={{ color: "#777" }}>
-              Loading candidates...
-            </p>
-          </section>
-        ) : filteredCandidates.length === 0 ? (
-          <section
-            style={{
-              background: "#fff",
-              border: "1px solid #e8e6df",
-              borderRadius: 16,
-              padding: 60,
-              textAlign: "center",
-            }}
-          >
+  if (!user) {
+    throw new Error(
+      "You must be logged in to save a candidate."
+    );
+  }
+
+  const { error } = await supabase
+    .from("candidates")
+    .insert([
+      {
+        user_id: user.id,
+
+        full_name:
+          candidate.name || null,
+
+        location:
+          candidate.location || null,
+
+        current_title:
+          candidate.currentTitle ||
+          null,
+
+        years_experience:
+          candidate.yearsExperience ??
+          null,
+
+        cv_file_name:
+          fileName || null,
+
+        consent_confirmed: true,
+
+        blind_screening: blind,
+
+        status: "Screening",
+
+        source: "Inspire Match",
+
+        match_score:
+          scoring.overall,
+
+        match_verdict:
+          scoring.verdict.label,
+
+        matched_job_title:
+          jd?.title || null,
+
+        ai_summary:
+          result?.summary || null,
+
+        strengths:
+          result?.strengths || [],
+
+        gaps:
+          result?.gaps || [],
+
+        red_flags:
+          result?.redFlags || [],
+
+        interview_questions:
+          result?.interviewQuestions || [],
+      },
+    ]);
+
+  if (error) {
+    throw new Error(
+      `Could not save candidate: ${error.message}`
+    );
+  }
+}
+        source: "Inspire Match",
+
+        match_score:
+          scoring.overall,
+
+        match_verdict:
+          scoring.verdict.label,
+
+        matched_job_title:
+          jd?.title || null,
+
+        ai_summary:
+          result?.summary || null,
+
+        strengths:
+          result?.strengths || [],
+
+        gaps:
+          result?.gaps || [],
+
+        red_flags:
+          result?.redFlags || [],
+
+        interview_questions:
+          result?.interviewQuestions || [],
+      },
+    ]);
+
+  if (error) {
+    throw new Error(
+      `Could not save candidate: ${error.message}`
+    );
+  }
+}
             <div
               style={{
                 fontSize: 40,
