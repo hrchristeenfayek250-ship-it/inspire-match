@@ -148,9 +148,7 @@ export default function CandidateProfilePage() {
     setUpdatingStatus(false);
   }
 
-  async function saveNote() {
-    if (!newNote.trim()) return;
-  async function saveNote() {
+    async function saveNote() {
     if (!newNote.trim()) return;
 
     setSavingNote(true);
@@ -186,15 +184,22 @@ export default function CandidateProfilePage() {
         data,
         ...current,
       ]);
-
       setNewNote("");
     }
 
     setSavingNote(false);
   }
+
+  if (loading) {
+    return (
       <main style={pageStyle}>
         <div style={containerStyle}>
           <h1>Candidate Profile</h1>
+          <p>Loading candidate...</p>
+        </div>
+      </main>
+    );
+  }
           <p>Loading candidate...</p>
         </div>
       </main>
