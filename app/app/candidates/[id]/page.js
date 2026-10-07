@@ -190,17 +190,13 @@ export default function CandidateProfilePage() {
     setSavingNote(false);
   }
 
-  if (loading) {
+    if (loading) {
     return (
       <main style={pageStyle}>
         <div style={containerStyle}>
           <h1>Candidate Profile</h1>
           <p>Loading candidate...</p>
-                 <p>Loading candidate...</p>
         </div>
-      </main>
-    );
-  }
       </main>
     );
   }
