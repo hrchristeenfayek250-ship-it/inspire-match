@@ -395,6 +395,7 @@ export default function DashboardPage() {
                 style={{
                   background: "#f0f6f2",
                   border: "1px solid #dce9df",
+                  borderTop: "3px solid #245c4a",
                   borderRadius: 12,
                   padding: 18,
                 }}
