@@ -514,8 +514,8 @@ export default function ReportsPage() {
                   fontFamily: "Georgia, serif",
                   fontSize: 21,
                   marginBottom: 15,
-                breakAfter: "avoid",
-pageBreakAfter: "avoid",
+                breakBefore: "page",
+pageBreakBefore: "always",
               }}
 >
                 Candidate Details
