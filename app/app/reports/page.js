@@ -446,12 +446,10 @@ export default function ReportsPage() {
               <div className="pipeline-print-grid"
                 style={{
                   display: "grid",
-                  gridTemplateColumns:
-                    "repeat(3, minmax(0, 1fr))",
+              gridTemplateColumns: "repeat(6, minmax(0, 1fr))",
                   gap: 12,
                   marginBottom: 30,
-                  breakInside: "avoid",
-pageBreakInside: "avoid",
+    
                 }}
               >
                 {stages.map((stage) => (
