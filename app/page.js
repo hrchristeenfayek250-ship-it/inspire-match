@@ -363,10 +363,12 @@ ${job.description || ""}
 
   const [clientName, setClientName] =
     useState("");
-
   /* =========================
      SAVE CANDIDATE
-    async function saveCandidate(
+  ========================= */
+
+  async function saveCandidate(
+
     result,
     fileName
   ) {
@@ -451,25 +453,6 @@ ${job.description || ""}
       );
     }
   }
-
-          gaps:
-            result?.gaps || [],
-
-          red_flags:
-            result?.redFlags || [],
-
-          interview_questions:
-            result?.interviewQuestions || [],
-        },
-      ]);
-
-    if (error) {
-      throw new Error(
-        `Could not save candidate: ${error.message}`
-      );
-    }
-  }
-
   /* =========================
      CRITERIA
   ========================= */
