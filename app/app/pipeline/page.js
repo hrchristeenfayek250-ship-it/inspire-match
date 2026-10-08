@@ -46,11 +46,22 @@ export default function PipelinePage() {
 
   setLoading(false);
 }
+  
   async function changeStage(id, stage) {
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+
+    if (!user) {
+      alert("Please log in first.");
+      return;
+    }
+
     const { error } = await supabase
       .from("candidates")
       .update({ status: stage })
-      .eq("id", id);
+      .eq("id", id)
+      .eq("user_id", user.id);
 
     if (error) {
       alert(`Could not update candidate: ${error.message}`);
