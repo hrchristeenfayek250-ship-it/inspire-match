@@ -54,9 +54,6 @@ async function loadCandidates() {
 
   setLoading(false);
 }
-    setLoading(false);
-  }
-
   const filteredCandidates = useMemo(() => {
     const searchValue = search.trim().toLowerCase();
     const locationValue = locationFilter.trim().toLowerCase();
