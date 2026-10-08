@@ -514,7 +514,7 @@ export default function ReportsPage() {
                   fontFamily: "Georgia, serif",
                   fontSize: 21,
                   marginBottom: 15,
-                }}
+                pageBreakBefore: "always",
               >
                 Candidate Details
               </h3>
