@@ -367,7 +367,21 @@ async function loadCandidates() {
     fontSize: 14,
   }}
 />
-  
+            </div>
+          </div>
+        </section>
+
+        {filteredCandidates.length === 0 ? (
+          <section
+            style={{
+              background: "#fff",
+              border: "1px solid #e8e6df",
+              borderRadius: 16,
+              padding: 30,
+              textAlign: "center",
+            }}
+          >
+
             <div
               style={{
                 fontSize: 40,
