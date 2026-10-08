@@ -578,7 +578,7 @@ export default function ReportsPage() {
                   </div>
                   <div>
                     <strong>Hiring Outcome:</strong>{" "}
-                    {countStage("Hired")} candidates are currently marked as hired.
+                    {countStage("Hired")} {countStage("Hired") === 1 ? "candidate is" : "candidates are"} currently marked as hired.
                   </div>
                   <div>
                     <strong>Interview Readiness:</strong>{" "}
