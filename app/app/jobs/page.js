@@ -829,4 +829,3 @@ async function loadJobs() {
     </main>
   );
 }
-}
