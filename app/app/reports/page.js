@@ -586,7 +586,7 @@ export default function ReportsPage() {
                   </div>
                 </div>
               </div>
-</div>
+
               <h3
                 style={{
                   fontFamily: "Georgia, serif",
