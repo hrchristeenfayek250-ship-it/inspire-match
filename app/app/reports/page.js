@@ -442,6 +442,8 @@ export default function ReportsPage() {
                     "repeat(3, minmax(0, 1fr))",
                   gap: 12,
                   marginBottom: 30,
+                  breakInside: "avoid",
+pageBreakInside: "avoid",
                 }}
               >
                 {stages.map((stage) => (
