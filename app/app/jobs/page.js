@@ -31,8 +31,10 @@ export default function JobsPage() {
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
-    loadJobs();
- async function loadJobs() {
+  loadJobs();
+}, []);
+
+async function loadJobs() {
   const {
     data: { user },
   } = await supabase.auth.getUser();
