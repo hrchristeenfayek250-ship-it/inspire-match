@@ -582,7 +582,11 @@ export default function ReportsPage() {
                   </div>
                   <div>
                     <strong>Interview Readiness:</strong>{" "}
-                    {countStage("Interview")} candidates are currently in the interview stage.
+
+{countStage("Interview") === 0
+  ? `No interviews are currently scheduled in the pipeline. Recommended Action: Review the ${countStage("Screening")} candidates in screening and identify those ready for interviews.`
+  : `${countStage("Interview")} candidates are currently in the interview stage. Recommended Action: Follow up on interview feedback and next steps.`}
+
                   </div>
                 </div>
               </div>
