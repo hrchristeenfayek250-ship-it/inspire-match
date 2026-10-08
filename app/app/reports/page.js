@@ -477,70 +477,51 @@ export default function ReportsPage() {
                 }}
               >
                 {stages.map((stage) => (
+                  
                   <div
                     key={stage}
-                    
-              <div
-                style={{
-                  display: "grid",
-                  gridTemplateColumns: "repeat(3, minmax(0, 1fr))",
-                  gap: 12,
-                  marginBottom: 20,
-                }}
-              >
-                {[
-                  {
-                    label: "CANDIDATES ADDED",
-                    value: candidates.length,
-                    note: "Added during this month",
-                  },
-                  {
-                    label: "ACTIVE PIPELINE",
-                    value: ["Applied", "Screening", "Interview", "Shortlisted"]
-                      .reduce((sum, stage) => sum + countStage(stage), 0),
-                    note: "Currently in active stages",
-                  },
-                  {
-                    label: "HIRED SHARE",
-                    value: `${candidates.length
-                      ? Math.round((countStage("Hired") / candidates.length) * 100)
-                      : 0}%`,
-                    note: "Currently marked as hired",
-                  },
-                ].map((item) => (
-                  <div
-                    key={item.label}
                     style={{
-                      background: "#f0f6f2",
                       border: "1px solid #dce9df",
-                      borderTop: "3px solid #245c4a",
-                      borderRadius: 12,
+                      borderTop: `3px solid ${green}`,
+                      borderRadius: 10,
                       padding: 16,
                     }}
                   >
-                    <div style={{ fontSize: 11, color: "#66776b", fontWeight: 700 }}>
-                      {item.label}
+                    <div
+                      style={{
+                        color: "#777",
+                        fontSize: 13,
+                        marginBottom: 8,
+                      }}
+                    >
+                      {stage}
                     </div>
-                    <div style={{ fontSize: 30, fontWeight: 800, color: "#245c4a", margin: "10px 0" }}>
-                      {item.value}
-                    </div>
-                    <div style={{ fontSize: 11, color: "#77867c" }}>
-                      {item.note}
-                    </div>
-                  </div>
-                ))}
-              </div>
 
-    fontSize: 11,
-    color: "#64776b",
-    marginTop: 5,
-    fontWeight: 600,
-  }}
->
-  {candidates.length
-    ? Math.round((countStage(stage) / candidates.length) * 100)
-    : 0}% of total
-</div>
+                    <div
+                      style={{
+                        color: green,
+                        fontSize: 26,
+                        fontWeight: 700,
+                      }}
+                    >
+                      {countStage(stage)}
+                    </div>
+
+                    <div
+                      style={{
+                        fontSize: 11,
+                        color: "#64776b",
+                        marginTop: 5,
+                        fontWeight: 600,
+                      }}
+                    >
+                      {candidates.length
+                        ? Math.round(
+                            (countStage(stage) / candidates.length) * 100
+                          )
+                        : 0}% of total
+                    </div>
+
                     <div
                       style={{
                         height: 6,
