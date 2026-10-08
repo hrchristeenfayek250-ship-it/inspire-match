@@ -355,34 +355,58 @@ export default function ReportsPage() {
             <p style={{ color: "#b91c1c" }}>{error}</p>
           ) : (
             <>
+              
               <div
                 style={{
-                  background: "#f0f6f2",
-                  borderRadius: 12,
-                  padding: 22,
-                  marginBottom: 25,
+                  display: "grid",
+                  gridTemplateColumns: "repeat(3, minmax(0, 1fr))",
+                  gap: 12,
+                  marginBottom: 20,
                 }}
               >
-                <div
-                  style={{
-                    fontSize: 13,
-                    color: "#666",
-                    marginBottom: 8,
-                  }}
-                >
-                  Total Candidates Added
-                </div>
-
-                <div
-                  style={{
-                    fontSize: 36,
-                    fontWeight: 700,
-                    color: green,
-                  }}
-                >
-                  {candidates.length}
-                </div>
+                {[
+                  {
+                    label: "CANDIDATES ADDED",
+                    value: candidates.length,
+                    note: "Added during this month",
+                  },
+                  {
+                    label: "ACTIVE PIPELINE",
+                    value: ["Applied", "Screening", "Interview", "Shortlisted"]
+                      .reduce((sum, stage) => sum + countStage(stage), 0),
+                    note: "Currently in active stages",
+                  },
+                  {
+                    label: "HIRED SHARE",
+                    value: `${candidates.length
+                      ? Math.round((countStage("Hired") / candidates.length) * 100)
+                      : 0}%`,
+                    note: "Currently marked as hired",
+                  },
+                ].map((item) => (
+                  <div
+                    key={item.label}
+                    style={{
+                      background: "#f0f6f2",
+                      border: "1px solid #dce9df",
+                      borderTop: "3px solid #245c4a",
+                      borderRadius: 12,
+                      padding: 16,
+                    }}
+                  >
+                    <div style={{ fontSize: 11, color: "#66776b", fontWeight: 700 }}>
+                      {item.label}
+                    </div>
+                    <div style={{ fontSize: 30, fontWeight: 800, color: "#245c4a", margin: "10px 0" }}>
+                      {item.value}
+                    </div>
+                    <div style={{ fontSize: 11, color: "#77867c" }}>
+                      {item.note}
+                    </div>
+                  </div>
+                ))}
               </div>
+
               <div
                 style={{
                   background: "#f7faf8",
@@ -455,34 +479,58 @@ export default function ReportsPage() {
                 {stages.map((stage) => (
                   <div
                     key={stage}
+                    
+              <div
+                style={{
+                  display: "grid",
+                  gridTemplateColumns: "repeat(3, minmax(0, 1fr))",
+                  gap: 12,
+                  marginBottom: 20,
+                }}
+              >
+                {[
+                  {
+                    label: "CANDIDATES ADDED",
+                    value: candidates.length,
+                    note: "Added during this month",
+                  },
+                  {
+                    label: "ACTIVE PIPELINE",
+                    value: ["Applied", "Screening", "Interview", "Shortlisted"]
+                      .reduce((sum, stage) => sum + countStage(stage), 0),
+                    note: "Currently in active stages",
+                  },
+                  {
+                    label: "HIRED SHARE",
+                    value: `${candidates.length
+                      ? Math.round((countStage("Hired") / candidates.length) * 100)
+                      : 0}%`,
+                    note: "Currently marked as hired",
+                  },
+                ].map((item) => (
+                  <div
+                    key={item.label}
                     style={{
+                      background: "#f0f6f2",
                       border: "1px solid #dce9df",
-                      borderTop: `3px solid ${green}`,
-                      borderRadius: 10,
+                      borderTop: "3px solid #245c4a",
+                      borderRadius: 12,
                       padding: 16,
                     }}
                   >
-                    <div
-                      style={{
-                        color: "#777",
-                        fontSize: 13,
-                        marginBottom: 8,
-                      }}
-                    >
-                      {stage}
+                    <div style={{ fontSize: 11, color: "#66776b", fontWeight: 700 }}>
+                      {item.label}
                     </div>
+                    <div style={{ fontSize: 30, fontWeight: 800, color: "#245c4a", margin: "10px 0" }}>
+                      {item.value}
+                    </div>
+                    <div style={{ fontSize: 11, color: "#77867c" }}>
+                      {item.note}
+                    </div>
+                  </div>
+                ))}
+              </div>
 
-                    <div
-                      style={{
-                        color: green,
-                        fontSize: 26,
-                        fontWeight: 700,
-                      }}
-                    >
-                      {countStage(stage)}
-                    </div>
-<div
-  style={{
     fontSize: 11,
     color: "#64776b",
     marginTop: 5,
