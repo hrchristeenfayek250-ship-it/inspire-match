@@ -11,7 +11,7 @@ export async function POST(req) {
 
     const cv = form.get("cv");
     const jd = JSON.parse(form.get("jd") || "null");
-    const blind = form.get("blind") === "true";
+    const blind = false;
 
     if (!jd?.criteria?.length) {
       return Response.json(
