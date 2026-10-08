@@ -417,7 +417,7 @@ ${job.description || ""}
 
           blind_screening: blind,
 
-          status: "Screening",
+          status: "Applied",
 
           source: "Inspire Match",
 
