@@ -52,12 +52,10 @@ export default function ReportsPage() {
         1
       );
 
-      const { data, error: queryError } = await supabase
-        
-"id, full_name, current_title, status, created_at, blind_screening"
-
+            const { data, error: queryError } = await supabase
+        .from("candidates")
         .select(
-          "id, full_name, current_title, status, created_at"
+          "id, full_name, current_title, status, created_at, blind_screening"
         )
         .eq("user_id", authData.user.id)
         .gte("created_at", start.toISOString())
@@ -599,20 +597,17 @@ table th {
   : `${countStage("Interview")} candidates are currently in the interview stage. Recommended Action: Follow up on interview feedback and next steps.`}
 
                   </div>
-                
 
-{missingNames > 0 && (
-  <div style={{ color: "#245c4a", marginTop: 10 }}>
-    <strong>Blind Screening Notice:</strong>{" "}
-    {missingNames} candidate identities are currently hidden or unavailable.
-    Blind screening helps support fair and unbiased recruitment.
-  </div>
-)}
-
-
+                  {legacyBlindCount > 0 && (
+                    <div style={{ color: "#245c4a", marginTop: 10 }}>
+                      <strong>Legacy Blind Screening:</strong>{" "}
+                      {legacyBlindCount} {legacyBlindCount === 1 ? "candidate record was" : "candidate records were"} saved with Blind Screening enabled.
+                      This feature is now disabled for new candidates.
                     </div>
-              </div>
+                  )}
 
+              </div>
+</div>
               <h3
                 style={{
                   fontFamily: "Georgia, serif",
