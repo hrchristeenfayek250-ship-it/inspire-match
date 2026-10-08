@@ -595,12 +595,15 @@ table th {
 
                   </div>
                 
+
 {missingNames > 0 && (
-  <div style={{ color: "#9a5b23", marginTop: 10 }}>
-    <strong>Data Quality Alert:</strong>{" "}
-    {missingNames} {missingNames === 1 ? "candidate record is" : "candidate records are"} missing a name. Please complete these profiles before sharing the report.
+  <div style={{ color: "#245c4a", marginTop: 10 }}>
+    <strong>Blind Screening Notice:</strong>{" "}
+    {missingNames} candidate identities are currently hidden or unavailable.
+    Blind screening helps support fair and unbiased recruitment.
   </div>
 )}
+
 
                     </div>
               </div>
