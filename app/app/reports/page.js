@@ -240,39 +240,106 @@ export default function ReportsPage() {
             boxShadow: "0 8px 24px rgba(30,59,50,0.05)",
           }}
         >
+          
           <div
             style={{
-              borderBottom: `3px solid ${green}`,
-              paddingBottom: 20,
-              marginBottom: 25,
+              background: "#edf5ef",
+              border: "1px solid #d9e8dd",
+              borderLeft: "7px solid #245c4a",
+              borderRadius: 16,
+              padding: "28px 30px",
+              marginBottom: 26,
             }}
           >
             <div
               style={{
-                color: green,
-                fontSize: 12,
-                letterSpacing: 2,
-                fontWeight: 700,
-                marginBottom: 10,
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+                flexWrap: "wrap",
+                gap: 20,
               }}
             >
-              HIRE & INSPIRE BY CHRISTINE
+              <div>
+                <div
+                  style={{
+                    color: "#245c4a",
+                    fontSize: 12,
+                    fontWeight: 800,
+                    letterSpacing: 2,
+                    marginBottom: 14,
+                  }}
+                >
+                  HIRE & INSPIRE BY CHRISTINE
+                </div>
+
+                <div
+                  style={{
+                    fontSize: 11,
+                    color: "#738578",
+                    fontWeight: 700,
+                    letterSpacing: 1.5,
+                    marginBottom: 8,
+                  }}
+                >
+                  RECRUITMENT INTELLIGENCE REPORT
+                </div>
+
+                <h2
+                  style={{
+                    fontFamily: "Georgia, serif",
+                    fontSize: 32,
+                    color: "#173e32",
+                    margin: "0 0 12px",
+                  }}
+                >
+                  Candidate Pipeline Report
+                </h2>
+
+                <p
+                  style={{
+                    fontSize: 13,
+                    color: "#576c5f",
+                    margin: 0,
+                  }}
+                >
+                  Talent pipeline overview, hiring progress
+                  and candidate insights.
+                </p>
+              </div>
+
+              <div
+                style={{
+                  background: "#ffffff",
+                  border: "1px solid #d6e6d9",
+                  borderRadius: 12,
+                  padding: "15px 20px",
+                }}
+              >
+                <div
+                  style={{
+                    color: "#7a8c80",
+                    fontSize: 10,
+                    letterSpacing: 1.5,
+                    fontWeight: 700,
+                    marginBottom: 7,
+                  }}
+                >
+                  REPORTING PERIOD
+                </div>
+                <div
+                  style={{
+                    color: "#245c4a",
+                    fontSize: 17,
+                    fontWeight: 800,
+                  }}
+                >
+                  {periodLabel}
+                </div>
+              </div>
             </div>
-
-            <h2
-              style={{
-                fontFamily: "Georgia, serif",
-                fontSize: 28,
-                margin: "0 0 8px",
-              }}
-            >
-              Candidate Pipeline Report
-            </h2>
-
-            <p style={{ color: "#777", margin: 0 }}>
-              Reporting Period: {periodLabel}
-            </p>
           </div>
+
 
           {loading ? (
             <p>Loading report...</p>
