@@ -144,6 +144,15 @@ export default function ReportsPage() {
           tr {
             break-inside: avoid;
           }
+                  .pipeline-print-grid {
+            grid-template-columns: repeat(6, minmax(0, 1fr)) !important;
+            gap: 8px !important;
+            margin-bottom: 15px !important;
+          }
+
+          .pipeline-print-grid > div {
+            padding: 10px !important;
+          }
         }
       `}</style>
 
@@ -336,10 +345,9 @@ export default function ReportsPage() {
                 >
                   {periodLabel}
                 </div>
-              </div>
             </div>
           </div>
-
+</div>
 
           {loading ? (
             <p>Loading report...</p>
@@ -435,7 +443,7 @@ export default function ReportsPage() {
                   %
                 </div>
               </div>
-              <div
+              <div className="pipeline-print-grid"
                 style={{
                   display: "grid",
                   gridTemplateColumns:
