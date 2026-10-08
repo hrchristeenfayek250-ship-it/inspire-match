@@ -481,7 +481,18 @@ export default function ReportsPage() {
                     >
                       {countStage(stage)}
                     </div>
-
+<div
+  style={{
+    fontSize: 11,
+    color: "#64776b",
+    marginTop: 5,
+    fontWeight: 600,
+  }}
+>
+  {candidates.length
+    ? Math.round((countStage(stage) / candidates.length) * 100)
+    : 0}% of total
+</div>
                     <div
                       style={{
                         height: 6,
