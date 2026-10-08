@@ -441,26 +441,25 @@ export default function DashboardPage() {
           >
             <div>
               
+              
               <h2
                 style={{
                   fontFamily: "Georgia, serif",
                   margin: 0,
                 }}
-              
-        background: "linear-gradient(145deg, #ffffff 0%, #f2f8f4 100%)",
-        border: "1px solid #dce9df",
-        borderTop: "4px solid #1E3B32",
-        borderRadius: 16,
-        padding: 24,
-        minHeight: 130,
-        boxShadow: "0 8px 24px rgba(30,59,50,0.06)",
+              >
+                Recent Candidates
+              </h2>
 
+              <p
+                style={{
                   color: "#777",
                   margin: "6px 0 0",
                 }}
               >
                 Latest candidates added to your database
               </p>
+
 
             </div>
 
