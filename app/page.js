@@ -1518,31 +1518,7 @@ ${job.description || ""}
                   }}
                 >
 
-                  <label className="check">
-
-                    <input
-                      type="checkbox"
-                      checked={blind}
-                      onChange={(e) =>
-                        setBlind(
-                          e.target
-                            .checked
-                        )
-                      }
-                    />
-
-                    <span>
-                      <strong>
-                        Blind screening.
-                      </strong>{" "}
-                      Hide names and
-                      personal details so
-                      candidates are judged
-                      on skills and experience.
-                    </span>
-
-                  </label>
-
+                 
                   <label className="check">
 
                     <input
