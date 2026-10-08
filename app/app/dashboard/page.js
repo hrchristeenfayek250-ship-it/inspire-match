@@ -559,14 +559,23 @@ boxShadow: "0 8px 24px rgba(30,59,50,0.06)",
 
       }}
     >
+     
       <div
         style={{
-          fontSize: 28,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          width: 48,
+          height: 48,
+          background: "#e7f0ea",
+          borderRadius: 12,
+          fontSize: 26,
           marginBottom: 15,
         }}
       >
         {icon}
       </div>
+
 
       <div
         style={{
