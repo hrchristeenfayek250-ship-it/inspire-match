@@ -394,6 +394,7 @@ export default function DashboardPage() {
                 key={stage}
                 style={{
                   background: "#f0f6f2",
+                  border: "1px solid #dce9df",
                   borderRadius: 12,
                   padding: 18,
                 }}
