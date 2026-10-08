@@ -53,7 +53,9 @@ export default function ReportsPage() {
       );
 
       const { data, error: queryError } = await supabase
-        .from("candidates")
+        
+"id, full_name, current_title, status, created_at, blind_screening"
+
         .select(
           "id, full_name, current_title, status, created_at"
         )
@@ -88,7 +90,10 @@ export default function ReportsPage() {
         stage.toLowerCase()
     ).length;
   }
-const missingNames = candidates.filter((candidate) => !String(candidate.full_name || "").trim()).length;
+
+const legacyBlindCount = candidates.filter((candidate) => candidate.blind_screening === true).length;
+const missingNames = candidates.filter((candidate) => !candidate.blind_screening && !String(candidate.full_name || "").trim()).length;
+
   const periodLabel = new Date(
     `${month}-01T12:00:00`
   ).toLocaleDateString("en-US", {
