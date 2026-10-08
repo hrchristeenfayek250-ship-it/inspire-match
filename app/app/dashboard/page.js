@@ -393,7 +393,7 @@ export default function DashboardPage() {
               <div
                 key={stage}
                 style={{
-                  background: "#f7f7f5",
+                  background: "#f0f6f2",
                   borderRadius: 12,
                   padding: 18,
                 }}
