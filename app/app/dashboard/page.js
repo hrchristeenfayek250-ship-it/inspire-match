@@ -417,10 +417,29 @@ export default function DashboardPage() {
                     fontWeight: 700,
                   }}
                 >
-                  {countStage(stage)}
-                </div>
-              </div>
-            ))}
+                            {countStage(stage)}
+        </div>
+
+        <div
+          style={{
+            height: 6,
+            background: "#dce9df",
+            borderRadius: 10,
+            marginTop: 14,
+            overflow: "hidden",
+          }}
+        >
+          <div
+            style={{
+              height: "100%",
+              width: `${(countStage(stage) / Math.max(1, stages.reduce((sum, s) => sum + countStage(s), 0))) * 100}%`,
+              background: "#245c4a",
+              borderRadius: 10,
+            }}
+          />
+        </div>
+      </div>
+    ))}
           </div>
         </section>
 
