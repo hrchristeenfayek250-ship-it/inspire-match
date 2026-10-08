@@ -446,12 +446,15 @@ export default function DashboardPage() {
                   fontFamily: "Georgia, serif",
                   margin: 0,
                 }}
-              >
-                Recent Candidates
-              </h2>
+              
+        background: "linear-gradient(145deg, #ffffff 0%, #f2f8f4 100%)",
+        border: "1px solid #dce9df",
+        borderTop: "4px solid #1E3B32",
+        borderRadius: 16,
+        padding: 24,
+        minHeight: 130,
+        boxShadow: "0 8px 24px rgba(30,59,50,0.06)",
 
-              <p
-                style={{
                   color: "#777",
                   margin: "6px 0 0",
                 }}
