@@ -208,6 +208,7 @@ export default function DashboardPage() {
     Logout
   </button>
 </div>
+ </div>
 
         {/* NAVIGATION */}
 
