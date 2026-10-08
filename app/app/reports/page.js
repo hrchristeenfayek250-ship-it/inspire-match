@@ -88,7 +88,7 @@ export default function ReportsPage() {
         stage.toLowerCase()
     ).length;
   }
-
+const missingNames = candidates.filter((candidate) => !String(candidate.full_name || "").trim()).length;
   const periodLabel = new Date(
     `${month}-01T12:00:00`
   ).toLocaleDateString("en-US", {
@@ -594,7 +594,15 @@ table th {
   : `${countStage("Interview")} candidates are currently in the interview stage. Recommended Action: Follow up on interview feedback and next steps.`}
 
                   </div>
-                </div>
+                
+{missingNames > 0 && (
+  <div style={{ color: "#9a5b23", marginTop: 10 }}>
+    <strong>Data Quality Alert:</strong>{" "}
+    {missingNames} {missingNames === 1 ? "candidate record is" : "candidate records are"} missing a name. Please complete these profiles before sharing the report.
+  </div>
+)}
+
+                    </div>
               </div>
 
               <h3
