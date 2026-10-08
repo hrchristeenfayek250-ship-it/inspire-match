@@ -150,6 +150,12 @@ export default function ReportsPage() {
             margin-bottom: 15px !important;
           }
 
+          
+table td,
+table th {
+  padding: 6px 8px !important;
+  font-size: 11px !important;
+}
           .pipeline-print-grid > div {
             padding: 10px !important;
           }
