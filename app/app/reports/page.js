@@ -375,7 +375,66 @@ export default function ReportsPage() {
                   {candidates.length}
                 </div>
               </div>
+              <div
+                style={{
+                  background: "#f7faf8",
+                  border: "1px solid #dce9df",
+                  borderLeft: "4px solid #245c4a",
+                  borderRadius: 14,
+                  padding: 22,
+                  marginBottom: 25,
+                  breakInside: "avoid",
+                }}
+              >
+                <div
+                  style={{
+                    color: "#245c4a",
+                    fontSize: 12,
+                    fontWeight: 800,
+                    letterSpacing: 1.5,
+                    marginBottom: 12,
+                  }}
+                >
+                  EXECUTIVE SUMMARY
+                </div>
 
+                <p
+                  style={{
+                    color: "#33443b",
+                    fontSize: 14,
+                    lineHeight: 1.9,
+                    margin: 0,
+                  }}
+                >
+                  During {periodLabel}, a total of{" "}
+                  <strong>{candidates.length} candidates</strong>{" "}
+                  were added to the recruitment pipeline.
+                  Currently, <strong>{countStage("Screening")}</strong>{" "}
+                  are in screening,{" "}
+                  <strong>{countStage("Shortlisted")}</strong>{" "}
+                  are shortlisted, and{" "}
+                  <strong>{countStage("Hired")}</strong>{" "}
+                  are hired.
+                </p>
+
+                <div
+                  style={{
+                    marginTop: 14,
+                    fontSize: 13,
+                    color: "#245c4a",
+                    fontWeight: 700,
+                  }}
+                >
+                  Screening Share:{" "}
+                  {candidates.length
+                    ? Math.round(
+                        (countStage("Screening") /
+                          candidates.length) * 100
+                      )
+                    : 0}
+                  %
+                </div>
+              </div>
               <div
                 style={{
                   display: "grid",
