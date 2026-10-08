@@ -549,13 +549,50 @@ export default function ReportsPage() {
                 ))}
               </div>
 
+              <div
+                style={{
+                  breakBefore: "page",
+                  pageBreakBefore: "always",
+                  background: "#f7faf8",
+                  border: "1px solid #dce9df",
+                  borderLeft: "4px solid #245c4a",
+                  borderRadius: 12,
+                  padding: 18,
+                  marginBottom: 18,
+                }}
+              >
+                <div style={{
+                  color: "#245c4a",
+                  fontSize: 12,
+                  fontWeight: 800,
+                  letterSpacing: 1.2,
+                  marginBottom: 12,
+                }}>
+                  KEY RECRUITMENT INSIGHTS
+                </div>
+
+                <div style={{ fontSize: 13, lineHeight: 2, color: "#33443b" }}>
+                  <div>
+                    <strong>Pipeline Focus:</strong>{" "}
+                    {countStage("Screening")} candidates are currently in screening.
+                  </div>
+                  <div>
+                    <strong>Hiring Outcome:</strong>{" "}
+                    {countStage("Hired")} candidates are currently marked as hired.
+                  </div>
+                  <div>
+                    <strong>Interview Readiness:</strong>{" "}
+                    {countStage("Interview")} candidates are currently in the interview stage.
+                  </div>
+                </div>
+              </div>
+</div>
               <h3
                 style={{
                   fontFamily: "Georgia, serif",
                   fontSize: 21,
                   marginBottom: 15,
-                breakBefore: "page",
-pageBreakBefore: "always",
+                
               }}
 >
                 Candidate Details
