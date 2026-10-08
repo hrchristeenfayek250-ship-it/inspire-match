@@ -234,6 +234,22 @@ export default function DashboardPage() {
             🔄 Candidate Pipeline
           </Link>
 
+         
+          <Link
+            href="/app/jobs"
+            style={{
+              textDecoration: "none",
+              padding: "14px 22px",
+              borderRadius: 10,
+              background: "#eaf3ee",
+              color: "#1e3b32",
+              border: "1px solid #c8ded1",
+              fontWeight: 600,
+            }}
+          >
+            💼 Job Management
+          </Link>
+
           <Link
             href="/app/candidates"
             style={{
@@ -248,6 +264,7 @@ export default function DashboardPage() {
           >
             👥 Candidate Database
           </Link>
+
 
           <Link
             href="/"
