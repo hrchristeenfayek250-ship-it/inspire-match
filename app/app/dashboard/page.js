@@ -398,6 +398,7 @@ export default function DashboardPage() {
                   borderTop: "3px solid #245c4a",
                   borderRadius: 12,
                   padding: 18,
+                  boxShadow: "0 4px 12px rgba(36, 92, 74, 0.06)",
                 }}
               >
                 <div
