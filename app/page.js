@@ -339,8 +339,7 @@ ${job.description || ""}
   const [cvFiles, setCvFiles] =
     useState([]);
 
-  const [blind, setBlind] =
-    useState(false);
+  const blind = false;
 
   const [consent, setConsent] =
     useState(false);
