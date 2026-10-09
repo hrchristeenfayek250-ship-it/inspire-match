@@ -395,6 +395,8 @@ ${job.description || ""}
         {
           user_id: user.id,
 
+job_id: selectedJobId ? Number(selectedJobId) : null,
+
           full_name:
             candidate.name || null,
 
