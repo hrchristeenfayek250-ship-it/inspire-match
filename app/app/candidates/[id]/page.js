@@ -50,6 +50,15 @@ export default function CandidateProfilePage() {
   const candidateId = params?.id;
 
   const [candidate, setCandidate] = useState(null);
+  
+const [isEditing, setIsEditing] = useState(false);
+  
+const [editForm, setEditForm] = useState({});
+  
+const [savingProfile, setSavingProfile] = useState(false);
+
+
+
   const [notes, setNotes] = useState([]);
   const [newNote, setNewNote] = useState("");
 
@@ -91,8 +100,12 @@ export default function CandidateProfilePage() {
         error
       );
       setCandidate(null);
+      
+
+
     } else {
       setCandidate(data);
+      setEditForm(data);
     }
 
     setLoading(false);
@@ -157,7 +170,89 @@ export default function CandidateProfilePage() {
 
     setUpdatingStatus(false);
   }
-    async function saveNote() {
+   
+function startEditing() {
+  setEditForm({ ...candidate });
+  setIsEditing(true);
+}
+
+function cancelEditing() {
+  setEditForm({ ...candidate });
+  setIsEditing(false);
+}
+ 
+function updateEditField(field, value) {
+  setEditForm((current) => ({
+    ...current,
+    [field]: value,
+  }));
+}
+  
+async function saveProfile() {
+  if (savingProfile) return;
+
+  const fullName = String(editForm.full_name || "").trim();
+
+  if (!fullName) {
+    alert("Candidate name is required.");
+    return;
+  }
+
+  setSavingProfile(true);
+
+  try {
+    const { data: { user } } = await supabase.auth.getUser();
+
+    if (!user) {
+      throw new Error("You must be logged in.");
+    }
+
+    const updates = {
+      full_name: fullName,
+      current_title: editForm.current_title || null,
+      location: editForm.location || null,
+      email: editForm.email || null,
+      phone: editForm.phone || null,
+      linkedin_url: editForm.linkedin_url || null,
+      years_experience:
+        editForm.years_experience === "" ||
+        editForm.years_experience == null
+          ? null
+          : Number(editForm.years_experience),
+    };
+
+    if (
+      updates.years_experience !== null &&
+      (!Number.isFinite(updates.years_experience) ||
+        updates.years_experience < 0)
+    ) {
+      throw new Error("Enter valid years of experience.");
+    }
+
+    const { data, error } = await supabase
+      .from("candidates")
+      .update(updates)
+      .eq("id", candidateId)
+      .eq("user_id", user.id)
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    setCandidate(data);
+    setEditForm(data);
+    setIsEditing(false);
+  } catch (error) {
+    alert(`Could not save profile: ${error.message}`);
+  } finally {
+    setSavingProfile(false);
+  }
+}
+
+  async function saveNote() {
+      
+
+
     if (!newNote.trim()) return;
 
     setSavingNote(true);
@@ -807,6 +902,111 @@ export default function CandidateProfilePage() {
           >
             Candidate Information
           </h2>
+
+{!isEditing && (
+  <button type="button" onClick={startEditing} style={{ ...buttonStyle, marginBottom: 16 }}>
+    Edit Profile
+  </button>
+)}
+
+{isEditing && (
+  <>
+  <div style={{ marginBottom: 16 }}>
+    <label>Full Name</label>
+    <input
+      type="text"
+      value={editForm.full_name || ""}
+      onChange={(e) => updateEditField("full_name", e.target.value)}
+      style={{ display: "block", padding: 12, width: "100%", maxWidth: 400, marginTop: 8, border: "1px solid #ddd", borderRadius: 8 }}
+    />
+  </div>
+
+<div style={{ marginBottom: 16 }}>
+  <label>Current Title</label>
+  <input
+    type="text"
+    value={editForm.current_title || ""}
+    onChange={(e) => updateEditField("current_title", e.target.value)}
+    style={{ display: "block", padding: 12, width: "100%", maxWidth: 400, marginTop: 8, border: "1px solid #ddd", borderRadius: 8 }}
+  />
+</div>
+
+<div style={{ marginBottom: 16 }}>
+  <label>Location</label>
+  <input
+    type="text"
+    value={editForm.location || ""}
+    onChange={(e) => updateEditField("location", e.target.value)}
+    style={{ display: "block", padding: 12, width: "100%", maxWidth: 400, marginTop: 8, border: "1px solid #ddd", borderRadius: 8 }}
+  />
+</div>
+
+<div style={{ marginBottom: 16 }}>
+  <label>Years of Experience</label>
+  <input
+    type="number"
+    min="0"
+    value={editForm.years_experience ?? ""}
+    onChange={(e) => updateEditField("years_experience", e.target.value)}
+    style={{ display: "block", padding: 12, width: "100%", maxWidth: 400, marginTop: 8, border: "1px solid #ddd", borderRadius: 8 }}
+  />
+</div>
+
+  
+<div style={{ marginBottom: 16 }}>
+  <label>Phone Number</label>
+  <input
+    type="tel"
+    value={editForm.phone || ""}
+    onChange={(e) => updateEditField("phone", e.target.value)}
+    style={{ display: "block", padding: 12, width: "100%", maxWidth: 400, marginTop: 8, border: "1px solid #ddd", borderRadius: 8 }}
+  />
+</div>
+<div style={{ marginBottom: 16 }}>
+    <label>Email Address</label>
+  <input
+    type="email"
+    value={editForm.email || ""}
+    onChange={(e) => updateEditField("email", e.target.value)}
+    style={{ display: "block", padding: 12, width: "100%", maxWidth: 400, marginTop: 8, border: "1px solid #ddd", borderRadius: 8 }}
+  />
+</div>
+
+<div style={{ marginBottom: 16 }}>
+  <label>LinkedIn Profile</label>
+  <input
+    type="url"
+    value={editForm.linkedin_url || ""}
+    onChange={(e) => updateEditField("linkedin_url", e.target.value)}
+    style={{ display: "block", padding: 12, width: "100%", maxWidth: 400, marginTop: 8, border: "1px solid #ddd", borderRadius: 8 }}
+  />
+</div>
+
+
+<div style={{ display: "flex", gap: 10, marginBottom: 20 }}>
+  <button
+    type="button"
+    onClick={saveProfile}
+    disabled={savingProfile}
+    style={{ background: "#245c4a", color: "white", padding: 12, borderRadius: 8, cursor: "pointer" }}
+  >
+    {savingProfile ? "Saving..." : "Save Changes"}
+  </button>
+
+  <button
+    type="button"
+    onClick={cancelEditing}
+    disabled={savingProfile}
+    style={{ background: "#eee", color: "#333", padding: 12, borderRadius: 8, cursor: "pointer" }}
+  >
+    Cancel
+  </button>
+</div>
+
+    </>
+
+
+)}
 
           <div
             style={{
