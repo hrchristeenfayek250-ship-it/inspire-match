@@ -26,6 +26,9 @@ const initialForm = {
 
 export default function JobsPage() {
   const [jobs, setJobs] = useState([]);
+  
+const [candidates, setCandidates] = useState([]);
+
   const [form, setForm] = useState(initialForm);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -55,6 +58,17 @@ async function loadJobs() {
     console.error("Could not load jobs:", error);
   } else {
     setJobs(data || []);
+  }
+
+  const { data: candidateData, error: candidateError } = await supabase
+    .from("candidates")
+    .select("id, job_id, full_name, status")
+    .eq("user_id", user.id);
+
+  if (candidateError) {
+    console.error("Could not load job candidates:", candidateError);
+  } else {
+    setCandidates(candidateData || []);
   }
 
   setLoading(false);
@@ -791,8 +805,17 @@ async function loadJobs() {
                     >
                       {job.description}
                     </p>
-                  </div>
+                      <p>Candidates: {candidates.filter(c => Number(c.job_id) === Number(job.id)).length}</p>
+                      </div>
+                      
 
+
+                      
+  
+
+                      
+  
+  
                   <select
                     value={
                       job.status || "Active"
