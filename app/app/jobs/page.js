@@ -806,6 +806,13 @@ async function loadJobs() {
                       {job.description}
                     </p>
                       <p>Candidates: {candidates.filter(c => Number(c.job_id) === Number(job.id)).length}</p>
+                      
+{candidates.filter(c => c.job_id != null && Number(c.job_id) === Number(job.id)).map(c => (
+  <p key={c.id}>
+    <Link href={`/app/candidates/${c.id}`}>{c.full_name || "Unnamed Candidate"}</Link> — {c.status || "Applied"}
+  </p>
+))}
+
                       </div>
                       
 
