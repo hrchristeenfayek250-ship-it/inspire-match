@@ -267,12 +267,21 @@ async function saveProfile() {
       return;
     }
 
+    if (!candidate?.company_id) {
+      alert("This candidate is not linked to a company.");
+      setSavingNote(false);
+      return;
+    }
+
     const { data, error } = await supabase
       .from("notes")
       .insert([
         {
           user_id: user.id,
           candidate_id: Number(candidateId),
+          
+company_id: candidate.company_id,
+
           note: newNote.trim(),
         },
       ])
