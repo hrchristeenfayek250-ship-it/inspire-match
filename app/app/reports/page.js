@@ -55,7 +55,7 @@ export default function ReportsPage() {
             const { data, error: queryError } = await supabase
         .from("candidates")
         .select(
-          "id, full_name, current_title, status, created_at, blind_screening"
+"id, full_name, current_title, status, created_at"
         )
         .eq("user_id", authData.user.id)
         .gte("created_at", start.toISOString())
@@ -89,8 +89,6 @@ export default function ReportsPage() {
     ).length;
   }
 
-const legacyBlindCount = candidates.filter((candidate) => candidate.blind_screening === true).length;
-const missingNames = candidates.filter((candidate) => !candidate.blind_screening && !String(candidate.full_name || "").trim()).length;
 
   const periodLabel = new Date(
     `${month}-01T12:00:00`
@@ -598,14 +596,7 @@ table th {
 
                   </div>
 
-                  {legacyBlindCount > 0 && (
-                    <div style={{ color: "#245c4a", marginTop: 10 }}>
-                      <strong>Legacy Blind Screening:</strong>{" "}
-                      {legacyBlindCount} {legacyBlindCount === 1 ? "candidate record was" : "candidate records were"} saved with Blind Screening enabled.
-                      This feature is now disabled for new candidates.
-                    </div>
-                  )}
-
+                 
               </div>
 </div>
               <h3
