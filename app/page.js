@@ -383,11 +383,29 @@ ${job.description || ""}
       );
     }
 
+    const { data: memberships, error: membershipError } =
+      await supabase
+        .from("company_members")
+        .select("company_id")
+        .eq("user_id", user.id)
+        .limit(2);
+
+    if (membershipError || memberships?.length !== 1) {
+      throw new Error(
+        "Please select or set up your company first."
+      );
+    }
+
+    const companyId = memberships[0].company_id;
+
     const { error } = await supabase
       .from("candidates")
       .insert([
         {
           user_id: user.id,
+          
+company_id: companyId,
+
 
 job_id: selectedJobId ? Number(selectedJobId) : null,
 
