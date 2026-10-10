@@ -332,7 +332,8 @@ ${job.description || ""}
   const [cvFiles, setCvFiles] =
     useState([]);
 
-  const blind = false;
+  
+  
 
   const [consent, setConsent] =
     useState(false);
@@ -2142,10 +2143,7 @@ job_id: selectedJobId ? Number(selectedJobId) : null,
                     }}
                   >
                     {index + 1}.{" "}
-                    {candidateLabel(
-                      result,
-                      blind
-                    )}
+                    {candidateLabel(result)}
                   </strong>
 
                   <div>
