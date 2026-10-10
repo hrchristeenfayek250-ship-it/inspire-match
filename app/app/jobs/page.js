@@ -97,11 +97,40 @@ async function loadJobs() {
 
     setSaving(true);
 
+    
+    const { data: authData, error: authError } =
+      await supabase.auth.getUser();
+
+    if (authError || !authData.user) {
+      alert("Please log in first.");
+      setSaving(false);
+      return;
+    }
+
+    const { data: memberships, error: membershipError } =
+      await supabase
+        .from("company_members")
+        .select("company_id")
+        .eq("user_id", authData.user.id)
+        .limit(2);
+
+    if (membershipError || memberships?.length !== 1) {
+      alert("Please select or set up your company first.");
+      setSaving(false);
+      return;
+    }
+
+    const companyId = memberships[0].company_id;
+
+
     const { data, error } = await supabase
       .from("jobs")
       .insert([
         {
-          user_id: (await supabase.auth.getUser()).data.user.id,
+          
+user_id: authData.user.id,
+company_id: companyId,
+
           title: form.title.trim(),
           department: form.department.trim() || null,
           location: form.location.trim() || null,
