@@ -49,16 +49,9 @@ function computeOverall(scores = [], criteria = []) {
   };
 }
 
-function candidateLabel(result, blind) {
-  if (blind || !result.candidate?.name) {
-    return `Candidate ${String.fromCharCode(
-      65 + (result.index % 26)
-    )}`;
-  }
-
-  return result.candidate.name;
+function candidateLabel(result) {
+  return String(result.candidate?.name || "").trim() || "Name Not Available";
 }
-
 function ScoreRing({ value }) {
   const radius = 32;
   const circumference = 2 * Math.PI * radius;
@@ -416,8 +409,6 @@ job_id: selectedJobId ? Number(selectedJobId) : null,
 
           consent_confirmed: true,
 
-          blind_screening: blind,
-
           status: "Applied",
 
           source: "Inspire Match",
@@ -584,11 +575,6 @@ job_id: selectedJobId ? Number(selectedJobId) : null,
             )
           );
 
-          fd.append(
-            "blind",
-            String(blind)
-          );
-
           const res =
             await fetch(
               "/api/score-cv",
@@ -732,10 +718,7 @@ job_id: selectedJobId ? Number(selectedJobId) : null,
         (result, index) => [
           index + 1,
 
-          candidateLabel(
-            result,
-            blind
-          ),
+        candidateLabel(result),
 
           result.fileName,
 
@@ -1673,14 +1656,10 @@ job_id: selectedJobId ? Number(selectedJobId) : null,
                             />
 
                             <div>
-
-                              <div className="cand-name">
-                                {candidateLabel(
-                                  result,
-                                  blind
-                                )}
-                              </div>
-
+<div className="cand-name">
+  {candidateLabel(result)}
+</div>
+                             
                               <div className="cand-sub">
                                 {[
                                   result
