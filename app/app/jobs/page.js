@@ -48,10 +48,28 @@ async function loadJobs() {
     return;
   }
 
+  const { data: memberships, error: membershipError } =
+    await supabase
+      .from("company_members")
+      .select("company_id")
+      .eq("user_id", user.id)
+      .limit(2);
+
+  if (membershipError || memberships?.length !== 1) {
+    setJobs([]);
+    setCandidates([]);
+    setLoading(false);
+    return;
+  }
+
+  const companyId = memberships[0].company_id;
+
   const { data, error } = await supabase
     .from("jobs")
     .select("*")
-    .eq("user_id", user.id)
+ 
+.or(`company_id.eq.${companyId},and(company_id.is.null,user_id.eq.${user.id})`)
+ 
     .order("created_at", { ascending: false });
 
   if (error) {
@@ -63,7 +81,9 @@ async function loadJobs() {
   const { data: candidateData, error: candidateError } = await supabase
     .from("candidates")
     .select("id, job_id, full_name, status")
-    .eq("user_id", user.id);
+   
+.or(`company_id.eq.${companyId},and(company_id.is.null,user_id.eq.${user.id})`);
+
 
   if (candidateError) {
     console.error("Could not load job candidates:", candidateError);
