@@ -12,6 +12,11 @@ export default function TeamManagementPage() {
   const [role, setRole] = useState("");
   const [members, setMembers] = useState([]);
   const [userId, setUserId] = useState("");
+  
+const [inviteEmail, setInviteEmail] = useState("");
+const [inviting, setInviting] = useState(false);
+const [inviteLink, setInviteLink] = useState("");
+
 
   useEffect(() => {
     let active = true;
@@ -98,6 +103,42 @@ export default function TeamManagementPage() {
       active = false;
     };
   }, []);
+
+async function handleInvite(event) {
+  event.preventDefault();
+
+  if (role !== "admin" || !company?.id) return;
+
+  setInviting(true);
+  setError("");
+  setInviteLink("");
+
+  try {
+    const email = inviteEmail.trim().toLowerCase();
+
+    const { data, error: inviteError } = await supabase
+      .from("company_invitations")
+      .insert({
+        company_id: company.id,
+        email,
+        role: "hr",
+        created_by: userId,
+      })
+      .select("token")
+      .single();
+
+    if (inviteError) throw inviteError;
+
+    setInviteLink(
+      `${window.location.origin}/app/accept-invite?token=${data.token}`
+    );
+    setInviteEmail("");
+  } catch (err) {
+    setError(err.message || "Could not create invitation.");
+  } finally {
+    setInviting(false);
+  }
+}
 
   const cardStyle = {
     background: "#ffffff",
@@ -346,9 +387,65 @@ export default function TeamManagementPage() {
                     marginBottom: 0,
                   }}
                 >
-                  Secure team invitations and member
-                  management will be enabled after the
-                  access-control setup is completed.
+                 
+<form onSubmit={handleInvite}>
+  <label
+    htmlFor="invite-email"
+    style={{ display: "block", marginBottom: 10 }}
+  >
+    HR Member Email
+  </label>
+
+  <input
+    id="invite-email"
+    type="email"
+    required
+    placeholder="hr@company.com"
+    value={inviteEmail}
+    onChange={(e) => setInviteEmail(e.target.value)}
+    style={{
+      width: "100%",
+      padding: 14,
+      borderRadius: 10,
+      border: "1px solid #d6dfda",
+      boxSizing: "border-box",
+      marginBottom: 15,
+    }}
+  />
+
+  <button
+    type="submit"
+    disabled={inviting}
+    style={{
+      padding: "14px 22px",
+      border: "none",
+      borderRadius: 10,
+      background: "#173f3a",
+      color: "white",
+      cursor: "pointer",
+    }}
+  >
+    {inviting ? "Creating Invitation..." : "Invite HR Member"}
+  </button>
+</form>
+
+{inviteLink && (
+  <div style={{ marginTop: 20 }}>
+    <p>Invitation Link</p>
+    <input
+      readOnly
+      value={inviteLink}
+      style={{ width: "100%", padding: 10, boxSizing: "border-box" }}
+    />
+    <button
+      type="button"
+      onClick={() => navigator.clipboard.writeText(inviteLink)}
+    >
+      Copy Invitation Link
+    </button>
+  </div>
+)}
+
                 </p>
               </section>
             )}
