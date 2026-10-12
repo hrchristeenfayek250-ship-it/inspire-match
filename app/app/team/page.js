@@ -104,10 +104,11 @@ const [inviteLink, setInviteLink] = useState("");
     };
   }, []);
 
+
 async function handleInvite(event) {
   event.preventDefault();
 
-  if (role !== "admin" || !company?.id) return;
+  if (role !== "admin" || !company?.id || inviting) return;
 
   setInviting(true);
   setError("");
@@ -116,29 +117,43 @@ async function handleInvite(event) {
   try {
     const email = inviteEmail.trim().toLowerCase();
 
-    const { data, error: inviteError } = await supabase
-      .from("company_invitations")
-      .insert({
-        company_id: company.id,
-        email,
-        role: "hr",
-        created_by: userId,
-      })
-      .select("token")
-      .single();
+    const { data, error: authError } =
+      await supabase.auth.getSession();
 
-    if (inviteError) throw inviteError;
+    if (authError) throw authError;
 
-    setInviteLink(
-      `${window.location.origin}/app/accept-invite?token=${data.token}`
-    );
+    const token = data?.session?.access_token;
+
+    if (!token) {
+      throw new Error("Please sign in again.");
+    }
+
+    const response = await fetch("/api/send-hr-invite", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({ email }),
+    });
+
+    const result = await response.json();
+
+    if (!response.ok) {
+      throw new Error(result.error || "Invitation failed.");
+    }
+
+    setInviteLink(result.inviteLink || "");
     setInviteEmail("");
+
+    alert("HR invitation email sent successfully!");
   } catch (err) {
-    setError(err.message || "Could not create invitation.");
+    alert(err.message || "Could not send invitation.");
   } finally {
     setInviting(false);
   }
 }
+
 
   const cardStyle = {
     background: "#ffffff",
