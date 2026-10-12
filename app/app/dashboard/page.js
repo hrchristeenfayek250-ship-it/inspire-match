@@ -299,20 +299,39 @@ export default function DashboardPage() {
           >
             🤖 AI Matching
          </Link>
-<Link href="/app/team"
-  style={{
-    textDecoration: "none",
-    padding: "14px 22px",
-    borderRadius: 10,
-    background: "#eaf3ee",
-    color: "#1e3b32",
-    border: "1px solid #c8ded1",
-    fontWeight: 600,
-  }}
->
-  👥 Team Management
-</Link>
+
+          <Link
+            href="/app/team"
+            style={{
+              textDecoration: "none",
+              padding: "14px 22px",
+              borderRadius: 10,
+              background: "#eaf3ee",
+              color: "#1e3b32",
+              border: "1px solid #c8ded1",
+              fontWeight: 600,
+            }}
+          >
+            👥 Team Management
+          </Link>
+
+          <Link
+            href="/app/reports"
+            style={{
+              textDecoration: "none",
+              padding: "14px 22px",
+              borderRadius: 10,
+              background: "#173f3a",
+              color: "#ffffff",
+              border: "1px solid #173f3a",
+              fontWeight: 700,
+              boxShadow: "0 6px 14px rgba(23,63,58,0.12)",
+            }}
+          >
+            📊 Reports & Analytics
+          </Link>
         </div>
+
 
         {/* KPI CARDS */}
 
