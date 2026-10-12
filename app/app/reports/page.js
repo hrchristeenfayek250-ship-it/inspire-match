@@ -1608,9 +1608,193 @@ table th {
                     </p>
                   </section>
                 );
+              
+              })()}
+
+              {/* RECRUITMENT DATA QUALITY SCORE */}
+              {(() => {
+                const total = candidates.length;
+
+                const linked = candidates.filter((candidate) =>
+                  jobs.some(
+                    (job) =>
+                      String(job.id) === String(candidate.job_id)
+                  )
+                ).length;
+
+                const validStatus = candidates.filter((candidate) =>
+                  stages.some(
+                    (stage) =>
+                      stage.toLowerCase() ===
+                      String(candidate.status || "").toLowerCase()
+                  )
+                ).length;
+
+                const withTitle = candidates.filter(
+                  (candidate) =>
+                    String(candidate.current_title || "").trim() !== ""
+                ).length;
+
+                const checks = [
+                  { name: "Job Assignment", count: linked },
+                  { name: "Pipeline Status", count: validStatus },
+                  { name: "Candidate Job Title", count: withTitle },
+                ];
+
+                const score = total
+                  ? Math.round(
+                      (checks.reduce(
+                        (sum, item) => sum + item.count,
+                        0
+                      ) /
+                        (total * checks.length)) *
+                        100
+                    )
+                  : null;
+
+                const weakest = checks.reduce(
+                  (lowest, item) =>
+                    item.count < lowest.count ? item : lowest,
+                  checks[0]
+                );
+
+                return (
+                  <section
+                    style={{
+                      background: "#FFFFFF",
+                      border: "1px solid #DCE9DF",
+                      borderRadius: 18,
+                      padding: 26,
+                      marginBottom: 28,
+                    }}
+                  >
+                    <div
+                      style={{
+                        color: "#347A65",
+                        fontSize: 11,
+                        fontWeight: 800,
+                        letterSpacing: 2,
+                      }}
+                    >
+                      DATA INTELLIGENCE
+                    </div>
+
+                    <h2
+                      style={{
+                        fontFamily: "Georgia, serif",
+                        color: "#173F3A",
+                        fontSize: 25,
+                      }}
+                    >
+                      Recruitment Data Quality Score
+                    </h2>
+
+                    <p style={{ color: "#71847A", fontSize: 13 }}>
+                      Data completeness for candidates added in {periodLabel}.
+                    </p>
+
+                    <div
+                      style={{
+                        fontSize: 48,
+                        fontWeight: 800,
+                        color: "#245C4A",
+                        margin: "20px 0",
+                      }}
+                    >
+                      {score === null ? "—" : `${score}%`}
+                    </div>
+
+                    {total === 0 ? (
+                      <p style={{ color: "#71847A" }}>
+                        No candidates available for this period.
+                      </p>
+                    ) : (
+                      <>
+                        {checks.map((item) => {
+                          const percentage = Math.round(
+                            (item.count / total) * 100
+                          );
+
+                          return (
+                            <div
+                              key={item.name}
+                              style={{ marginBottom: 20 }}
+                            >
+                              <div
+                                style={{
+                                  display: "flex",
+                                  justifyContent: "space-between",
+                                  gap: 12,
+                                  marginBottom: 8,
+                                  fontSize: 13,
+                                }}
+                              >
+                                <strong>{item.name}</strong>
+                                <span>
+                                  {item.count}/{total} ({percentage}%)
+                                </span>
+                              </div>
+
+                              <div
+                                style={{
+                                  height: 12,
+                                  background: "#EDF3EF",
+                                  borderRadius: 8,
+                                  overflow: "hidden",
+                                }}
+                              >
+                                <div
+                                  style={{
+                                    width: `${percentage}%`,
+                                    height: "100%",
+                                    background: "#347A65",
+                                    borderRadius: 8,
+                                  }}
+                                />
+                              </div>
+                            </div>
+                          );
+                        })}
+
+                        <div
+                          style={{
+                            background: "#F7FAF8",
+                            borderLeft: "4px solid #D2A85F",
+                            padding: 16,
+                            borderRadius: 10,
+                            marginTop: 22,
+                            fontSize: 13,
+                            color: "#52665A",
+                          }}
+                        >
+                          <strong>Priority Improvement:</strong>{" "}
+                          {weakest.name === "Job Assignment"
+                            ? "Link candidates to their relevant jobs."
+                            : weakest.name === "Pipeline Status"
+                            ? "Review missing or unrecognized candidate statuses."
+                            : "Complete missing candidate job titles."}
+                        </div>
+                      </>
+                    )}
+
+                    <p
+                      style={{
+                        color: "#819388",
+                        fontSize: 11,
+                        marginTop: 20,
+                      }}
+                    >
+                      Score is the average completeness of three
+                      fields: valid job assignment, pipeline status,
+                      and candidate title. This is a data quality
+                      indicator, not an AI prediction.
+                    </p>
+                  </section>
+                );
               })()}
 
               <div
+
 
 
                 style={{
