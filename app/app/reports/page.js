@@ -1381,9 +1381,237 @@ table th {
                     </p>
                   </section>
                 );
+              
+              })()}
+
+              {/* RECRUITMENT BOTTLENECK ANALYSIS */}
+              {(() => {
+                const activeStages = [
+                  "Applied",
+                  "Screening",
+                  "Interview",
+                  "Shortlisted",
+                ];
+
+                const stageRows = activeStages.map((stage) => ({
+                  name: stage,
+                  count: countStage(stage),
+                }));
+
+                const activeTotal = stageRows.reduce(
+                  (sum, item) => sum + item.count,
+                  0
+                );
+
+                const maxCount = Math.max(
+                  0,
+                  ...stageRows.map((item) => item.count)
+                );
+
+                const largestStage = stageRows.find(
+                  (item) => item.count === maxCount
+                );
+
+                const recommendations = {
+                  Applied: "Review new applications and prioritize initial screening.",
+                  Screening: "Review screening decisions and move qualified candidates forward.",
+                  Interview: "Follow up on interview feedback and pending decisions.",
+                  Shortlisted: "Align with hiring managers on final selection and next steps.",
+                };
+
+                return (
+                  <section
+                    style={{
+                      background: "#FFFFFF",
+                      border: "1px solid #DCE9DF",
+                      borderRadius: 18,
+                      padding: 26,
+                      marginBottom: 28,
+                      breakInside: "avoid",
+                    }}
+                  >
+                    <div
+                      style={{
+                        color: "#347A65",
+                        fontSize: 11,
+                        fontWeight: 800,
+                        letterSpacing: 2,
+                      }}
+                    >
+                      RECRUITMENT INTELLIGENCE
+                    </div>
+
+                    <h2
+                      style={{
+                        fontFamily: "Georgia, serif",
+                        color: "#173F3A",
+                        fontSize: 25,
+                        marginBottom: 10,
+                      }}
+                    >
+                      Recruitment Bottleneck Analysis
+                    </h2>
+
+                    <p
+                      style={{
+                        color: "#71847A",
+                        fontSize: 13,
+                        marginBottom: 24,
+                      }}
+                    >
+                      Identify where active candidates are concentrated
+                      during {periodLabel}.
+                    </p>
+
+                    {activeTotal === 0 ? (
+                      <p style={{ color: "#819388" }}>
+                        No active candidates available for this period.
+                      </p>
+                    ) : (
+                      <>
+                        <div
+                          style={{
+                            background: "#F2F8F4",
+                            border: "1px solid #DCE9DF",
+                            borderRadius: 14,
+                            padding: 20,
+                            marginBottom: 26,
+                          }}
+                        >
+                          <div
+                            style={{
+                              fontSize: 11,
+                              fontWeight: 800,
+                              color: "#347A65",
+                              letterSpacing: 1,
+                            }}
+                          >
+                            LARGEST ACTIVE STAGE
+                          </div>
+
+                          <div
+                            style={{
+                              fontSize: 26,
+                              fontWeight: 800,
+                              color: "#173F3A",
+                              marginTop: 10,
+                            }}
+                          >
+                            {largestStage.name}
+                          </div>
+
+                          <div
+                            style={{
+                              fontSize: 13,
+                              color: "#52665A",
+                              marginTop: 6,
+                            }}
+                          >
+                            {largestStage.count} of {activeTotal} active candidates
+                            {" "}(
+                            {Math.round(
+                              (largestStage.count / activeTotal) * 100
+                            )}
+                            %)
+                          </div>
+                        </div>
+
+                        {stageRows.map((item) => (
+                          <div
+                            key={item.name}
+                            style={{ marginBottom: 22 }}
+                          >
+                            <div
+                              style={{
+                                display: "flex",
+                                justifyContent: "space-between",
+                                marginBottom: 8,
+                                gap: 12,
+                                fontSize: 13,
+                              }}
+                            >
+                              <strong style={{ color: "#173F3A" }}>
+                                {item.name}
+                              </strong>
+
+                              <span style={{ color: "#52665A" }}>
+                                {item.count} candidates |{" "}
+                                {Math.round(
+                                  (item.count / activeTotal) * 100
+                                )}
+                                %
+                              </span>
+                            </div>
+
+                            <div
+                              style={{
+                                height: 16,
+                                background: "#EDF3EF",
+                                borderRadius: 10,
+                                overflow: "hidden",
+                              }}
+                            >
+                              <div
+                                style={{
+                                  height: "100%",
+                                  width: `${
+                                    (item.count / Math.max(1, maxCount)) * 100
+                                  }%`,
+                                  background:
+                                    item.name === largestStage.name
+                                      ? "#D2A85F"
+                                      : "#347A65",
+                                  borderRadius: 10,
+                                }}
+                              />
+                            </div>
+                          </div>
+                        ))}
+
+                        <div
+                          style={{
+                            borderLeft: "4px solid #347A65",
+                            background: "#F7FAF8",
+                            borderRadius: 10,
+                            padding: 18,
+                            marginTop: 24,
+                          }}
+                        >
+                          <strong style={{ color: "#173F3A" }}>
+                            Recommended Action
+                          </strong>
+
+                          <p
+                            style={{
+                              color: "#52665A",
+                              fontSize: 13,
+                              lineHeight: 1.7,
+                              marginBottom: 0,
+                            }}
+                          >
+                            {recommendations[largestStage.name]}
+                          </p>
+                        </div>
+                      </>
+                    )}
+
+                    <p
+                      style={{
+                        color: "#819388",
+                        fontSize: 11,
+                        marginTop: 22,
+                      }}
+                    >
+                      This analysis highlights candidate concentration
+                      by current stage. A confirmed process bottleneck
+                      requires stage entry dates and time-in-stage data.
+                    </p>
+                  </section>
+                );
               })()}
 
               <div
+
 
                 style={{
                   breakBefore: "page",
