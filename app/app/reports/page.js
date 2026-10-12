@@ -961,6 +961,249 @@ table th {
                 );
               })()}
 
+              
+              {(() => {
+                const hired = countStage("Hired");
+                const rejected = countStage("Rejected");
+
+                const inProgress = [
+                  "Applied",
+                  "Screening",
+                  "Interview",
+                  "Shortlisted",
+                ].reduce(
+                  (sum, stage) => sum + countStage(stage),
+                  0
+                );
+
+                const decided = hired + rejected;
+                const other = Math.max(
+                  0,
+                  candidates.length - hired - rejected - inProgress
+                );
+
+                const metrics = [
+                  {
+                    label: "HIRED CANDIDATES",
+                    value: hired,
+                    color: "#173F3A",
+                  },
+                  {
+                    label: "IN PROGRESS",
+                    value: inProgress,
+                    color: "#347A65",
+                  },
+                  {
+                    label: "FINAL DECISIONS",
+                    value: decided,
+                    color: "#D2A85F",
+                  },
+                  {
+                    label: "POSITIVE DECISION SHARE",
+                    value: decided
+                      ? `${Math.round((hired / decided) * 100)}%`
+                      : "—",
+                    color: "#5DAA91",
+                  },
+                ];
+
+                const outcomeMix = [
+                  {
+                    name: "In Progress",
+                    count: inProgress,
+                    color: "#347A65",
+                  },
+                  {
+                    name: "Hired",
+                    count: hired,
+                    color: "#173F3A",
+                  },
+                  {
+                    name: "Rejected",
+                    count: rejected,
+                    color: "#D97676",
+                  },
+                  {
+                    name: "Other",
+                    count: other,
+                    color: "#A7B7AF",
+                  },
+                ];
+
+                return (
+                  <section
+                    style={{
+                      background: "#FFFFFF",
+                      border: "1px solid #DCE9DF",
+                      borderRadius: 18,
+                      padding: 26,
+                      marginBottom: 28,
+                      breakInside: "avoid",
+                    }}
+                  >
+                    <div
+                      style={{
+                        color: "#347A65",
+                        fontSize: 11,
+                        fontWeight: 800,
+                        letterSpacing: 2,
+                        marginBottom: 10,
+                      }}
+                    >
+                      HIRING INTELLIGENCE
+                    </div>
+
+                    <h2
+                      style={{
+                        fontFamily: "Georgia, serif",
+                        color: "#173F3A",
+                        fontSize: 25,
+                        margin: "0 0 10px",
+                      }}
+                    >
+                      Hiring Performance Overview
+                    </h2>
+
+                    <p
+                      style={{
+                        color: "#71847A",
+                        fontSize: 13,
+                        marginBottom: 25,
+                      }}
+                    >
+                      Current hiring outcomes for candidates
+                      added in {periodLabel}.
+                    </p>
+
+                    <div
+                      style={{
+                        display: "grid",
+                        gridTemplateColumns:
+                          "repeat(auto-fit, minmax(165px, 1fr))",
+                        gap: 14,
+                        marginBottom: 30,
+                      }}
+                    >
+                      {metrics.map((item) => (
+                        <div
+                          key={item.label}
+                          style={{
+                            background: "#F7FAF8",
+                            border: "1px solid #E2ECE5",
+                            borderTop: `4px solid ${item.color}`,
+                            borderRadius: 14,
+                            padding: 20,
+                          }}
+                        >
+                          <div
+                            style={{
+                              fontSize: 11,
+                              color: "#71847A",
+                              fontWeight: 700,
+                              minHeight: 30,
+                            }}
+                          >
+                            {item.label}
+                          </div>
+
+                          <div
+                            style={{
+                              fontSize: 34,
+                              fontWeight: 800,
+                              color: item.color,
+                              marginTop: 12,
+                            }}
+                          >
+                            {item.value}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+
+                    <h3
+                      style={{
+                        color: "#173F3A",
+                        fontSize: 16,
+                        marginBottom: 18,
+                      }}
+                    >
+                      Hiring Outcome Mix
+                    </h3>
+
+                    <div
+                      style={{
+                        height: 26,
+                        background: "#EDF3EF",
+                        borderRadius: 12,
+                        display: "flex",
+                        overflow: "hidden",
+                        marginBottom: 18,
+                      }}
+                    >
+                      {outcomeMix.map((item) => (
+                        <div
+                          key={item.name}
+                          title={`${item.name}: ${item.count}`}
+                          style={{
+                            width: `${
+                              candidates.length
+                                ? (item.count / candidates.length) * 100
+                                : 0
+                            }%`,
+                            height: "100%",
+                            background: item.color,
+                          }}
+                        />
+                      ))}
+                    </div>
+
+                    <div
+                      style={{
+                        display: "flex",
+                        flexWrap: "wrap",
+                        gap: 18,
+                      }}
+                    >
+                      {outcomeMix.map((item) => (
+                        <div
+                          key={item.name}
+                          style={{
+                            display: "flex",
+                            alignItems: "center",
+                            gap: 8,
+                            fontSize: 12,
+                            color: "#52665A",
+                          }}
+                        >
+                          <span
+                            style={{
+                              width: 12,
+                              height: 12,
+                              borderRadius: 3,
+                              background: item.color,
+                            }}
+                          />
+                          {item.name}: {item.count}
+                        </div>
+                      ))}
+                    </div>
+
+                    <p
+                      style={{
+                        fontSize: 11,
+                        color: "#819388",
+                        marginTop: 20,
+                      }}
+                    >
+                      Positive Decision Share = Hired /
+                      (Hired + Rejected). This is a current
+                      status indicator, not a historical
+                      conversion or offer acceptance rate.
+                    </p>
+                  </section>
+                );
+              })()}
+
               <div
                 style={{
                   breakBefore: "page",
@@ -973,6 +1216,7 @@ table th {
                   marginBottom: 18,
                 }}
               >
+
 
                 <div style={{
                   color: "#245c4a",
