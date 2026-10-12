@@ -382,6 +382,7 @@ export default function ExecutivePage() {
         </div>
       </div>
 
+     <style>{`
 
         @page {
           size: A4 portrait;
