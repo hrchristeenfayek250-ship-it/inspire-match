@@ -229,7 +229,160 @@ export default function ExecutivePage() {
       }}
     >
       
+      {/* EXECUTIVE REPORT COVER - PRINT ONLY */}
       <style>{`
+        .executive-print-cover {
+          display: none;
+        }
+
+        @media print {
+          .executive-print-cover {
+            display: flex !important;
+            flex-direction: column;
+            justify-content: space-between;
+            box-sizing: border-box;
+            height: 260mm;
+            padding: 22mm 14mm;
+            background: #FFFFFF !important;
+            border-top: 9px solid #245C4A;
+            break-after: page;
+            page-break-after: always;
+            -webkit-print-color-adjust: exact;
+            print-color-adjust: exact;
+          }
+        }
+      `}</style>
+
+      <div className="executive-print-cover">
+        <div>
+          <div
+            style={{
+              fontSize: 13,
+              letterSpacing: 3,
+              fontWeight: 800,
+              color: "#347A65",
+            }}
+          >
+            INSPIRE MATCH
+          </div>
+
+          <div
+            style={{
+              fontSize: 12,
+              color: "#71847A",
+              marginTop: 10,
+            }}
+          >
+            HIRE & INSPIRE BY CHRISTINE
+          </div>
+        </div>
+
+        <div>
+          <div
+            style={{
+              width: 85,
+              height: 6,
+              background: "#347A65",
+              marginBottom: 35,
+            }}
+          />
+
+          <div
+            style={{
+              fontSize: 14,
+              fontWeight: 800,
+              letterSpacing: 3,
+              color: "#347A65",
+              marginBottom: 22,
+            }}
+          >
+            EXECUTIVE INTELLIGENCE
+          </div>
+
+          <h1
+            style={{
+              fontFamily: "Georgia, serif",
+              fontSize: 48,
+              lineHeight: 1.2,
+              color: "#173F3A",
+              margin: 0,
+            }}
+          >
+            Executive
+            <br />
+            Recruitment
+            <br />
+            Report
+          </h1>
+
+          <p
+            style={{
+              fontSize: 17,
+              color: "#71847A",
+              marginTop: 28,
+              lineHeight: 1.8,
+            }}
+          >
+            Recruitment Performance, Workforce Insights
+            & Strategic Hiring Priorities
+          </p>
+        </div>
+
+        <div
+          style={{
+            borderTop: "1px solid #DCE9DF",
+            paddingTop: 25,
+          }}
+        >
+          <div
+            style={{
+              fontSize: 12,
+              color: "#71847A",
+              marginBottom: 8,
+            }}
+          >
+            REPORT GENERATED ON
+          </div>
+
+          <div
+            style={{
+              fontSize: 19,
+              fontWeight: 800,
+              color: "#173F3A",
+            }}
+          >
+            {new Date().toLocaleDateString("en-GB", {
+              day: "numeric",
+              month: "long",
+              year: "numeric",
+            })}
+          </div>
+
+          <div
+            style={{
+              marginTop: 30,
+              fontSize: 12,
+              letterSpacing: 2,
+              color: "#A45232",
+              fontWeight: 800,
+            }}
+          >
+            CONFIDENTIAL — MANAGEMENT USE ONLY
+          </div>
+
+          <div
+            style={{
+              fontSize: 12,
+              color: "#71847A",
+              marginTop: 12,
+            }}
+          >
+            Powered by Inspire Match ATS
+          </div>
+        </div>
+      </div>
+
+
         @page {
           size: A4 portrait;
           margin: 12mm;
