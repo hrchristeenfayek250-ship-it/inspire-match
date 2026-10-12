@@ -22,9 +22,12 @@ export default function ReportsPage() {
     ).padStart(2, "0")}`;
   });
 
+ 
   const [candidates, setCandidates] = useState([]);
+  const [jobs, setJobs] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+
 
   useEffect(() => {
     let active = true;
@@ -77,23 +80,38 @@ export default function ReportsPage() {
 
       const { data, error: queryError } = await supabase
         .from("candidates")
+        
         .select(
-          "id, full_name, current_title, status, created_at"
+          "id, full_name, current_title, status, created_at, job_id"
         )
+
         .or(
           `company_id.eq.${companyId},and(company_id.is.null,user_id.eq.${authData.user.id})`
         )
         .gte("created_at", start.toISOString())
-        .lt("created_at", end.toISOString())
-        .order("created_at", { ascending: false });
-
+      
+      const { data: jobData, error: jobError } =
+        await supabase
+          .from("jobs")
+          .select("id, title, status")
+          .or(
+            `company_id.eq.${companyId},and(company_id.is.null,user_id.eq.${authData.user.id})`
+          )
+          .order("created_at", { ascending: false });
 
       if (!active) return;
 
-      if (queryError) {
-        setError("Could not load report data.");
+      if (queryError || jobError) {
+        setError("Could not load recruitment analytics.");
         setCandidates([]);
+        setJobs([]);
       } else {
+        setCandidates(data || []);
+        setJobs(jobData || []);
+      }
+
+      setLoading(false);
+
         setCandidates(data || []);
       }
 
