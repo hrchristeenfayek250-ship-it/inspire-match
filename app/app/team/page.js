@@ -14,6 +14,7 @@ export default function TeamManagementPage() {
   const [userId, setUserId] = useState("");
   const [invitations, setInvitations] = useState([]);
 const [cancellingId, setCancellingId] = useState(null);
+  const [resendingId, setResendingId] = useState(null);
   
 const [inviteEmail, setInviteEmail] = useState("");
 const [inviting, setInviting] = useState(false);
@@ -208,6 +209,70 @@ async function cancelInvitation(invitation) {
     alert(err.message || "Could not cancel invitation.");
   } finally {
     setCancellingId(null);
+  }
+}
+  async function resendInvitation(invitation) {
+  if (role !== "admin" || resendingId || cancellingId) return;
+
+  if (!window.confirm(
+    `Resend invitation to ${invitation.email}? The old link will stop working.`
+  )) return;
+
+  setResendingId(invitation.id);
+
+  try {
+    const oneHourAgo = new Date(
+      Date.now() - 60 * 60 * 1000
+    ).toISOString();
+
+    const { count, error: countError } = await supabase
+      .from("company_invitations")
+      .select("id", { count: "exact", head: true })
+      .eq("company_id", company.id)
+      .gte("created_at", oneHourAgo);
+
+    if (countError) throw countError;
+    if ((count || 0) >= 10) {
+      throw new Error("Invitation limit reached. Try again later.");
+    }
+
+    const { data: sessionData } =
+      await supabase.auth.getSession();
+
+    const token = sessionData?.session?.access_token;
+    if (!token) throw new Error("Please sign in again.");
+
+    const { data: cancelled, error: cancelError } =
+      await supabase.rpc("cancel_company_invitation", {
+        p_invitation_id: invitation.id
+      });
+
+    if (cancelError) throw cancelError;
+    if (!cancelled) throw new Error("Invitation is no longer active.");
+
+    const response = await fetch("/api/send-hr-invite", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`
+      },
+      body: JSON.stringify({ email: invitation.email })
+    });
+
+    const result = await response.json();
+
+    if (!response.ok) {
+      throw new Error(result.error || "Resend failed.");
+    }
+
+    alert("Invitation resent successfully!");
+    window.location.reload();
+
+  } catch (err) {
+    alert(err.message || "Could not resend invitation.");
+    window.location.reload();
+  } finally {
+    setResendingId(null);
   }
 }
   const cardStyle = {
@@ -481,6 +546,15 @@ async function cancelInvitation(invitation) {
                       ? "Cancelling..."
                       : "Cancel Invitation"}
                   </button>
+                    <button
+  type="button"
+  disabled={Boolean(resendingId || cancellingId)}
+  onClick={() => resendInvitation(invitation)}
+>
+  {resendingId === invitation.id
+    ? "Resending..."
+    : "Resend Invitation"}
+</button>
                 </td>
               </tr>
             ))}
