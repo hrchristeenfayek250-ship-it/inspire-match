@@ -380,7 +380,315 @@ export default function ExecutivePage() {
             Powered by Inspire Match ATS
           </div>
         </div>
+
+      {/* EXECUTIVE SUMMARY - PRINT ONLY */}
+      <style>{`
+        .executive-print-summary {
+          display: none;
+        }
+
+        @media print {
+          .executive-print-summary {
+            display: block !important;
+            box-sizing: border-box;
+            min-height: 245mm;
+            padding: 8mm 4mm;
+            background: #FFFFFF !important;
+            break-after: page;
+            page-break-after: always;
+            -webkit-print-color-adjust: exact;
+            print-color-adjust: exact;
+          }
+
+          .executive-print-summary .summary-block {
+            break-inside: avoid-page;
+            page-break-inside: avoid;
+          }
+        }
+      `}</style>
+
+      <div className="executive-print-summary">
+        <div
+          style={{
+            fontSize: 11,
+            fontWeight: 800,
+            letterSpacing: 2,
+            color: "#347A65",
+            marginBottom: 12,
+          }}
+        >
+          INSPIRE MATCH | LEADERSHIP BRIEF
+        </div>
+
+        <h1
+          style={{
+            fontFamily: "Georgia, serif",
+            fontSize: 34,
+            color: "#173F3A",
+            margin: "0 0 12px",
+          }}
+        >
+          Executive Summary
+        </h1>
+
+        <p
+          style={{
+            fontSize: 12,
+            color: "#71847A",
+            lineHeight: 1.7,
+            marginBottom: 22,
+          }}
+        >
+          A management snapshot of current recruitment
+          records, operational priorities and suggested
+          next steps.
+        </p>
+
+        <div
+          className="summary-block"
+          style={{
+            display: "grid",
+            gridTemplateColumns: "repeat(4, 1fr)",
+            gap: 10,
+            marginBottom: 22,
+          }}
+        >
+          {[
+            ["Candidates", totalCandidates],
+            ["Jobs Not Closed", activeJobs.length],
+            ["Interview / Shortlist", interviewReady],
+            ["Hired", hired],
+          ].map(([label, value]) => (
+            <div
+              key={label}
+              style={{
+                background: "#F1F7F3",
+                border: "1px solid #DCE9DF",
+                borderRadius: 10,
+                padding: 13,
+              }}
+            >
+              <div
+                style={{
+                  fontSize: 24,
+                  fontWeight: 800,
+                  color: "#245C4A",
+                }}
+              >
+                {value}
+              </div>
+
+              <div
+                style={{
+                  fontSize: 10,
+                  color: "#71847A",
+                  marginTop: 6,
+                }}
+              >
+                {label}
+              </div>
+            </div>
+          ))}
+        </div>
+
+        <div
+          className="summary-block"
+          style={{
+            borderLeft: "5px solid #347A65",
+            background: "#F7FAF8",
+            padding: 17,
+            borderRadius: 10,
+            marginBottom: 20,
+          }}
+        >
+          <h2
+            style={{
+              fontSize: 17,
+              margin: "0 0 10px",
+              color: "#173F3A",
+            }}
+          >
+            Overall Recruitment Performance
+          </h2>
+
+          <p
+            style={{
+              fontSize: 12,
+              lineHeight: 1.8,
+              margin: 0,
+              color: "#52665A",
+            }}
+          >
+            Current records include {totalCandidates} candidates
+            across {jobs.length} recorded jobs.
+            {" "}{interviewReady} candidates are currently
+            in Interview or Shortlisted stages, and {hired}
+            are marked Hired.
+            {" "}These figures describe current statuses,
+            not historical conversion rates.
+          </p>
+        </div>
+
+        <div className="summary-block" style={{ marginBottom: 20 }}>
+          <h2
+            style={{
+              fontSize: 17,
+              color: "#173F3A",
+              marginBottom: 10,
+            }}
+          >
+            Top Business Risks
+          </h2>
+
+          {priorities.length > 0 ? (
+            priorities.slice(0, 3).map((item, index) => (
+              <div
+                key={item.title}
+                style={{
+                  borderBottom: "1px solid #E1EBE4",
+                  padding: "9px 0",
+                }}
+              >
+                <strong
+                  style={{
+                    fontSize: 12,
+                    color: "#A45232",
+                  }}
+                >
+                  {index + 1}. {item.title}
+                </strong>
+
+                <p
+                  style={{
+                    fontSize: 11,
+                    color: "#52665A",
+                    lineHeight: 1.6,
+                    margin: "5px 0 0",
+                  }}
+                >
+                  {item.detail}
+                </p>
+              </div>
+            ))
+          ) : (
+            <p style={{ fontSize: 12, color: "#347A65" }}>
+              No operational priority signals triggered
+              by the current rules.
+            </p>
+          )}
+        </div>
+
+        <div className="summary-block" style={{ marginBottom: 20 }}>
+          <h2
+            style={{
+              fontSize: 17,
+              color: "#173F3A",
+              marginBottom: 10,
+            }}
+          >
+            Key Performance Indicators
+          </h2>
+
+          <p
+            style={{
+              fontSize: 12,
+              color: "#52665A",
+              lineHeight: 1.8,
+              margin: 0,
+            }}
+          >
+            {activeJobs.length - noCandidateJobs.length}
+            {" "}of {activeJobs.length} jobs not marked Closed
+            have at least one linked candidate.
+            {" "}{totalCandidates - unmatchedCandidates}
+            {" "}of {totalCandidates} candidates are linked
+            to recorded jobs.
+          </p>
+        </div>
+
+        <div className="summary-block">
+          <h2
+            style={{
+              fontSize: 17,
+              color: "#173F3A",
+              marginBottom: 10,
+            }}
+          >
+            Recommended 30-Day Action Plan
+          </h2>
+
+          {[
+            [
+              "Days 1–7",
+              noCandidateJobs.length > 0
+                ? `Review sourcing and candidate assignment for ${noCandidateJobs.length} jobs without linked candidates.`
+                : "Validate current job coverage and hiring priorities.",
+            ],
+            [
+              "Days 8–14",
+              earlyConcentrationJobs.length > 0
+                ? `Review screening progress for ${earlyConcentrationJobs.length} early-stage-heavy jobs.`
+                : "Review screening outcomes and interview readiness.",
+            ],
+            [
+              "Days 15–21",
+              unmatchedCandidates > 0
+                ? `Review job assignments for ${unmatchedCandidates} unmatched candidates.`
+                : "Audit candidate records and reporting completeness.",
+            ],
+            [
+              "Days 22–30",
+              "Recheck operational indicators and compare the updated snapshot with this report.",
+            ],
+          ].map(([period, action]) => (
+            <div
+              key={period}
+              style={{
+                display: "flex",
+                gap: 14,
+                padding: "9px 0",
+                borderBottom: "1px solid #E1EBE4",
+              }}
+            >
+              <strong
+                style={{
+                  minWidth: 85,
+                  fontSize: 11,
+                  color: "#347A65",
+                }}
+              >
+                {period}
+              </strong>
+
+              <span
+                style={{
+                  fontSize: 11,
+                  color: "#52665A",
+                  lineHeight: 1.6,
+                }}
+              >
+                {action}
+              </span>
+            </div>
+          ))}
+        </div>
+
+        <p
+          style={{
+            fontSize: 10,
+            color: "#819388",
+            lineHeight: 1.7,
+            marginTop: 18,
+          }}
+        >
+          This summary is generated from current ATS records
+          using transparent operational rules. Recommendations
+          are suggested actions, not confirmed risks,
+          forecasts or predictive AI assessments.
+        </p>
       </div>
+
+
 
      <style>{`
 
