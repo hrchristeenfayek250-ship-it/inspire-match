@@ -2038,9 +2038,317 @@ table th {
                     </p>
                   </section>
                 );
+              
+              })()}
+
+              {/* SMART RECRUITMENT ALERTS */}
+              {(() => {
+                const total = candidates.length;
+                const activeStages = [
+                  "Applied",
+                  "Screening",
+                  "Interview",
+                  "Shortlisted",
+                ];
+
+                const active = activeStages.reduce(
+                  (sum, stage) => sum + countStage(stage),
+                  0
+                );
+
+                const alerts = [];
+
+                const missingJobs = candidates.filter(
+                  (candidate) =>
+                    !jobs.some(
+                      (job) =>
+                        String(job.id) === String(candidate.job_id)
+                    )
+                ).length;
+
+                const missingTitles = candidates.filter(
+                  (candidate) =>
+                    !String(candidate.current_title || "").trim()
+                ).length;
+
+                const unknownStatuses = candidates.filter(
+                  (candidate) =>
+                    !stages.some(
+                      (stage) =>
+                        stage.toLowerCase() ===
+                        String(candidate.status || "")
+                          .trim()
+                          .toLowerCase()
+                    )
+                ).length;
+
+                if (
+                  total >= 3 &&
+                  missingJobs / total >= 0.25
+                ) {
+                  alerts.push({
+                    level: "High",
+                    title: "Candidate Job Assignment Gap",
+                    detail: `${missingJobs} of ${total} candidates are not linked to a job in the available job records.`,
+                    action:
+                      "Review candidate records and assign the correct job openings.",
+                  });
+                }
+
+                if (
+                  total >= 3 &&
+                  missingTitles / total >= 0.25
+                ) {
+                  alerts.push({
+                    level: "Medium",
+                    title: "Incomplete Candidate Profiles",
+                    detail: `${missingTitles} of ${total} candidates have no current job title.`,
+                    action:
+                      "Complete missing job titles to improve search, segmentation, and reporting.",
+                  });
+                }
+
+                if (unknownStatuses > 0) {
+                  alerts.push({
+                    level: "High",
+                    title: "Unrecognized Pipeline Status",
+                    detail: `${unknownStatuses} candidate records have a missing or unrecognized pipeline status.`,
+                    action:
+                      "Review these records and update their recruitment stages.",
+                  });
+                }
+
+                const screening = countStage("Screening");
+
+                if (
+                  active >= 3 &&
+                  screening / active >= 0.4
+                ) {
+                  alerts.push({
+                    level: "Medium",
+                    title: "High Screening Concentration",
+                    detail: `${screening} of ${active} active candidates (${Math.round(
+                      (screening / active) * 100
+                    )}%) are currently in Screening.`,
+                    action:
+                      "Review screening outcomes and identify candidates ready for the next stage.",
+                  });
+                }
+
+                const interview = countStage("Interview");
+
+                if (
+                  active >= 3 &&
+                  interview / active >= 0.5
+                ) {
+                  alerts.push({
+                    level: "Medium",
+                    title: "High Interview Concentration",
+                    detail: `${interview} of ${active} active candidates are currently in Interview.`,
+                    action:
+                      "Check interview feedback and coordinate pending hiring decisions.",
+                  });
+                }
+
+                alerts.sort(
+                  (a, b) =>
+                    (a.level === "High" ? 0 : 1) -
+                    (b.level === "High" ? 0 : 1)
+                );
+
+                return (
+                  <section
+                    style={{
+                      background: "#FFFFFF",
+                      border: "1px solid #DCE9DF",
+                      borderRadius: 18,
+                      padding: 26,
+                      marginBottom: 28,
+                    }}
+                  >
+                    <div
+                      style={{
+                        color: "#347A65",
+                        fontSize: 11,
+                        fontWeight: 800,
+                        letterSpacing: 2,
+                      }}
+                    >
+                      RECRUITMENT INTELLIGENCE
+                    </div>
+
+                    <h2
+                      style={{
+                        fontFamily: "Georgia, serif",
+                        color: "#173F3A",
+                        fontSize: 25,
+                        marginBottom: 10,
+                      }}
+                    >
+                      Smart Recruitment Alerts
+                    </h2>
+
+                    <p
+                      style={{
+                        color: "#71847A",
+                        fontSize: 13,
+                        lineHeight: 1.7,
+                      }}
+                    >
+                      Automated operational alerts based on candidates
+                      added in {periodLabel}.
+                    </p>
+
+                    <div
+                      style={{
+                        background: "#F7FAF8",
+                        padding: 16,
+                        borderRadius: 12,
+                        margin: "20px 0",
+                      }}
+                    >
+                      <strong
+                        style={{
+                          fontSize: 28,
+                          color: "#245C4A",
+                        }}
+                      >
+                        {alerts.length}
+                      </strong>
+                      <span
+                        style={{
+                          marginLeft: 12,
+                          color: "#52665A",
+                          fontSize: 13,
+                        }}
+                      >
+                        Alerts Detected
+                      </span>
+                    </div>
+
+                    {total === 0 ? (
+                      <p style={{ color: "#71847A" }}>
+                        No candidates available for this period.
+                      </p>
+                    ) : alerts.length === 0 ? (
+                      <div
+                        style={{
+                          background: "#F0F8F3",
+                          border: "1px solid #D0E7D8",
+                          padding: 20,
+                          borderRadius: 12,
+                          color: "#245C4A",
+                          fontSize: 13,
+                        }}
+                      >
+                        No alerts triggered by the current rules.
+                        Continue monitoring recruitment data.
+                      </div>
+                    ) : (
+                      <div
+                        style={{
+                          display: "grid",
+                          gap: 16,
+                          marginTop: 20,
+                        }}
+                      >
+                        {alerts.map((alert, index) => (
+                          <div
+                            key={`${alert.title}-${index}`}
+                            style={{
+                              border:
+                                "1px solid #E2ECE5",
+                              borderLeft: `5px solid ${
+                                alert.level === "High"
+                                  ? "#C35A4A"
+                                  : "#D2A85F"
+                              }`,
+                              borderRadius: 12,
+                              padding: 20,
+                              background: "#FCFDFC",
+                            }}
+                          >
+                            <div
+                              style={{
+                                display: "flex",
+                                justifyContent: "space-between",
+                                alignItems: "center",
+                                gap: 12,
+                                flexWrap: "wrap",
+                              }}
+                            >
+                              <strong
+                                style={{
+                                  color: "#173F3A",
+                                  fontSize: 15,
+                                }}
+                              >
+                                {alert.title}
+                              </strong>
+
+                              <span
+                                style={{
+                                  color:
+                                    alert.level === "High"
+                                      ? "#A64639"
+                                      : "#956A20",
+                                  fontSize: 11,
+                                  fontWeight: 800,
+                                }}
+                              >
+                                {alert.level} Priority
+                              </span>
+                            </div>
+
+                            <p
+                              style={{
+                                color: "#52665A",
+                                fontSize: 13,
+                                lineHeight: 1.7,
+                                marginTop: 12,
+                              }}
+                            >
+                              {alert.detail}
+                            </p>
+
+                            <div
+                              style={{
+                                background: "#F1F6F2",
+                                padding: 14,
+                                borderRadius: 8,
+                                fontSize: 12,
+                                color: "#245C4A",
+                                lineHeight: 1.7,
+                              }}
+                            >
+                              <strong>Recommended Action:</strong>{" "}
+                              {alert.action}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+
+                    <p
+                      style={{
+                        color: "#819388",
+                        fontSize: 11,
+                        marginTop: 22,
+                        lineHeight: 1.7,
+                      }}
+                    >
+                      Alerts are generated using transparent,
+                      rule-based thresholds. High stage
+                      concentration does not necessarily indicate
+                      a delay. This feature is not yet powered
+                      by a predictive AI model.
+                    </p>
+                  </section>
+                );
               })()}
 
               <div
+
 
 
 
