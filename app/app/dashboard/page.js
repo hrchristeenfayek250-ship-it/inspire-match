@@ -330,7 +330,27 @@ export default function DashboardPage() {
           >
             📊 Reports & Analytics
           </Link>
+ 
+          <Link
+            href="/app/executive"
+            style={{
+              textDecoration: "none",
+              padding: "14px 22px",
+              borderRadius: 10,
+              background: "linear-gradient(135deg, #245C4A, #347A65)",
+              color: "#FFFFFF",
+              border: "1px solid #245C4A",
+              fontWeight: 700,
+              boxShadow: "0 6px 16px rgba(36,92,74,0.18)",
+              display: "inline-flex",
+              alignItems: "center",
+              gap: 8,
+            }}
+          >
+            📈 Executive Intelligence
+          </Link>
         </div>
+
 
 
         {/* KPI CARDS */}
