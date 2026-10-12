@@ -78,18 +78,19 @@ export default function ReportsPage() {
         1
       );
 
+    
       const { data, error: queryError } = await supabase
         .from("candidates")
-        
         .select(
           "id, full_name, current_title, status, created_at, job_id"
         )
-
         .or(
           `company_id.eq.${companyId},and(company_id.is.null,user_id.eq.${authData.user.id})`
         )
         .gte("created_at", start.toISOString())
-      
+        .lt("created_at", end.toISOString())
+        .order("created_at", { ascending: false });
+
       const { data: jobData, error: jobError } =
         await supabase
           .from("jobs")
@@ -110,9 +111,14 @@ export default function ReportsPage() {
         setJobs(jobData || []);
       }
 
+      
       setLoading(false);
 
         setCandidates(data || []);
+      }
+
+      setLoading(false);
+
       }
 
       setLoading(false);
