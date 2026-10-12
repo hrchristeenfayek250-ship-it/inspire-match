@@ -395,73 +395,83 @@ async function handleInvite(event) {
                   Invite Your HR Team
                 </h2>
 
-                <p
-                  style={{
-                    color: "#68786f",
-                    lineHeight: 1.7,
-                    marginBottom: 0,
-                  }}
-                >
-                 
-<form onSubmit={handleInvite}>
-  <label
-    htmlFor="invite-email"
-    style={{ display: "block", marginBottom: 10 }}
-  >
-    HR Member Email
-  </label>
-
-  <input
-    id="invite-email"
-    type="email"
-    required
-    placeholder="hr@company.com"
-    value={inviteEmail}
-    onChange={(e) => setInviteEmail(e.target.value)}
-    style={{
-      width: "100%",
-      padding: 14,
-      borderRadius: 10,
-      border: "1px solid #d6dfda",
-      boxSizing: "border-box",
-      marginBottom: 15,
-    }}
-  />
-
-  <button
-    type="submit"
-    disabled={inviting}
-    style={{
-      padding: "14px 22px",
-      border: "none",
-      borderRadius: 10,
-      background: "#173f3a",
-      color: "white",
-      cursor: "pointer",
-    }}
-  >
-    {inviting ? "Creating Invitation..." : "Invite HR Member"}
-  </button>
-</form>
-
-{inviteLink && (
-  <div style={{ marginTop: 20 }}>
-    <p>Invitation Link</p>
-    <input
-      readOnly
-      value={inviteLink}
-      style={{ width: "100%", padding: 10, boxSizing: "border-box" }}
-    />
-    <button
-      type="button"
-      onClick={() => navigator.clipboard.writeText(inviteLink)}
+               
+<div
+  style={{
+    color: "#68786f",
+    lineHeight: 1.7,
+    marginBottom: 0,
+  }}
+>
+  <form onSubmit={handleInvite}>
+    <label
+      htmlFor="invite-email"
+      style={{ display: "block", marginBottom: 10 }}
     >
-      Copy Invitation Link
-    </button>
-  </div>
-)}
+      HR Member Email
+    </label>
 
-                </p>
+    <input
+      id="invite-email"
+      type="email"
+      required
+      placeholder="hr@company.com"
+      value={inviteEmail}
+      onChange={(e) => setInviteEmail(e.target.value)}
+      style={{
+        width: "100%",
+        padding: 14,
+        borderRadius: 10,
+        border: "1px solid #d6dfda",
+        boxSizing: "border-box",
+        marginBottom: 15,
+      }}
+    />
+
+    <button
+      type="submit"
+      disabled={inviting}
+      style={{
+        padding: "14px 22px",
+        border: "none",
+        borderRadius: 10,
+        background: "#173f3a",
+        color: "white",
+        cursor: inviting ? "wait" : "pointer",
+      }}
+    >
+      {inviting
+        ? "Sending Invitation..."
+        : "Invite HR Member"}
+    </button>
+  </form>
+
+  {inviteLink && (
+    <div style={{ marginTop: 20 }}>
+      <p>Invitation Link</p>
+
+      <input
+        readOnly
+        value={inviteLink}
+        style={{
+          width: "100%",
+          padding: 10,
+          boxSizing: "border-box",
+        }}
+      />
+
+      <button
+        type="button"
+        onClick={() =>
+          navigator.clipboard.writeText(inviteLink)
+        }
+      >
+        Copy Invitation Link
+      </button>
+    </div>
+  )}
+</div>
+
               </section>
             )}
           </>
