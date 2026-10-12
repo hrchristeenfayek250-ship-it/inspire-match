@@ -1791,9 +1791,257 @@ table th {
                     </p>
                   </section>
                 );
+              
+              })()}
+
+              {/* PIPELINE HEALTH SCORE */}
+              {(() => {
+                const total = candidates.length;
+
+                const applied = countStage("Applied");
+                const screening = countStage("Screening");
+                const interview = countStage("Interview");
+                const shortlisted = countStage("Shortlisted");
+                const hired = countStage("Hired");
+                const rejected = countStage("Rejected");
+
+                const active =
+                  applied + screening + interview + shortlisted;
+
+                const decided = hired + rejected;
+
+                const decisionCoverage = total
+                  ? Math.round((decided / total) * 100)
+                  : 0;
+
+                const progressionShare = active
+                  ? Math.round(
+                      ((interview + shortlisted) / active) * 100
+                    )
+                  : 0;
+
+                const jobLinked = candidates.filter((candidate) =>
+                  jobs.some(
+                    (job) =>
+                      String(job.id) === String(candidate.job_id)
+                  )
+                ).length;
+
+                const assignmentCoverage = total
+                  ? Math.round((jobLinked / total) * 100)
+                  : 0;
+
+                const score = total
+                  ? Math.round(
+                      decisionCoverage * 0.3 +
+                      progressionShare * 0.35 +
+                      assignmentCoverage * 0.35
+                    )
+                  : null;
+
+                const components = [
+                  {
+                    label: "Decision Coverage",
+                    value: decisionCoverage,
+                    weight: "30%",
+                  },
+                  {
+                    label: "Advanced Stage Share",
+                    value: progressionShare,
+                    weight: "35%",
+                  },
+                  {
+                    label: "Job Assignment Coverage",
+                    value: assignmentCoverage,
+                    weight: "35%",
+                  },
+                ];
+
+                const priority = [...components].sort(
+                  (a, b) => a.value - b.value
+                )[0];
+
+                const advice = {
+                  "Decision Coverage":
+                    "Review candidates awaiting final decisions and follow up with hiring managers.",
+                  "Advanced Stage Share":
+                    "Review screening outcomes and move suitable candidates toward interviews.",
+                  "Job Assignment Coverage":
+                    "Assign candidates to the correct job openings to improve reporting accuracy.",
+                };
+
+                return (
+                  <section
+                    style={{
+                      background: "#FFFFFF",
+                      border: "1px solid #DCE9DF",
+                      borderRadius: 18,
+                      padding: 26,
+                      marginBottom: 28,
+                      breakInside: "avoid",
+                    }}
+                  >
+                    <div
+                      style={{
+                        color: "#347A65",
+                        fontSize: 11,
+                        fontWeight: 800,
+                        letterSpacing: 2,
+                      }}
+                    >
+                      PIPELINE INTELLIGENCE
+                    </div>
+
+                    <h2
+                      style={{
+                        fontFamily: "Georgia, serif",
+                        color: "#173F3A",
+                        fontSize: 25,
+                        marginBottom: 10,
+                      }}
+                    >
+                      Pipeline Health Score
+                    </h2>
+
+                    <p
+                      style={{
+                        color: "#71847A",
+                        fontSize: 13,
+                        marginBottom: 20,
+                      }}
+                    >
+                      A weighted operational indicator for candidates
+                      added in {periodLabel}.
+                    </p>
+
+                    <div
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        flexWrap: "wrap",
+                        gap: 24,
+                        marginBottom: 26,
+                      }}
+                    >
+                      <div
+                        style={{
+                          fontSize: 54,
+                          fontWeight: 800,
+                          color: "#173F3A",
+                        }}
+                      >
+                        {score === null ? "—" : `${score}/100`}
+                      </div>
+
+                      <div
+                        style={{
+                          fontSize: 13,
+                          color: "#52665A",
+                          maxWidth: 360,
+                          lineHeight: 1.7,
+                        }}
+                      >
+                        {score === null
+                          ? "No candidates available for this period."
+                          : "A composite view of decisions, active-stage progression, and job assignment."}
+                      </div>
+                    </div>
+
+                    {score !== null && (
+                      <>
+                        {components.map((item) => (
+                          <div
+                            key={item.label}
+                            style={{ marginBottom: 20 }}
+                          >
+                            <div
+                              style={{
+                                display: "flex",
+                                justifyContent: "space-between",
+                                gap: 12,
+                                fontSize: 13,
+                                marginBottom: 8,
+                              }}
+                            >
+                              <strong style={{ color: "#173F3A" }}>
+                                {item.label}
+                              </strong>
+
+                              <span style={{ color: "#52665A" }}>
+                                {item.value}% | Weight: {item.weight}
+                              </span>
+                            </div>
+
+                            <div
+                              style={{
+                                height: 13,
+                                background: "#EDF3EF",
+                                borderRadius: 9,
+                                overflow: "hidden",
+                              }}
+                            >
+                              <div
+                                style={{
+                                  width: `${item.value}%`,
+                                  height: "100%",
+                                  background: "#347A65",
+                                  borderRadius: 9,
+                                }}
+                              />
+                            </div>
+                          </div>
+                        ))}
+
+                        <div
+                          style={{
+                            background: "#F7FAF8",
+                            borderLeft: "4px solid #D2A85F",
+                            borderRadius: 10,
+                            padding: 18,
+                            marginTop: 24,
+                          }}
+                        >
+                          <strong
+                            style={{
+                              color: "#173F3A",
+                              fontSize: 13,
+                            }}
+                          >
+                            Recommended Priority
+                          </strong>
+
+                          <p
+                            style={{
+                              color: "#52665A",
+                              fontSize: 13,
+                              lineHeight: 1.7,
+                              marginBottom: 0,
+                            }}
+                          >
+                            {advice[priority.label]}
+                          </p>
+                        </div>
+                      </>
+                    )}
+
+                    <p
+                      style={{
+                        color: "#819388",
+                        fontSize: 11,
+                        marginTop: 22,
+                      }}
+                    >
+                      This is a custom weighted operational score,
+                      not a validated prediction of hiring success.
+                      Stage history and time-to-hire data are not
+                      included.
+                    </p>
+                  </section>
+                );
               })()}
 
               <div
+
 
 
 
