@@ -474,87 +474,295 @@ table th {
                   %
                 </div>
               </div>
-              <div className="pipeline-print-grid"
-                style={{
-                  display: "grid",
-              gridTemplateColumns: "repeat(6, minmax(0, 1fr))",
-                  gap: 12,
-                  marginBottom: 30,
-    
-                }}
-              >
-                {stages.map((stage) => (
-                  
-                  <div
-                    key={stage}
+              
+              {(() => {
+                const colors = [
+                  "#173F3A",
+                  "#347A65",
+                  "#5DAA91",
+                  "#9BCDBB",
+                  "#D2A85F",
+                  "#D97676",
+                ];
+
+                const chartData = stages.map((stage, index) => ({
+                  name: stage,
+                  count: countStage(stage),
+                  color: colors[index],
+                }));
+
+                const tracked = chartData.reduce(
+                  (sum, item) => sum + item.count,
+                  0
+                );
+
+                if (candidates.length > tracked) {
+                  chartData.push({
+                    name: "Other",
+                    count: candidates.length - tracked,
+                    color: "#94A3A0",
+                  });
+                }
+
+                let cumulative = 0;
+
+                const donutBackground = candidates.length
+                  ? `conic-gradient(${chartData
+                      .map((item) => {
+                        const start =
+                          (cumulative / candidates.length) * 100;
+
+                        cumulative += item.count;
+
+                        const end =
+                          (cumulative / candidates.length) * 100;
+
+                        return `${item.color} ${start}% ${end}%`;
+                      })
+                      .join(", ")})`
+                  : "#E8F0EB";
+
+                return (
+                  <section
                     style={{
-                      border: "1px solid #dce9df",
-                      borderTop: `3px solid ${green}`,
-                      borderRadius: 10,
-                      padding: 16,
+                      background: "#F8FBF9",
+                      border: "1px solid #DCE9DF",
+                      borderRadius: 18,
+                      padding: 24,
+                      marginBottom: 28,
+                      breakInside: "avoid",
                     }}
                   >
-                    <div
-                      style={{
-                        color: "#777",
-                        fontSize: 13,
-                        marginBottom: 8,
-                      }}
-                    >
-                      {stage}
+                    <div style={{ marginBottom: 24 }}>
+                      <div
+                        style={{
+                          color: "#347A65",
+                          fontSize: 11,
+                          fontWeight: 800,
+                          letterSpacing: 2,
+                          marginBottom: 8,
+                        }}
+                      >
+                        RECRUITMENT INTELLIGENCE
+                      </div>
+
+                      <h2
+                        style={{
+                          fontFamily: "Georgia, serif",
+                          color: "#173F3A",
+                          fontSize: 25,
+                          margin: "0 0 8px",
+                        }}
+                      >
+                        Pipeline Analytics
+                      </h2>
+
+                      <p
+                        style={{
+                          color: "#71847A",
+                          fontSize: 13,
+                          margin: 0,
+                        }}
+                      >
+                        Current stages of candidates added in{" "}
+                        {periodLabel}
+                      </p>
                     </div>
 
                     <div
                       style={{
-                        color: green,
-                        fontSize: 26,
-                        fontWeight: 700,
-                      }}
-                    >
-                      {countStage(stage)}
-                    </div>
-
-                    <div
-                      style={{
-                        fontSize: 11,
-                        color: "#64776b",
-                        marginTop: 5,
-                        fontWeight: 600,
-                      }}
-                    >
-                      {candidates.length
-                        ? Math.round(
-                            (countStage(stage) / candidates.length) * 100
-                          )
-                        : 0}% of total
-                    </div>
-
-                    <div
-                      style={{
-                        height: 6,
-                        background: "#e3ece6",
-                        borderRadius: 10,
-                        overflow: "hidden",
-                        marginTop: 12,
+                        display: "grid",
+                        gridTemplateColumns:
+                          "repeat(auto-fit, minmax(280px, 1fr))",
+                        gap: 20,
                       }}
                     >
                       <div
                         style={{
-                          width: `${
-                            candidates.length
-                              ? (countStage(stage) /
-                                  candidates.length) *
-                                100
-                              : 0
-                          }%`,
-                          height: "100%",
-                          background: green,
+                          background: "#FFFFFF",
+                          border: "1px solid #E2ECE5",
+                          borderRadius: 16,
+                          padding: 22,
                         }}
-                      />
+                      >
+                        <h3
+                          style={{
+                            fontSize: 16,
+                            color: "#173F3A",
+                            margin: "0 0 24px",
+                          }}
+                        >
+                          Candidate Distribution
+                        </h3>
+
+                        <div
+                          style={{
+                            width: 210,
+                            height: 210,
+                            maxWidth: "100%",
+                            borderRadius: "50%",
+                            background: donutBackground,
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            margin: "0 auto 25px",
+                          }}
+                        >
+                          <div
+                            style={{
+                              width: 145,
+                              height: 145,
+                              borderRadius: "50%",
+                              background: "#FFFFFF",
+                              display: "flex",
+                              flexDirection: "column",
+                              alignItems: "center",
+                              justifyContent: "center",
+                            }}
+                          >
+                            <strong
+                              style={{
+                                fontSize: 38,
+                                color: "#173F3A",
+                              }}
+                            >
+                              {candidates.length}
+                            </strong>
+                            <span
+                              style={{
+                                fontSize: 12,
+                                color: "#71847A",
+                              }}
+                            >
+                              Candidates
+                            </span>
+                          </div>
+                        </div>
+
+                        <div
+                          style={{
+                            display: "grid",
+                            gridTemplateColumns:
+                              "repeat(2, minmax(0, 1fr))",
+                            gap: 12,
+                          }}
+                        >
+                          {chartData.map((item) => (
+                            <div
+                              key={item.name}
+                              style={{
+                                display: "flex",
+                                alignItems: "center",
+                                gap: 8,
+                                fontSize: 12,
+                              }}
+                            >
+                              <span
+                                style={{
+                                  width: 11,
+                                  height: 11,
+                                  flexShrink: 0,
+                                  borderRadius: 4,
+                                  background: item.color,
+                                }}
+                              />
+                              <span style={{ color: "#52665A" }}>
+                                {item.name}: {item.count}
+                              </span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+
+                      <div
+                        style={{
+                          background: "#FFFFFF",
+                          border: "1px solid #E2ECE5",
+                          borderRadius: 16,
+                          padding: 22,
+                        }}
+                      >
+                        <h3
+                          style={{
+                            fontSize: 16,
+                            color: "#173F3A",
+                            margin: "0 0 25px",
+                          }}
+                        >
+                          Hiring Stage Breakdown
+                        </h3>
+
+                        {chartData.map((item) => {
+                          const percentage = candidates.length
+                            ? (item.count / candidates.length) * 100
+                            : 0;
+
+                          return (
+                            <div
+                              key={item.name}
+                              style={{ marginBottom: 19 }}
+                            >
+                              <div
+                                style={{
+                                  display: "flex",
+                                  justifyContent: "space-between",
+                                  gap: 10,
+                                  marginBottom: 9,
+                                  fontSize: 12,
+                                }}
+                              >
+                                <strong
+                                  style={{ color: "#415A4C" }}
+                                >
+                                  {item.name}
+                                </strong>
+
+                                <span
+                                  style={{ color: "#71847A" }}
+                                >
+                                  {item.count} ·{" "}
+                                  {percentage.toFixed(1)}%
+                                </span>
+                              </div>
+
+                              <div
+                                style={{
+                                  height: 11,
+                                  width: "100%",
+                                  background: "#EDF3EF",
+                                  borderRadius: 20,
+                                  overflow: "hidden",
+                                }}
+                              >
+                                <div
+                                  style={{
+                                    height: "100%",
+                                    width: `${percentage}%`,
+                                    background: item.color,
+                                    borderRadius: 20,
+                                  }}
+                                />
+                              </div>
+                            </div>
+                          );
+                        })}
+
+                        <p
+                          style={{
+                            color: "#84938A",
+                            fontSize: 11,
+                            marginTop: 20,
+                          }}
+                        >
+                          Based on current candidate status,
+                          not historical conversion rates.
+                        </p>
+                      </div>
                     </div>
-                  </div>
-                ))}
-              </div>
+                  </section>
+                );
+              })()}
+
 
               <div
                 style={{
