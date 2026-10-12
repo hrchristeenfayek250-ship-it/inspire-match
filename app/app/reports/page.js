@@ -111,18 +111,10 @@ export default function ReportsPage() {
         setJobs(jobData || []);
       }
 
-      
-      setLoading(false);
-
-        setCandidates(data || []);
-      }
-
-      setLoading(false);
-
-      }
-
+ 
       setLoading(false);
     }
+
 
     loadReport();
 
