@@ -94,7 +94,7 @@ export default function DashboardPage() {
       setLoading(false);
     }
   }
-
+  function countStage(stage) {
     return candidates.filter(
       (candidate) =>
         String(candidate.status || "").toLowerCase() ===
