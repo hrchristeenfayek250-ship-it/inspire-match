@@ -529,33 +529,37 @@ async function cancelInvitation(invitation) {
                   ).toLocaleDateString("en-GB")}
                 </td>
 
-               <td style={{ padding: "16px 12px" }}>
-  <div style={{
-    display: "flex",
-    alignItems: "center",
-    gap: 10,
-    flexWrap: "wrap"
-  }}>
-
+             <td style={{ padding: "16px 12px", minWidth: 370 }}>
+  <div
+    style={{
+      display: "grid",
+      gridTemplateColumns: "1fr 1fr",
+      gap: 10,
+      width: "100%",
+    }}
+  >
     <button
       type="button"
       disabled={Boolean(resendingId || cancellingId)}
       onClick={() => resendInvitation(invitation)}
       style={{
-        padding: "11px 17px",
+        width: "100%",
+        height: 44,
+        padding: "0 12px",
         borderRadius: 10,
-        border: "1px solid #BDD9CA",
-        background: "#E8F3ED",
-        color: "#175D46",
-        fontWeight: 700,
+        border: "1px solid #173f3a",
+        background: "#173f3a",
+        color: "#ffffff",
         fontSize: 13,
+        fontWeight: 600,
         cursor: "pointer",
-        whiteSpace: "nowrap"
+        whiteSpace: "nowrap",
+        boxSizing: "border-box",
       }}
     >
       {resendingId === invitation.id
         ? "Resending..."
-        : "↻  Resend Invitation"}
+        : "↻ Resend Invitation"}
     </button>
 
     <button
@@ -563,22 +567,24 @@ async function cancelInvitation(invitation) {
       disabled={Boolean(resendingId || cancellingId)}
       onClick={() => cancelInvitation(invitation)}
       style={{
-        padding: "11px 17px",
+        width: "100%",
+        height: 44,
+        padding: "0 12px",
         borderRadius: 10,
-        border: "1px solid #EBC5C5",
-        background: "#FFF1F1",
+        border: "1px solid #E4B8B8",
+        background: "#FFF4F4",
         color: "#A63434",
-        fontWeight: 700,
         fontSize: 13,
+        fontWeight: 600,
         cursor: "pointer",
-        whiteSpace: "nowrap"
+        whiteSpace: "nowrap",
+        boxSizing: "border-box",
       }}
     >
       {cancellingId === invitation.id
         ? "Cancelling..."
-        : "×  Cancel Invitation"}
+        : "× Cancel Invitation"}
     </button>
-
   </div>
 </td>
               </tr>
