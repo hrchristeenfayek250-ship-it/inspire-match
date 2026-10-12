@@ -314,7 +314,36 @@ export default function ExecutivePage() {
             >
               Detailed Reports
             </Link>
+
+              <button
+                type="button"
+                onClick={() => window.print()}
+                disabled={loading || Boolean(error)}
+                style={{
+                  padding: "12px 18px",
+                  borderRadius: 10,
+                  background:
+                    loading || error
+                      ? "#AAB8AE"
+                      : "linear-gradient(135deg, #245C4A, #347A65)",
+                  color: "#FFFFFF",
+                  border: "1px solid #245C4A",
+                  fontSize: 13,
+                  fontWeight: 800,
+                  cursor:
+                    loading || error
+                      ? "not-allowed"
+                      : "pointer",
+                  boxShadow: "0 5px 14px rgba(36,92,74,0.15)",
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: 8,
+                }}
+              >
+                📄 Export Executive Report – PDF
+              </button>
           </div>
+
         </div>
 
         {loading ? (
