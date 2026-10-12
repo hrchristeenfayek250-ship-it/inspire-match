@@ -529,33 +529,58 @@ async function cancelInvitation(invitation) {
                   ).toLocaleDateString("en-GB")}
                 </td>
 
-                <td style={{ padding: 12 }}>
-                  <button
-                    type="button"
-                    disabled={Boolean(cancellingId)}
-                    onClick={() =>
-                      cancelInvitation(invitation)
-                    }
-                    style={{
-                      padding: 10,
-                      color: "#ae3030",
-                      cursor: "pointer",
-                    }}
-                  >
-                    {cancellingId === invitation.id
-                      ? "Cancelling..."
-                      : "Cancel Invitation"}
-                  </button>
-                    <button
-  type="button"
-  disabled={Boolean(resendingId || cancellingId)}
-  onClick={() => resendInvitation(invitation)}
->
-  {resendingId === invitation.id
-    ? "Resending..."
-    : "Resend Invitation"}
-</button>
-                </td>
+               <td style={{ padding: "16px 12px" }}>
+  <div style={{
+    display: "flex",
+    alignItems: "center",
+    gap: 10,
+    flexWrap: "wrap"
+  }}>
+
+    <button
+      type="button"
+      disabled={Boolean(resendingId || cancellingId)}
+      onClick={() => resendInvitation(invitation)}
+      style={{
+        padding: "11px 17px",
+        borderRadius: 10,
+        border: "1px solid #BDD9CA",
+        background: "#E8F3ED",
+        color: "#175D46",
+        fontWeight: 700,
+        fontSize: 13,
+        cursor: "pointer",
+        whiteSpace: "nowrap"
+      }}
+    >
+      {resendingId === invitation.id
+        ? "Resending..."
+        : "↻  Resend Invitation"}
+    </button>
+
+    <button
+      type="button"
+      disabled={Boolean(resendingId || cancellingId)}
+      onClick={() => cancelInvitation(invitation)}
+      style={{
+        padding: "11px 17px",
+        borderRadius: 10,
+        border: "1px solid #EBC5C5",
+        background: "#FFF1F1",
+        color: "#A63434",
+        fontWeight: 700,
+        fontSize: 13,
+        cursor: "pointer",
+        whiteSpace: "nowrap"
+      }}
+    >
+      {cancellingId === invitation.id
+        ? "Cancelling..."
+        : "×  Cancel Invitation"}
+    </button>
+
+  </div>
+</td>
               </tr>
             ))}
           </tbody>
