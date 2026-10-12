@@ -381,7 +381,10 @@ export default function ExecutivePage() {
           </div>
         </div>
 
+      
+      </div>
       {/* EXECUTIVE SUMMARY - PRINT ONLY */}
+
       <style>{`
         .executive-print-summary {
           display: none;
