@@ -22,60 +22,79 @@ export default function DashboardPage() {
     loadDashboard();
   }, []);
 
+  
   async function loadDashboard() {
     setLoading(true);
 
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
+    try {
+      const {
+        data: { user },
+        error: authError,
+      } = await supabase.auth.getUser();
 
-    if (!user) {
+      if (authError) throw authError;
+
+      if (!user) {
+        setCandidates([]);
+        setJobs([]);
+        return;
+      }
+
+      const { data: memberships, error: membershipError } =
+        await supabase
+          .from("company_members")
+          .select("company_id")
+          .eq("user_id", user.id)
+          .limit(2);
+
+      if (membershipError) throw membershipError;
+
+      if (!memberships || memberships.length !== 1) {
+        setCandidates([]);
+        setJobs([]);
+        return;
+      }
+
+      const companyId = memberships[0].company_id;
+
+      const filter =
+        `company_id.eq.${companyId},` +
+        `and(company_id.is.null,user_id.eq.${user.id})`;
+
+      const [candidateResponse, jobResponse] =
+        await Promise.all([
+          supabase
+            .from("candidates")
+            .select("*")
+            .or(filter)
+            .order("created_at", { ascending: false }),
+
+          supabase
+            .from("jobs")
+            .select("*")
+            .or(filter)
+            .order("created_at", { ascending: false }),
+        ]);
+
+      if (candidateResponse.error) {
+        throw candidateResponse.error;
+      }
+
+      if (jobResponse.error) {
+        throw jobResponse.error;
+      }
+
+      setCandidates(candidateResponse.data || []);
+      setJobs(jobResponse.data || []);
+    } catch (error) {
+      console.error("Could not load dashboard:", error);
       setCandidates([]);
       setJobs([]);
+    } finally {
       setLoading(false);
-      return;
     }
-
-    const [candidateResponse, jobResponse] =
-      await Promise.all([
-        supabase
-          .from("candidates")
-          .select("*")
-          .eq("user_id", user.id)
-          .order("created_at", {
-            ascending: false,
-          }),
-
-        supabase
-          .from("jobs")
-          .select("*")
-          .eq("user_id", user.id)
-          .order("created_at", {
-            ascending: false,
-          }),
-      ]);
-
-    if (candidateResponse.error) {
-      console.error(
-        "Could not load candidates:",
-        candidateResponse.error
-      );
-    } else {
-      setCandidates(candidateResponse.data || []);
-    }
-
-    if (jobResponse.error) {
-      console.error(
-        "Could not load jobs:",
-        jobResponse.error
-      );
-    } else {
-      setJobs(jobResponse.data || []);
-    }
-
-    setLoading(false);
   }
-  function countStage(stage) {
+
     return candidates.filter(
       (candidate) =>
         String(candidate.status || "").toLowerCase() ===
