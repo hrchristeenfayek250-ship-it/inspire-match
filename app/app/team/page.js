@@ -12,6 +12,8 @@ export default function TeamManagementPage() {
   const [role, setRole] = useState("");
   const [members, setMembers] = useState([]);
   const [userId, setUserId] = useState("");
+  const [invitations, setInvitations] = useState([]);
+const [cancellingId, setCancellingId] = useState(null);
   
 const [inviteEmail, setInviteEmail] = useState("");
 const [inviting, setInviting] = useState(false);
@@ -70,7 +72,26 @@ const [inviteLink, setInviteLink] = useState("");
 
         if (teamError) throw teamError;
 
-        if (!active) return;
+       let pendingInvitations = [];
+
+if (current.role === "admin") {
+  const { data: inviteData, error: inviteError } =
+    await supabase
+      .from("company_invitations")
+      .select("id, email, created_at, expires_at")
+      .eq("company_id", current.company_id)
+      .is("accepted_at", null)
+      .gt("expires_at", new Date().toISOString())
+      .order("created_at", { ascending: false });
+
+  if (inviteError) throw inviteError;
+
+  pendingInvitations = inviteData || [];
+}
+
+if (!active) return;
+
+setInvitations(pendingInvitations);
 
         setUserId(user.id);
         setRole(current.role);
@@ -147,6 +168,7 @@ async function handleInvite(event) {
     setInviteEmail("");
 
     alert("HR invitation email sent successfully!");
+    window.location.reload();
   } catch (err) {
     alert(err.message || "Could not send invitation.");
   } finally {
@@ -154,7 +176,40 @@ async function handleInvite(event) {
   }
 }
 
+async function cancelInvitation(invitation) {
+  if (role !== "admin" || cancellingId) return;
 
+  const confirmed = window.confirm(
+    `Cancel invitation for ${invitation.email}?`
+  );
+
+  if (!confirmed) return;
+
+  setCancellingId(invitation.id);
+
+  try {
+    const { data, error: cancelError } = await supabase.rpc(
+      "cancel_company_invitation",
+      { p_invitation_id: invitation.id }
+    );
+
+    if (cancelError) throw cancelError;
+
+    if (!data) {
+      throw new Error("Invitation could not be cancelled.");
+    }
+
+    setInvitations((current) =>
+      current.filter((item) => item.id !== invitation.id)
+    );
+
+    alert("Invitation cancelled successfully!");
+  } catch (err) {
+    alert(err.message || "Could not cancel invitation.");
+  } finally {
+    setCancellingId(null);
+  }
+}
   const cardStyle = {
     background: "#ffffff",
     border: "1px solid #e1e8e2",
@@ -377,7 +432,64 @@ async function handleInvite(event) {
                 <p>No members found.</p>
               )}
             </section>
+{role === "admin" && (
+  <section style={{ ...cardStyle, marginTop: 20 }}>
+    <h2 style={{ fontFamily: "Georgia, serif" }}>
+      Pending HR Invitations ({invitations.length})
+    </h2>
 
+    {invitations.length === 0 ? (
+      <p>No pending invitations.</p>
+    ) : (
+      <div style={{ overflowX: "auto" }}>
+        <table style={{ width: "100%" }}>
+          <thead>
+            <tr>
+              <th>Email</th>
+              <th>Expires</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+
+          <tbody>
+            {invitations.map((invitation) => (
+              <tr key={invitation.id}>
+                <td style={{ padding: 12 }}>
+                  {invitation.email}
+                </td>
+
+                <td style={{ padding: 12 }}>
+                  {new Date(
+                    invitation.expires_at
+                  ).toLocaleDateString("en-GB")}
+                </td>
+
+                <td style={{ padding: 12 }}>
+                  <button
+                    type="button"
+                    disabled={Boolean(cancellingId)}
+                    onClick={() =>
+                      cancelInvitation(invitation)
+                    }
+                    style={{
+                      padding: 10,
+                      color: "#ae3030",
+                      cursor: "pointer",
+                    }}
+                  >
+                    {cancellingId === invitation.id
+                      ? "Cancelling..."
+                      : "Cancel Invitation"}
+                  </button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    )}
+  </section>
+)}
             {role === "admin" && (
               <section
                 style={{
