@@ -288,10 +288,26 @@ export default function ExecutivePage() {
             break-inside: avoid-page;
           }
 
+         
           main > div > div:nth-child(4) {
             gap: 12px !important;
             margin-bottom: 14px !important;
+            break-before: page;
+            page-break-before: always;
+            break-inside: avoid;
+            page-break-inside: avoid;
           }
+
+          main > div > section:nth-of-type(2) {
+            break-before: page;
+            page-break-before: always;
+          }
+
+          main > div > section:nth-of-type(3) {
+            break-before: page;
+            page-break-before: always;
+          }
+
 
           main section {
             padding: 16px !important;
