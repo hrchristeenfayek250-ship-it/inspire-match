@@ -764,6 +764,177 @@ table th {
               })()}
 
 
+             
+              {(() => {
+                const daysInMonth = new Date(
+                  Number(month.slice(0, 4)),
+                  Number(month.slice(5, 7)),
+                  0
+                ).getDate();
+
+                const weeks = Array.from(
+                  { length: Math.ceil(daysInMonth / 7) },
+                  (_, index) => ({
+                    label: `Week ${index + 1}`,
+                    range: `${index * 7 + 1}–${Math.min(
+                      (index + 1) * 7,
+                      daysInMonth
+                    )}`,
+                    count: 0,
+                  })
+                );
+
+                candidates.forEach((candidate) => {
+                  if (!candidate.created_at) return;
+
+                  const date = new Date(candidate.created_at);
+                  if (Number.isNaN(date.getTime())) return;
+
+                  const weekIndex = Math.floor(
+                    (date.getDate() - 1) / 7
+                  );
+
+                  if (weeks[weekIndex]) {
+                    weeks[weekIndex].count += 1;
+                  }
+                });
+
+                const maxCount = Math.max(
+                  1,
+                  ...weeks.map((week) => week.count)
+                );
+
+                return (
+                  <section
+                    style={{
+                      background: "#FFFFFF",
+                      border: "1px solid #DCE9DF",
+                      borderRadius: 18,
+                      padding: 26,
+                      marginBottom: 28,
+                      breakInside: "avoid",
+                    }}
+                  >
+                    <div style={{ marginBottom: 25 }}>
+                      <div
+                        style={{
+                          color: "#347A65",
+                          fontSize: 11,
+                          fontWeight: 800,
+                          letterSpacing: 2,
+                          marginBottom: 9,
+                        }}
+                      >
+                        TALENT ACQUISITION TRENDS
+                      </div>
+
+                      <h2
+                        style={{
+                          fontFamily: "Georgia, serif",
+                          color: "#173F3A",
+                          fontSize: 25,
+                          margin: "0 0 8px",
+                        }}
+                      >
+                        Weekly Candidate Growth
+                      </h2>
+
+                      <p
+                        style={{
+                          color: "#71847A",
+                          fontSize: 13,
+                          margin: 0,
+                        }}
+                      >
+                        New candidates added each week in {periodLabel}
+                      </p>
+                    </div>
+
+                    <div
+                      style={{
+                        display: "grid",
+                        gridTemplateColumns: `repeat(${weeks.length}, minmax(0, 1fr))`,
+                        gap: 12,
+                        padding: "10px 0",
+                      }}
+                    >
+                      {weeks.map((week) => (
+                        <div
+                          key={week.label}
+                          style={{ textAlign: "center", minWidth: 0 }}
+                        >
+                          <div
+                            style={{
+                              height: 190,
+                              display: "flex",
+                              flexDirection: "column",
+                              alignItems: "center",
+                              justifyContent: "flex-end",
+                              gap: 8,
+                              borderBottom: "1px solid #DCE9DF",
+                            }}
+                          >
+                            <strong
+                              style={{
+                                color: "#173F3A",
+                                fontSize: 18,
+                              }}
+                            >
+                              {week.count}
+                            </strong>
+
+                            <div
+                              style={{
+                                width: "65%",
+                                maxWidth: 65,
+                                height: `${
+                                  (week.count / maxCount) * 145
+                                }px`,
+                                background:
+                                  "linear-gradient(180deg, #65B596, #173F3A)",
+                                borderRadius: "9px 9px 0 0",
+                              }}
+                            />
+                          </div>
+
+                          <div
+                            style={{
+                              fontWeight: 700,
+                              color: "#173F3A",
+                              fontSize: 13,
+                              marginTop: 14,
+                            }}
+                          >
+                            {week.label}
+                          </div>
+
+                          <div
+                            style={{
+                              color: "#819388",
+                              fontSize: 11,
+                              marginTop: 5,
+                            }}
+                          >
+                            Days {week.range}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+
+                    <p
+                      style={{
+                        color: "#819388",
+                        fontSize: 11,
+                        marginTop: 16,
+                      }}
+                    >
+                      Based on candidate creation dates in the
+                      selected reporting month.
+                    </p>
+                  </section>
+                );
+              })()}
+
               <div
                 style={{
                   breakBefore: "page",
@@ -776,6 +947,7 @@ table th {
                   marginBottom: 18,
                 }}
               >
+
                 <div style={{
                   color: "#245c4a",
                   fontSize: 12,
