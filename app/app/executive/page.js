@@ -531,7 +531,243 @@ export default function ExecutivePage() {
               </section>
             </div>
 
+            
+            {/* EXECUTIVE DECISION CENTER */}
+            <section
+              style={{
+                ...panel,
+                marginBottom: 26,
+                borderTop: "5px solid #245C4A",
+              }}
+            >
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                  flexWrap: "wrap",
+                  gap: 14,
+                  marginBottom: 20,
+                }}
+              >
+                <div>
+                  <div
+                    style={{
+                      fontSize: 11,
+                      letterSpacing: 2,
+                      color: "#347A65",
+                      fontWeight: 800,
+                    }}
+                  >
+                    LEADERSHIP ACTION CENTER
+                  </div>
+                  <h2
+                    style={{
+                      fontFamily: "Georgia, serif",
+                      fontSize: 25,
+                      marginBottom: 8,
+                    }}
+                  >
+                    Executive Decision Center
+                  </h2>
+                  <p
+                    style={{
+                      color: "#71847A",
+                      fontSize: 13,
+                      lineHeight: 1.7,
+                    }}
+                  >
+                    Explainable recruitment priorities based on
+                    current job and candidate records.
+                  </p>
+                </div>
+
+                <Link
+                  href="/app/jobs"
+                  style={{
+                    padding: "12px 18px",
+                    background: "#245C4A",
+                    color: "#FFFFFF",
+                    textDecoration: "none",
+                    borderRadius: 10,
+                    fontSize: 13,
+                    fontWeight: 700,
+                  }}
+                >
+                  Open Job Management →
+                </Link>
+              </div>
+
+              <div
+                style={{
+                  display: "grid",
+                  gridTemplateColumns:
+                    "repeat(auto-fit, minmax(180px, 1fr))",
+                  gap: 12,
+                  marginBottom: 24,
+                }}
+              >
+                {[
+                  {
+                    label: "Jobs Without Candidates",
+                    value: noCandidateJobs.length,
+                  },
+                  {
+                    label: "Early-Stage Heavy Jobs",
+                    value: earlyConcentrationJobs.length,
+                  },
+                  {
+                    label: "Unmatched Candidates",
+                    value: unmatchedCandidates,
+                  },
+                ].map((item) => (
+                  <div
+                    key={item.label}
+                    style={{
+                      background: "#F1F7F3",
+                      borderRadius: 12,
+                      padding: 18,
+                    }}
+                  >
+                    <div
+                      style={{
+                        fontSize: 30,
+                        fontWeight: 800,
+                        color: "#245C4A",
+                      }}
+                    >
+                      {item.value}
+                    </div>
+                    <div
+                      style={{
+                        fontSize: 12,
+                        color: "#63796C",
+                        marginTop: 7,
+                      }}
+                    >
+                      {item.label}
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              {jobAnalysis
+                .filter(
+                  (job) => job.total === 0 || job.concentration
+                )
+                .sort(
+                  (a, b) =>
+                    Number(b.total === 0) -
+                    Number(a.total === 0)
+                )
+                .slice(0, 5)
+                .map((job, index) => (
+                  <div
+                    key={job.id}
+                    style={{
+                      padding: "18px 0",
+                      borderTop: "1px solid #E1EBE4",
+                      display: "flex",
+                      justifyContent: "space-between",
+                      alignItems: "flex-start",
+                      flexWrap: "wrap",
+                      gap: 14,
+                    }}
+                  >
+                    <div style={{ flex: "1 1 260px" }}>
+                      <div
+                        style={{
+                          fontSize: 11,
+                          color: "#347A65",
+                          fontWeight: 800,
+                          marginBottom: 7,
+                        }}
+                      >
+                        PRIORITY {index + 1}
+                      </div>
+
+                      <strong style={{ fontSize: 16 }}>
+                        {job.title}
+                      </strong>
+
+                      <p
+                        style={{
+                          fontSize: 12,
+                          color: "#667A6D",
+                          lineHeight: 1.7,
+                        }}
+                      >
+                        {job.total === 0
+                          ? "Reason: No candidates are linked to this job."
+                          : `Reason: ${job.early} of ${job.total} candidates are in Applied or Screening.`}
+                      </p>
+
+                      <div
+                        style={{
+                          fontSize: 13,
+                          color: "#245C4A",
+                          fontWeight: 600,
+                          lineHeight: 1.7,
+                        }}
+                      >
+                        Recommended Action:{" "}
+                        {job.total === 0
+                          ? "Verify hiring activity and review sourcing or candidate assignment."
+                          : "Review screening outcomes and move suitable candidates to further assessment."}
+                      </div>
+                    </div>
+
+                    <span
+                      style={{
+                        padding: "8px 12px",
+                        borderRadius: 20,
+                        background:
+                          job.total === 0
+                            ? "#FFF0E8"
+                            : "#FFF7DF",
+                        color:
+                          job.total === 0
+                            ? "#A45232"
+                            : "#86651B",
+                        fontSize: 11,
+                        fontWeight: 800,
+                      }}
+                    >
+                      {job.total === 0
+                        ? "COVERAGE REVIEW"
+                        : "PIPELINE REVIEW"}
+                    </span>
+                  </div>
+                ))}
+
+              {noCandidateJobs.length === 0 &&
+                earlyConcentrationJobs.length === 0 && (
+                  <p
+                    style={{
+                      color: "#347A65",
+                      fontSize: 14,
+                      lineHeight: 1.8,
+                    }}
+                  >
+                    No jobs currently match the decision
+                    center's review rules.
+                  </p>
+                )}
+
+              <p
+                style={{
+                  fontSize: 11,
+                  color: "#819388",
+                  marginTop: 18,
+                }}
+              >
+                Priorities are rule-based operational signals,
+                not AI predictions or confirmed hiring delays.
+              </p>
+            </section>
+
             <section style={panel}>
+
               <h2
                 style={{
                   fontFamily: "Georgia, serif",
