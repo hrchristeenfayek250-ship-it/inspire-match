@@ -228,7 +228,92 @@ export default function ExecutivePage() {
         color: "#173F3A",
       }}
     >
+      
+      <style>{`
+        @page {
+          size: A4 portrait;
+          margin: 12mm;
+        }
+
+        @media print {
+          html,
+          body {
+            margin: 0 !important;
+            padding: 0 !important;
+            background: #FFFFFF !important;
+          }
+
+          main {
+            background: #FFFFFF !important;
+            padding: 0 !important;
+            min-height: auto !important;
+            color: #173F3A !important;
+            -webkit-print-color-adjust: exact;
+            print-color-adjust: exact;
+          }
+
+          main > div {
+            max-width: 100% !important;
+            margin: 0 !important;
+          }
+
+          main a,
+          main button {
+            display: none !important;
+          }
+
+          main > div > div:first-child {
+            margin-bottom: 16px !important;
+          }
+
+          main h1 {
+            font-size: 28px !important;
+            break-after: avoid-page;
+          }
+
+          main h2 {
+            break-after: avoid-page;
+          }
+
+          main > div > div:nth-child(2) {
+            grid-template-columns:
+              repeat(4, minmax(0, 1fr)) !important;
+            gap: 8px !important;
+            margin-bottom: 14px !important;
+          }
+
+          main > div > div:nth-child(2) > div {
+            padding: 12px !important;
+            border-radius: 8px !important;
+            break-inside: avoid-page;
+          }
+
+          main > div > div:nth-child(4) {
+            gap: 12px !important;
+            margin-bottom: 14px !important;
+          }
+
+          main section {
+            padding: 16px !important;
+            border-radius: 10px !important;
+            box-shadow: none !important;
+            margin-bottom: 14px !important;
+            break-inside: auto;
+          }
+
+          main section > div {
+            break-inside: avoid-page;
+          }
+
+          main section p {
+            orphans: 3;
+            widows: 3;
+          }
+        }
+      `}</style>
+
       <div
+
         style={{
           maxWidth: 1300,
           margin: "0 auto",
