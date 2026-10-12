@@ -1218,9 +1218,173 @@ table th {
                     </p>
                   </section>
                 );
+              
+              })()}
+
+              {/* JOB PERFORMANCE ANALYTICS */}
+              {(() => {
+                const jobRows = jobs
+                  .map((job) => {
+                    const linked = candidates.filter(
+                      (candidate) =>
+                        String(candidate.job_id || "") ===
+                        String(job.id)
+                    );
+
+                    return {
+                      id: job.id,
+                      title: job.title || "Untitled Job",
+                      total: linked.length,
+                      hired: linked.filter(
+                        (c) => c.status === "Hired"
+                      ).length,
+                      interview: linked.filter(
+                        (c) => c.status === "Interview"
+                      ).length,
+                      shortlisted: linked.filter(
+                        (c) => c.status === "Shortlisted"
+                      ).length,
+                    };
+                  })
+                  .sort((a, b) => b.total - a.total)
+                  .slice(0, 8);
+
+                const maxCount = Math.max(
+                  1,
+                  ...jobRows.map((job) => job.total)
+                );
+
+                return (
+                  <section
+                    style={{
+                      background: "#FFFFFF",
+                      border: "1px solid #DCE9DF",
+                      borderRadius: 18,
+                      padding: 26,
+                      marginBottom: 28,
+                      breakInside: "avoid",
+                    }}
+                  >
+                    <div
+                      style={{
+                        color: "#347A65",
+                        fontSize: 11,
+                        fontWeight: 800,
+                        letterSpacing: 2,
+                      }}
+                    >
+                      JOB INTELLIGENCE
+                    </div>
+
+                    <h2
+                      style={{
+                        fontFamily: "Georgia, serif",
+                        color: "#173F3A",
+                        fontSize: 25,
+                      }}
+                    >
+                      Job Performance Analytics
+                    </h2>
+
+                    <p
+                      style={{
+                        color: "#71847A",
+                        fontSize: 13,
+                        marginBottom: 26,
+                      }}
+                    >
+                      Top 8 jobs by candidates added in {periodLabel}.
+                    </p>
+
+                    {jobRows.length === 0 ? (
+                      <p style={{ color: "#819388" }}>
+                        No jobs available for this company.
+                      </p>
+                    ) : (
+                      jobRows.map((job) => (
+                        <div
+                          key={job.id}
+                          style={{ marginBottom: 24 }}
+                        >
+                          <div
+                            style={{
+                              display: "flex",
+                              justifyContent: "space-between",
+                              gap: 12,
+                              marginBottom: 9,
+                            }}
+                          >
+                            <strong
+                              style={{
+                                color: "#173F3A",
+                                fontSize: 13,
+                              }}
+                            >
+                              {job.title}
+                            </strong>
+                            <span
+                              style={{
+                                color: "#347A65",
+                                fontWeight: 800,
+                                fontSize: 13,
+                              }}
+                            >
+                              {job.total} Candidates
+                            </span>
+                          </div>
+
+                          <div
+                            style={{
+                              background: "#EDF3EF",
+                              height: 16,
+                              borderRadius: 10,
+                              overflow: "hidden",
+                            }}
+                          >
+                            <div
+                              style={{
+                                width: `${(job.total / maxCount) * 100}%`,
+                                height: "100%",
+                                background: "#347A65",
+                                borderRadius: 10,
+                              }}
+                            />
+                          </div>
+
+                          <div
+                            style={{
+                              display: "flex",
+                              flexWrap: "wrap",
+                              gap: 16,
+                              marginTop: 10,
+                              color: "#71847A",
+                              fontSize: 12,
+                            }}
+                          >
+                            <span>Interview: {job.interview}</span>
+                            <span>Shortlisted: {job.shortlisted}</span>
+                            <span>Hired: {job.hired}</span>
+                          </div>
+                        </div>
+                      ))
+                    )}
+
+                    <p
+                      style={{
+                        marginTop: 20,
+                        color: "#819388",
+                        fontSize: 11,
+                      }}
+                    >
+                      Based on current candidate statuses and
+                      job-linked candidates in the selected month.
+                    </p>
+                  </section>
+                );
               })()}
 
               <div
+
                 style={{
                   breakBefore: "page",
                   pageBreakBefore: "always",
