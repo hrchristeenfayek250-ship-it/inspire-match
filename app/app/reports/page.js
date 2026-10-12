@@ -45,6 +45,29 @@ export default function ReportsPage() {
         return;
       }
 
+     
+      const { data: memberships, error: membershipError } =
+        await supabase
+          .from("company_members")
+          .select("company_id")
+          .eq("user_id", authData.user.id)
+          .limit(2);
+
+      if (!active) return;
+
+      if (
+        membershipError ||
+        !memberships ||
+        memberships.length !== 1
+      ) {
+        setCandidates([]);
+        setError("Please join a company to view reports.");
+        setLoading(false);
+        return;
+      }
+
+      const companyId = memberships[0].company_id;
+
       const start = new Date(`${month}-01T00:00:00`);
       const end = new Date(
         start.getFullYear(),
@@ -52,15 +75,18 @@ export default function ReportsPage() {
         1
       );
 
-            const { data, error: queryError } = await supabase
+      const { data, error: queryError } = await supabase
         .from("candidates")
         .select(
-"id, full_name, current_title, status, created_at"
+          "id, full_name, current_title, status, created_at"
         )
-        .eq("user_id", authData.user.id)
+        .or(
+          `company_id.eq.${companyId},and(company_id.is.null,user_id.eq.${authData.user.id})`
+        )
         .gte("created_at", start.toISOString())
         .lt("created_at", end.toISOString())
         .order("created_at", { ascending: false });
+
 
       if (!active) return;
 
