@@ -372,7 +372,324 @@ export default function ExecutivePage() {
               ))}
             </div>
 
+
+            {/* RECRUITMENT HEALTH SCORE */}
+            {(() => {
+              const activeJobIds = new Set(
+                activeJobs.map((job) => String(job.id))
+              );
+
+              const linkedActive = candidates.filter(
+                (candidate) =>
+                  activeJobIds.has(String(candidate.job_id))
+              );
+
+              const advanced = linkedActive.filter(
+                (candidate) =>
+                  ["interview", "shortlisted", "hired"].includes(
+                    normalize(candidate.status)
+                  )
+              ).length;
+
+              const linkedCount =
+                totalCandidates - unmatchedCandidates;
+
+              const coveragePoints = activeJobs.length
+                ? Math.round(
+                    (40 *
+                      (activeJobs.length -
+                        noCandidateJobs.length)) /
+                      activeJobs.length
+                  )
+                : 0;
+
+              const pipelinePoints = linkedActive.length
+                ? Math.round(
+                    (30 * advanced) / linkedActive.length
+                  )
+                : 0;
+
+              const qualityPoints = totalCandidates
+                ? Math.round(
+                    (30 * linkedCount) / totalCandidates
+                  )
+                : 0;
+
+              const hasScore =
+                activeJobs.length > 0 && totalCandidates > 0;
+
+              const score = Math.min(
+                100,
+                coveragePoints +
+                  pipelinePoints +
+                  qualityPoints
+              );
+
+              const scoreColor =
+                score >= 80
+                  ? "#247A57"
+                  : score >= 60
+                  ? "#C18B31"
+                  : "#BF5C49";
+
+              const scoreLabel =
+                score >= 80
+                  ? "Strong"
+                  : score >= 60
+                  ? "Needs Attention"
+                  : "Priority Review";
+
+              const breakdown = [
+                {
+                  label: "Job Coverage",
+                  value: coveragePoints,
+                  max: 40,
+                  detail: `${
+                    activeJobs.length -
+                    noCandidateJobs.length
+                  } of ${activeJobs.length} jobs have linked candidates.`,
+                  action:
+                    "Review sourcing for jobs without candidates.",
+                  color: "#347A65",
+                },
+                {
+                  label: "Pipeline Progress",
+                  value: pipelinePoints,
+                  max: 30,
+                  detail: `${advanced} of ${linkedActive.length} linked candidates are in Interview, Shortlisted or Hired.`,
+                  action:
+                    "Review screening and assessment progression.",
+                  color: "#C89B47",
+                },
+                {
+                  label: "Data Quality",
+                  value: qualityPoints,
+                  max: 30,
+                  detail: `${linkedCount} of ${totalCandidates} candidates are linked to a recorded job.`,
+                  action:
+                    "Complete missing candidate-to-job assignments.",
+                  color: "#6488A6",
+                },
+              ];
+
+              return (
+                <section
+                  style={{
+                    ...panel,
+                    marginBottom: 26,
+                    borderTop: "5px solid #347A65",
+                  }}
+                >
+                  <div
+                    style={{
+                      fontSize: 11,
+                      fontWeight: 800,
+                      color: "#347A65",
+                      letterSpacing: 2,
+                    }}
+                  >
+                    RECRUITMENT PERFORMANCE INTELLIGENCE
+                  </div>
+
+                  <h2
+                    style={{
+                      fontFamily: "Georgia, serif",
+                      fontSize: 26,
+                      marginBottom: 8,
+                    }}
+                  >
+                    Recruitment Health Score
+                  </h2>
+
+                  <p
+                    style={{
+                      color: "#71847A",
+                      fontSize: 13,
+                      lineHeight: 1.7,
+                    }}
+                  >
+                    A transparent operational health indicator
+                    based on current recruitment data.
+                  </p>
+
+                  <div
+                    style={{
+                      display: "flex",
+                      gap: 22,
+                      flexWrap: "wrap",
+                      alignItems: "center",
+                      margin: "26px 0",
+                    }}
+                  >
+                    <div
+                      style={{
+                        fontSize: 58,
+                        fontWeight: 800,
+                        color: hasScore
+                          ? scoreColor
+                          : "#819388",
+                      }}
+                    >
+                      {hasScore ? score : "N/A"}
+                      {hasScore && (
+                        <span
+                          style={{
+                            fontSize: 20,
+                            color: "#819388",
+                          }}
+                        >
+                          /100
+                        </span>
+                      )}
+                    </div>
+
+                    <div style={{ flex: "1 1 220px" }}>
+                      <div
+                        style={{
+                          fontWeight: 800,
+                          fontSize: 15,
+                          color: hasScore
+                            ? scoreColor
+                            : "#819388",
+                        }}
+                      >
+                        {hasScore
+                          ? scoreLabel
+                          : "Insufficient Data"}
+                      </div>
+
+                      <div
+                        style={{
+                          height: 14,
+                          background: "#EAF1EC",
+                          borderRadius: 20,
+                          overflow: "hidden",
+                          marginTop: 12,
+                        }}
+                      >
+                        <div
+                          style={{
+                            width: hasScore
+                              ? `${score}%`
+                              : "0%",
+                            height: "100%",
+                            background: scoreColor,
+                            borderRadius: 20,
+                          }}
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  <div
+                    style={{
+                      display: "grid",
+                      gridTemplateColumns:
+                        "repeat(auto-fit, minmax(220px, 1fr))",
+                      gap: 16,
+                    }}
+                  >
+                    {breakdown.map((item) => (
+                      <div
+                        key={item.label}
+                        style={{
+                          background: "#F7FAF8",
+                          border: "1px solid #E1EBE4",
+                          borderRadius: 14,
+                          padding: 18,
+                        }}
+                      >
+                        <div
+                          style={{
+                            fontSize: 13,
+                            fontWeight: 800,
+                            marginBottom: 10,
+                          }}
+                        >
+                          {item.label}
+                        </div>
+
+                        <div
+                          style={{
+                            fontSize: 25,
+                            fontWeight: 800,
+                            color: item.color,
+                          }}
+                        >
+                          {hasScore
+                            ? `${item.value}/${item.max}`
+                            : "N/A"}
+                        </div>
+
+                        <div
+                          style={{
+                            height: 8,
+                            background: "#E4EBE5",
+                            borderRadius: 10,
+                            margin: "12px 0",
+                            overflow: "hidden",
+                          }}
+                        >
+                          <div
+                            style={{
+                              width: hasScore
+                                ? `${
+                                    (item.value / item.max) *
+                                    100
+                                  }%`
+                                : "0%",
+                              height: "100%",
+                              background: item.color,
+                            }}
+                          />
+                        </div>
+
+                        <p
+                          style={{
+                            fontSize: 12,
+                            color: "#65796D",
+                            lineHeight: 1.7,
+                          }}
+                        >
+                          {item.detail}
+                        </p>
+
+                        <p
+                          style={{
+                            fontSize: 12,
+                            color: "#245C4A",
+                            fontWeight: 700,
+                            lineHeight: 1.7,
+                          }}
+                        >
+                          Action: {item.action}
+                        </p>
+                      </div>
+                    ))}
+                  </div>
+
+                  <p
+                    style={{
+                      fontSize: 11,
+                      color: "#819388",
+                      marginTop: 20,
+                      lineHeight: 1.8,
+                    }}
+                  >
+                    Scoring model: 40% job coverage,
+                    30% pipeline stage progress,
+                    30% candidate-to-job data quality.
+                    A score is only shown when candidate
+                    records and jobs not marked Closed exist.
+                    This is a rule-based snapshot, not a
+                    historical conversion rate or AI prediction.
+                  </p>
+                </section>
+              );
+            })()}
+
             <div
+
               style={{
                 display: "grid",
                 gridTemplateColumns:
