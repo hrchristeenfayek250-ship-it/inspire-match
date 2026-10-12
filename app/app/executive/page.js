@@ -714,10 +714,12 @@ export default function ExecutivePage() {
             print-color-adjust: exact;
           }
 
-          main > div {
+          
+          main > div:not(.executive-print-cover):not(.executive-print-summary) {
             max-width: 100% !important;
             margin: 0 !important;
           }
+
 
           main a,
           main button {
