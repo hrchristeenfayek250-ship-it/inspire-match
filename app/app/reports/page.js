@@ -2345,9 +2345,247 @@ table th {
                     </p>
                   </section>
                 );
+              
+              })()}
+
+              {/* JOB-LEVEL INTELLIGENCE */}
+              {(() => {
+                const jobInsights = jobs
+                  .map((job) => {
+                    const linked = candidates.filter(
+                      (candidate) =>
+                        String(candidate.job_id || "") ===
+                        String(job.id)
+                    );
+
+                    const count = (status) =>
+                      linked.filter(
+                        (candidate) =>
+                          String(candidate.status || "")
+                            .trim()
+                            .toLowerCase() === status.toLowerCase()
+                      ).length;
+
+                    const total = linked.length;
+                    const applied = count("Applied");
+                    const screening = count("Screening");
+                    const interview = count("Interview");
+                    const shortlisted = count("Shortlisted");
+                    const hired = count("Hired");
+
+                    let insight = "Pipeline Activity";
+                    let recommendation =
+                      "Continue reviewing candidates and updating recruitment stages.";
+
+                    if (total === 0) {
+                      insight = "No New Candidates This Month";
+                      recommendation =
+                        "Review sourcing activity if this job is actively hiring.";
+                    } else if (
+                      total >= 3 &&
+                      screening / total >= 0.5
+                    ) {
+                      insight = "Screening Concentration";
+                      recommendation =
+                        "Review screening decisions and identify candidates ready for interviews.";
+                    } else if (
+                      total >= 3 &&
+                      applied / total >= 0.5
+                    ) {
+                      insight = "Application Review Priority";
+                      recommendation =
+                        "Prioritize initial application reviews and screening.";
+                    } else if (
+                      interview + shortlisted >= 2 &&
+                      hired === 0
+                    ) {
+                      insight = "Candidates Awaiting Next Steps";
+                      recommendation =
+                        "Review interview feedback and coordinate next steps with the hiring manager.";
+                    } else if (hired > 0) {
+                      insight = "Hiring Outcome Recorded";
+                      recommendation =
+                        "Review remaining candidates and confirm whether further hiring is required.";
+                    }
+
+                    return {
+                      id: job.id,
+                      title: job.title || "Untitled Job",
+                      total,
+                      applied,
+                      screening,
+                      interview,
+                      shortlisted,
+                      hired,
+                      insight,
+                      recommendation,
+                    };
+                  })
+                  .sort((a, b) => b.total - a.total)
+                  .slice(0, 8);
+
+                return (
+                  <section
+                    style={{
+                      background: "#FFFFFF",
+                      border: "1px solid #DCE9DF",
+                      borderRadius: 18,
+                      padding: 26,
+                      marginBottom: 28,
+                    }}
+                  >
+                    <div
+                      style={{
+                        color: "#347A65",
+                        fontSize: 11,
+                        fontWeight: 800,
+                        letterSpacing: 2,
+                      }}
+                    >
+                      JOB INTELLIGENCE
+                    </div>
+
+                    <h2
+                      style={{
+                        fontFamily: "Georgia, serif",
+                        color: "#173F3A",
+                        fontSize: 25,
+                      }}
+                    >
+                      Job-Level Intelligence
+                    </h2>
+
+                    <p
+                      style={{
+                        color: "#71847A",
+                        fontSize: 13,
+                        lineHeight: 1.7,
+                      }}
+                    >
+                      Individual job analysis and recommended
+                      actions for candidates added in {periodLabel}.
+                    </p>
+
+                    {jobInsights.length === 0 ? (
+                      <p style={{ color: "#71847A" }}>
+                        No jobs available for analysis.
+                      </p>
+                    ) : (
+                      <div
+                        style={{
+                          display: "grid",
+                          gridTemplateColumns:
+                            "repeat(auto-fit, minmax(min(100%, 280px), 1fr))",
+                          gap: 18,
+                          marginTop: 24,
+                        }}
+                      >
+                        {jobInsights.map((job) => (
+                          <div
+                            key={job.id}
+                            style={{
+                              background: "#F9FBF9",
+                              border: "1px solid #E1EBE4",
+                              borderRadius: 14,
+                              padding: 20,
+                              minWidth: 0,
+                            }}
+                          >
+                            <h3
+                              style={{
+                                color: "#173F3A",
+                                fontSize: 17,
+                                marginTop: 0,
+                              }}
+                            >
+                              {job.title}
+                            </h3>
+
+                            <div
+                              style={{
+                                fontSize: 30,
+                                fontWeight: 800,
+                                color: "#245C4A",
+                              }}
+                            >
+                              {job.total}
+                            </div>
+
+                            <p
+                              style={{
+                                color: "#71847A",
+                                fontSize: 12,
+                              }}
+                            >
+                              Candidates added this month
+                            </p>
+
+                            <div
+                              style={{
+                                display: "flex",
+                                flexWrap: "wrap",
+                                gap: 10,
+                                fontSize: 12,
+                                color: "#52665A",
+                                marginBottom: 18,
+                              }}
+                            >
+                              <span>Applied: {job.applied}</span>
+                              <span>Screening: {job.screening}</span>
+                              <span>Interview: {job.interview}</span>
+                              <span>Shortlisted: {job.shortlisted}</span>
+                              <span>Hired: {job.hired}</span>
+                            </div>
+
+                            <div
+                              style={{
+                                borderTop: "1px solid #DCE9DF",
+                                paddingTop: 14,
+                              }}
+                            >
+                              <strong
+                                style={{
+                                  color: "#245C4A",
+                                  fontSize: 13,
+                                }}
+                              >
+                                {job.insight}
+                              </strong>
+
+                              <p
+                                style={{
+                                  color: "#52665A",
+                                  fontSize: 12,
+                                  lineHeight: 1.7,
+                                }}
+                              >
+                                {job.recommendation}
+                              </p>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+
+                    <p
+                      style={{
+                        color: "#819388",
+                        fontSize: 11,
+                        marginTop: 20,
+                        lineHeight: 1.7,
+                      }}
+                    >
+                      Insights use current statuses of candidates
+                      created in the selected month. They do not
+                      measure time in stage, historical conversion,
+                      or actual hiring delays.
+                    </p>
+                  </section>
+                );
               })()}
 
               <div
+
 
 
 
