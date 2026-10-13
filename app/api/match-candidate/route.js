@@ -248,21 +248,29 @@ confidence to "low", and explain why.
       evaluatedAt: new Date().toISOString(),
     };
 
+    
     const { error: saveError } = await db
-      .from("candidate_ai_matches")
-      .insert({
-        company_id: companyId,
-        candidate_id: candidate.id,
-        job_id: job.id,
-        score: matchResult.score,
-        confidence: matchResult.confidence,
-        verdict: matchResult.verdict,
-        summary: matchResult.summary,
-        strengths: matchResult.strengths,
-        gaps: matchResult.gaps,
-        interview_questions: matchResult.interviewQuestions,
-        evaluated_at: matchResult.evaluatedAt,
-      });
+      .from("ai_match_results")
+      .upsert(
+        {
+          company_id: companyId,
+          candidate_id: candidate.id,
+          job_id: job.id,
+          evaluated_by: user.id,
+          score: matchResult.score,
+          confidence: matchResult.confidence,
+          verdict: matchResult.verdict,
+          summary: matchResult.summary,
+          strengths: matchResult.strengths,
+          gaps: matchResult.gaps,
+          interview_questions: matchResult.interviewQuestions,
+          evaluated_at: matchResult.evaluatedAt,
+        },
+        {
+          onConflict: "company_id,job_id,candidate_id",
+        }
+      );
+
 
     if (saveError) {
       console.error("Could not save AI match:", saveError);
