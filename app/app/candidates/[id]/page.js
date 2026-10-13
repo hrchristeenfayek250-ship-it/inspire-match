@@ -673,7 +673,190 @@ company_id: candidate.company_id,
           </div>
         </section>
 
+        
+        {/* SMART JOB ASSIGNMENT */}
+        <section
+          style={{
+            ...cardStyle,
+            border: "1px solid #D5E8DE",
+            background: "#F7FBF8",
+          }}
+        >
+          <div
+            style={{
+              fontSize: 11,
+              fontWeight: 800,
+              letterSpacing: 2,
+              color: "#347A65",
+              marginBottom: 10,
+            }}
+          >
+            TALENT MANAGEMENT
+          </div>
+
+          <h2
+            style={{
+              fontFamily: "Georgia, serif",
+              fontSize: 25,
+              color: "#173F3A",
+              margin: "0 0 10px",
+            }}
+          >
+            Smart Job Assignment
+          </h2>
+
+          <p
+            style={{
+              fontSize: 13,
+              color: "#65796D",
+              lineHeight: 1.7,
+              marginBottom: 22,
+            }}
+          >
+            Link this candidate to a job opening within
+            your company.
+          </p>
+
+          <div
+            style={{
+              background: "#FFFFFF",
+              border: "1px solid #DCE9DF",
+              borderRadius: 12,
+              padding: 17,
+              marginBottom: 20,
+            }}
+          >
+            <div
+              style={{
+                fontSize: 11,
+                fontWeight: 700,
+                color: "#71847A",
+                marginBottom: 8,
+              }}
+            >
+              CURRENT JOB ASSIGNMENT
+            </div>
+
+            <div
+              style={{
+                fontSize: 16,
+                fontWeight: 800,
+                color: "#245C4A",
+              }}
+            >
+              {candidate.job_id
+                ? availableJobs.find(
+                    (job) =>
+                      String(job.id) ===
+                      String(candidate.job_id)
+                  )?.title || "Assigned job"
+                : "Not Assigned Yet"}
+            </div>
+          </div>
+
+          <div
+            style={{
+              display: "flex",
+              flexWrap: "wrap",
+              alignItems: "end",
+              gap: 14,
+            }}
+          >
+            <div style={{ flex: "1 1 260px" }}>
+              <label
+                htmlFor="candidate-job-assignment"
+                style={{
+                  display: "block",
+                  fontSize: 12,
+                  fontWeight: 800,
+                  color: "#245C4A",
+                  marginBottom: 9,
+                }}
+              >
+                Select Job Opening
+              </label>
+
+              <select
+                id="candidate-job-assignment"
+                value={selectedJobId}
+                onChange={(event) =>
+                  setSelectedJobId(event.target.value)
+                }
+                style={{
+                  width: "100%",
+                  boxSizing: "border-box",
+                  padding: "13px 14px",
+                  borderRadius: 10,
+                  border: "1px solid #D5E8DE",
+                  background: "#FFFFFF",
+                  color: "#173F3A",
+                  fontSize: 13,
+                }}
+              >
+                <option value="">
+                  Choose a job opening
+                </option>
+
+                {availableJobs.map((job) => (
+                  <option
+                    key={job.id}
+                    value={String(job.id)}
+                  >
+                    {job.title} — {job.status || "Active"}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <button
+              type="button"
+              onClick={assignCandidateToJob}
+              disabled={
+                savingJobAssignment ||
+                !selectedJobId ||
+                String(selectedJobId) ===
+                  String(candidate.job_id)
+              }
+              style={{
+                padding: "13px 22px",
+                borderRadius: 10,
+                border: "none",
+                background:
+                  savingJobAssignment || !selectedJobId
+                    ? "#AAB8AE"
+                    : "#245C4A",
+                color: "#FFFFFF",
+                fontWeight: 800,
+                fontSize: 13,
+                cursor:
+                  savingJobAssignment || !selectedJobId
+                    ? "not-allowed"
+                    : "pointer",
+              }}
+            >
+              {savingJobAssignment
+                ? "Assigning..."
+                : "Assign Candidate"}
+            </button>
+          </div>
+
+          <p
+            style={{
+              color: "#819388",
+              fontSize: 11,
+              lineHeight: 1.7,
+              marginTop: 16,
+              marginBottom: 0,
+            }}
+          >
+            Job assignment updates recruitment records.
+            Any existing AI match score is not
+            automatically recalculated.
+          </p>
+        </section>
+
         {/* AI MATCH PROFILE */}
+
 
         <section style={cardStyle}>
           <div
