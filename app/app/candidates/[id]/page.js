@@ -73,12 +73,55 @@ const [savingProfile, setSavingProfile] = useState(false);
   const [updatingStatus, setUpdatingStatus] =
     useState(false);
 
-    useEffect(() => {
+    
+  useEffect(() => {
     if (candidateId) {
       loadCandidate();
       loadNotes();
+      loadAvailableJobs();
     }
   }, [candidateId]);
+
+  async function loadAvailableJobs() {
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+
+    if (!user) {
+      setAvailableJobs([]);
+      return;
+    }
+
+    const { data: memberships, error: membershipError } =
+      await supabase
+        .from("company_members")
+        .select("company_id")
+        .eq("user_id", user.id)
+        .limit(2);
+
+    if (membershipError || memberships?.length !== 1) {
+      setAvailableJobs([]);
+      return;
+    }
+
+    const companyId = memberships[0].company_id;
+
+    const { data, error } = await supabase
+      .from("jobs")
+      .select("id, title, status")
+      .or(
+        `company_id.eq.${companyId},and(company_id.is.null,user_id.eq.${user.id})`
+      )
+      .order("created_at", { ascending: false });
+
+    if (error) {
+      console.error("Could not load available jobs:", error);
+      setAvailableJobs([]);
+      return;
+    }
+
+    setAvailableJobs(data || []);
+  }
 
   async function loadCandidate() {
     setLoading(true);
