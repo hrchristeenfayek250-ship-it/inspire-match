@@ -226,10 +226,36 @@ const [savingProfile, setSavingProfile] = useState(false);
       
 
 
+   
     } else {
-      setCandidate(data);
+      let savedAIMatch = null;
+
+      if (data.company_id && data.job_id) {
+        const { data: matchData, error: matchError } =
+          await supabase
+            .from("ai_match_results")
+            .select(
+              "score, confidence, verdict, summary, strengths, gaps, interview_questions, evaluated_at, job_id"
+            )
+            .eq("company_id", data.company_id)
+            .eq("candidate_id", data.id)
+            .eq("job_id", data.job_id)
+            .maybeSingle();
+
+        if (matchError) {
+          console.error("Could not load saved AI match:", matchError);
+        } else {
+          savedAIMatch = matchData;
+        }
+      }
+
+      setCandidate({
+        ...data,
+        saved_ai_match: savedAIMatch,
+      });
       setEditForm(data);
     }
+
 
     setLoading(false);
   }
