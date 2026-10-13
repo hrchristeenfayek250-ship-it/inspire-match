@@ -102,6 +102,33 @@ async function loadJobs() {
     }));
   }
 
+ 
+  function editJob(job) {
+    const nextForm = {};
+
+    for (const key of Object.keys(initialForm)) {
+      nextForm[key] =
+        job[key] == null
+          ? initialForm[key]
+          : String(job[key]);
+    }
+
+    nextForm.deadline = nextForm.deadline
+      ? nextForm.deadline.slice(0, 10)
+      : "";
+
+    setForm({
+      ...nextForm,
+      _editingId: job.id,
+    });
+
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }
+
+  function cancelJobEdit() {
+    setForm(initialForm);
+  }
+
   async function createJob(e) {
     e.preventDefault();
 
@@ -117,76 +144,101 @@ async function loadJobs() {
 
     setSaving(true);
 
-    
-    const { data: authData, error: authError } =
-      await supabase.auth.getUser();
+    try {
+      const { data: authData, error: authError } =
+        await supabase.auth.getUser();
 
-    if (authError || !authData.user) {
-      alert("Please log in first.");
+      if (authError || !authData?.user) {
+        throw new Error("Please log in first.");
+      }
+
+      const user = authData.user;
+
+      const { data: memberships, error: membershipError } =
+        await supabase
+          .from("company_members")
+          .select("company_id")
+          .eq("user_id", user.id)
+          .limit(2);
+
+      if (membershipError || memberships?.length !== 1) {
+        throw new Error("Could not verify your company.");
+      }
+
+      const companyId = memberships[0].company_id;
+
+      const payload = {
+        title: form.title.trim(),
+        department: form.department.trim() || null,
+        location: form.location.trim() || null,
+        work_type: form.work_type || null,
+        employment_type: form.employment_type || null,
+        salary_proposed: form.salary_proposed.trim() || null,
+        years_of_experience:
+          form.years_of_experience.trim() || null,
+        hiring_manager: form.hiring_manager.trim() || null,
+        openings: Number(form.openings) || 1,
+        priority: form.priority || "Medium",
+        deadline: form.deadline || null,
+        required_skills: form.required_skills.trim() || null,
+        nice_to_have_requirements:
+          form.nice_to_have_requirements.trim() || null,
+        responsibilities:
+          form.responsibilities.trim() || null,
+        requirements: form.requirements.trim() || null,
+        benefits: form.benefits.trim() || null,
+        description: form.description.trim(),
+      };
+
+      if (form._editingId) {
+        const companyFilter =
+          `company_id.eq.${companyId},` +
+          `and(company_id.is.null,user_id.eq.${user.id})`;
+
+        const { data, error } = await supabase
+          .from("jobs")
+          .update(payload)
+          .eq("id", form._editingId)
+          .or(companyFilter)
+          .select()
+          .single();
+
+        if (error) throw error;
+
+        setJobs((current) =>
+          current.map((job) =>
+            String(job.id) === String(data.id)
+              ? data
+              : job
+          )
+        );
+
+        alert("Job updated successfully!");
+      } else {
+        const { data, error } = await supabase
+          .from("jobs")
+          .insert([
+            {
+              ...payload,
+              user_id: user.id,
+              company_id: companyId,
+              status: "Active",
+            },
+          ])
+          .select()
+          .single();
+
+        if (error) throw error;
+
+        setJobs((current) => [data, ...current]);
+      }
+
+      setForm(initialForm);
+    } catch (error) {
+      alert(`Could not save job: ${error.message}`);
+    } finally {
       setSaving(false);
-      return;
     }
-
-    const { data: memberships, error: membershipError } =
-      await supabase
-        .from("company_members")
-        .select("company_id")
-        .eq("user_id", authData.user.id)
-        .limit(2);
-
-    if (membershipError || memberships?.length !== 1) {
-      alert("Please select or set up your company first.");
-      setSaving(false);
-      return;
-    }
-
-    const companyId = memberships[0].company_id;
-
-
-    const { data, error } = await supabase
-      .from("jobs")
-      .insert([
-        {
-          
-user_id: authData.user.id,
-company_id: companyId,
-
-          title: form.title.trim(),
-          department: form.department.trim() || null,
-          location: form.location.trim() || null,
-          work_type: form.work_type || null,
-          employment_type: form.employment_type || null,
-          salary_proposed: form.salary_proposed.trim() || null,
-          years_of_experience:
-            form.years_of_experience.trim() || null,
-          hiring_manager: form.hiring_manager.trim() || null,
-          openings: Number(form.openings) || 1,
-          priority: form.priority || "Medium",
-          deadline: form.deadline || null,
-          required_skills: form.required_skills.trim() || null,
-          nice_to_have_requirements:
-            form.nice_to_have_requirements.trim() || null,
-          responsibilities:
-            form.responsibilities.trim() || null,
-          requirements: form.requirements.trim() || null,
-          benefits: form.benefits.trim() || null,
-          description: form.description.trim(),
-          status: "Active",
-        },
-      ])
-      .select()
-      .single();
-
-    if (error) {
-      console.error(error);
-      alert(`Could not create job: ${error.message}`);
-      setSaving(false);
-      return;
-    }
-
-    setJobs((current) => [data, ...current]);
-    setForm(initialForm);
-    setSaving(false);
   }
 
   async function changeStatus(id, status) {
