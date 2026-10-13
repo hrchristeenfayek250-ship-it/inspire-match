@@ -40,7 +40,8 @@ export default function MatchingPage() {
           `company_id.eq.${companyId},` +
           `and(company_id.is.null,user_id.eq.${user.id})`;
 
-        const [jobsResult, candidatesResult] =
+        
+        const [jobsResult, candidatesResult, savedMatchesResult] =
           await Promise.all([
             supabase
               .from("jobs")
@@ -52,16 +53,42 @@ export default function MatchingPage() {
               .from("candidates")
               .select("id, full_name, current_title, status, job_id")
               .or(companyFilter),
+
+            supabase
+              .from("ai_match_results")
+              .select("*")
+              .eq("company_id", companyId),
           ]);
 
         if (jobsResult.error) throw jobsResult.error;
-        if (candidatesResult.error) {
-          throw candidatesResult.error;
+        if (candidatesResult.error) throw candidatesResult.error;
+        if (savedMatchesResult.error) throw savedMatchesResult.error;
+
+        const savedResults = {};
+
+        for (const saved of savedMatchesResult.data || []) {
+          const key = `${saved.job_id}:${saved.candidate_id}`;
+
+          savedResults[key] = {
+            jobId: saved.job_id,
+            candidateId: saved.candidate_id,
+            score: saved.score,
+            confidence: saved.confidence,
+            verdict: saved.verdict,
+            summary: saved.summary,
+            strengths: saved.strengths || [],
+            gaps: saved.gaps || [],
+            interviewQuestions: saved.interview_questions || [],
+            evaluatedAt: saved.evaluated_at,
+            saved: true,
+            error: null,
+          };
         }
 
         setJobs(jobsResult.data || []);
         setCandidates(candidatesResult.data || []);
-      } catch (error) {
+        setMatchResults(savedResults);
+
         setErrorMessage(error.message);
       } finally {
         setLoading(false);
