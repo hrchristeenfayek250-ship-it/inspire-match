@@ -110,11 +110,24 @@ export default function MatchingPage() {
         }),
       });
 
-      const result = await response.json();
+      
+      const responseText = await response.text();
+      let result;
+
+      try {
+        result = JSON.parse(responseText);
+      } catch {
+        throw new Error(
+          `AI Matching server error (HTTP ${response.status}). Check Vercel Runtime Logs.`
+        );
+      }
 
       if (!response.ok) {
-        throw new Error(result.error || "AI matching failed.");
+        throw new Error(
+          result.error || `AI matching failed (HTTP ${response.status}).`
+        );
       }
+
 
       setMatchResults((previous) => ({
         ...previous,
