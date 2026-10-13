@@ -451,7 +451,9 @@ export default function MatchingPage() {
                               fontSize: 12,
                               color: "#65796D",
                             }}
-                          
+
+                          >
+
                             AI assessment for this selected job only.
                             Results are securely saved and available after refresh.
 
