@@ -59,8 +59,14 @@ const [savingProfile, setSavingProfile] = useState(false);
 
 
 
+ 
   const [notes, setNotes] = useState([]);
   const [newNote, setNewNote] = useState("");
+
+  const [availableJobs, setAvailableJobs] = useState([]);
+  const [selectedJobId, setSelectedJobId] = useState("");
+  const [savingJobAssignment, setSavingJobAssignment] = useState(false);
+
 
   const [loading, setLoading] = useState(true);
   const [savingNote, setSavingNote] = useState(false);
