@@ -653,19 +653,17 @@ export default function ExecutivePage() {
                 borderBottom: "1px solid #E1EBE4",
               }}
             >
+              
               <strong
                 style={{
                   minWidth: 85,
                   fontSize: 11,
-                  
-          main > div > div:nth-child(4) {
-            gap: 12px !important;
-            margin-bottom: 14px !important;
-            break-inside: auto;
-            page-break-inside: auto;
-          }
+                  color: "#347A65",
+                }}
+              >
+                {period}
+              </strong>
 
-              <span
                 style={{
                   fontSize: 11,
                   color: "#52665A",
