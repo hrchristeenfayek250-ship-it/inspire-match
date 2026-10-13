@@ -967,7 +967,10 @@ async function loadJobs() {
                     </select>
                   </div>
 
-              </article>
+
+                  </div>
+                </article>
+
             ))
           )}
         </section>
