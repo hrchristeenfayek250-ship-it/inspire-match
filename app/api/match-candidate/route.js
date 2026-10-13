@@ -230,7 +230,8 @@ confidence to "low", and explain why.
           )
         : [];
 
-    return Response.json({
+    
+    const matchResult = {
       jobId: job.id,
       candidateId: candidate.id,
       score,
@@ -239,17 +240,40 @@ confidence to "low", and explain why.
       )
         ? result.confidence
         : "low",
-      verdict: String(
-        result?.verdict || "Review Required"
-      ),
+      verdict: String(result?.verdict || "Review Required"),
       summary: String(result?.summary || ""),
       strengths: toList(result?.strengths),
       gaps: toList(result?.gaps),
-      interviewQuestions: toList(
-        result?.interviewQuestions
-      ),
+      interviewQuestions: toList(result?.interviewQuestions),
       evaluatedAt: new Date().toISOString(),
-    });
+    };
+
+    const { error: saveError } = await db
+      .from("candidate_ai_matches")
+      .insert({
+        company_id: companyId,
+        candidate_id: candidate.id,
+        job_id: job.id,
+        score: matchResult.score,
+        confidence: matchResult.confidence,
+        verdict: matchResult.verdict,
+        summary: matchResult.summary,
+        strengths: matchResult.strengths,
+        gaps: matchResult.gaps,
+        interview_questions: matchResult.interviewQuestions,
+        evaluated_at: matchResult.evaluatedAt,
+      });
+
+    if (saveError) {
+      console.error("Could not save AI match:", saveError);
+      return Response.json(
+        { error: "AI analysis completed, but saving failed." },
+        { status: 500 }
+      );
+    }
+
+    return Response.json(matchResult);
+
   } catch (error) {
     console.error("AI matching failed:", error);
 
