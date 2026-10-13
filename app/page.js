@@ -419,12 +419,27 @@ job_id: selectedJobId ? Number(selectedJobId) : null,
             candidate.currentTitle ||
             null,
 
+          
           years_experience:
-            candidate.yearsExperience ??
-            null,
+            candidate.yearsExperience ?? null,
+
+          skills:
+            Array.isArray(candidate.skills)
+              ? candidate.skills
+                  .filter((skill) => typeof skill === "string" && skill.trim())
+                  .join(", ") || null
+              : typeof candidate.skills === "string"
+                ? candidate.skills.trim() || null
+                : null,
+
+          professional_summary:
+            typeof candidate.summary === "string"
+              ? candidate.summary.trim() || null
+              : null,
 
           cv_file_name:
             fileName || null,
+
 
           consent_confirmed: true,
 
