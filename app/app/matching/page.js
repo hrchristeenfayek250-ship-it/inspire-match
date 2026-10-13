@@ -243,37 +243,181 @@ export default function MatchingPage() {
                   </p>
                 )}
 
-                {linkedCandidates.map((candidate) => (
-                  <div
-                    key={candidate.id}
-                    style={{
-                      padding: "16px 0",
-                      borderBottom: "1px solid #E7EEE9",
-                    }}
-                  >
-                    <Link
-                      href={`/app/candidates/${candidate.id}`}
-                      style={{
-                        fontWeight: 700,
-                        color: "#245C4A",
-                      }}
-                    >
-                      {candidate.full_name || "Unnamed Candidate"}
-                    </Link>
+               
+                {linkedCandidates.map((candidate) => {
+                  const match =
+                    matchResults[
+                      `${selectedJobId}:${candidate.id}`
+                    ];
 
-                    <p
+                  const isMatching =
+                    matchingCandidateId === candidate.id;
+
+                  return (
+                    <div
+                      key={candidate.id}
                       style={{
-                        color: "#65796D",
-                        fontSize: 13,
-                        marginBottom: 0,
+                        padding: "20px 0",
+                        borderBottom: "1px solid #E7EEE9",
                       }}
                     >
-                      {candidate.current_title || "Title not provided"}
-                      {" • "}
-                      {candidate.status || "No status"}
-                    </p>
-                  </div>
-                ))}
+                      <Link
+                        href={`/app/candidates/${candidate.id}`}
+                        style={{
+                          fontWeight: 700,
+                          color: "#245C4A",
+                          fontSize: 17,
+                        }}
+                      >
+                        {candidate.full_name || "Unnamed Candidate"}
+                      </Link>
+
+                      <p
+                        style={{
+                          color: "#65796D",
+                          fontSize: 13,
+                          marginTop: 8,
+                        }}
+                      >
+                        {candidate.current_title || "Title not provided"}
+                        {" • "}
+                        {candidate.status || "No status"}
+                      </p>
+
+                      <button
+                        type="button"
+                        onClick={() => runAIMatch(candidate.id)}
+                        disabled={matchingCandidateId !== null}
+                        style={{
+                          marginTop: 10,
+                          padding: "12px 20px",
+                          background:
+                            matchingCandidateId !== null
+                              ? "#AAB8AE"
+                              : "#245C4A",
+                          color: "#FFFFFF",
+                          border: "none",
+                          borderRadius: 10,
+                          fontWeight: 700,
+                          cursor:
+                            matchingCandidateId !== null
+                              ? "wait"
+                              : "pointer",
+                        }}
+                      >
+                        {isMatching
+                          ? "Analyzing Candidate..."
+                          : match && !match.error
+                            ? "Re-run AI Match"
+                            : "Run AI Match"}
+                      </button>
+
+                      {match?.error && (
+                        <p
+                          style={{
+                            marginTop: 15,
+                            color: "#A23B3B",
+                            fontWeight: 600,
+                          }}
+                        >
+                          {match.error}
+                        </p>
+                      )}
+
+                      {match && !match.error && (
+                        <div
+                          style={{
+                            marginTop: 20,
+                            background: "#F5F9F5",
+                            border: "1px solid #DCE9DF",
+                            borderRadius: 14,
+                            padding: 20,
+                          }}
+                        >
+                          <div
+                            style={{
+                              display: "flex",
+                              justifyContent: "space-between",
+                              alignItems: "center",
+                              flexWrap: "wrap",
+                              gap: 12,
+                            }}
+                          >
+                            <strong
+                              style={{
+                                fontSize: 24,
+                                color: "#245C4A",
+                              }}
+                            >
+                              {match.score === null
+                                ? "Score Unavailable"
+                                : `${match.score}% Job Match`}
+                            </strong>
+
+                            <span style={{ fontSize: 13 }}>
+                              {match.verdict}
+                              {" • "}
+                              Confidence: {match.confidence}
+                            </span>
+                          </div>
+
+                          {match.summary && (
+                            <p style={{ lineHeight: 1.7 }}>
+                              {match.summary}
+                            </p>
+                          )}
+
+                          {match.strengths?.length > 0 && (
+                            <div>
+                              <h4>✅ Key Strengths</h4>
+                              <ul>
+                                {match.strengths.map((item, index) => (
+                                  <li key={index}>{item}</li>
+                                ))}
+                              </ul>
+                            </div>
+                          )}
+
+                          {match.gaps?.length > 0 && (
+                            <div>
+                              <h4>⚠️ Missing or Unverified Requirements</h4>
+                              <ul>
+                                {match.gaps.map((item, index) => (
+                                  <li key={index}>{item}</li>
+                                ))}
+                              </ul>
+                            </div>
+                          )}
+
+                          {match.interviewQuestions?.length > 0 && (
+                            <div>
+                              <h4>💬 Suggested Interview Questions</h4>
+                              <ul>
+                                {match.interviewQuestions.map(
+                                  (item, index) => (
+                                    <li key={index}>{item}</li>
+                                  )
+                                )}
+                              </ul>
+                            </div>
+                          )}
+
+                          <p
+                            style={{
+                              marginTop: 16,
+                              fontSize: 12,
+                              color: "#65796D",
+                            }}
+                          >
+                            AI assessment for this selected job only.
+                            Results are not yet saved permanently.
+                          </p>
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+
               </section>
             )}
           </>
