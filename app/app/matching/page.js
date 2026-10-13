@@ -89,8 +89,11 @@ export default function MatchingPage() {
         setCandidates(candidatesResult.data || []);
         setMatchResults(savedResults);
 
+        
+      } catch (error) {
         setErrorMessage(error.message);
       } finally {
+
         setLoading(false);
       }
     }
