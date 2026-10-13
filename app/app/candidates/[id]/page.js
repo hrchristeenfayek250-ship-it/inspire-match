@@ -123,7 +123,81 @@ const [savingProfile, setSavingProfile] = useState(false);
     setAvailableJobs(data || []);
   }
 
+ 
+  async function assignCandidateToJob() {
+    if (savingJobAssignment || !selectedJobId || !candidate) return;
+
+    const selectedJob = availableJobs.find(
+      (job) => String(job.id) === String(selectedJobId)
+    );
+
+    if (!selectedJob) {
+      alert("Please select a valid job.");
+      return;
+    }
+
+    setSavingJobAssignment(true);
+
+    try {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+
+      if (!user) {
+        throw new Error("You must be logged in.");
+      }
+
+      const { data: memberships, error: membershipError } =
+        await supabase
+          .from("company_members")
+          .select("company_id")
+          .eq("user_id", user.id)
+          .limit(2);
+
+      if (membershipError || memberships?.length !== 1) {
+        throw new Error("Could not verify your company.");
+      }
+
+      const companyId = memberships[0].company_id;
+
+      const { data: verifiedJob, error: jobError } =
+        await supabase
+          .from("jobs")
+          .select("id")
+          .eq("id", selectedJobId)
+          .or(
+            `company_id.eq.${companyId},and(company_id.is.null,user_id.eq.${user.id})`
+          )
+          .single();
+
+      if (jobError || !verifiedJob) {
+        throw new Error("This job is not available for your company.");
+      }
+
+      const { data, error } = await supabase
+        .from("candidates")
+        .update({ job_id: verifiedJob.id })
+        .eq("id", candidateId)
+        .eq("user_id", user.id)
+        .select()
+        .single();
+
+      if (error) throw error;
+
+      setCandidate(data);
+      setEditForm(data);
+      setSelectedJobId("");
+
+      alert("Candidate assigned to job successfully!");
+    } catch (error) {
+      alert(`Could not assign candidate: ${error.message}`);
+    } finally {
+      setSavingJobAssignment(false);
+    }
+  }
+
   async function loadCandidate() {
+
     setLoading(true);
 
     const {
