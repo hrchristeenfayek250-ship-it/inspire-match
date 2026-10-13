@@ -861,9 +861,171 @@ company_id: candidate.company_id,
               }}
             >
               {savingJobAssignment
-                ? "Assigning..."
-                : "Assign Candidate"}
-            </button>
+                
+        {/* SAVED JOB-SPECIFIC AI MATCH */}
+
+        <section
+          style={{
+            ...cardStyle,
+            border: "1px solid #CFE4D6",
+            background: "#F8FCF9",
+          }}
+        >
+          <div style={{ marginBottom: 20 }}>
+            <div
+              style={{
+                color: "#348368",
+                fontSize: 12,
+                fontWeight: 800,
+                letterSpacing: 1.5,
+                marginBottom: 8,
+              }}
+            >
+              INSPIRE MATCH • AI TALENT INTELLIGENCE
+            </div>
+
+            <h2
+              style={{
+                fontFamily: "Georgia, serif",
+                margin: 0,
+                color: "#173F3A",
+              }}
+            >
+              Saved AI Job Matching
+            </h2>
+
+            <p style={{ color: "#65796D", lineHeight: 1.6 }}>
+              Evidence-based assessment for the candidate's
+              currently assigned job.
+            </p>
+          </div>
+
+          {candidate.saved_ai_match ? (
+            <div>
+              <div
+                style={{
+                  display: "flex",
+                  gap: 20,
+                  alignItems: "center",
+                  flexWrap: "wrap",
+                  marginBottom: 20,
+                }}
+              >
+                <div
+                  style={{
+                    fontSize: 42,
+                    fontWeight: 800,
+                    color: "#245C4A",
+                  }}
+                >
+                  {candidate.saved_ai_match.score === null
+                    ? "N/A"
+                    : `${candidate.saved_ai_match.score}%`}
+                </div>
+
+                <div>
+                  <div style={{ fontWeight: 800, fontSize: 18 }}>
+                    {candidate.saved_ai_match.verdict ||
+                      "Review Required"}
+                  </div>
+
+                  <div style={{ color: "#65796D", marginTop: 5 }}>
+                    Confidence:{" "}
+                    {candidate.saved_ai_match.confidence || "low"}
+                  </div>
+                </div>
+              </div>
+
+              {candidate.saved_ai_match.summary && (
+                <p style={{ lineHeight: 1.8, color: "#365B4B" }}>
+                  {candidate.saved_ai_match.summary}
+                </p>
+              )}
+
+              {Array.isArray(candidate.saved_ai_match.strengths) &&
+                candidate.saved_ai_match.strengths.length > 0 && (
+                  <div style={{ marginTop: 20 }}>
+                    <h3>✅ Key Strengths</h3>
+                    <ul style={{ lineHeight: 1.9 }}>
+                      {candidate.saved_ai_match.strengths.map(
+                        (item, index) => (
+                          <li key={index}>{item}</li>
+                        )
+                      )}
+                    </ul>
+                  </div>
+                )}
+
+              {Array.isArray(candidate.saved_ai_match.gaps) &&
+                candidate.saved_ai_match.gaps.length > 0 && (
+                  <div style={{ marginTop: 20 }}>
+                    <h3>⚠️ Missing or Unverified Requirements</h3>
+                    <ul style={{ lineHeight: 1.9 }}>
+                      {candidate.saved_ai_match.gaps.map(
+                        (item, index) => (
+                          <li key={index}>{item}</li>
+                        )
+                      )}
+                    </ul>
+                  </div>
+                )}
+
+              {Array.isArray(
+                candidate.saved_ai_match.interview_questions
+              ) &&
+                candidate.saved_ai_match.interview_questions.length > 0 && (
+                  <div style={{ marginTop: 20 }}>
+                    <h3>💬 Suggested Interview Questions</h3>
+                    <ol style={{ lineHeight: 1.9 }}>
+                      {candidate.saved_ai_match.interview_questions.map(
+                        (item, index) => (
+                          <li key={index}>{item}</li>
+                        )
+                      )}
+                    </ol>
+                  </div>
+                )}
+
+              <p
+                style={{
+                  marginTop: 24,
+                  fontSize: 12,
+                  color: "#73877A",
+                }}
+              >
+                Last evaluated:{" "}
+                {candidate.saved_ai_match.evaluated_at
+                  ? new Date(
+                      candidate.saved_ai_match.evaluated_at
+                    ).toLocaleString()
+                  : "Unknown"}
+              </p>
+            </div>
+          ) : (
+            <div>
+              <p style={{ color: "#65796D" }}>
+                No saved AI assessment for the currently
+                assigned job yet.
+              </p>
+
+              <Link
+                href="/app/matching"
+                style={{
+                  ...buttonStyle,
+                  background: "#245C4A",
+                  color: "#FFFFFF",
+                  border: "none",
+                }}
+              >
+                🤖 Open AI Matching
+              </Link>
+            </div>
+          )}
+        </section>
+
+        {/* AI MATCH PROFILE */}
+
+
           </div>
 
           <p
