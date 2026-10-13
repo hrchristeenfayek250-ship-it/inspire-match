@@ -761,22 +761,22 @@ export default function ExecutivePage() {
           
          
          
+          
           main > div > div:nth-child(4) {
             gap: 12px !important;
             margin-bottom: 14px !important;
-            break-inside: avoid-page;
-            page-break-inside: avoid;
+            break-before: page !important;
+            page-break-before: always !important;
+            break-inside: avoid-page !important;
+            page-break-inside: avoid !important;
           }
 
-          main > div > section:nth-of-type(2) {
-            break-before: auto;
-            page-break-before: auto;
-          }
-
-
+          main > div > section:nth-of-type(2),
           main > div > section:nth-of-type(3) {
-            break-before: page;
-            page-break-before: always;
+            break-before: auto !important;
+            page-break-before: auto !important;
+          }
+
           }
 
 
