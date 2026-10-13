@@ -71,11 +71,69 @@ export default function MatchingPage() {
     loadData();
   }, []);
 
+  
+  const [matchResults, setMatchResults] = useState({});
+  const [matchingCandidateId, setMatchingCandidateId] = useState(null);
+
   const linkedCandidates = candidates.filter(
     (candidate) =>
       selectedJobId &&
       String(candidate.job_id) === String(selectedJobId)
   );
+
+  async function runAIMatch(candidateId) {
+    if (!selectedJobId || matchingCandidateId !== null) return;
+
+    const resultKey = `${selectedJobId}:${candidateId}`;
+
+    setMatchingCandidateId(candidateId);
+
+    try {
+      const {
+        data: { session },
+        error: sessionError,
+      } = await supabase.auth.getSession();
+
+      if (sessionError || !session?.access_token) {
+        throw new Error("Please sign in again.");
+      }
+
+      const response = await fetch("/api/match-candidate", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${session.access_token}`,
+        },
+        body: JSON.stringify({
+          jobId: selectedJobId,
+          candidateId,
+        }),
+      });
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(result.error || "AI matching failed.");
+      }
+
+      setMatchResults((previous) => ({
+        ...previous,
+        [resultKey]: {
+          ...result,
+          error: null,
+        },
+      }));
+    } catch (error) {
+      setMatchResults((previous) => ({
+        ...previous,
+        [resultKey]: {
+          error: error.message,
+        },
+      }));
+    } finally {
+      setMatchingCandidateId(null);
+    }
+  }
 
   const card = {
     background: "#FFFFFF",
