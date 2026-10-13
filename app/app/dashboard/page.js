@@ -286,7 +286,7 @@ export default function DashboardPage() {
 
 
           <Link
-            href="/"
+href="/app/matching"
             style={{
               textDecoration: "none",
               padding: "14px 22px",
