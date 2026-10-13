@@ -664,7 +664,10 @@ export default function ExecutivePage() {
                 {period}
               </strong>
 
+               
+              <span
                 style={{
+
                   fontSize: 11,
                   color: "#52665A",
                   lineHeight: 1.6,
