@@ -777,7 +777,7 @@ export default function ExecutivePage() {
             page-break-before: auto !important;
           }
 
-          }
+         
 
 
           main section {
