@@ -777,27 +777,60 @@ async function loadJobs() {
               />
             </div>
 
-            <button
-              type="submit"
-              disabled={saving}
+            
+            <div
               style={{
-                padding: "14px 28px",
-                borderRadius: 9,
-                border: "none",
-                background: "#1f2937",
-                color: "#fff",
-                cursor: saving
-                  ? "not-allowed"
-                  : "pointer",
-                opacity: saving ? 0.7 : 1,
-                fontWeight: 600,
-                fontSize: 15,
+                display: "flex",
+                gap: 12,
+                flexWrap: "wrap",
+                alignItems: "center",
               }}
             >
-              {saving
-                ? "Creating Job..."
-                : "Create Job"}
-            </button>
+              <button
+                type="submit"
+                disabled={saving}
+                style={{
+                  padding: "14px 28px",
+                  borderRadius: 9,
+                  border: "none",
+                  background: "#245C4A",
+                  color: "#fff",
+                  cursor: saving ? "not-allowed" : "pointer",
+                  opacity: saving ? 0.7 : 1,
+                  fontWeight: 700,
+                  fontSize: 15,
+                }}
+              >
+                {saving
+                  ? form._editingId
+                    ? "Saving Changes..."
+                    : "Creating Job..."
+                  : form._editingId
+                    ? "Save Changes"
+                    : "Create Job"}
+              </button>
+
+              {form._editingId && (
+                <button
+                  type="button"
+                  onClick={cancelJobEdit}
+                  disabled={saving}
+                  style={{
+                    padding: "14px 24px",
+                    borderRadius: 9,
+                    border: "1px solid #CBD5CF",
+                    background: "#FFFFFF",
+                    color: "#245C4A",
+                    cursor: "pointer",
+                    fontWeight: 700,
+                    fontSize: 15,
+                  }}
+                >
+                  Cancel Editing
+                </button>
+              )}
+            </div>
+
           </form>
         </section>
 
