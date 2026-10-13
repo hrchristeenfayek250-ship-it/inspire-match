@@ -924,34 +924,49 @@ async function loadJobs() {
                       
   
   
-                  <select
-                    value={
-                      job.status || "Active"
-                    }
-                    onChange={(e) =>
-                      changeStatus(
-                        job.id,
-                        e.target.value
-                      )
-                    }
+                 
+                  <div
                     style={{
-                      padding: 9,
-                      borderRadius: 8,
-                      border: "1px solid #ddd",
-                      background: "#fff",
+                      display: "flex",
+                      flexDirection: "column",
+                      gap: 10,
+                      minWidth: 135,
                     }}
                   >
-                    <option value="Active">
-                      Active
-                    </option>
-                    <option value="Paused">
-                      Paused
-                    </option>
-                    <option value="Closed">
-                      Closed
-                    </option>
-                  </select>
-                </div>
+                    <button
+                      type="button"
+                      onClick={() => editJob(job)}
+                      style={{
+                        padding: "11px 16px",
+                        borderRadius: 9,
+                        border: "none",
+                        background: "#245C4A",
+                        color: "#FFFFFF",
+                        fontWeight: 700,
+                        cursor: "pointer",
+                      }}
+                    >
+                      ✏️ Edit Job
+                    </button>
+
+                    <select
+                      value={job.status || "Active"}
+                      onChange={(e) =>
+                        changeStatus(job.id, e.target.value)
+                      }
+                      style={{
+                        padding: 9,
+                        borderRadius: 8,
+                        border: "1px solid #ddd",
+                        background: "#fff",
+                      }}
+                    >
+                      <option value="Active">Active</option>
+                      <option value="Paused">Paused</option>
+                      <option value="Closed">Closed</option>
+                    </select>
+                  </div>
+
               </article>
             ))
           )}
