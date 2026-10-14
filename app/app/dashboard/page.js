@@ -2,7 +2,10 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+
 import { supabase } from "@/lib/supabase";
+import NotificationBell from "@/components/NotificationBell";
+
 
 const stages = [
   "Applied",
@@ -196,7 +199,11 @@ export default function DashboardPage() {
     gap: 10,
   }}
 >
+  
+  <NotificationBell />
+
   <Link
+
     href="/"
     style={{
       textDecoration: "none",
