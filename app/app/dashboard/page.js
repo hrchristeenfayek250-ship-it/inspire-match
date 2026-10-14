@@ -198,11 +198,7 @@ export default function DashboardPage() {
     alignItems: "center",
     gap: 10,
   }}
-position: "relative",
-width: "100%",
-maxWidth: 420,
-boxSizing: "border-box",
-marginLeft: "auto",
+<NotificationBell />
 
   <Link
 
