@@ -331,59 +331,7 @@ export default function NotificationBell() {
               Mark all as read
             </button>
           </div>
-          {notifications.some(
-            (item) => item.title === "Inspire Match - Email Test"
-          ) && (
-            <button
-              type="button"
-              onClick={async () => {
-                try {
-                  const test = notifications.find(
-                    (item) => item.title === "Inspire Match - Email Test"
-                  );
-
-                  const { data, error: sessionError } =
-                    await supabase.auth.getSession();
-
-                  if (sessionError || !data.session) {
-                    alert("Please log in again.");
-                    return;
-                  }
-
-                  const response = await fetch(
-                    "/api/send-notification-email",
-                    {
-                      method: "POST",
-                      headers: {
-                        "Content-Type": "application/json",
-                        Authorization: `Bearer ${data.session.access_token}`,
-                      },
-                      body: JSON.stringify({
-                        notificationId: test.id,
-                      }),
-                    }
-                  );
-
-                  const result = await response.json();
-                  alert(result.message || "Email test completed.");
-                } catch (err) {
-                  alert("Email test failed: " + err.message);
-                }
-              }}
-              style={{
-                padding: "10px 16px",
-                marginBottom: 14,
-                border: "none",
-                borderRadius: 10,
-                background: "#245c4a",
-                color: "#fff",
-                fontWeight: 600,
-                cursor: "pointer",
-              }}
-            >
-              Send Test Email
-            </button>
-          )}
+          
           {error && (
             <p style={{ color: "#a8432f", fontSize: 12 }}>
               {error}
