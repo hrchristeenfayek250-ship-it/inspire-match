@@ -195,7 +195,7 @@ export default function NotificationBell() {
         )}
       </button>
 
-      {open && (
+      {open && typeof document !== "undefined" && document.getElementById("
         <div
           style={{
 position: "absolute",
