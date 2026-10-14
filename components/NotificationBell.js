@@ -226,21 +226,20 @@ export default function NotificationBell() {
       </button>
 
 {open && typeof document !== "undefined" && document.getElementById("notifications-panel") && createPortal(
-        <div
-          style={{
-position: "relative",
-width: "100%",
-maxWidth: 420,
-boxSizing: "border-box",
-marginLeft: "auto",
+                style={{
+            position: "relative",
+            width: "100%",
+            maxWidth: 420,
+            boxSizing: "border-box",
+            marginLeft: "auto",
             maxHeight: 430,
             overflowY: "auto",
-            background: "#fff",
-            border: "1px solid #e3e7e2",
-            borderRadius: 16,
-            boxShadow: "0 12px 35px rgba(0,0,0,0.12)",
-            zIndex: 1000,
-            padding: 16,
+            background: "#ffffff",
+            border: "1px solid #e2ebe5",
+            borderRadius: 20,
+            boxShadow: "0 12px 32px rgba(30,59,50,0.08)",
+            padding: 20,
+            animation: "none",
           }}
         >
           <div
