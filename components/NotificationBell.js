@@ -146,7 +146,14 @@ export default function NotificationBell() {
   }
 
   return (
-    <div style={{ position: "relative" }}>
+  <div
+  style={{
+    position: "relative",
+    width: "auto",
+    flexShrink: 0,
+    alignSelf: "flex-start",
+  }}
+>
       <button
         type="button"
         aria-label={`Notifications, ${unreadCount} unread`}
@@ -190,9 +197,8 @@ export default function NotificationBell() {
       {open && (
         <div
           style={{
-            position: "absolute",
-            top: "calc(100% + 12px)",
-            right: 0,
+position: "relative",
+            marginTop: 12,
             width: "min(360px, 90vw)",
             maxHeight: 430,
             overflowY: "auto",
