@@ -168,6 +168,23 @@ export async function POST(request) {
       return respond("Email service is not configured.", 503);
     }
 
+    const serverSupabase = createServerSupabase();
+
+    const { data: claimed, error: claimError } =
+      await serverSupabase.rpc("claim_notification_email", {
+        p_notification_id: notificationId,
+      });
+
+    if (claimError) {
+      console.error("Email claim failed:", claimError.message);
+      return respond("Could not reserve notification email.", 500);
+    }
+
+    if (claimed !== true) {
+      return respond("Email already claimed or unavailable.", 409);
+    }
+
+
     const emailResponse = await fetch(
       "https://api.resend.com/emails",
       {
