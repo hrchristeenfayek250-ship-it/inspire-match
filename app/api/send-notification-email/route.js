@@ -29,25 +29,26 @@ function escapeHtml(value) {
   );
 }
 
-async function updateEmailStatus(supabase, notificationId, status) {
-  const updates = {
-    email_status: status,
-    email_sent_at:
-      status === "sent" ? new Date().toISOString() : null,
-  };
 
-  const { error } = await supabase
-    .from("notifications")
-    .update(updates)
-    .eq("id", notificationId);
+function createServerSupabase() {
+  const secretKey = process.env.SUPABASE_SECRET_KEY;
 
-  if (error) {
-    console.error("Could not update email status:", error.message);
-    return false;
+  if (!secretKey) {
+    throw new Error("Supabase server key is not configured.");
   }
 
-  return true;
+  return createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL,
+    secretKey,
+    {
+      auth: {
+        persistSession: false,
+        autoRefreshToken: false,
+      },
+    }
+  );
 }
+
 
 
 export async function POST(request) {
