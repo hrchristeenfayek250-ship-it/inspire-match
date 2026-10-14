@@ -29,6 +29,27 @@ function escapeHtml(value) {
   );
 }
 
+async function updateEmailStatus(supabase, notificationId, status) {
+  const updates = {
+    email_status: status,
+    email_sent_at:
+      status === "sent" ? new Date().toISOString() : null,
+  };
+
+  const { error } = await supabase
+    .from("notifications")
+    .update(updates)
+    .eq("id", notificationId);
+
+  if (error) {
+    console.error("Could not update email status:", error.message);
+    return false;
+  }
+
+  return true;
+}
+
+
 export async function POST(request) {
   try {
     const authorization = request.headers.get("authorization");
