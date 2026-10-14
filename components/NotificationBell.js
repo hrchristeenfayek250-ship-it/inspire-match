@@ -161,14 +161,23 @@ export default function NotificationBell() {
         aria-expanded={open}
         onClick={() => setOpen(!open)}
         style={{
-          position: "relative",
-          padding: "10px 14px",
-          border: "1px solid #d7dfd8",
-          borderRadius: 12,
-          background: "#fff",
-          cursor: "pointer",
-          fontSize: 23,
-        }}
+  position: "relative",
+  width: 44,
+  height: 44,
+  minWidth: 44,
+  flexShrink: 0,
+  display: "inline-flex",
+  alignItems: "center",
+  justifyContent: "center",
+  padding: 0,
+  border: "1px solid #d7dfd8",
+  borderRadius: 12,
+  background: "#fff",
+  color: "#245c4a",
+  cursor: "pointer",
+  fontSize: 20,
+  lineHeight: 1,
+}}
       >
         🔔
 
