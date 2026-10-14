@@ -197,7 +197,7 @@ export default function NotificationBell() {
       {open && (
         <div
           style={{
-position: "relative",
+position: "absolute",
             marginTop: 12,
             width: "min(360px, 90vw)",
             maxHeight: 430,
