@@ -198,9 +198,11 @@ export default function DashboardPage() {
     alignItems: "center",
     gap: 10,
   }}
->
-  
-  <NotificationBell />
+position: "relative",
+width: "100%",
+maxWidth: 420,
+boxSizing: "border-box",
+marginLeft: "auto",
 
   <Link
 
@@ -235,8 +237,17 @@ export default function DashboardPage() {
   </button>
 </div>
  </div>
+<div
+  id="notifications-panel"
+  style={{
+    display: "flex",
+    justifyContent: "flex-end",
+    width: "100%",
+    marginBottom: 16,
+  }}
+/>
+
 {/* NAVIGATION */}
-        {/* NAVIGATION */}
 
         <div
           style={{
