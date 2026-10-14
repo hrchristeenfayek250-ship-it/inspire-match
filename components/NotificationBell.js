@@ -319,7 +319,8 @@ position: "absolute",
               </button>
             ))
           )}
-        </div>
+                </div>,
+        document.getElementById("notifications-panel")
       )}
     </div>
   );
