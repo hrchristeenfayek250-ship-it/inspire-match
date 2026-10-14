@@ -325,18 +325,27 @@ export default function NotificationBell() {
                 key={item.id}
                 type="button"
                 onClick={() => openNotification(item)}
-                style={{
-                  width: "100%",
-                  textAlign: "left",
-                  padding: 13,
-                  marginBottom: 8,
-                  borderRadius: 10,
-                  border: "1px solid #edf0ec",
-                  background: item.is_read
-                    ? "#fff"
-                    : "#f0f6f1",
-                  cursor: "pointer",
-                }}
+                
+style={{
+  width: "100%",
+  textAlign: "left",
+  padding: "16px",
+  marginBottom: 10,
+  borderRadius: 14,
+  border: "1px solid #e4ebe6",
+  borderLeft: item.is_read
+    ? "3px solid #dce7df"
+    : "3px solid #245c4a",
+  background: item.is_read
+    ? "#ffffff"
+    : "linear-gradient(135deg, #f0f8f2, #ffffff)",
+  boxShadow: item.is_read
+    ? "none"
+    : "0 3px 12px rgba(36,92,74,0.06)",
+  cursor: "pointer",
+  transition: "all 0.2s ease",
+}}
+
               >
                 <div
                   style={{
