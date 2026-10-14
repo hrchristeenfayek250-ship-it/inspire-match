@@ -184,9 +184,9 @@ export default function NotificationBell() {
         {unreadCount > 0 && (
           <span
             style={{
-position: "relative",
-              top: -7,
-              right: -7,
+position: "absolute",
+top: -6,
+right: -6,
               minWidth: 21,
               height: 21,
               padding: "0 4px",
