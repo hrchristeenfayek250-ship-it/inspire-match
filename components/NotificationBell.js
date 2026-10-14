@@ -78,7 +78,39 @@ export default function NotificationBell() {
       if (channel) supabase.removeChannel(channel);
     };
   }, []);
+  useEffect(() => {
+    if (!open) return;
 
+    function handleOutsideClick(event) {
+      const panel = document.getElementById("notifications-panel");
+      const bell = document.querySelector(
+        'button[aria-label^="Notifications,"]'
+      );
+
+      if (
+        panel?.contains(event.target) ||
+        bell?.contains(event.target)
+      ) {
+        return;
+      }
+
+      setOpen(false);
+    }
+
+    function handleEscape(event) {
+      if (event.key === "Escape") {
+        setOpen(false);
+      }
+    }
+
+    document.addEventListener("pointerdown", handleOutsideClick);
+    document.addEventListener("keydown", handleEscape);
+
+    return () => {
+      document.removeEventListener("pointerdown", handleOutsideClick);
+      document.removeEventListener("keydown", handleEscape);
+    };
+  }, [open]);
   const unreadCount = notifications.filter(
     (item) => !item.is_read
   ).length;
