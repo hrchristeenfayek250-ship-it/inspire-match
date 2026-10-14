@@ -197,7 +197,7 @@ export default function DashboardPage() {
     display: "flex",
     alignItems: "center",
     gap: 10,
-  }}
+  }}>
 <NotificationBell />
 
   <Link
