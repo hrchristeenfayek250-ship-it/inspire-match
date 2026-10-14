@@ -175,7 +175,7 @@ export default function NotificationBell() {
         {unreadCount > 0 && (
           <span
             style={{
-              position: "absolute",
+position: "relative",
               top: -7,
               right: -7,
               minWidth: 21,
@@ -195,7 +195,7 @@ export default function NotificationBell() {
         )}
       </button>
 
-      {open && typeof document !== "undefined" && document.getElementById("
+{open && typeof document !== "undefined" && document.getElementById("notifications-panel") && createPortal(
         <div
           style={{
 position: "absolute",
