@@ -243,29 +243,57 @@ export default function NotificationBell() {
             animation: "none",
           }}
         >
+          
           <div
             style={{
               display: "flex",
               justifyContent: "space-between",
               alignItems: "center",
               gap: 12,
+              paddingBottom: 16,
               marginBottom: 16,
+              borderBottom: "1px solid #edf1ee",
             }}
           >
-            <strong style={{ color: "#1e3b32" }}>
-              Notifications
-            </strong>
+            <div style={{ display: "flex", alignItems: "center", gap: 9 }}>
+              <strong
+                style={{
+                  color: "#1e3b32",
+                  fontSize: 16,
+                  fontWeight: 700,
+                }}
+              >
+                Notifications
+              </strong>
+
+              {unreadCount > 0 && (
+                <span
+                  style={{
+                    background: "#eaf4ed",
+                    color: "#245c4a",
+                    borderRadius: 20,
+                    padding: "4px 9px",
+                    fontSize: 11,
+                    fontWeight: 700,
+                  }}
+                >
+                  {unreadCount} New
+                </span>
+              )}
+            </div>
 
             <button
               type="button"
               onClick={markAllAsRead}
               disabled={unreadCount === 0}
               style={{
-                border: 0,
+                border: "none",
                 background: "transparent",
-                color: "#b06f45",
-                cursor: "pointer",
+                color: "#245c4a",
                 fontSize: 12,
+                fontWeight: 600,
+                cursor: unreadCount > 0 ? "pointer" : "default",
+                opacity: unreadCount > 0 ? 1 : 0.45,
               }}
             >
               Mark all as read
