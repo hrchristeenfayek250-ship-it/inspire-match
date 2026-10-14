@@ -234,7 +234,20 @@ export async function POST(request) {
           `,
         }),
       }
-    );
+   
+      );
+    } catch (sendError) {
+      console.error(
+        "Resend connection failed; delivery status is unknown:",
+        sendError.message
+      );
+
+      return respond(
+        "Email delivery status is unknown. The notification is held to prevent duplicate sending.",
+        502
+      );
+    }
+
 
     
     if (!emailResponse.ok) {
