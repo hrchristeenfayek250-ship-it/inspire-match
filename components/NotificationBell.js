@@ -226,7 +226,8 @@ export default function NotificationBell() {
       </button>
 
 {open && typeof document !== "undefined" && document.getElementById("notifications-panel") && createPortal(
-                style={{
+   <div             
+  style={{
             position: "relative",
             width: "100%",
             maxWidth: 420,
