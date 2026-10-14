@@ -155,48 +155,69 @@ export default function NotificationBell() {
     alignSelf: "flex-start",
   }}
 >
-      <button
+           <button
         type="button"
         aria-label={`Notifications, ${unreadCount} unread`}
         aria-expanded={open}
         onClick={() => setOpen(!open)}
         style={{
-  position: "relative",
-  width: 44,
-  height: 44,
-  minWidth: 44,
-  flexShrink: 0,
-  display: "inline-flex",
-  alignItems: "center",
-  justifyContent: "center",
-  padding: 0,
-  border: "1px solid #d7dfd8",
-  borderRadius: 12,
-  background: "#fff",
-  color: "#245c4a",
-  cursor: "pointer",
-  fontSize: 20,
-  lineHeight: 1,
-}}
+          position: "relative",
+          width: 46,
+          height: 46,
+          minWidth: 46,
+          flexShrink: 0,
+          display: "inline-flex",
+          alignItems: "center",
+          justifyContent: "center",
+          padding: 0,
+          border: open
+            ? "1px solid #a6cbbb"
+            : "1px solid #dce8e0",
+          borderRadius: 14,
+          background: open ? "#eaf4ed" : "#ffffff",
+          color: "#245c4a",
+          boxShadow: open
+            ? "0 3px 12px rgba(36,92,74,0.12)"
+            : "0 2px 8px rgba(30,59,50,0.05)",
+          cursor: "pointer",
+          transition: "all 0.2s ease",
+        }}
       >
-        🔔
+        <svg
+          width="23"
+          height="23"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="1.8"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          aria-hidden="true"
+        >
+          <path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9" />
+          <path d="M10 21h4" />
+        </svg>
 
         {unreadCount > 0 && (
           <span
             style={{
-position: "absolute",
-top: -6,
-right: -6,
-              minWidth: 21,
-              height: 21,
-              padding: "0 4px",
+              position: "absolute",
+              top: -6,
+              right: -6,
+              minWidth: 20,
+              height: 20,
+              padding: "0 5px",
               borderRadius: 20,
+              border: "2px solid #fff",
               background: "#b06f45",
               color: "#fff",
-              fontSize: 11,
-              display: "grid",
-              placeItems: "center",
+              fontSize: 10,
+              lineHeight: 1,
+              display: "inline-flex",
+              alignItems: "center",
+              justifyContent: "center",
               fontWeight: 700,
+              boxSizing: "border-box",
             }}
           >
             {unreadCount > 99 ? "99+" : unreadCount}
