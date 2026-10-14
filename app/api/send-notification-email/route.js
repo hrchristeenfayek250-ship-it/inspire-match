@@ -185,8 +185,13 @@ export async function POST(request) {
     }
 
 
-    const emailResponse = await fetch(
-      "https://api.resend.com/emails",
+   
+    let emailResponse;
+
+    try {
+      emailResponse = await fetch(
+        "https://api.resend.com/emails",
+
       {
         method: "POST",
         headers: {
