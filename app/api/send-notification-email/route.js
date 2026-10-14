@@ -231,18 +231,36 @@ export async function POST(request) {
       }
     );
 
+    
     if (!emailResponse.ok) {
       console.error(
         "Resend delivery request failed:",
         emailResponse.status
       );
+    }
 
+    const { data: completed, error: completeError } =
+      await serverSupabase.rpc("complete_notification_email", {
+        p_notification_id: notificationId,
+        p_success: emailResponse.ok,
+      });
+
+    if (completeError || completed !== true) {
+      console.error(
+        "Could not finalize notification email:",
+        completeError?.message || "Status not updated"
+      );
+      return respond("Could not finalize email status.", 500);
+    }
+
+    if (!emailResponse.ok) {
       return respond("Email delivery request failed.", 502);
     }
 
     return respond(
-      "Email request accepted by Resend. Delivery status is not yet confirmed."
+      "Email accepted by Resend and status saved. Delivery is not yet confirmed."
     );
+
   } catch (error) {
     console.error("Notification email error:", error.message);
     return respond("Could not send notification email.", 500);
