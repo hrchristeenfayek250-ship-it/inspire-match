@@ -207,9 +207,11 @@ right: -6,
 {open && typeof document !== "undefined" && document.getElementById("notifications-panel") && createPortal(
         <div
           style={{
-position: "absolute",
-            marginTop: 12,
-            width: "min(360px, 90vw)",
+position: "relative",
+width: "100%",
+maxWidth: 420,
+boxSizing: "border-box",
+marginLeft: "auto",
             maxHeight: 430,
             overflowY: "auto",
             background: "#fff",
