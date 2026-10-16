@@ -268,5 +268,157 @@ export default function UploadCandidatePage() {
           AI CV Auto Parsing
         </h1>
 
-        <p style={{ color: "#68766e" }}>
-          Upload a CV, extract candidate details
+        
+        <p style={{ color: "#68766e", lineHeight: 1.7 }}>
+          Upload a PDF, DOCX or TXT CV. AI will extract
+          candidate details for your review before saving.
+        </p>
+
+        <section style={{
+          background: "#fff",
+          padding: 28,
+          borderRadius: 18,
+          border: "1px solid #dce6df",
+          marginTop: 25,
+        }}>
+          <h2>1. Upload Candidate CV</h2>
+
+          <input
+            type="file"
+            accept=".pdf,.docx,.txt"
+            disabled={busy}
+            style={inputStyle}
+            onChange={(event) => {
+              setFile(event.target.files?.[0] || null);
+              setParsed(false);
+              setForm(EMPTY);
+              setConsent(false);
+              setError("");
+            }}
+          />
+
+          <p style={{ fontSize: 12, color: "#777" }}>
+            Supported formats: PDF, DOCX, TXT. Maximum 4 MB.
+          </p>
+
+          <button
+            type="button"
+            onClick={parseCV}
+            disabled={!file || busy}
+            style={{
+              ...buttonStyle,
+              opacity: !file || busy ? 0.5 : 1,
+              marginTop: 12,
+            }}
+          >
+            {busy && !parsed
+              ? "Analyzing CV..."
+              : "✨ Analyze CV with AI"}
+          </button>
+
+          {error && (
+            <p role="alert" style={{ color: "#b42318" }}>
+              {error}
+            </p>
+          )}
+        </section>
+
+        {parsed && (
+          <section style={{
+            background: "#fff",
+            padding: 28,
+            borderRadius: 18,
+            border: "1px solid #dce6df",
+            marginTop: 22,
+          }}>
+            <h2>2. Review AI-Extracted Profile</h2>
+
+            <p style={{ color: "#68766e" }}>
+              Please verify and correct the extracted
+              information before saving.
+            </p>
+
+            <div style={{
+              display: "grid",
+              gridTemplateColumns:
+                "repeat(auto-fit, minmax(230px, 1fr))",
+              gap: 16,
+              marginTop: 20,
+            }}>
+              {fields.map(([key, title]) => (
+                <label
+                  key={key}
+                  style={{ fontSize: 13, fontWeight: 600 }}
+                >
+                  {title}
+                  <input
+                    style={inputStyle}
+                    value={form[key]}
+                    onChange={(event) =>
+                      updateField(key, event.target.value)
+                    }
+                  />
+                </label>
+              ))}
+            </div>
+
+            <label style={{
+              display: "block",
+              marginTop: 20,
+              fontSize: 13,
+              fontWeight: 600,
+            }}>
+              AI Professional Summary
+              <textarea
+                style={{ ...inputStyle, minHeight: 110 }}
+                value={form.summary}
+                onChange={(event) =>
+                  updateField("summary", event.target.value)
+                }
+              />
+            </label>
+
+            <label style={{
+              display: "flex",
+              gap: 10,
+              marginTop: 22,
+              alignItems: "flex-start",
+              fontSize: 13,
+            }}>
+              <input
+                type="checkbox"
+                checked={consent}
+                onChange={(event) =>
+                  setConsent(event.target.checked)
+                }
+              />
+              I confirm that I am authorized to process
+              and store this candidate's information.
+            </label>
+
+            <button
+              type="button"
+              onClick={saveCandidate}
+              disabled={busy || !consent}
+              style={{
+                ...buttonStyle,
+                marginTop: 22,
+                opacity: busy || !consent ? 0.5 : 1,
+              }}
+            >
+              {busy
+                ? "Saving Candidate..."
+                : "Save Candidate to Database"}
+            </button>
+
+            {error && (
+              <p role="alert" style={{ color: "#b42318" }}>
+                {error}
+              </p>
+            )}
+          </section>
+        )}
+      </div>
+    </main>
+  );
+}
