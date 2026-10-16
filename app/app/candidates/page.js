@@ -210,19 +210,39 @@ async function loadCandidates() {
             </p>
           </div>
 
-          <Link
-            href="/"
-            style={{
-              textDecoration: "none",
-              padding: "12px 20px",
-              borderRadius: 9,
-              border: "1px solid #ddd",
-              background: "#fff",
-              color: "#222",
-              fontSize: 14,
-            }}
-          >
-            ← Back to ATS
+
+          <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
+            <Link
+              href="/app/candidates/upload"
+              style={{
+                textDecoration: "none",
+                padding: "12px 20px",
+                borderRadius: 10,
+                background: "#173f3a",
+                color: "#fff",
+                fontSize: 14,
+                fontWeight: 600,
+              }}
+            >
+              ✨ Upload CV with AI
+            </Link>
+
+            <Link
+              href="/"
+              style={{
+                textDecoration: "none",
+                padding: "12px 20px",
+                borderRadius: 10,
+                border: "1px solid #ddd",
+                background: "#fff",
+                color: "#222",
+                fontSize: 14,
+              }}
+            >
+              ← Back to ATS
+            </Link>
+          </div>
+
           </Link>
         </div>
 
