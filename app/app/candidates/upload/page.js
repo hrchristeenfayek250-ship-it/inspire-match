@@ -232,6 +232,9 @@ if (uploadError) {
           professional_summary:
             form.summary.trim() || null,
           cv_file_name: file.name,
+          
+cv_file_url: filePath,
+
           status: "Applied",
           source: "AI CV Upload",
           consent_confirmed: true,
