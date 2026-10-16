@@ -50,6 +50,7 @@ export default function CandidateProfilePage() {
   const candidateId = params?.id;
 
   const [candidate, setCandidate] = useState(null);
+  const [openingCV, setOpeningCV] = useState(false);
   
 const [isEditing, setIsEditing] = useState(false);
   
@@ -1565,12 +1566,79 @@ company_id: candidate.company_id,
               }
             />
 
-            <Info
-              label="CV File"
-              value={
-                candidate.cv_file_name
-              }
-            />
+            
+<div
+  style={{
+    padding: 16,
+    background: "#f7f7f5",
+    borderRadius: 11,
+  }}
+>
+  <div
+    style={{
+      fontSize: 12,
+      color: "#777",
+      marginBottom: 6,
+    }}
+  >
+    CV File
+  </div>
+
+  <div
+    style={{
+      fontWeight: 600,
+      wordBreak: "break-word",
+    }}
+  >
+    {candidate.cv_file_name || "—"}
+  </div>
+
+  {candidate.cv_file_url && (
+    <button
+      type="button"
+      onClick={async () => {
+        const tab = window.open("", "_blank");
+
+        if (!tab) {
+          alert("Please allow pop-ups and try again.");
+          return;
+        }
+
+        tab.opener = null;
+
+        try {
+          const { data, error } = await supabase.storage
+            .from("candidate-cvs")
+            .createSignedUrl(candidate.cv_file_url, 120);
+
+          if (error) throw error;
+
+          if (!data?.signedUrl) {
+            throw new Error("CV link unavailable.");
+          }
+
+          tab.location.replace(data.signedUrl);
+        } catch (error) {
+          tab.close();
+          alert(`Could not open CV: ${error.message}`);
+        }
+      }}
+      style={{
+        marginTop: 12,
+        padding: "10px 15px",
+        background: "#245c4a",
+        color: "#fff",
+        border: "none",
+        borderRadius: 8,
+        cursor: "pointer",
+        fontWeight: 600,
+      }}
+    >
+      View / Download CV
+    </button>
+  )}
+</div>
+
 
             <Info
               label="Source"
