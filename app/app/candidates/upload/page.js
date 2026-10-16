@@ -240,7 +240,21 @@ cv_file_url: filePath,
           consent_confirmed: true,
         });
 
-      if (saveError) throw saveError;
+     
+if (saveError) {
+  const { error: cleanupError } = await supabase.storage
+    .from("candidate-cvs")
+    .remove([filePath]);
+
+  if (cleanupError) {
+    throw new Error(
+      `Candidate save failed: ${saveError.message}. CV cleanup also failed: ${cleanupError.message}`
+    );
+  }
+
+  throw saveError;
+}
+
 
       router.push("/app/candidates");
     } catch (err) {
