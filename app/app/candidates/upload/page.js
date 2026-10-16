@@ -198,8 +198,10 @@ const safeFileName = file.name.replace(
   "_"
 );
 
+
 const filePath =
-  `${companyId}/${crypto.randomUUID()}-${safeFileName}`;
+  `${companyId}/${auth.user.id}/${crypto.randomUUID()}-${safeFileName}`;
+
 
 const { error: uploadError } = await supabase.storage
   .from("candidate-cvs")
