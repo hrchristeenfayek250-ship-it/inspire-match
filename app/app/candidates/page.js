@@ -243,7 +243,7 @@ async function loadCandidates() {
             </Link>
           </div>
 
-          </Link>
+
         </div>
 
         {/* FILTERS */}
