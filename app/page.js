@@ -409,11 +409,22 @@ company_id: companyId,
 
 job_id: selectedJobId ? Number(selectedJobId) : null,
 
+ 
           full_name:
-            candidate.name || null,
+            candidate.name?.trim() || null,
+
+          email:
+            candidate.email?.trim() || null,
+
+          phone:
+            candidate.phone?.trim() || null,
+
+          linkedin_url:
+            candidate.linkedinUrl?.trim() || null,
 
           location:
             candidate.location || null,
+
 
           current_title:
             candidate.currentTitle ||
