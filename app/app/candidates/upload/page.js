@@ -191,7 +191,26 @@ export default function UploadCandidatePage() {
           "A single company membership is required."
         );
       }
+const companyId = memberships[0].company_id;
 
+const safeFileName = file.name.replace(
+  /[^a-zA-Z0-9._-]/g,
+  "_"
+);
+
+const filePath =
+  `${companyId}/${crypto.randomUUID()}-${safeFileName}`;
+
+const { error: uploadError } = await supabase.storage
+  .from("candidate-cvs")
+  .upload(filePath, file, {
+    upsert: false,
+    contentType: file.type || "application/octet-stream",
+  });
+
+if (uploadError) {
+  throw new Error(`CV upload failed: ${uploadError.message}`);
+}
       const { error: saveError } = await supabase
         .from("candidates")
         .insert({
