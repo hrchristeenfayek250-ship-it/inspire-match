@@ -428,28 +428,61 @@ async function saveProfile() {
   }
 }
 
-    }
+    
+async function getCandidateAccessScope() {
+  const {
+    data: { user },
+    error: authError,
+  } = await supabase.auth.getUser();
 
-    const { error } = await supabase
+  if (authError || !user) {
+    throw new Error("Please log in again.");
+  }
+
+  const { data: memberships, error: membershipError } =
+    await supabase
+      .from("company_members")
+      .select("company_id")
+      .eq("user_id", user.id)
+      .limit(2);
+
+  if (membershipError || memberships?.length !== 1) {
+    throw new Error("Could not verify your company.");
+  }
+
+  const companyId = memberships[0].company_id;
+
+  return `company_id.eq.${companyId},and(company_id.is.null,user_id.eq.${user.id})`;
+}
+
+async function updateStatus(status) {
+  setUpdatingStatus(true);
+
+  try {
+    const scope = await getCandidateAccessScope();
+
+    const { data, error } = await supabase
       .from("candidates")
       .update({ status })
       .eq("id", candidateId)
-      .eq("user_id", user.id);
+      .or(scope)
+      .select("id, status")
+      .maybeSingle();
 
-    if (error) {
-      alert(
-        `Could not update status: ${error.message}`
-      );
-    } else {
-      setCandidate((current) => ({
-        ...current,
-        status,
-      }));
-    }
+    if (error) throw error;
+    if (!data) throw new Error("Update not permitted.");
 
+    setCandidate((current) => ({
+      ...current,
+      status: data.status,
+    }));
+  } catch (error) {
+    alert(`Could not update status: ${error.message}`);
+  } finally {
     setUpdatingStatus(false);
   }
-   
+}
+
 function startEditing() {
   setEditForm({ ...candidate });
   setIsEditing(true);
@@ -459,14 +492,14 @@ function cancelEditing() {
   setEditForm({ ...candidate });
   setIsEditing(false);
 }
- 
+
 function updateEditField(field, value) {
   setEditForm((current) => ({
     ...current,
     [field]: value,
   }));
 }
-  
+
 async function saveProfile() {
   if (savingProfile) return;
 
@@ -480,11 +513,7 @@ async function saveProfile() {
   setSavingProfile(true);
 
   try {
-    const { data: { user } } = await supabase.auth.getUser();
-
-    if (!user) {
-      throw new Error("You must be logged in.");
-    }
+    const scope = await getCandidateAccessScope();
 
     const updates = {
       full_name: fullName,
@@ -513,13 +542,18 @@ async function saveProfile() {
       .from("candidates")
       .update(updates)
       .eq("id", candidateId)
-      .eq("user_id", user.id)
+      .or(scope)
       .select()
-      .single();
+      .maybeSingle();
 
     if (error) throw error;
+    if (!data) throw new Error("Update not permitted.");
 
-    setCandidate(data);
+    setCandidate((current) => ({
+      ...data,
+      saved_ai_match: current?.saved_ai_match ?? null,
+    }));
+
     setEditForm(data);
     setIsEditing(false);
   } catch (error) {
@@ -528,6 +562,7 @@ async function saveProfile() {
     setSavingProfile(false);
   }
 }
+
 
 
 async function deleteCandidate() {
