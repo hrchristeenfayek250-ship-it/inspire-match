@@ -1448,10 +1448,26 @@ company_id: candidate.company_id,
             Candidate Information
           </h2>
 
+
 {!isEditing && (
-  <button type="button" onClick={startEditing} style={{ ...buttonStyle, marginBottom: 16 }}>
-    Edit Profile
-  </button>
+  <div style={{ display: "flex", gap: 12, marginBottom: 16 }}>
+    <button type="button" onClick={startEditing} style={buttonStyle}>
+      Edit Profile
+    </button>
+
+    <button
+      type="button"
+      disabled
+      style={{
+        ...buttonStyle,
+        background: "#fee2e2",
+        color: "#b91c1c",
+        cursor: "not-allowed",
+      }}
+    >
+      Delete Candidate
+    </button>
+  </div>
 )}
 
 {isEditing && (
