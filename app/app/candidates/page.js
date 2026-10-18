@@ -341,6 +341,39 @@ return (
               </select>
             </div>
 
+{/* RECRUITMENT TYPE FILTER */}
+<div>
+  <label
+    style={{
+      display: "block",
+      fontSize: 13,
+      fontWeight: 600,
+      marginBottom: 7,
+    }}
+  >
+    Recruitment Type
+  </label>
+
+  <select
+    value={recruitmentFilter}
+    onChange={(e) => setRecruitmentFilter(e.target.value)}
+    style={{
+      width: "100%",
+      boxSizing: "border-box",
+      padding: "12px 13px",
+      border: "1px solid #ddd",
+      borderRadius: 9,
+      background: "#fff",
+      fontSize: 14,
+    }}
+  >
+    <option value="All types">All Types</option>
+    <option value="Talent Pool">Talent Pool</option>
+    <option value="Active Recruitment">Active Recruitment</option>
+    <option value="Not Classified">Not Classified</option>
+  </select>
+</div>
+
             {/* LOCATION */}
             <div>
               <label
