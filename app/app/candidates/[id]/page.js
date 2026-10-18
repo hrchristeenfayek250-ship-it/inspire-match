@@ -1414,24 +1414,6 @@ company_id: candidate.company_id,
                 }}
               >
 
-{!isEditing && (
-  <button
-    type="button"
-    onClick={deleteCandidate}
-    disabled={deletingCandidate}
-    style={{
-      ...buttonStyle,
-      marginLeft: 10,
-      marginBottom: 16,
-      background: "#b42318",
-      color: "white",
-      border: "none",
-      cursor: deletingCandidate ? "wait" : "pointer"
-    }}
-  >
-    {deletingCandidate ? "Deleting..." : "Delete Candidate"}
-  </button>
-)}
 
                 {interviewQuestions.map(
                   (question, index) => (
