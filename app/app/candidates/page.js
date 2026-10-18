@@ -589,8 +589,7 @@ function clearFilters() {
                           ...statusStyle,
                         }}
                       >
-                        {candidate.status ||
-                          "Screening"}
+                        {candidate.status || "Not Set"}
                       </span>
                         
 <div
