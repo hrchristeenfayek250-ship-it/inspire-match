@@ -598,14 +598,16 @@ are hired.
                     fontWeight: 700,
                   }}
                 >
-                  Screening Share:{" "}
-                  {candidates.length
-                    ? Math.round(
-                        (countStage("Screening") /
-                          candidates.length) * 100
-                      )
-                    : 0}
-                  %
+                  
+Screening Share:{" "}
+{activeCandidates.length
+  ? Math.round(
+      (countStage("Screening") /
+        activeCandidates.length) * 100
+    )
+  : 0}
+%
+
                 </div>
               </div>
               
