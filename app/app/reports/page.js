@@ -2172,7 +2172,7 @@ activeCandidates.length
                     !String(candidate.current_title || "").trim()
                 ).length;
 
-                const unknownStatuses = candidates.filter(
+         const unknownStatuses = activeCandidates.filter(
                   (candidate) =>
                     !stages.some(
                       (stage) =>
