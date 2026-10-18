@@ -70,35 +70,54 @@ export default function PipelinePage() {
   }
 
   
-  async function changeStage(id, stage) {
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
+ 
+  async function loadCandidates() {
+    setLoading(true);
 
-    if (!user) {
-      alert("Please log in first.");
-      return;
+    try {
+      const {
+        data: { user },
+        error: authError,
+      } = await supabase.auth.getUser();
+
+      if (authError || !user) {
+        throw new Error("Please log in again.");
+      }
+
+      const { data: memberships, error: membershipError } =
+        await supabase
+          .from("company_members")
+          .select("company_id")
+          .eq("user_id", user.id);
+
+      if (membershipError) throw membershipError;
+
+      if (!memberships || memberships.length !== 1) {
+        throw new Error("A single company membership is required.");
+      }
+
+      const companyId = memberships[0].company_id;
+
+      const { data, error } = await supabase
+        .from("candidates")
+        .select("*")
+        .or(
+          `company_id.eq.${companyId},and(company_id.is.null,user_id.eq.${user.id})`
+        )
+        .order("created_at", { ascending: false });
+
+      if (error) throw error;
+
+      setCandidates(data || []);
+    } catch (error) {
+      console.error("Could not load pipeline:", error);
+      setCandidates([]);
+      alert(error.message);
+    } finally {
+      setLoading(false);
     }
-
-    const { error } = await supabase
-      .from("candidates")
-      .update({ status: stage })
-      .eq("id", id)
-      .eq("user_id", user.id);
-
-    if (error) {
-      alert(`Could not update candidate: ${error.message}`);
-      return;
-    }
-
-    setCandidates((current) =>
-      current.map((candidate) =>
-        candidate.id === id
-          ? { ...candidate, status: stage }
-          : candidate
-      )
-    );
   }
+
 
   return (
     <main
