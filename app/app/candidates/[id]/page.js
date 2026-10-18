@@ -267,34 +267,27 @@ async function loadCandidate() {
 }
 
 
-    async function loadNotes() {
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-
-    if (!user) {
-      setNotes([]);
-      return;
-    }
+    
+async function loadNotes() {
+  try {
+    const scope = await getCandidateAccessScope();
 
     const { data, error } = await supabase
       .from("notes")
       .select("*")
       .eq("candidate_id", candidateId)
-      .eq("user_id", user.id)
-      .order("created_at", {
-        ascending: false,
-      });
+      .or(scope)
+      .order("created_at", { ascending: false });
 
-    if (error) {
-      console.error(
-        "Could not load notes:",
-        error
-      );
-    } else {
-      setNotes(data || []);
-    }
+    if (error) throw error;
+
+    setNotes(data || []);
+  } catch (error) {
+    console.error("Could not load notes:", error);
+    setNotes([]);
   }
+}
+
     
 async function getCandidateAccessScope() {
   const {
