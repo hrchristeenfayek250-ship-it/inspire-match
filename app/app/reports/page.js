@@ -496,11 +496,15 @@ table th {
                     note: "Currently in active stages",
                   },
                   {
-                    label: "HIRED SHARE",
-                    value: `${candidates.length
-                      ? Math.round((countStage("Hired") / candidates.length) * 100)
-                      : 0}%`,
-                    note: "Currently marked as hired",
+                    
+{
+  label: "HIRED SHARE",
+  value: `${candidates.length
+    ? Math.round((countStage("Hired") / candidates.length) * 100)
+    : 0}%`,
+  note: "Currently marked as hired",
+},
+
                   },
                 ].map((item) => (
                   <div
