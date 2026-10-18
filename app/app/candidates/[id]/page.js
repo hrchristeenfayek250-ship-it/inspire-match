@@ -365,6 +365,7 @@ async function saveProfile() {
       email: editForm.email || null,
       phone: editForm.phone || null,
       linkedin_url: editForm.linkedin_url || null,
+      recruitment_type: editForm.recruitment_type || null,
       years_experience:
         editForm.years_experience === "" ||
         editForm.years_experience == null
