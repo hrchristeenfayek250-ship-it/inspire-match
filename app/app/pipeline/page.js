@@ -71,52 +71,63 @@ export default function PipelinePage() {
 
   
  
-  async function loadCandidates() {
-    setLoading(true);
-
-    try {
-      const {
-        data: { user },
-        error: authError,
-      } = await supabase.auth.getUser();
-
-      if (authError || !user) {
-        throw new Error("Please log in again.");
-      }
-
-      const { data: memberships, error: membershipError } =
-        await supabase
-          .from("company_members")
-          .select("company_id")
-          .eq("user_id", user.id);
-
-      if (membershipError) throw membershipError;
-
-      if (!memberships || memberships.length !== 1) {
-        throw new Error("A single company membership is required.");
-      }
-
-      const companyId = memberships[0].company_id;
-
-      const { data, error } = await supabase
-        .from("candidates")
-        .select("*")
-        .or(
-          `company_id.eq.${companyId},and(company_id.is.null,user_id.eq.${user.id})`
-        )
-        .order("created_at", { ascending: false });
-
-      if (error) throw error;
-
-      setCandidates(data || []);
-    } catch (error) {
-      console.error("Could not load pipeline:", error);
-      setCandidates([]);
-      alert(error.message);
-    } finally {
-      setLoading(false);
+ 
+async function changeStage(id, stage) {
+  try {
+    if (!stages.includes(stage)) {
+      throw new Error("Invalid recruitment stage.");
     }
+
+    const {
+      data: { user },
+      error: authError,
+    } = await supabase.auth.getUser();
+
+    if (authError || !user) {
+      throw new Error("Please log in again.");
+    }
+
+    const { data: memberships, error: membershipError } =
+      await supabase
+        .from("company_members")
+        .select("company_id")
+        .eq("user_id", user.id);
+
+    if (membershipError) throw membershipError;
+
+    if (!memberships || memberships.length !== 1) {
+      throw new Error("Could not verify your company.");
+    }
+
+    const companyId = memberships[0].company_id;
+
+    const { data, error } = await supabase
+      .from("candidates")
+      .update({ status: stage })
+      .eq("id", id)
+      .or(
+        `company_id.eq.${companyId},and(company_id.is.null,user_id.eq.${user.id})`
+      )
+      .select("id, status")
+      .maybeSingle();
+
+    if (error) throw error;
+
+    if (!data) {
+      throw new Error("Candidate not found or update not permitted.");
+    }
+
+    setCandidates((current) =>
+      current.map((candidate) =>
+        String(candidate.id) === String(data.id)
+          ? { ...candidate, status: data.status }
+          : candidate
+      )
+    );
+  } catch (error) {
+    alert(`Could not update candidate: ${error.message}`);
   }
+}
 
 
   return (
