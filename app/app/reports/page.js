@@ -832,9 +832,11 @@ const donutBackground = activeCandidates.length
                         </h3>
 
                         {chartData.map((item) => {
-                          const percentage = candidates.length
-                            ? (item.count / candidates.length) * 100
-                            : 0;
+                          
+const percentage = activeCandidates.length
+  ? (item.count / activeCandidates.length) * 100
+  : 0;
+
 
                           return (
                             <div
