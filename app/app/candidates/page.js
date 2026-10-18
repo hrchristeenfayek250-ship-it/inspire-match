@@ -272,27 +272,32 @@ function clearFilters() {
     marginBottom: 24,
   }}
 >
-  {[
-    { label: "Total Candidates", count: candidates.length },
-    {
-      label: "Active Recruitment",
-      count: candidates.filter(
-        c => c.recruitment_type === "Active Recruitment"
-      ).length,
-    },
-    {
-      label: "Talent Pool",
-      count: candidates.filter(
-        c => c.recruitment_type === "Talent Pool"
-      ).length,
-    },
-    {
-      label: "Not Classified",
-      count: candidates.filter(
-        c => !c.recruitment_type
-      ).length,
-    },
-  ].map((item) => (
+  
+{[
+  {
+    label: "Matching Candidates",
+    count: filteredCandidates.length,
+  },
+  {
+    label: "Active Recruitment",
+    count: filteredCandidates.filter(
+      c => c.recruitment_type === "Active Recruitment"
+    ).length,
+  },
+  {
+    label: "Talent Pool",
+    count: filteredCandidates.filter(
+      c => c.recruitment_type === "Talent Pool"
+    ).length,
+  },
+  {
+    label: "Not Classified",
+    count: filteredCandidates.filter(
+      c => !c.recruitment_type
+    ).length,
+  },
+].map((item) => (
+
     <div
       key={item.label}
       style={{
