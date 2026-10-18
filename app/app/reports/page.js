@@ -1897,7 +1897,7 @@ activeCandidates.length
 
               {/* PIPELINE HEALTH SCORE */}
               {(() => {
-                const total = candidates.length;
+          const total = activeCandidates.length;
 
                 const applied = countStage("Applied");
                 const screening = countStage("Screening");
@@ -1921,7 +1921,7 @@ activeCandidates.length
                     )
                   : 0;
 
-                const jobLinked = candidates.filter((candidate) =>
+               const jobLinked = activeCandidates.filter((candidate) =>
                   jobs.some(
                     (job) =>
                       String(job.id) === String(candidate.job_id)
