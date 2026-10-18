@@ -400,11 +400,12 @@ async function saveProfile() {
   }
 }
 
+
 async function deleteCandidate() {
   if (deletingCandidate || !candidate) return;
 
   const confirmed = window.confirm(
-    `Are you sure you want to permanently delete ${candidate.full_name}? This action cannot be undone.`
+    `Are you sure you want to permanently delete ${candidate.full_name}? This cannot be undone.`
   );
 
   if (!confirmed) return;
@@ -412,23 +413,36 @@ async function deleteCandidate() {
   setDeletingCandidate(true);
 
   try {
-    const { data: { user } } = await supabase.auth.getUser();
+    const {
+      data: { session },
+      error: sessionError,
+    } = await supabase.auth.getSession();
 
-    if (!user) throw new Error("You must be logged in.");
-
-    const { data, error } = await supabase
-      .from("candidates")
-      .delete()
-      .eq("id", candidateId)
-      .eq("user_id", user.id)
-      .select("id");
-
-    if (error) throw error;
-    if (!data?.length) {
-      throw new Error("Candidate not deleted. Check permissions.");
+    if (sessionError || !session?.access_token) {
+      throw new Error("Please sign in again.");
     }
 
-    alert("Candidate deleted successfully.");
+    const response = await fetch("/api/delete-candidate", {
+      method: "DELETE",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${session.access_token}`,
+      },
+      body: JSON.stringify({ candidateId }),
+    });
+
+    const result = await response.json();
+
+    if (!response.ok || !result.success) {
+      throw new Error(result.error || "Deletion failed.");
+    }
+
+    alert(
+      result.warning
+        ? `Candidate deleted. ${result.warning}`
+        : "Candidate deleted successfully."
+    );
+
     window.location.href = "/app/candidates";
   } catch (error) {
     alert(`Delete failed: ${error.message}`);
@@ -436,6 +450,7 @@ async function deleteCandidate() {
     setDeletingCandidate(false);
   }
 }
+
 
   async function saveNote() {
       
