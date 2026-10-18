@@ -1562,6 +1562,31 @@ company_id: candidate.company_id,
     style={{ display: "block", padding: 12, width: "100%", maxWidth: 400, marginTop: 8, border: "1px solid #ddd", borderRadius: 8 }}
   />
 </div>
+    
+<div style={{ marginBottom: 16 }}>
+  <label>Recruitment Type</label>
+  <select
+    value={editForm.recruitment_type || ""}
+    onChange={(e) =>
+      updateEditField("recruitment_type", e.target.value)
+    }
+    style={{
+      display: "block",
+      padding: 12,
+      width: "100%",
+      maxWidth: 400,
+      marginTop: 8,
+      border: "1px solid #ddd",
+      borderRadius: 8,
+      background: "white",
+    }}
+  >
+    <option value="">Not Classified</option>
+    <option value="Talent Pool">Talent Pool</option>
+    <option value="Active Recruitment">Active Recruitment</option>
+  </select>
+</div>
+
 
 
 <div style={{ display: "flex", gap: 10, marginBottom: 20 }}>
