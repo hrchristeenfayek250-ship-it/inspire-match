@@ -1094,7 +1094,7 @@ const percentage = activeCandidates.length
                 const decided = hired + rejected;
                 const other = Math.max(
                   0,
-                  candidates.length - hired - rejected - inProgress
+         activeCandidates.length - hired - rejected - inProgress
                 );
 
                 const metrics = [
