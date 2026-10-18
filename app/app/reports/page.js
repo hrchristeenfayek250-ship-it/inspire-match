@@ -2146,7 +2146,7 @@ const withTitle = activeCandidates.filter(
 
               {/* SMART RECRUITMENT ALERTS */}
               {(() => {
-                const total = candidates.length;
+          const total = activeCandidates.length;
                 const activeStages = [
                   "Applied",
                   "Screening",
@@ -2169,7 +2169,7 @@ const withTitle = activeCandidates.filter(
                     )
                 ).length;
 
-                const missingTitles = candidates.filter(
+               const missingTitles = activeCandidates.filter(
                   (candidate) =>
                     !String(candidate.current_title || "").trim()
                 ).length;
