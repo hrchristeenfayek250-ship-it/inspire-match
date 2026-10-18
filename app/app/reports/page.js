@@ -2444,7 +2444,7 @@ const withTitle = activeCandidates.filter(
               {(() => {
                 const jobInsights = jobs
                   .map((job) => {
-                    const linked = candidates.filter(
+            const linked = activeCandidates.filter(
                       (candidate) =>
                         String(candidate.job_id || "") ===
                         String(job.id)
