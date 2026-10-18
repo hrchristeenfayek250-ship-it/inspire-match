@@ -561,15 +561,33 @@ table th {
                     margin: 0,
                   }}
                 >
-                  During {periodLabel}, a total of{" "}
-                  <strong>{candidates.length} candidates</strong>{" "}
-                  were added to the recruitment pipeline.
-                  Currently, <strong>{countStage("Screening")}</strong>{" "}
-                  are in screening,{" "}
-                  <strong>{countStage("Shortlisted")}</strong>{" "}
-                  are shortlisted, and{" "}
-                  <strong>{countStage("Hired")}</strong>{" "}
-                  are hired.
+                  
+During {periodLabel}, a total of{" "}
+<strong>{candidates.length} candidates</strong>{" "}
+were added to the candidate database.
+Of these,{" "}
+<strong>{activeCandidates.length}</strong>{" "}
+are in Active Recruitment,{" "}
+<strong>
+  {candidates.filter(
+    c => c.recruitment_type === "Talent Pool"
+  ).length}
+</strong>{" "}
+are in the Talent Pool, and{" "}
+<strong>
+  {candidates.filter(
+    c => !c.recruitment_type
+  ).length}
+</strong>{" "}
+remain unclassified.
+Within Active Recruitment,{" "}
+<strong>{countStage("Screening")}</strong>{" "}
+are in screening,{" "}
+<strong>{countStage("Shortlisted")}</strong>{" "}
+are shortlisted, and{" "}
+<strong>{countStage("Hired")}</strong>{" "}
+are hired.
+
                 </p>
 
                 <div
