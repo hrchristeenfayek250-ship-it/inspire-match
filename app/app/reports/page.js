@@ -123,13 +123,19 @@ export default function ReportsPage() {
     };
   }, [month]);
 
-  function countStage(stage) {
-    return candidates.filter(
-      (candidate) =>
-        String(candidate.status || "").toLowerCase() ===
-        stage.toLowerCase()
-    ).length;
-  }
+  
+const activeCandidates = candidates.filter(
+  (candidate) =>
+    candidate.recruitment_type === "Active Recruitment"
+);
+
+function countStage(stage) {
+  return activeCandidates.filter(
+    (candidate) =>
+      String(candidate.status || "").toLowerCase() ===
+      stage.toLowerCase()
+  ).length;
+}
 
 
   const periodLabel = new Date(
