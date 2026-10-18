@@ -405,7 +405,71 @@ table th {
           ) : (
             <>
               
-              <div
+             
+<div
+  style={{
+    background: "#f7faf8",
+    border: "1px solid #dce9df",
+    borderRadius: 14,
+    padding: 20,
+    marginBottom: 22,
+  }}
+>
+  <h3 style={{ color: "#245c4a", marginTop: 0 }}>
+    Recruitment Classification Overview
+  </h3>
+
+  <div style={{
+    display: "grid",
+    gridTemplateColumns: "repeat(auto-fit, minmax(150px, 1fr))",
+    gap: 12,
+  }}>
+    {[
+      {
+        label: "Talent Pool",
+        count: candidates.filter(
+          c => c.recruitment_type === "Talent Pool"
+        ).length,
+      },
+      {
+        label: "Active Recruitment",
+        count: candidates.filter(
+          c => c.recruitment_type === "Active Recruitment"
+        ).length,
+      },
+      {
+        label: "Not Classified",
+        count: candidates.filter(
+          c => !c.recruitment_type
+        ).length,
+      },
+    ].map(item => (
+      <div key={item.label} style={{
+        background: "white",
+        padding: 16,
+        borderRadius: 10,
+        border: "1px solid #e1eae3",
+      }}>
+        <div style={{ fontSize: 12, color: "#66776b" }}>
+          {item.label}
+        </div>
+        <div style={{
+          fontSize: 28,
+          fontWeight: 800,
+          color: "#245c4a",
+          marginTop: 8,
+        }}>
+          {item.count}
+        </div>
+      </div>
+    ))}
+  </div>
+  <p style={{ fontSize: 11, color: "#77867c" }}>
+    Counts are based on candidates added in the selected month.
+    Unclassified candidates require review.
+  </p>
+</div>
+ <div
                 style={{
                   display: "grid",
                   gridTemplateColumns: "repeat(3, minmax(0, 1fr))",
