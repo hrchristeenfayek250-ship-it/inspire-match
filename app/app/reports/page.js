@@ -765,7 +765,7 @@ const donutBackground = activeCandidates.length
                                 color: "#173F3A",
                               }}
                             >
-                              {candidates.length}
+              {activeCandidates.length}
                             </strong>
                             <span
                               style={{
