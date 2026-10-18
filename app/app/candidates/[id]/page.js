@@ -1470,18 +1470,22 @@ company_id: candidate.company_id,
       Edit Profile
     </button>
 
-    <button
-      type="button"
-      disabled
-      style={{
-        ...buttonStyle,
-        background: "#fee2e2",
-        color: "#b91c1c",
-        cursor: "not-allowed",
-      }}
-    >
-      Delete Candidate
-    </button>
+   
+<button
+  type="button"
+  onClick={deleteCandidate}
+  disabled={deletingCandidate}
+  style={{
+    ...buttonStyle,
+    background: "#fee2e2",
+    color: "#b91c1c",
+    cursor: deletingCandidate ? "not-allowed" : "pointer",
+    opacity: deletingCandidate ? 0.6 : 1,
+  }}
+>
+  {deletingCandidate ? "Deleting..." : "Delete Candidate"}
+</button>
+
   </div>
 )}
 
