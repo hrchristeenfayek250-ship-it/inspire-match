@@ -71,7 +71,7 @@ export default function PipelinePage() {
 
   
  
- 
+
 async function changeStage(id, stage) {
   try {
     if (!stages.includes(stage)) {
@@ -116,6 +116,18 @@ async function changeStage(id, stage) {
     if (!data) {
       throw new Error("Candidate not found or update not permitted.");
     }
+
+    setCandidates((current) =>
+      current.map((candidate) =>
+        String(candidate.id) === String(data.id)
+          ? { ...candidate, status: data.status }
+          : candidate
+      )
+    );
+  } catch (error) {
+    alert(`Could not update candidate: ${error.message}`);
+  }
+}
 
     setCandidates((current) =>
       current.map((candidate) =>
