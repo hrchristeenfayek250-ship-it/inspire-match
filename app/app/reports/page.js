@@ -2082,18 +2082,7 @@ table th {
                     )
                 ).length;
 
-                if (
-                  total >= 3 &&
-                  missingJobs / total >= 0.25
-                ) {
-                  alerts.push({
-                    level: "High",
-                    title: "Candidate Job Assignment Gap",
-                    detail: `${missingJobs} of ${total} candidates are not linked to a job in the available job records.`,
-                    action:
-                      "Review candidate records and assign the correct job openings.",
-                  });
-                }
+                
 
                 if (
                   total >= 3 &&
