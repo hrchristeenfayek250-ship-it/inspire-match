@@ -149,35 +149,59 @@ function clearFilters() {
 }
 
 
+
 async function updateRecruitmentType(candidateId, newType) {
-  const { data: { user } } = await supabase.auth.getUser();
+  try {
+    const {
+      data: { user },
+      error: authError,
+    } = await supabase.auth.getUser();
 
-  if (!user) {
-    alert("Please log in again.");
-    return;
-  }
+    if (authError || !user) {
+      throw new Error("Please log in again.");
+    }
 
-  const { data, error } = await supabase
-    .from("candidates")
-    .update({ recruitment_type: newType || null })
-    .eq("id", candidateId)
-    .eq("user_id", user.id)
-    .select("id, recruitment_type")
-    .single();
+    const { data: memberships, error: membershipError } =
+      await supabase
+        .from("company_members")
+        .select("company_id")
+        .eq("user_id", user.id)
+        .limit(2);
 
-  if (error) {
+    if (membershipError || memberships?.length !== 1) {
+      throw new Error("Could not verify your company.");
+    }
+
+    const companyId = memberships[0].company_id;
+
+    const { data, error } = await supabase
+      .from("candidates")
+      .update({ recruitment_type: newType || null })
+      .eq("id", candidateId)
+      .or(
+        `company_id.eq.${companyId},and(company_id.is.null,user_id.eq.${user.id})`
+      )
+      .select("id, recruitment_type")
+      .maybeSingle();
+
+    if (error) throw error;
+
+    if (!data) {
+      throw new Error("Candidate not found or update not permitted.");
+    }
+
+    setCandidates((previous) =>
+      previous.map((candidate) =>
+        String(candidate.id) === String(data.id)
+          ? { ...candidate, recruitment_type: data.recruitment_type }
+          : candidate
+      )
+    );
+  } catch (error) {
     alert(`Could not update classification: ${error.message}`);
-    return;
   }
-
-  setCandidates((previous) =>
-    previous.map((candidate) =>
-      String(candidate.id) === String(data.id)
-        ? { ...candidate, recruitment_type: data.recruitment_type }
-        : candidate
-    )
-  );
 }
+
 
   function getStatusStyle(status) {
     const styles = {
