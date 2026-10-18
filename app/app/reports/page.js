@@ -1261,9 +1261,11 @@ const percentage = activeCandidates.length
                           title={`${item.name}: ${item.count}`}
                           style={{
                             width: `${
-                              candidates.length
-                                ? (item.count / candidates.length) * 100
-                                : 0
+                             
+activeCandidates.length
+  ? (item.count / activeCandidates.length) * 100
+  : 0
+
                             }%`,
                             height: "100%",
                             background: item.color,
