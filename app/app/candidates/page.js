@@ -262,6 +262,61 @@ function clearFilters() {
 
         </div>
 
+{/* CANDIDATE CLASSIFICATION SUMMARY */}
+<div
+  style={{
+    display: "grid",
+    gridTemplateColumns:
+      "repeat(auto-fit, minmax(150px, 1fr))",
+    gap: 14,
+    marginBottom: 24,
+  }}
+>
+  {[
+    { label: "Total Candidates", count: candidates.length },
+    {
+      label: "Active Recruitment",
+      count: candidates.filter(
+        c => c.recruitment_type === "Active Recruitment"
+      ).length,
+    },
+    {
+      label: "Talent Pool",
+      count: candidates.filter(
+        c => c.recruitment_type === "Talent Pool"
+      ).length,
+    },
+    {
+      label: "Not Classified",
+      count: candidates.filter(
+        c => !c.recruitment_type
+      ).length,
+    },
+  ].map((item) => (
+    <div
+      key={item.label}
+      style={{
+        background: "#fff",
+        border: "1px solid #dce9df",
+        borderRadius: 12,
+        padding: 18,
+      }}
+    >
+      <div style={{ fontSize: 12, color: "#66776b" }}>
+        {item.label}
+      </div>
+      <div style={{
+        fontSize: 28,
+        fontWeight: 800,
+        color: "#245c4a",
+        marginTop: 8,
+      }}>
+        {item.count}
+      </div>
+    </div>
+  ))}
+</div>
+
         {/* FILTERS */}
         <section
           style={{
