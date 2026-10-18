@@ -29,34 +29,54 @@ const [recruitmentFilter, setRecruitmentFilter] = useState("All types");
   useEffect(() => {
     loadCandidates();
   }, []);
+
 async function loadCandidates() {
   setLoading(true);
 
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  try {
+    const {
+      data: { user },
+      error: authError,
+    } = await supabase.auth.getUser();
 
-  if (!user) {
-    setCandidates([]);
-    setLoading(false);
-    return;
-  }
+    if (authError || !user) {
+      throw new Error("Please log in again.");
+    }
 
-  const { data, error } = await supabase
-    .from("candidates")
-    .select("*")
-    .eq("user_id", user.id)
-    .order("created_at", { ascending: false });
+    const { data: memberships, error: membershipError } =
+      await supabase
+        .from("company_members")
+        .select("company_id")
+        .eq("user_id", user.id);
 
-  if (error) {
+    if (membershipError) throw membershipError;
+
+    if (!memberships || memberships.length !== 1) {
+      throw new Error("A single company membership is required.");
+    }
+
+    const companyId = memberships[0].company_id;
+
+    const { data, error } = await supabase
+      .from("candidates")
+      .select("*")
+      .or(
+        `company_id.eq.${companyId},and(company_id.is.null,user_id.eq.${user.id})`
+      )
+      .order("created_at", { ascending: false });
+
+    if (error) throw error;
+
+    setCandidates(data || []);
+  } catch (error) {
     console.error("Could not load candidates:", error);
     setCandidates([]);
-  } else {
-    setCandidates(data || []);
+    alert(error.message);
+  } finally {
+    setLoading(false);
   }
-
-  setLoading(false);
 }
+
   const filteredCandidates = useMemo(() => {
     const searchValue = search.trim().toLowerCase();
     const locationValue = locationFilter.trim().toLowerCase();
