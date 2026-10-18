@@ -1647,6 +1647,36 @@ company_id: candidate.company_id,
           </div>
         </section>
 
+<section style={cardStyle}>
+  <h2 style={{
+    fontFamily: "Georgia, serif",
+    marginTop: 0,
+    color: "#245c4a"
+  }}>
+    AI Candidate Profile
+  </h2>
+
+  <h3>Professional Summary</h3>
+  <p style={{
+    lineHeight: 1.8,
+    color: "#444"
+  }}>
+    {candidate.professional_summary ||
+      "No AI summary available yet."}
+  </p>
+
+  <h3>Skills & Expertise</h3>
+  <div style={{
+    padding: 16,
+    background: "#f7f7f5",
+    borderRadius: 10,
+    lineHeight: 1.8
+  }}>
+    {candidate.skills ||
+      "No skills available yet."}
+  </div>
+</section>
+
         {/* RECRUITMENT NOTES */}
 
         <section style={cardStyle}>
