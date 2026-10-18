@@ -180,7 +180,9 @@ const [savingProfile, setSavingProfile] = useState(false);
         .from("candidates")
         .update({ job_id: verifiedJob.id })
         .eq("id", candidateId)
-        .eq("user_id", user.id)
+        .or(
+  `company_id.eq.${companyId},and(company_id.is.null,user_id.eq.${user.id})`
+)
         .select()
         .single();
 
