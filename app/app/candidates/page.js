@@ -94,20 +94,30 @@ async function loadCandidates() {
       const matchesExperience =
         !minExperience || candidateExperience >= experienceValue;
 
-      return (
-        matchesSearch &&
-        matchesStatus &&
-        matchesLocation &&
-        matchesExperience
-      );
-    });
-  }, [
-    candidates,
-    search,
-    statusFilter,
-    locationFilter,
-    minExperience,
-  ]);
+      
+const matchesRecruitment =
+  recruitmentFilter === "All types" ||
+  (recruitmentFilter === "Not Classified"
+    ? !candidate.recruitment_type
+    : candidate.recruitment_type === recruitmentFilter);
+
+return (
+  matchesSearch &&
+  matchesStatus &&
+  matchesRecruitment &&
+  matchesLocation &&
+  matchesExperience
+);
+});
+}, [
+  candidates,
+  search,
+  statusFilter,
+  recruitmentFilter,
+  locationFilter,
+  minExperience,
+]);
+
 
   function clearFilters() {
     setSearch("");
