@@ -119,12 +119,15 @@ return (
 ]);
 
 
-  function clearFilters() {
-    setSearch("");
-    setStatusFilter("All statuses");
-    setLocationFilter("");
-    setMinExperience("");
-  }
+ 
+function clearFilters() {
+  setSearch("");
+  setStatusFilter("All statuses");
+  setRecruitmentFilter("All types");
+  setLocationFilter("");
+  setMinExperience("");
+}
+
 
   function getStatusStyle(status) {
     const styles = {
