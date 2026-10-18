@@ -684,20 +684,32 @@ gridTemplateColumns:
                         {candidate.status || "Not Set"}
                       </span>
                         
-<div
-  style={{
-    marginTop: 10,
-    fontSize: 12,
-    fontWeight: 700,
-    color:
-      candidate.recruitment_type === "Active Recruitment"
-        ? "#245c4a"
-        : candidate.recruitment_type === "Talent Pool"
-        ? "#2563eb"
-        : "#9a6700",
-  }}
->
-  {candidate.recruitment_type || "Not Classified"}
+
+<div style={{ marginTop: 10 }}>
+  <select
+    aria-label="Recruitment Type"
+    value={candidate.recruitment_type || ""}
+    onChange={(e) =>
+      updateRecruitmentType(candidate.id, e.target.value)
+    }
+    style={{
+      padding: "8px 12px",
+      borderRadius: 8,
+      border: "1px solid #dce9df",
+      background: "#f7faf8",
+      color: "#245c4a",
+      fontSize: 12,
+      fontWeight: 700,
+      cursor: "pointer",
+      width: "100%",
+    }}
+  >
+    <option value="">Not Classified</option>
+    <option value="Talent Pool">Talent Pool</option>
+    <option value="Active Recruitment">
+      Active Recruitment
+    </option>
+  </select>
 </div>
 
                     </div>
