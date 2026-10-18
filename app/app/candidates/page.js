@@ -275,8 +275,10 @@ function clearFilters() {
           <div
             style={{
               display: "grid",
-              gridTemplateColumns:
-                "minmax(220px, 2fr) minmax(160px, 1fr) minmax(160px, 1fr) minmax(130px, 1fr) auto",
+              
+gridTemplateColumns:
+  "repeat(auto-fit, minmax(min(100%, 190px), 1fr))",
+
               gap: 14,
               alignItems: "end",
             }}
