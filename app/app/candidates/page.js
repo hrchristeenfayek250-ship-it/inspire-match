@@ -261,7 +261,7 @@ function clearFilters() {
 
 
         </div>
-
+{/* FILTERS */}
 {/* CANDIDATE CLASSIFICATION SUMMARY */}
 <div
   style={{
