@@ -1714,27 +1714,29 @@ activeCandidates.length
 
               {/* RECRUITMENT DATA QUALITY SCORE */}
               {(() => {
-                const total = candidates.length;
+                
+const total = activeCandidates.length;
 
-                const linked = candidates.filter((candidate) =>
-                  jobs.some(
-                    (job) =>
-                      String(job.id) === String(candidate.job_id)
-                  )
-                ).length;
+const linked = activeCandidates.filter((candidate) =>
+  jobs.some(
+    (job) =>
+      String(job.id) === String(candidate.job_id)
+  )
+).length;
 
-                const validStatus = candidates.filter((candidate) =>
-                  stages.some(
-                    (stage) =>
-                      stage.toLowerCase() ===
-                      String(candidate.status || "").toLowerCase()
-                  )
-                ).length;
+const validStatus = activeCandidates.filter((candidate) =>
+  stages.some(
+    (stage) =>
+      stage.toLowerCase() ===
+      String(candidate.status || "").toLowerCase()
+  )
+).length;
 
-                const withTitle = candidates.filter(
-                  (candidate) =>
-                    String(candidate.current_title || "").trim() !== ""
-                ).length;
+const withTitle = activeCandidates.filter(
+  (candidate) =>
+    String(candidate.current_title || "").trim() !== ""
+).length;
+
 
                 const checks = [
                   { name: "Job Assignment", count: linked },
