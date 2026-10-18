@@ -129,17 +129,7 @@ async function changeStage(id, stage) {
   }
 }
 
-    setCandidates((current) =>
-      current.map((candidate) =>
-        String(candidate.id) === String(data.id)
-          ? { ...candidate, status: data.status }
-          : candidate
-      )
-    );
-  } catch (error) {
-    alert(`Could not update candidate: ${error.message}`);
-  }
-}
+    
 
 
   return (
