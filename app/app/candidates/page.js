@@ -20,6 +20,9 @@ export default function CandidatesPage() {
 
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("All statuses");
+  
+const [recruitmentFilter, setRecruitmentFilter] = useState("All types");
+
   const [locationFilter, setLocationFilter] = useState("");
   const [minExperience, setMinExperience] = useState("");
 
