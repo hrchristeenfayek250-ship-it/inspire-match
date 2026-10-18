@@ -129,6 +129,36 @@ function clearFilters() {
 }
 
 
+async function updateRecruitmentType(candidateId, newType) {
+  const { data: { user } } = await supabase.auth.getUser();
+
+  if (!user) {
+    alert("Please log in again.");
+    return;
+  }
+
+  const { data, error } = await supabase
+    .from("candidates")
+    .update({ recruitment_type: newType || null })
+    .eq("id", candidateId)
+    .eq("user_id", user.id)
+    .select("id, recruitment_type")
+    .single();
+
+  if (error) {
+    alert(`Could not update classification: ${error.message}`);
+    return;
+  }
+
+  setCandidates((previous) =>
+    previous.map((candidate) =>
+      String(candidate.id) === String(data.id)
+        ? { ...candidate, recruitment_type: data.recruitment_type }
+        : candidate
+    )
+  );
+}
+
   function getStatusStyle(status) {
     const styles = {
       Applied: {
