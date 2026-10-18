@@ -57,6 +57,7 @@ const [isEditing, setIsEditing] = useState(false);
 const [editForm, setEditForm] = useState({});
   
 const [savingProfile, setSavingProfile] = useState(false);
+  const [deletingCandidate, setDeletingCandidate] = useState(false);
 
 
 
@@ -396,6 +397,43 @@ async function saveProfile() {
     alert(`Could not save profile: ${error.message}`);
   } finally {
     setSavingProfile(false);
+  }
+}
+
+async function deleteCandidate() {
+  if (deletingCandidate || !candidate) return;
+
+  const confirmed = window.confirm(
+    `Are you sure you want to permanently delete ${candidate.full_name}? This action cannot be undone.`
+  );
+
+  if (!confirmed) return;
+
+  setDeletingCandidate(true);
+
+  try {
+    const { data: { user } } = await supabase.auth.getUser();
+
+    if (!user) throw new Error("You must be logged in.");
+
+    const { data, error } = await supabase
+      .from("candidates")
+      .delete()
+      .eq("id", candidateId)
+      .eq("user_id", user.id)
+      .select("id");
+
+    if (error) throw error;
+    if (!data?.length) {
+      throw new Error("Candidate not deleted. Check permissions.");
+    }
+
+    alert("Candidate deleted successfully.");
+    window.location.href = "/app/candidates";
+  } catch (error) {
+    alert(`Delete failed: ${error.message}`);
+  } finally {
+    setDeletingCandidate(false);
   }
 }
 
@@ -1375,6 +1413,26 @@ company_id: candidate.company_id,
                   paddingLeft: 22,
                 }}
               >
+
+{!isEditing && (
+  <button
+    type="button"
+    onClick={deleteCandidate}
+    disabled={deletingCandidate}
+    style={{
+      ...buttonStyle,
+      marginLeft: 10,
+      marginBottom: 16,
+      background: "#b42318",
+      color: "white",
+      border: "none",
+      cursor: deletingCandidate ? "wait" : "pointer"
+    }}
+  >
+    {deletingCandidate ? "Deleting..." : "Delete Candidate"}
+  </button>
+)}
+
                 {interviewQuestions.map(
                   (question, index) => (
                     <li key={index}>
