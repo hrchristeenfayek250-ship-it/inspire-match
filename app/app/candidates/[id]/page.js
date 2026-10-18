@@ -198,69 +198,72 @@ const [savingProfile, setSavingProfile] = useState(false);
     }
   }
 
-  async function loadCandidate() {
+  
+async function loadCandidate() {
+  setLoading(true);
 
-    setLoading(true);
+  try {
+    const { data: { user }, error: authError } =
+      await supabase.auth.getUser();
 
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-
-    if (!user) {
-      setCandidate(null);
-      setLoading(false);
-      return;
+    if (authError || !user) {
+      throw new Error("Please log in again.");
     }
+
+    const { data: memberships, error: membershipError } =
+      await supabase
+        .from("company_members")
+        .select("company_id")
+        .eq("user_id", user.id)
+        .limit(2);
+
+    if (membershipError || memberships?.length !== 1) {
+      throw new Error("Could not verify your company.");
+    }
+
+    const companyId = memberships[0].company_id;
 
     const { data, error } = await supabase
       .from("candidates")
       .select("*")
       .eq("id", candidateId)
-      .eq("user_id", user.id)
-      .single();
+      .or(
+        `company_id.eq.${companyId},and(company_id.is.null,user_id.eq.${user.id})`
+      )
+      .maybeSingle();
 
-    if (error) {
-      console.error(
-        "Could not load candidate:",
-        error
-      );
-      setCandidate(null);
-      
+    if (error) throw error;
+    if (!data) throw new Error("Candidate not found or access denied.");
 
+    let savedAIMatch = null;
 
-   
-    } else {
-      let savedAIMatch = null;
+    if (data.company_id && data.job_id) {
+      const { data: matchData, error: matchError } =
+        await supabase
+          .from("ai_match_results")
+          .select("score, confidence, verdict, summary, strengths, gaps, interview_questions, evaluated_at, job_id")
+          .eq("company_id", data.company_id)
+          .eq("candidate_id", data.id)
+          .eq("job_id", data.job_id)
+          .maybeSingle();
 
-      if (data.company_id && data.job_id) {
-        const { data: matchData, error: matchError } =
-          await supabase
-            .from("ai_match_results")
-            .select(
-              "score, confidence, verdict, summary, strengths, gaps, interview_questions, evaluated_at, job_id"
-            )
-            .eq("company_id", data.company_id)
-            .eq("candidate_id", data.id)
-            .eq("job_id", data.job_id)
-            .maybeSingle();
-
-        if (matchError) {
-          console.error("Could not load saved AI match:", matchError);
-        } else {
-          savedAIMatch = matchData;
-        }
+      if (matchError) {
+        console.error("Could not load AI match:", matchError);
+      } else {
+        savedAIMatch = matchData;
       }
-
-      setCandidate({
-        ...data,
-        saved_ai_match: savedAIMatch,
-      });
-      setEditForm(data);
     }
 
-
+    setCandidate({ ...data, saved_ai_match: savedAIMatch });
+    setEditForm(data);
+  } catch (error) {
+    console.error("Could not load candidate:", error);
+    setCandidate(null);
+  } finally {
     setLoading(false);
   }
+}
+
 
     async function loadNotes() {
     const {
