@@ -632,31 +632,34 @@ Screening Share:{" "}
                   0
                 );
 
-                if (candidates.length > tracked) {
-                  chartData.push({
-                    name: "Other",
-                    count: candidates.length - tracked,
-                    color: "#94A3A0",
-                  });
-                }
+                
+if (activeCandidates.length > tracked) {
+  chartData.push({
+    name: "Other",
+    count: activeCandidates.length - tracked,
+    color: "#94A3A0",
+  });
+}
 
-                let cumulative = 0;
+let cumulative = 0;
 
-                const donutBackground = candidates.length
-                  ? `conic-gradient(${chartData
-                      .map((item) => {
-                        const start =
-                          (cumulative / candidates.length) * 100;
+const donutBackground = activeCandidates.length
+  ? `conic-gradient(${chartData
+      .filter((item) => item.count > 0)
+      .map((item) => {
+        const start =
+          (cumulative / activeCandidates.length) * 100;
 
-                        cumulative += item.count;
+        cumulative += item.count;
 
-                        const end =
-                          (cumulative / candidates.length) * 100;
+        const end =
+          (cumulative / activeCandidates.length) * 100;
 
-                        return `${item.color} ${start}% ${end}%`;
-                      })
-                      .join(", ")})`
-                  : "#E8F0EB";
+        return `${item.color} ${start}% ${end}%`;
+      })
+      .join(", ")})`
+  : "#E8F0EB";
+
 
                 return (
                   <section
