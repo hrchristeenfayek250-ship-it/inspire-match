@@ -495,21 +495,17 @@ table th {
                       .reduce((sum, stage) => sum + countStage(stage), 0),
                     note: "Currently in active stages",
                   },
-                  {
-
+                
 {
   label: "HIRED SHARE",
   value: `${activeCandidates.length
-    ? Math.round((countStage("Hired") / activeCandidates.length) * 100)
+    ? Math.round(
+        (countStage("Hired") / activeCandidates.length) * 100
+      )
     : 0}%`,
   note: "Hired candidates within Active Recruitment",
 },
 
-    : 0}%`,
-  note: "Currently marked as hired",
-},
-
-                  },
                 ].map((item) => (
                   <div
                     key={item.label}
