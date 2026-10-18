@@ -592,6 +592,23 @@ function clearFilters() {
                         {candidate.status ||
                           "Screening"}
                       </span>
+                        
+<div
+  style={{
+    marginTop: 10,
+    fontSize: 12,
+    fontWeight: 700,
+    color:
+      candidate.recruitment_type === "Active Recruitment"
+        ? "#245c4a"
+        : candidate.recruitment_type === "Talent Pool"
+        ? "#2563eb"
+        : "#9a6700",
+  }}
+>
+  {candidate.recruitment_type || "Not Classified"}
+</div>
+
                     </div>
                   </div>
 
