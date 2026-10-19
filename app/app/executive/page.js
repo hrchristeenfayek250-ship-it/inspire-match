@@ -812,7 +812,7 @@ export default function ExecutivePage() {
           top: 0;
           left: 0;
           bottom: 0;
-          width: 254px;
+width: 220px;
           padding: 26px 16px;
           background: #ffffff;
           border-right: 1px solid #e6eaf0;
@@ -873,7 +873,6 @@ export default function ExecutivePage() {
           border-radius: 10px;
         }
 
-       <CodeBlock language="css" editable>
         .ex-nav a.active {
           background: #eaf3ee;
           color: #245340;
@@ -889,7 +888,6 @@ export default function ExecutivePage() {
           padding: 32px clamp(20px, 3vw, 48px) 50px;
         }
 </CodeBlock>
-
         @media screen and (max-width: 850px) {
           .ex-sidebar {
             display: none;
