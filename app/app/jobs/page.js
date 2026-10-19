@@ -4,6 +4,7 @@
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { supabase } from "@/lib/supabase";
+import ATSNavigation from "@/components/ATSNavigation";
 
 const initialForm = {
   title: "",
@@ -25,16 +26,6 @@ const initialForm = {
   description: "",
 };
 
-const navigation = [
-  ["Overview", "/app/dashboard", "◫"],
-  ["Jobs", "/app/jobs", "▣"],
-  ["Candidates", "/app/candidates", "♙"],
-  ["Pipeline", "/app/pipeline", "⇄"],
-  ["AI Matching", "/app/matching", "✧"],
-  ["Reports", "/app/reports", "▥"],
-  ["Executive", "/app/executive", "◈"],
-  ["Team", "/app/team", "♧"],
-];
 
 const textFields = [
   {
@@ -464,24 +455,11 @@ export default function JobsPage() {
 
       <div className="jm-side-label">WORKSPACE</div>
 
-      <nav className="jm-navigation">
-        {navigation.map(([label, href, icon]) => (
-          <Link
-            key={href}
-            href={href}
-            onClick={() => setMobileNav(false)}
-            className={
-              href === "/app/jobs"
-                ? "jm-nav-item active"
-                : "jm-nav-item"
-            }
-          >
-            <span>{icon}</span>
-            {label}
-          </Link>
-        ))}
-      </nav>
-
+    <ATSNavigation
+  className="jm-navigation"
+  linkClassName="jm-nav-item"
+  onNavigate={() => setMobileNav(false)}
+/>
       <div className="jm-side-footer">
         <Link href="/">↗ ATS Home</Link>
 
