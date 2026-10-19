@@ -709,7 +709,76 @@ table th {
             max-width: none !important;
           }
         }
-      `}</style>
+<CodeBlock language="css" editable>
+        /* REPORTS — FINAL SPACING FIX */
+        @media screen {
+          .ir-sidebar {
+            width: 220px;
+            box-sizing: border-box;
+          }
+
+.ir-workspace {
+            margin-left: 220px;
+            width: calc(100% - 220px);
+            max-width: none;
+            min-width: 0;
+            box-sizing: border-box;
+            padding: 32px clamp(20px, 3vw, 48px) 50px;
+          }
+
+.ir-kpis {
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+            gap: 18px;
+          }
+
+.ir-analytics {
+            grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr);
+            gap: 20px;
+          }
+
+.ir-panel {
+            min-width: 0;
+            padding: 26px;
+          }
+        }
+
+@media screen and (max-width: 1250px) {
+          .ir-kpis {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+          }
+
+.ir-analytics {
+            grid-template-columns: minmax(0, 1fr);
+          }
+        }
+
+@media screen and (max-width: 850px) {
+          .ir-sidebar {
+            display: none;
+          }
+
+.ir-workspace {
+            margin-left: 0;
+            width: 100%;
+            padding: 24px 18px 40px;
+          }
+        }
+
+@media screen and (max-width: 540px) {
+          .ir-kpis {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 12px;
+          }
+
+.ir-kpi {
+            padding: 16px;
+          }
+
+.ir-panel {
+            padding: 18px;
+          }
+        }
+</CodeBlock>`}</style>
 
       <aside className="ir-sidebar no-print">
         <div className="ir-brand">
