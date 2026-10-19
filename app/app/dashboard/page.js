@@ -149,90 +149,104 @@ export default function DashboardPage() {
           margin: "0 auto",
         }}
       >
-        {/* HEADER */}
-
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "center",
-            marginBottom: 30,
-            gap: 20,
-          }}
-        >
-          <div>
-            <div
-              style={{
-                fontSize: 13,
-                letterSpacing: 2,
-                color: "#777",
-                marginBottom: 8,
-              }}
-            >
-              INSPIRE MATCH
-            </div>
-
-            <h1
-              style={{
-                fontFamily: "Georgia, serif",
-                fontSize: 42,
-                margin: 0,
-              }}
-            >
-              Recruitment Dashboard
-            </h1>
-
-            <p
-              style={{
-                color: "#666",
-                marginTop: 10,
-              }}
-            >
-              Your recruitment activity at a glance.
-            </p>
-          </div>
-
-          <div
+      
+{/* PREMIUM HEADER */}
+<div
   style={{
+    background: "linear-gradient(135deg, #173b30, #285b49)",
+    borderRadius: 24,
+    padding: "32px",
+    color: "#fff",
+    marginBottom: 22,
     display: "flex",
+    justifyContent: "space-between",
     alignItems: "center",
-    gap: 10,
-  }}>
-<NotificationBell />
+    flexWrap: "wrap",
+    gap: 24,
+  }}
+>
+  <div>
+    <div
+      style={{
+        fontSize: 11,
+        fontWeight: 700,
+        letterSpacing: 3,
+        color: "#b9d7c1",
+        marginBottom: 12,
+      }}
+    >
+      INSPIRE MATCH • TALENT INTELLIGENCE
+    </div>
 
-  <Link
+    <h1
+      style={{
+        fontFamily: "Georgia, serif",
+        fontSize: "clamp(28px, 4vw, 42px)",
+        fontWeight: 500,
+        margin: 0,
+      }}
+    >
+      Recruitment Overview
+    </h1>
 
-    href="/"
+    <p
+      style={{
+        color: "#d5e4d9",
+        marginTop: 12,
+        marginBottom: 0,
+        fontSize: 14,
+      }}
+    >
+      Your entire hiring operation. One intelligent workspace.
+    </p>
+  </div>
+
+  <div
     style={{
-      textDecoration: "none",
-      padding: "12px 20px",
-      border: "1px solid #ddd",
-      borderRadius: 10,
-      background: "#fff",
-      color: "#222",
+      display: "flex",
+      alignItems: "center",
+      gap: 10,
+      flexWrap: "wrap",
     }}
   >
-    ← ATS Home
-  </Link>
+    <NotificationBell />
 
-  <button
-    onClick={async () => {
-      await supabase.auth.signOut();
-      window.location.href = "/app/login";
-    }}
-    style={{
-      padding: "12px 20px",
-      border: "1px solid #222",
-      borderRadius: 10,
-      background: "#222",
-      color: "#fff",
-      cursor: "pointer",
-    }}
-  >
-    Logout
-  </button>
+    <Link
+      href="/"
+      style={{
+        padding: "11px 16px",
+        background: "rgba(255,255,255,0.12)",
+        border: "1px solid rgba(255,255,255,0.2)",
+        borderRadius: 12,
+        color: "#fff",
+        textDecoration: "none",
+        fontSize: 13,
+        fontWeight: 600,
+      }}
+    >
+      ATS Home
+    </Link>
+
+    <button
+      onClick={async () => {
+        await supabase.auth.signOut();
+        window.location.href = "/app/login";
+      }}
+      style={{
+        padding: "11px 16px",
+        background: "#fff",
+        border: "none",
+        borderRadius: 12,
+        color: "#173b30",
+        cursor: "pointer",
+        fontWeight: 700,
+      }}
+    >
+      Log Out
+    </button>
+  </div>
 </div>
- </div>
+
 <div
   id="notifications-panel"
   style={{
@@ -243,127 +257,61 @@ export default function DashboardPage() {
   }}
 />
 
-{/* NAVIGATION */}
+{/* WORKSPACE NAVIGATION */}
+<nav
+  aria-label="Recruitment navigation"
+  style={{
+    background: "#fff",
+    border: "1px solid #e5ebe6",
+    borderRadius: 20,
+    padding: 14,
+    display: "flex",
+    gap: 8,
+    flexWrap: "wrap",
+    marginBottom: 30,
+    boxShadow: "0 6px 24px rgba(25,55,43,0.04)",
+  }}
+>
+  {[
+    { label: "Overview", href: "/app/dashboard", icon: "◫" },
+    { label: "Jobs", href: "/app/jobs", icon: "▣" },
+    { label: "Candidates", href: "/app/candidates", icon: "♙" },
+    { label: "Pipeline", href: "/app/pipeline", icon: "↗" },
+    { label: "AI Matching", href: "/app/matching", icon: "✦" },
+    { label: "Reports", href: "/app/reports", icon: "▥" },
+    { label: "Executive", href: "/app/executive", icon: "◈" },
+    { label: "Team", href: "/app/team", icon: "♧" },
+  ].map((item) => {
+    const isActive = item.href === "/app/dashboard";
 
-        <div
-          style={{
-            display: "flex",
-            gap: 12,
-            flexWrap: "wrap",
-            marginBottom: 35,
-          }}
-        >
-          <Link
-            href="/app/pipeline"
-            style={{
-              textDecoration: "none",
-              padding: "14px 22px",
-              borderRadius: 10,
-              background: "#222",
-              color: "#fff",
-              fontWeight: 600,
-            }}
-          >
-            🔄 Candidate Pipeline
-          </Link>
+    return (
+      <Link
+        key={item.href}
+        href={item.href}
+        style={{
+          display: "inline-flex",
+          alignItems: "center",
+          gap: 9,
+          padding: "12px 16px",
+          borderRadius: 12,
+          textDecoration: "none",
+          fontSize: 13,
+          fontWeight: 650,
+          background: isActive ? "#173b30" : "#f6f8f6",
+          color: isActive ? "#fff" : "#44574c",
+          border: isActive
+            ? "1px solid #173b30"
+            : "1px solid transparent",
+          transition: "all 0.2s ease",
+        }}
+      >
+        <span style={{ fontSize: 16 }}>{item.icon}</span>
+        {item.label}
+      </Link>
+    );
+  })}
+</nav>
 
-         
-          <Link
-            href="/app/jobs"
-            style={{
-              textDecoration: "none",
-              padding: "14px 22px",
-              borderRadius: 10,
-              background: "#eaf3ee",
-              color: "#1e3b32",
-              border: "1px solid #c8ded1",
-              fontWeight: 600,
-            }}
-          >
-            💼 Job Management
-          </Link>
-
-          <Link
-            href="/app/candidates"
-            style={{
-              textDecoration: "none",
-              padding: "14px 22px",
-              borderRadius: 10,
-              background: "#fff",
-              color: "#222",
-              border: "1px solid #ddd",
-              fontWeight: 600,
-            }}
-          >
-            👥 Candidate Database
-          </Link>
-
-
-          <Link
-href="/app/matching"
-            style={{
-              textDecoration: "none",
-              padding: "14px 22px",
-              borderRadius: 10,
-              background: "#fff",
-              color: "#222",
-              border: "1px solid #ddd",
-              fontWeight: 600,
-            }}
-          >
-            🤖 AI Matching
-         </Link>
-
-          <Link
-            href="/app/team"
-            style={{
-              textDecoration: "none",
-              padding: "14px 22px",
-              borderRadius: 10,
-              background: "#eaf3ee",
-              color: "#1e3b32",
-              border: "1px solid #c8ded1",
-              fontWeight: 600,
-            }}
-          >
-            👥 Team Management
-          </Link>
-
-          <Link
-            href="/app/reports"
-            style={{
-              textDecoration: "none",
-              padding: "14px 22px",
-              borderRadius: 10,
-              background: "#173f3a",
-              color: "#ffffff",
-              border: "1px solid #173f3a",
-              fontWeight: 700,
-              boxShadow: "0 6px 14px rgba(23,63,58,0.12)",
-            }}
-          >
-            📊 Reports & Analytics
-          </Link>
- 
-          <Link
-            href="/app/executive"
-            style={{
-              textDecoration: "none",
-              padding: "14px 22px",
-              borderRadius: 10,
-              background: "linear-gradient(135deg, #245C4A, #347A65)",
-              color: "#FFFFFF",
-              border: "1px solid #245C4A",
-              fontWeight: 700,
-              boxShadow: "0 6px 16px rgba(36,92,74,0.18)",
-              display: "inline-flex",
-              alignItems: "center",
-              gap: 8,
-            }}
-          >
-            📈 Executive Intelligence
-          </Link>
-        </div>
 
 
 
