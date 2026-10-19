@@ -275,7 +275,7 @@ export default function MatchingPage() {
             {selectedJobId && (
               <section style={card}>
                 <h2 style={{ fontFamily: "Georgia, serif" }}>
-                  Assigned Candidates ({linkedCandidates.length})
+Available Candidates ({linkedCandidates.length})
                 </h2>
 
                 {linkedCandidates.length === 0 && (
