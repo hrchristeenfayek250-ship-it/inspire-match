@@ -229,8 +229,55 @@ textarea { width: 100%; min-height: 180px; border: 1px solid var(--line); border
   :is(
     .im-links, .jm-navigation, .imc-navigation,
     .pl-navigation, .am-navigation, .tm-navigation,
+    
     .ir-nav, .ex-nav, .cp-nav
   ) > a {
     transition: none;
+    /* Executive — Mobile Navigation */
+.ex-mobile-navigation {
+  display: none;
+}
+
+@media screen and (max-width: 850px) {
+  .ex-mobile-navigation {
+    display: flex;
+    gap: 8px;
+    overflow-x: auto;
+    padding: 14px 16px;
+    background: #fff;
+    border-bottom: 1px solid #e3e9e3;
+    position: sticky;
+    top: 0;
+    z-index: 30;
+    scrollbar-width: thin;
+  }
+
+  .ex-mobile-navigation a {
+    flex: 0 0 auto;
+    padding: 10px 14px;
+    border-radius: 9px;
+    text-decoration: none;
+    color: var(--green);
+    font-size: 12px;
+    font-weight: 600;
+    white-space: nowrap;
+  }
+
+  .ex-mobile-navigation a.active {
+    background: var(--sage-tint);
+    border-bottom: 2px solid var(--copper);
+    font-weight: 800;
+  }
+
+  .ex-workspace {
+    width: 100% !important;
+  }
+}
+
+@media print {
+  .ex-mobile-navigation {
+    display: none !important;
+  }
+}
   }
 }
