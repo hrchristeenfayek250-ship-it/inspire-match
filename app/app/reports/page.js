@@ -778,7 +778,6 @@ table th {
           }
         }
 `}</style>
-      `}</style>
       <aside className="ir-sidebar no-print">
         <div className="ir-brand">
           <div className="ir-logo">I</div>
