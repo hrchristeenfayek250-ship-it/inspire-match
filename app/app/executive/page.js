@@ -887,7 +887,6 @@ width: 220px;
           box-sizing: border-box;
           padding: 32px clamp(20px, 3vw, 48px) 50px;
         }
-</CodeBlock>
         @media screen and (max-width: 850px) {
           .ex-sidebar {
             display: none;
