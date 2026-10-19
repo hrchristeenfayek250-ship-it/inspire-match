@@ -211,86 +211,809 @@ table th {
         }
       `}</style>
 
-      <div style={{ maxWidth: 1250, margin: "auto" }}>
-        <div
-          className="no-print"
-          style={{ marginBottom: 25 }}
-        >
-          <Link
-            href="/app/dashboard"
-            style={{
-              color: green,
-              textDecoration: "none",
-              fontWeight: 600,
-            }}
-          >
-            ← Back to Dashboard
-          </Link>
+      
+      <style>{`
+        .ir-sidebar {
+          position: fixed;
+          top: 0;
+          left: 0;
+          bottom: 0;
+          width: 254px;
+          background: #ffffff;
+          border-right: 1px solid #e6eaf0;
+          padding: 24px 15px;
+          display: flex;
+          flex-direction: column;
+          z-index: 20;
+          font-family: Arial, sans-serif;
+          overflow-y: auto;
+        }
+
+        .ir-brand {
+          display: flex;
+          align-items: center;
+          gap: 11px;
+          padding: 7px 12px 26px;
+          border-bottom: 1px solid #edf0f2;
+          margin-bottom: 25px;
+        }
+
+        .ir-logo {
+          width: 42px;
+          height: 42px;
+          display: grid;
+          place-items: center;
+          border-radius: 12px;
+          background: #284e42;
+          color: #ffffff;
+          font-size: 23px;
+          font-weight: 800;
+        }
+
+        .ir-brand strong {
+          display: block;
+          color: #1e293b;
+          font-size: 17px;
+          letter-spacing: -.5px;
+        }
+
+        .ir-brand small {
+          display: block;
+          color: #8795a4;
+          font-size: 9px;
+          font-weight: 800;
+          letter-spacing: 1.4px;
+          margin-top: 4px;
+        }
+
+        .ir-nav-label {
+          padding: 0 14px;
+          margin-bottom: 10px;
+          color: #9ba6b2;
+          font-size: 10px;
+          font-weight: 800;
+          letter-spacing: 1.5px;
+        }
+
+        .ir-nav {
+          display: grid;
+          gap: 4px;
+        }
+
+        .ir-nav a {
+          display: flex;
+          align-items: center;
+          gap: 12px;
+          padding: 13px 15px;
+          border-left: 3px solid transparent;
+          border-radius: 10px;
+          text-decoration: none;
+          color: #657285;
+          font-size: 13px;
+          font-weight: 600;
+        }
+
+        .ir-nav a span {
+          width: 23px;
+          text-align: center;
+          font-size: 19px;
+        }
+
+        .ir-nav a:hover {
+          background: #f4f7f6;
+        }
+
+        .ir-nav a.active {
+          background: #eaf3ee;
+          color: #245340;
+          border-left-color: #315f50;
+          font-weight: 800;
+        }
+
+        .ir-nav-footer {
+          margin-top: auto;
+          padding: 30px 14px 5px;
+        }
+
+        .ir-nav-footer a {
+          color: #657285;
+          font-size: 13px;
+          text-decoration: none;
+        }
+
+        .ir-workspace {
+          margin-left: 254px;
+          padding: 0 15px 45px;
+          max-width: 1550px;
+          font-family: Arial, sans-serif;
+          color: #1e293b;
+        }
+
+        .ir-screen {
+          margin-bottom: 27px;
+        }
+
+        .ir-breadcrumb {
+          color: #8390a0;
+          font-size: 12px;
+          margin: 0 0 10px;
+        }
+
+        .ir-breadcrumb strong {
+          color: #315f50;
+        }
+
+        .ir-header {
+          display: flex;
+          align-items: flex-start;
+          justify-content: space-between;
+          flex-wrap: wrap;
+          gap: 20px;
+          margin-bottom: 25px;
+        }
+
+        .ir-header h1 {
+          margin: 0;
+          color: #1e293b;
+          font-family: Arial, sans-serif;
+          font-size: 36px;
+          font-weight: 800;
+          letter-spacing: -1.3px;
+        }
+
+        .ir-header p {
+          color: #8390a0;
+          font-size: 13px;
+          line-height: 1.7;
+          margin: 11px 0 0;
+        }
+
+        .ir-controls {
+          display: flex;
+          flex-wrap: wrap;
+          gap: 10px;
+          align-items: center;
+        }
+
+        .ir-month {
+          min-height: 44px;
+          border: 1px solid #e1e6ed;
+          border-radius: 10px;
+          background: #ffffff;
+          padding: 10px 13px;
+          color: #526073;
+          font-family: Arial, sans-serif;
+          font-size: 13px;
+        }
+
+        .ir-export {
+          min-height: 44px;
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          gap: 9px;
+          padding: 12px 18px;
+          border: 1px solid #284e42;
+          border-radius: 10px;
+          background: #284e42;
+          color: #ffffff;
+          font-size: 12px;
+          font-weight: 800;
+          cursor: pointer;
+        }
+
+        .ir-export:disabled {
+          opacity: .5;
+          cursor: not-allowed;
+        }
+
+        .ir-kpis {
+          display: grid;
+          grid-template-columns: repeat(4, minmax(0, 1fr));
+          gap: 15px;
+          margin-bottom: 24px;
+        }
+
+        .ir-kpi {
+          padding: 21px;
+          background: #ffffff;
+          border: 1px solid #e6eaf0;
+          border-radius: 16px;
+          box-shadow: 0 4px 18px rgba(23,35,50,.035);
+          min-width: 0;
+        }
+
+        .ir-kpi-top {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          gap: 8px;
+          color: #647182;
+          font-size: 12px;
+          font-weight: 700;
+        }
+
+        .ir-kpi-icon {
+          width: 38px;
+          height: 38px;
+          display: grid;
+          place-items: center;
+          border-radius: 10px;
+          background: #edf4f0;
+          color: #315f50;
+          font-size: 20px;
+        }
+
+        .ir-kpi strong {
+          display: block;
+          color: #1e293b;
+          font-size: 33px;
+          letter-spacing: -1px;
+          margin: 11px 0 5px;
+        }
+
+        .ir-kpi small {
+          color: #96a0ad;
+          font-size: 11px;
+          line-height: 1.6;
+        }
+
+        .ir-analytics {
+          display: grid;
+          grid-template-columns: minmax(0, 1.6fr) minmax(280px, 1fr);
+          gap: 17px;
+          margin-bottom: 26px;
+        }
+
+        .ir-panel {
+          min-width: 0;
+          padding: 24px;
+          background: #ffffff;
+          border: 1px solid #e6eaf0;
+          border-radius: 16px;
+          box-shadow: 0 4px 18px rgba(23,35,50,.035);
+        }
+
+        .ir-panel-heading {
+          margin-bottom: 24px;
+        }
+
+        .ir-panel-heading h2 {
+          margin: 0 0 7px;
+          color: #1e293b;
+          font-family: Arial, sans-serif;
+          font-size: 17px;
+          font-weight: 800;
+        }
+
+        .ir-panel-heading p {
+          margin: 0;
+          color: #8994a3;
+          font-size: 12px;
+          line-height: 1.7;
+        }
+
+        .ir-stage-row {
+          display: grid;
+          grid-template-columns: 90px minmax(0, 1fr) 35px;
+          align-items: center;
+          gap: 13px;
+          margin-bottom: 19px;
+        }
+
+        .ir-stage-label {
+          font-size: 12px;
+          font-weight: 700;
+          color: #526073;
+        }
+
+        .ir-stage-track {
+          width: 100%;
+          height: 11px;
+          background: #eef2f4;
+          overflow: hidden;
+          border-radius: 20px;
+        }
+
+        .ir-stage-fill {
+          height: 100%;
+          border-radius: 20px;
+        }
+
+        .ir-stage-number {
+          text-align: right;
+          color: #526073;
+          font-size: 12px;
+          font-weight: 800;
+        }
+
+        .ir-donut {
+          width: 176px;
+          height: 176px;
+          margin: 10px auto 20px;
+          border-radius: 50%;
+          display: grid;
+          place-items: center;
+        }
+
+        .ir-donut-hole {
+          width: 125px;
+          height: 125px;
+          border-radius: 50%;
+          background: #ffffff;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          justify-content: center;
+          color: #1e293b;
+        }
+
+        .ir-donut-hole strong {
+          font-size: 31px;
+          font-weight: 800;
+        }
+
+        .ir-donut-hole small {
+          font-size: 11px;
+          color: #8994a3;
+          margin-top: 4px;
+        }
+
+        .ir-classification {
+          display: grid;
+          gap: 12px;
+        }
+
+        .ir-classification-row {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          gap: 10px;
+          color: #647182;
+          font-size: 12px;
+        }
+
+        .ir-classification-row span {
+          display: inline-flex;
+          align-items: center;
+          gap: 8px;
+        }
+
+        .ir-dot {
+          width: 9px;
+          height: 9px;
+          border-radius: 50%;
+          display: inline-block;
+        }
+
+        .ir-classification-row strong {
+          color: #1e293b;
+        }
+
+        .ir-report-label {
+          margin: 0 0 14px;
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          gap: 12px;
+          flex-wrap: wrap;
+        }
+
+        .ir-report-label h2 {
+          margin: 0;
+          font-family: Arial, sans-serif;
+          color: #1e293b;
+          font-size: 19px;
+          font-weight: 800;
+        }
+
+        .ir-report-label small {
+          color: #8994a3;
+          font-size: 12px;
+        }
+
+        .ir-mobile-nav {
+          display: none;
+        }
+
+        @media screen and (max-width: 1150px) {
+          .ir-kpis {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+          }
+
+          .ir-analytics {
+            grid-template-columns: 1fr;
+          }
+        }
+
+        @media screen and (max-width: 850px) {
+          .ir-sidebar {
+            display: none;
+          }
+
+          .ir-workspace {
+            margin-left: 0;
+            padding: 0 0 30px;
+          }
+
+          .ir-mobile-nav {
+            display: flex;
+            gap: 8px;
+            overflow-x: auto;
+            margin-bottom: 23px;
+            padding-bottom: 8px;
+          }
+
+          .ir-mobile-nav a {
+            flex-shrink: 0;
+            padding: 11px 14px;
+            border-radius: 9px;
+            background: #ffffff;
+            border: 1px solid #e6eaf0;
+            color: #526073;
+            font-size: 12px;
+            text-decoration: none;
+          }
+
+          .ir-mobile-nav a.active {
+            background: #284e42;
+            color: #ffffff;
+          }
+        }
+
+        @media screen and (max-width: 540px) {
+          .ir-header h1 {
+            font-size: 29px;
+          }
+
+          .ir-kpis {
+            gap: 10px;
+          }
+
+          .ir-kpi {
+            padding: 15px;
+          }
+
+          .ir-kpi strong {
+            font-size: 27px;
+          }
+
+          .ir-panel {
+            padding: 18px;
+          }
+
+          .ir-stage-row {
+            grid-template-columns: 75px minmax(0, 1fr) 25px;
+            gap: 8px;
+          }
+        }
+
+        @media print {
+          .ir-sidebar,
+          .ir-screen,
+          .ir-mobile-nav {
+            display: none !important;
+          }
+
+          .ir-workspace {
+            margin: 0 !important;
+            padding: 0 !important;
+            max-width: none !important;
+          }
+        }
+      `}</style>
+
+      <aside className="ir-sidebar no-print">
+        <div className="ir-brand">
+          <div className="ir-logo">I</div>
+          <div>
+            <strong>Inspire Match</strong>
+            <small>TALENT INTELLIGENCE</small>
+          </div>
         </div>
 
-        <div
-          className="no-print"
-          style={{
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "center",
-            flexWrap: "wrap",
-            gap: 15,
-            marginBottom: 25,
-          }}
-        >
-          <div>
-            <h1
-              style={{
-                fontFamily: "Georgia, serif",
-                fontSize: 34,
-                margin: "0 0 8px",
-              }}
-            >
-              Inspire Reports
-            </h1>
+        <div className="ir-nav-label">WORKSPACE</div>
 
-            <p style={{ color: "#777", margin: 0 }}>
-              Professional Recruitment Reporting
-            </p>
+        <nav className="ir-nav">
+          {[
+            ["Overview", "/app/dashboard", "◫"],
+            ["Jobs", "/app/jobs", "▣"],
+            ["Candidates", "/app/candidates", "♙"],
+            ["Pipeline", "/app/pipeline", "⇄"],
+            ["AI Matching", "/app/matching", "✧"],
+            ["Reports", "/app/reports", "▥"],
+            ["Executive", "/app/executive", "◈"],
+            ["Team", "/app/team", "♧"],
+          ].map(([label, href, icon]) => (
+            <Link
+              key={href}
+              href={href}
+              className={
+                href === "/app/reports" ? "active" : ""
+              }
+            >
+              <span>{icon}</span>
+              {label}
+            </Link>
+          ))}
+        </nav>
+
+        <div className="ir-nav-footer">
+          <Link href="/">↗ ATS Home</Link>
+        </div>
+      </aside>
+
+      <div className="ir-workspace">
+        <div className="ir-screen no-print">
+          <div className="ir-mobile-nav">
+            {[
+              ["Overview", "/app/dashboard"],
+              ["Jobs", "/app/jobs"],
+              ["Candidates", "/app/candidates"],
+              ["Pipeline", "/app/pipeline"],
+              ["AI Matching", "/app/matching"],
+              ["Reports", "/app/reports"],
+              ["Executive", "/app/executive"],
+              ["Team", "/app/team"],
+            ].map(([label, href]) => (
+              <Link
+                key={href}
+                href={href}
+                className={
+                  href === "/app/reports" ? "active" : ""
+                }
+              >
+                {label}
+              </Link>
+            ))}
           </div>
 
-          <div
-            style={{
-              display: "flex",
-              gap: 12,
-              alignItems: "center",
-              flexWrap: "wrap",
-            }}
-          >
-            <input
-              type="month"
-              value={month}
-              onChange={(e) => setMonth(e.target.value)}
-              style={{
-                padding: 12,
-                borderRadius: 10,
-                border: "1px solid #ddd",
-                fontSize: 14,
-              }}
-            />
+          <div className="ir-breadcrumb">
+            Workspace / <strong>Reports & Analytics</strong>
+          </div>
 
-            <button
-              type="button"
-              onClick={() => window.print()}
-              disabled={loading || Boolean(error)}
-              style={{
-                background: green,
-                color: "white",
-                padding: "13px 20px",
-                border: "none",
-                borderRadius: 10,
-                fontWeight: 700,
-                cursor: "pointer",
-              }}
-            >
-              Export PDF ↓
-            </button>
+          <header className="ir-header">
+            <div>
+              <h1>Inspire Reports</h1>
+              <p>
+                Recruitment intelligence, pipeline analytics
+                and executive reporting.
+              </p>
+            </div>
+
+            <div className="ir-controls">
+              <input
+                type="month"
+                className="ir-month"
+                aria-label="Reporting month"
+                value={month}
+                onChange={(event) =>
+                  setMonth(event.target.value)
+                }
+              />
+
+              <button
+                type="button"
+                className="ir-export"
+                onClick={() => window.print()}
+                disabled={loading || Boolean(error)}
+              >
+                ↓ Export PDF
+              </button>
+            </div>
+          </header>
+
+          <div className="ir-kpis">
+            {[
+              {
+                label: "Candidates Added",
+                value: candidates.length,
+                note: "Added in the selected month",
+                icon: "♙",
+              },
+              {
+                label: "Active Pipeline",
+                value:
+                  countStage("Applied") +
+                  countStage("Screening") +
+                  countStage("Interview") +
+                  countStage("Shortlisted"),
+                note: "Active Recruitment candidates",
+                icon: "⇄",
+              },
+              {
+                label: "Interview Ready",
+                value:
+                  countStage("Interview") +
+                  countStage("Shortlisted"),
+                note: "Interview and shortlisted stages",
+                icon: "◈",
+              },
+              {
+                label: "Hired",
+                value: countStage("Hired"),
+                note: "Hired from the selected-month cohort",
+                icon: "✓",
+              },
+            ].map((item) => (
+              <div className="ir-kpi" key={item.label}>
+                <div className="ir-kpi-top">
+                  <span>{item.label}</span>
+                  <span className="ir-kpi-icon">
+                    {item.icon}
+                  </span>
+                </div>
+
+                <strong>
+                  {loading ? "—" : item.value}
+                </strong>
+
+                <small>{item.note}</small>
+              </div>
+            ))}
+          </div>
+
+          <div className="ir-analytics">
+            <section className="ir-panel">
+              <div className="ir-panel-heading">
+                <h2>Recruitment Pipeline</h2>
+                <p>
+                  Current stages of Active Recruitment
+                  candidates added in {periodLabel}.
+                </p>
+              </div>
+
+              {stages.map((stage, index) => {
+                const count = countStage(stage);
+                const percentage = activeCandidates.length
+                  ? (count / activeCandidates.length) * 100
+                  : 0;
+
+                const colors = [
+                  "#315f50",
+                  "#548675",
+                  "#76a995",
+                  "#a4c8ba",
+                  "#d1a353",
+                  "#c77878",
+                ];
+
+                return (
+                  <div className="ir-stage-row" key={stage}>
+                    <span className="ir-stage-label">
+                      {stage}
+                    </span>
+
+                    <div className="ir-stage-track">
+                      <div
+                        className="ir-stage-fill"
+                        style={{
+                          width: `${percentage}%`,
+                          background: colors[index],
+                        }}
+                      />
+                    </div>
+
+                    <span className="ir-stage-number">
+                      {loading ? "—" : count}
+                    </span>
+                  </div>
+                );
+              })}
+
+              <p
+                style={{
+                  margin: "20px 0 0",
+                  fontSize: 11,
+                  color: "#96a0ad",
+                  lineHeight: 1.7,
+                }}
+              >
+                Based on current candidate stages.
+                Percentages are not stage-to-stage
+                conversion rates.
+              </p>
+            </section>
+
+            <section className="ir-panel">
+              <div className="ir-panel-heading">
+                <h2>Recruitment Classification</h2>
+                <p>
+                  Candidate distribution for {periodLabel}.
+                </p>
+              </div>
+
+              {(() => {
+                const total = candidates.length;
+                const active = activeCandidates.length;
+                const talentPool = candidates.filter(
+                  (candidate) =>
+                    candidate.recruitment_type === "Talent Pool"
+                ).length;
+                const other = Math.max(
+                  0,
+                  total - active - talentPool
+                );
+
+                const activePercent = total
+                  ? (active / total) * 100
+                  : 0;
+                const talentPercent = total
+                  ? (talentPool / total) * 100
+                  : 0;
+
+                return (
+                  <>
+                    <div
+                      className="ir-donut"
+                      style={{
+                        background: total
+                          ? `conic-gradient(
+                              #315f50 0% ${activePercent}%,
+                              #9bcdbb ${activePercent}%
+                              ${activePercent + talentPercent}%,
+                              #e2e8ed
+                              ${activePercent + talentPercent}% 100%
+                            )`
+                          : "#e2e8ed",
+                      }}
+                    >
+                      <div className="ir-donut-hole">
+                        <strong>
+                          {loading ? "—" : total}
+                        </strong>
+                        <small>Total Candidates</small>
+                      </div>
+                    </div>
+
+                    <div className="ir-classification">
+                      {[
+                        {
+                          label: "Active Recruitment",
+                          count: active,
+                          color: "#315f50",
+                        },
+                        {
+                          label: "Talent Pool",
+                          count: talentPool,
+                          color: "#9bcdbb",
+                        },
+                        {
+                          label: "Other / Unclassified",
+                          count: other,
+                          color: "#e2e8ed",
+                        },
+                      ].map((item) => (
+                        <div
+                          className="ir-classification-row"
+                          key={item.label}
+                        >
+                          <span>
+                            <i
+                              className="ir-dot"
+                              style={{
+                                background: item.color,
+                              }}
+                            />
+                            {item.label}
+                          </span>
+                          <strong>
+                            {loading ? "—" : item.count}
+                          </strong>
+                        </div>
+                      ))}
+                    </div>
+                  </>
+                );
+              })()}
+            </section>
+          </div>
+
+          <div className="ir-report-label">
+            <h2>Detailed Recruitment Report</h2>
+            <small>
+              Full report preview · {periodLabel}
+            </small>
           </div>
         </div>
 
