@@ -219,15 +219,20 @@ export default function ExecutivePage() {
   ];
 
   return (
+    
     <main
       style={{
         minHeight: "100vh",
-        background: "#F7F9F7",
-        padding: "38px 22px",
+        width: "100%",
+        maxWidth: "none",
+        margin: 0,
+        padding: 0,
+        background: "#f6f8fb",
         fontFamily: "Arial, sans-serif",
         color: "#173F3A",
       }}
     >
+
       
       {/* EXECUTIVE REPORT COVER - PRINT ONLY */}
       <style>{`
@@ -869,9 +874,12 @@ export default function ExecutivePage() {
         }
 
         .ex-nav a.active {
-          background: #eaf3ee;
-          color: #245340;
-          font-weight: 800;
+         
+        .ex-workspace {
+          max-width: none;
+          min-width: 0;
+          margin-left: 254px;
+          padding: 32px clamp(20px, 3vw, 48px) 50px;
         }
 
         .ex-workspace {
