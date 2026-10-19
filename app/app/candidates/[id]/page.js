@@ -590,75 +590,385 @@ company_id: candidate.company_id,
       ? candidate.interview_questions
       : [];
 
+  
   return (
-    <main style={pageStyle}>
-      <div style={containerStyle}>
+    <main
+      style={{
+        ...pageStyle,
+        padding: 0,
+        background: "#f6f8fb",
+        color: "#1e293b",
+      }}
+    >
+      <style>{`
+        .cp-sidebar {
+          position: fixed;
+          top: 0;
+          left: 0;
+          bottom: 0;
+          width: 254px;
+          padding: 24px 15px;
+          background: #fff;
+          border-right: 1px solid #e6eaf0;
+          overflow-y: auto;
+          z-index: 20;
+        }
 
-        {/* HEADER */}
+        .cp-brand {
+          display: flex;
+          align-items: center;
+          gap: 11px;
+          padding: 7px 12px 26px;
+          border-bottom: 1px solid #edf0f2;
+          margin-bottom: 25px;
+        }
 
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "flex-start",
-            gap: 20,
-            marginBottom: 30,
-            flexWrap: "wrap",
-          }}
-        >
+        .cp-logo {
+          display: grid;
+          place-items: center;
+          width: 42px;
+          height: 42px;
+          border-radius: 12px;
+          background: #284e42;
+          color: #fff;
+          font-size: 23px;
+          font-weight: 800;
+        }
+
+        .cp-brand strong {
+          display: block;
+          font-size: 17px;
+          color: #1e293b;
+        }
+
+        .cp-brand small {
+          display: block;
+          color: #8795a4;
+          font-size: 9px;
+          letter-spacing: 1.3px;
+          margin-top: 4px;
+        }
+
+        .cp-nav {
+          display: grid;
+          gap: 5px;
+        }
+
+        .cp-nav a {
+          display: flex;
+          align-items: center;
+          gap: 12px;
+          padding: 13px 15px;
+          color: #657285;
+          text-decoration: none;
+          font-size: 13px;
+          font-weight: 600;
+          border-radius: 10px;
+        }
+
+        .cp-nav a:hover {
+          background: #f4f7f6;
+        }
+
+        .cp-nav a.active {
+          background: #eaf3ee;
+          color: #245340;
+          font-weight: 800;
+        }
+
+        .cp-workspace {
+          margin-left: 254px;
+          padding: 32px clamp(18px, 3vw, 45px) 60px;
+          max-width: none;
+        }
+
+        .cp-breadcrumb {
+          font-size: 12px;
+          color: #8390a0;
+          margin-bottom: 14px;
+        }
+
+        .cp-breadcrumb a {
+          color: #8390a0;
+          text-decoration: none;
+        }
+
+        .cp-breadcrumb strong {
+          color: #315f50;
+        }
+
+        .cp-header {
+          display: flex;
+          justify-content: space-between;
+          align-items: flex-start;
+          flex-wrap: wrap;
+          gap: 20px;
+          margin-bottom: 25px;
+        }
+
+        .cp-heading h1 {
+          color: #1e293b;
+          font-family: Arial, sans-serif;
+          font-size: clamp(29px, 3vw, 38px);
+          font-weight: 800;
+          letter-spacing: -1px;
+          margin: 0;
+        }
+
+        .cp-heading p {
+          color: #8390a0;
+          font-size: 13px;
+          line-height: 1.7;
+          margin: 10px 0 0;
+        }
+
+        .cp-actions {
+          display: flex;
+          flex-wrap: wrap;
+          gap: 10px;
+        }
+
+        .cp-actions a {
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          padding: 12px 16px;
+          background: #fff;
+          color: #526073;
+          border: 1px solid #e1e6ed;
+          border-radius: 10px;
+          font-size: 12px;
+          font-weight: 800;
+          text-decoration: none;
+        }
+
+        .cp-actions a.primary {
+          color: white;
+          background: #284e42;
+          border-color: #284e42;
+        }
+
+        .cp-kpis {
+          display: grid;
+          grid-template-columns: repeat(4, minmax(0, 1fr));
+          gap: 15px;
+          margin-bottom: 25px;
+        }
+
+        .cp-kpi {
+          min-width: 0;
+          background: #fff;
+          border: 1px solid #e6eaf0;
+          border-radius: 16px;
+          padding: 21px;
+          box-shadow: 0 4px 18px rgba(23,35,50,.035);
+        }
+
+        .cp-kpi-label {
+          display: block;
+          color: #8390a0;
+          font-size: 12px;
+          font-weight: 700;
+          margin-bottom: 15px;
+        }
+
+        .cp-kpi-value {
+          display: block;
+          font-size: 24px;
+          font-weight: 800;
+          color: #284e42;
+          overflow-wrap: anywhere;
+        }
+
+        .cp-kpi-note {
+          display: block;
+          color: #9ba6b2;
+          font-size: 11px;
+          margin-top: 7px;
+        }
+
+        .cp-workspace > section {
+          background: #fff !important;
+          border: 1px solid #e6eaf0 !important;
+          border-radius: 16px !important;
+          box-shadow: 0 4px 18px rgba(23,35,50,.035);
+          padding: 25px !important;
+          margin-bottom: 22px !important;
+        }
+
+        .cp-workspace section h2 {
+          font-family: Arial, sans-serif !important;
+          color: #1e293b !important;
+          font-weight: 800;
+          letter-spacing: -.4px;
+        }
+
+        .cp-workspace input,
+        .cp-workspace select,
+        .cp-workspace textarea {
+          max-width: 100%;
+        }
+
+        @media screen and (max-width: 1150px) {
+          .cp-kpis {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+          }
+        }
+
+        @media screen and (max-width: 850px) {
+          .cp-sidebar {
+            display: none;
+          }
+
+          .cp-workspace {
+            margin-left: 0;
+            padding: 24px 16px;
+          }
+        }
+
+        @media screen and (max-width: 540px) {
+          .cp-kpis {
+            gap: 10px;
+          }
+
+          .cp-kpi {
+            padding: 15px;
+          }
+
+          .cp-kpi-value {
+            font-size: 20px;
+          }
+
+          .cp-workspace > section {
+            padding: 17px !important;
+          }
+        }
+      `}</style>
+
+      <aside className="cp-sidebar">
+        <div className="cp-brand">
+          <div className="cp-logo">I</div>
           <div>
-            <div
-              style={{
-                fontSize: 13,
-                letterSpacing: 2,
-                color: "#777",
-                marginBottom: 8,
-              }}
-            >
-              INSPIRE MATCH
-            </div>
+            <strong>Inspire Match</strong>
+            <small>TALENT INTELLIGENCE</small>
+          </div>
+        </div>
 
-            <h1
-              style={{
-                fontFamily: "Georgia, serif",
-                fontSize: 42,
-                margin: 0,
-              }}
+        <nav className="cp-nav">
+          {[
+            ["◫", "Overview", "/app/dashboard"],
+            ["▣", "Jobs", "/app/jobs"],
+            ["♙", "Candidates", "/app/candidates"],
+            ["⇄", "Pipeline", "/app/pipeline"],
+            ["✧", "AI Matching", "/app/matching"],
+            ["▥", "Reports", "/app/reports"],
+            ["◈", "Executive", "/app/executive"],
+            ["♧", "Team", "/app/team"],
+          ].map(([icon, label, href]) => (
+            <Link
+              key={href}
+              href={href}
+              className={
+                href === "/app/candidates" ? "active" : ""
+              }
             >
-              Candidate Profile
-            </h1>
+              <span style={{ width: 23 }}>
+                {icon}
+              </span>
+              {label}
+            </Link>
+          ))}
+        </nav>
+      </aside>
 
-            <p
-              style={{
-                color: "#666",
-                marginTop: 10,
-              }}
-            >
-              Candidate information, AI evaluation
-              and recruitment activity.
+      <div className="cp-workspace">
+        <div className="cp-breadcrumb">
+          <Link href="/app/dashboard">
+            Workspace
+          </Link>
+          {" / "}
+          <Link href="/app/candidates">
+            Candidates
+          </Link>
+          {" / "}
+          <strong>Candidate Profile</strong>
+        </div>
+
+        <header className="cp-header">
+          <div className="cp-heading">
+            <h1>Candidate Profile</h1>
+            <p>
+              Candidate information, AI insights,
+              recruitment activity and notes.
             </p>
           </div>
 
-          <div
-            style={{
-              display: "flex",
-              gap: 10,
-              flexWrap: "wrap",
-            }}
-          >
-            <Link
-              href="/app/pipeline"
-              style={buttonStyle}
-            >
+          <div className="cp-actions">
+            <Link href="/app/pipeline">
               ← Pipeline
             </Link>
-
             <Link
               href="/app/candidates"
-              style={buttonStyle}
+              className="primary"
             >
               Candidate Database
             </Link>
+          </div>
+        </header>
+
+        <div className="cp-kpis">
+          <div className="cp-kpi">
+            <span className="cp-kpi-label">
+              Recruitment Stage
+            </span>
+            <strong className="cp-kpi-value">
+              {candidate.status || "Not Set"}
+            </strong>
+            <small className="cp-kpi-note">
+              Current pipeline status
+            </small>
+          </div>
+
+          <div className="cp-kpi">
+            <span className="cp-kpi-label">
+              Experience
+            </span>
+            <strong className="cp-kpi-value">
+              {candidate.years_experience != null
+                ? `${candidate.years_experience} yrs`
+                : "—"}
+            </strong>
+            <small className="cp-kpi-note">
+              Years of experience
+            </small>
+          </div>
+
+          <div className="cp-kpi">
+            <span className="cp-kpi-label">
+              Saved AI Match
+            </span>
+            <strong className="cp-kpi-value">
+              {candidate.saved_ai_match?.score != null
+                ? `${candidate.saved_ai_match.score}%`
+                : score != null
+                ? `${score}%`
+                : "—"}
+            </strong>
+            <small className="cp-kpi-note">
+              Last available AI result
+            </small>
+          </div>
+
+          <div className="cp-kpi">
+            <span className="cp-kpi-label">
+              Recruitment Notes
+            </span>
+            <strong className="cp-kpi-value">
+              {notes.length}
+            </strong>
+            <small className="cp-kpi-note">
+              Saved candidate notes
+            </small>
           </div>
         </div>
 
