@@ -709,7 +709,6 @@ table th {
             max-width: none !important;
           }
         }
-<CodeBlock language="css" editable>
         /* REPORTS — FINAL SPACING FIX */
         @media screen {
           .ir-sidebar {
