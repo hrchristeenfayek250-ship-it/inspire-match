@@ -5,25 +5,14 @@ import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { supabase } from "@/lib/supabase";
 
-const initialForm = {
-  title: "",
-  department: "",
-  location: "",
-  work_type: "On-site",
-  employment_type: "Full-time",
-  salary_proposed: "",
-  years_of_experience: "",
-  hiring_manager: "",
-  openings: "1",
-  priority: "Medium",
-  deadline: "",
-  required_skills: "",
-  nice_to_have_requirements: "",
-  responsibilities: "",
-  requirements: "",
-  benefits: "",
-  description: "",
-};
+const stages = [
+  "Applied",
+  "Screening",
+  "Interview",
+  "Shortlisted",
+  "Hired",
+  "Rejected",
+];
 
 const navigation = [
   ["Overview", "/app/dashboard", "◫"],
@@ -36,106 +25,48 @@ const navigation = [
   ["Team", "/app/team", "♧"],
 ];
 
-const textFields = [
-  {
-    title: "Basic Information",
-    fields: [
-      ["title", "Job Name *", "text", "e.g. Senior Recruiter"],
-      ["department", "Department", "text", "e.g. Human Resources"],
-      ["location", "Location", "text", "e.g. Cairo, Egypt"],
-      ["work_type", "Work Type", "select", ["On-site", "Hybrid", "Remote"]],
-      ["employment_type", "Employment Type", "select", ["Full-time", "Part-time", "Contract", "Freelance", "Internship"]],
-      ["openings", "Number of Openings", "number", "1"],
-    ],
-  },
-  {
-    title: "Compensation & Hiring",
-    fields: [
-      ["salary_proposed", "Salary Proposed", "text", "e.g. 30,000 - 40,000 EGP"],
-      ["years_of_experience", "Years of Experience", "text", "e.g. 5+ years"],
-      ["hiring_manager", "Hiring Manager", "text", "Hiring manager name"],
-      ["priority", "Priority", "select", ["High", "Medium", "Low"]],
-      ["deadline", "Hiring Deadline", "date", ""],
-    ],
-  },
-];
+const stageColors = {
+  Applied: "#64748b",
+  Screening: "#4b7eb5",
+  Interview: "#8065a7",
+  Shortlisted: "#b48a42",
+  Hired: "#278560",
+  Rejected: "#ba6b70",
+  Unassigned: "#9ca3af",
+};
 
-const longFields = [
-  ["required_skills", "Required Skills", "Skills, tools and technical competencies...", 3],
-  ["nice_to_have_requirements", "Nice-to-Have Skills", "Additional qualifications...", 3],
-  ["requirements", "Candidate Requirements", "Education, certifications and experience...", 4],
-  ["responsibilities", "Key Responsibilities", "Main responsibilities of the position...", 4],
-  ["benefits", "Benefits & Perks", "Insurance, bonuses, flexible work...", 3],
-  ["description", "Full Job Description *", "Write the complete job description...", 7],
-];
-
-function Metric({ label, value, symbol, note }) {
+function Metric({ label, value, icon, subtitle }) {
   return (
-    <div className="jm-metric">
-      <div className="jm-metric-top">
+    <section className="pl-metric">
+      <div className="pl-metric-head">
         <span>{label}</span>
-        <span className="jm-metric-icon">{symbol}</span>
+        <div className="pl-metric-icon">{icon}</div>
       </div>
+
       <strong>{value}</strong>
-      <small>{note}</small>
-    </div>
+      <small>{subtitle}</small>
+    </section>
   );
 }
 
-function FormField({ field, form, updateField }) {
-  const [key, label, type, extra] = field;
-
-  return (
-    <label className="jm-field">
-      <span>{label}</span>
-
-      {type === "select" ? (
-        <select
-          value={form[key]}
-          onChange={(e) => updateField(key, e.target.value)}
-          className="jm-control"
-        >
-          {extra.map((option) => (
-            <option key={option} value={option}>
-              {option}
-            </option>
-          ))}
-        </select>
-      ) : (
-        <input
-          type={type}
-          min={type === "number" ? "1" : undefined}
-          required={key === "title"}
-          value={form[key]}
-          onChange={(e) => updateField(key, e.target.value)}
-          placeholder={extra}
-          className="jm-control"
-        />
-      )}
-    </label>
-  );
-}
-
-export default function JobsPage() {
-  const [jobs, setJobs] = useState([]);
+export default function PipelinePage() {
   const [candidates, setCandidates] = useState([]);
-  const [form, setForm] = useState(initialForm);
+  const [jobs, setJobs] = useState([]);
 
   const [loading, setLoading] = useState(true);
-  const [saving, setSaving] = useState(false);
-  const [updatingJobId, setUpdatingJobId] = useState(null);
-
-  const [showForm, setShowForm] = useState(false);
-  const [mobileNav, setMobileNav] = useState(false);
-
-  const [search, setSearch] = useState("");
-  const [statusFilter, setStatusFilter] = useState("All");
-
   const [errorMessage, setErrorMessage] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
 
+  const [search, setSearch] = useState("");
+  const [jobFilter, setJobFilter] = useState("all");
+
+  const [mobileNav, setMobileNav] = useState(false);
+  const [draggingId, setDraggingId] = useState(null);
+  const [dragOverStage, setDragOverStage] = useState(null);
+  const [updatingId, setUpdatingId] = useState(null);
+
   useEffect(() => {
-    loadJobs();
+    loadPipeline();
   }, []);
 
   async function getCompanyScope() {
@@ -148,17 +79,21 @@ export default function JobsPage() {
       throw new Error("Please log in again.");
     }
 
-    const { data: memberships, error: membershipError } =
-      await supabase
-        .from("company_members")
-        .select("company_id")
-        .eq("user_id", user.id)
-        .limit(2);
+    const {
+      data: memberships,
+      error: membershipError,
+    } = await supabase
+      .from("company_members")
+      .select("company_id")
+      .eq("user_id", user.id)
+      .limit(2);
 
     if (membershipError) throw membershipError;
 
     if (!memberships || memberships.length !== 1) {
-      throw new Error("Could not verify your company.");
+      throw new Error(
+        "A single company membership is required."
+      );
     }
 
     const companyId = memberships[0].company_id;
@@ -167,278 +102,242 @@ export default function JobsPage() {
       `company_id.eq.${companyId},` +
       `and(company_id.is.null,user_id.eq.${user.id})`;
 
-    return { user, companyId, filter };
+    return { filter };
   }
 
-  async function loadJobs() {
+  async function loadPipeline() {
     setLoading(true);
     setErrorMessage("");
 
     try {
       const { filter } = await getCompanyScope();
 
-      const [jobResponse, candidateResponse] =
+      const [candidateResponse, jobResponse] =
         await Promise.all([
           supabase
-            .from("jobs")
+            .from("candidates")
             .select("*")
             .or(filter)
-            .order("created_at", { ascending: false }),
+            .order("created_at", {
+              ascending: false,
+            }),
 
           supabase
-            .from("candidates")
-            .select("id, job_id, full_name, status")
-            .or(filter),
+            .from("jobs")
+            .select("id, title, status")
+            .or(filter)
+            .order("created_at", {
+              ascending: false,
+            }),
         ]);
-
-      if (jobResponse.error) {
-        throw jobResponse.error;
-      }
 
       if (candidateResponse.error) {
         throw candidateResponse.error;
       }
 
-      setJobs(jobResponse.data || []);
       setCandidates(candidateResponse.data || []);
-    } catch (error) {
-      console.error("Could not load jobs:", error);
 
-      setJobs([]);
+      if (jobResponse.error) {
+        console.error(
+          "Could not load job filters:",
+          jobResponse.error
+        );
+        setJobs([]);
+      } else {
+        setJobs(jobResponse.data || []);
+      }
+    } catch (error) {
+      console.error("Could not load pipeline:", error);
+
       setCandidates([]);
+      setJobs([]);
       setErrorMessage(error.message);
     } finally {
       setLoading(false);
     }
   }
 
-  function updateField(key, value) {
-    setForm((current) => ({
-      ...current,
-      [key]: value,
-    }));
-  }
-
-  function createNewJob() {
-    setForm({ ...initialForm });
-    setShowForm(true);
-    setErrorMessage("");
-    setSuccessMessage("");
-    window.scrollTo({ top: 0, behavior: "smooth" });
-  }
-
-  function editJob(job) {
-    const nextForm = {};
-
-    for (const key of Object.keys(initialForm)) {
-      nextForm[key] =
-        job[key] == null
-          ? initialForm[key]
-          : String(job[key]);
-    }
-
-    nextForm.deadline = nextForm.deadline
-      ? nextForm.deadline.slice(0, 10)
-      : "";
-
-    setForm({
-      ...nextForm,
-      _editingId: job.id,
-    });
-
-    setShowForm(true);
-    setErrorMessage("");
-    setSuccessMessage("");
-
-    window.scrollTo({ top: 0, behavior: "smooth" });
-  }
-
-  function cancelEditing() {
-    setForm({ ...initialForm });
-    setShowForm(false);
-  }
-
-  async function saveJob(e) {
-    e.preventDefault();
-
-    if (!form.title.trim()) {
-      setErrorMessage("Please enter the Job Name.");
+  async function changeStage(candidateId, stage) {
+    if (!stages.includes(stage)) {
+      setErrorMessage("Invalid recruitment stage.");
       return;
     }
 
-    if (!form.description.trim()) {
-      setErrorMessage("Please enter the Job Description.");
-      return;
-    }
+    if (updatingId !== null) return;
 
-    setSaving(true);
+    const candidate = candidates.find(
+      (item) => String(item.id) === String(candidateId)
+    );
+
+    if (!candidate) return;
+
+    if (candidate.status === stage) return;
+
+    setUpdatingId(candidateId);
     setErrorMessage("");
     setSuccessMessage("");
-
-    try {
-      const { user, companyId, filter } =
-        await getCompanyScope();
-
-      const payload = {
-        title: form.title.trim(),
-        department: form.department.trim() || null,
-        location: form.location.trim() || null,
-        work_type: form.work_type || null,
-        employment_type: form.employment_type || null,
-        salary_proposed: form.salary_proposed.trim() || null,
-        years_of_experience:
-          form.years_of_experience.trim() || null,
-        hiring_manager: form.hiring_manager.trim() || null,
-        openings: Math.max(1, Number(form.openings) || 1),
-        priority: form.priority || "Medium",
-        deadline: form.deadline || null,
-        required_skills: form.required_skills.trim() || null,
-        nice_to_have_requirements:
-          form.nice_to_have_requirements.trim() || null,
-        responsibilities: form.responsibilities.trim() || null,
-        requirements: form.requirements.trim() || null,
-        benefits: form.benefits.trim() || null,
-        description: form.description.trim(),
-      };
-
-      if (form._editingId) {
-        const { data, error } = await supabase
-          .from("jobs")
-          .update(payload)
-          .eq("id", form._editingId)
-          .or(filter)
-          .select()
-          .single();
-
-        if (error) throw error;
-
-        setJobs((current) =>
-          current.map((job) =>
-            String(job.id) === String(data.id) ? data : job
-          )
-        );
-
-        setSuccessMessage("Job updated successfully.");
-      } else {
-        const { data, error } = await supabase
-          .from("jobs")
-          .insert([
-            {
-              ...payload,
-              user_id: user.id,
-              company_id: companyId,
-              status: "Active",
-            },
-          ])
-          .select()
-          .single();
-
-        if (error) throw error;
-
-        setJobs((current) => [data, ...current]);
-        setSuccessMessage("New job created successfully.");
-      }
-
-      setForm({ ...initialForm });
-      setShowForm(false);
-    } catch (error) {
-      setErrorMessage(`Could not save job: ${error.message}`);
-    } finally {
-      setSaving(false);
-    }
-  }
-
-  async function changeStatus(jobId, status) {
-    setUpdatingJobId(jobId);
-    setErrorMessage("");
 
     try {
       const { filter } = await getCompanyScope();
 
       const { data, error } = await supabase
-        .from("jobs")
-        .update({ status })
-        .eq("id", jobId)
+        .from("candidates")
+        .update({ status: stage })
+        .eq("id", candidateId)
         .or(filter)
         .select("id, status")
-        .single();
+        .maybeSingle();
 
       if (error) throw error;
 
-      setJobs((current) =>
-        current.map((job) =>
-          String(job.id) === String(data.id)
-            ? { ...job, status: data.status }
-            : job
+      if (!data) {
+        throw new Error(
+          "Candidate not found or update not permitted."
+        );
+      }
+
+      setCandidates((current) =>
+        current.map((item) =>
+          String(item.id) === String(data.id)
+            ? { ...item, status: data.status }
+            : item
         )
       );
+
+      setSuccessMessage(
+        `${candidate.full_name || "Candidate"} moved to ${stage}.`
+      );
     } catch (error) {
+      console.error("Could not update candidate:", error);
+
       setErrorMessage(
-        `Could not update job status: ${error.message}`
+        `Could not update candidate: ${error.message}`
       );
     } finally {
-      setUpdatingJobId(null);
+      setUpdatingId(null);
+      setDraggingId(null);
+      setDragOverStage(null);
     }
   }
 
-  const stats = useMemo(() => {
-    return {
-      total: jobs.length,
-      active: jobs.filter(
-        (job) => (job.status || "Active") === "Active"
-      ).length,
-      paused: jobs.filter(
-        (job) => job.status === "Paused"
-      ).length,
-      closed: jobs.filter(
-        (job) => job.status === "Closed"
-      ).length,
-    };
-  }, [jobs]);
+  function handleDragStart(event, candidateId) {
+    if (updatingId !== null) {
+      event.preventDefault();
+      return;
+    }
 
-  const filteredJobs = useMemo(() => {
+    const id = String(candidateId);
+
+    event.dataTransfer.effectAllowed = "move";
+    event.dataTransfer.setData("text/plain", id);
+
+    setDraggingId(id);
+  }
+
+  function handleDragOver(event, stage) {
+    if (updatingId !== null) return;
+
+    event.preventDefault();
+    event.dataTransfer.dropEffect = "move";
+    setDragOverStage(stage);
+  }
+
+  function handleDrop(event, stage) {
+    event.preventDefault();
+
+    if (updatingId !== null) return;
+
+    const candidateId =
+      event.dataTransfer.getData("text/plain") ||
+      draggingId;
+
+    setDragOverStage(null);
+    setDraggingId(null);
+
+    if (candidateId) {
+      changeStage(candidateId, stage);
+    }
+  }
+
+  const filteredCandidates = useMemo(() => {
     const query = search.trim().toLowerCase();
 
-    return jobs.filter((job) => {
+    return candidates.filter((candidate) => {
       const searchable = [
-        job.title,
-        job.department,
-        job.location,
-        job.hiring_manager,
-        job.required_skills,
+        candidate.full_name,
+        candidate.current_title,
+        candidate.location,
+        candidate.email,
+        candidate.skills,
       ]
         .filter(Boolean)
+        .map((value) =>
+          Array.isArray(value)
+            ? value.join(" ")
+            : String(value)
+        )
         .join(" ")
         .toLowerCase();
 
       const matchesSearch =
         !query || searchable.includes(query);
 
-      const matchesStatus =
-        statusFilter === "All" ||
-        (job.status || "Active") === statusFilter;
+      const matchesJob =
+        jobFilter === "all" ||
+        (jobFilter === "unassigned"
+          ? candidate.job_id == null
+          : String(candidate.job_id) === jobFilter);
 
-      return matchesSearch && matchesStatus;
+      return matchesSearch && matchesJob;
     });
-  }, [jobs, search, statusFilter]);
+  }, [candidates, search, jobFilter]);
 
-  const candidatesByJob = useMemo(() => {
-    const grouped = {};
+  const stageGroups = useMemo(() => {
+    const groups = {};
 
-    for (const candidate of candidates) {
-      if (candidate.job_id == null) continue;
-
-      const key = String(candidate.job_id);
-
-      if (!grouped[key]) {
-        grouped[key] = [];
-      }
-
-      grouped[key].push(candidate);
+    for (const stage of stages) {
+      groups[stage] = [];
     }
 
-    return grouped;
-  }, [candidates]);
+    groups.Unassigned = [];
+
+    for (const candidate of filteredCandidates) {
+      const status = candidate.status;
+
+      if (stages.includes(status)) {
+        groups[status].push(candidate);
+      } else {
+        groups.Unassigned.push(candidate);
+      }
+    }
+
+    return groups;
+  }, [filteredCandidates]);
+
+  const metrics = useMemo(() => {
+    const total = filteredCandidates.length;
+
+    const hired = stageGroups.Hired.length;
+    const rejected = stageGroups.Rejected.length;
+
+    const inProgress =
+      stageGroups.Applied.length +
+      stageGroups.Screening.length +
+      stageGroups.Interview.length +
+      stageGroups.Shortlisted.length;
+
+    return {
+      total,
+      inProgress,
+      hired,
+      rejected,
+    };
+  }, [filteredCandidates, stageGroups]);
+
+  const visibleStages =
+    stageGroups.Unassigned.length > 0
+      ? [...stages, "Unassigned"]
+      : stages;
 
   async function logOut() {
     const { error } = await supabase.auth.signOut();
@@ -452,9 +351,9 @@ export default function JobsPage() {
   }
 
   const sidebar = (
-    <div className="jm-side-inner">
-      <div className="jm-brand">
-        <div className="jm-logo">I</div>
+    <div className="pl-sidebar-inner">
+      <div className="pl-brand">
+        <div className="pl-logo">I</div>
 
         <div>
           <strong>Inspire Match</strong>
@@ -462,18 +361,20 @@ export default function JobsPage() {
         </div>
       </div>
 
-      <div className="jm-side-label">WORKSPACE</div>
+      <div className="pl-sidebar-label">
+        WORKSPACE
+      </div>
 
-      <nav className="jm-navigation">
+      <nav className="pl-navigation">
         {navigation.map(([label, href, icon]) => (
           <Link
             key={href}
             href={href}
             onClick={() => setMobileNav(false)}
             className={
-              href === "/app/jobs"
-                ? "jm-nav-item active"
-                : "jm-nav-item"
+              href === "/app/pipeline"
+                ? "pl-nav-item active"
+                : "pl-nav-item"
             }
           >
             <span>{icon}</span>
@@ -482,10 +383,12 @@ export default function JobsPage() {
         ))}
       </nav>
 
-      <div className="jm-side-footer">
+      <div className="pl-sidebar-footer">
         <Link href="/">↗ ATS Home</Link>
 
-        <button onClick={logOut}>↪ Log out</button>
+        <button onClick={logOut}>
+          ↪ Log out
+        </button>
 
         <small>© Inspire Match ATS</small>
       </div>
@@ -493,14 +396,14 @@ export default function JobsPage() {
   );
 
   return (
-    <main className="jm-root">
+    <main className="pl-root">
       <style>{`
-        .jm-root {
+        .pl-root {
           width: 100%;
           max-width: none;
           min-height: 100vh;
-          margin: 0;
           padding: 0;
+          margin: 0;
           background: #f6f8fb;
           color: #1e293b;
           font-family: Arial, sans-serif;
@@ -508,41 +411,42 @@ export default function JobsPage() {
           line-height: 1.5;
         }
 
-        .jm-root * {
+        .pl-root * {
           box-sizing: border-box;
         }
 
-        .jm-root h1,
-        .jm-root h2,
-        .jm-root h3 {
+        .pl-root h1,
+        .pl-root h2,
+        .pl-root h3,
+        .pl-root h4 {
           color: #1e293b;
           font-family: Arial, sans-serif;
         }
 
-        .jm-shell {
+        .pl-shell {
           display: grid;
           grid-template-columns: 254px minmax(0, 1fr);
           min-height: 100vh;
         }
 
-        .jm-sidebar {
+        .pl-sidebar {
+          background: #fff;
+          border-right: 1px solid #e6eaf0;
+          height: 100vh;
           position: sticky;
           top: 0;
-          height: 100vh;
           overflow-y: auto;
-          background: white;
-          border-right: 1px solid #e6eaf0;
           padding: 24px 15px;
         }
 
-        .jm-side-inner {
+        .pl-sidebar-inner {
           height: 100%;
           min-height: 600px;
           display: flex;
           flex-direction: column;
         }
 
-        .jm-brand {
+        .pl-brand {
           display: flex;
           align-items: center;
           gap: 11px;
@@ -551,35 +455,36 @@ export default function JobsPage() {
           margin-bottom: 25px;
         }
 
-        .jm-logo {
+        .pl-logo {
           width: 42px;
           height: 42px;
-          border-radius: 12px;
           background: #284e42;
-          color: white;
+          color: #fff;
+          border-radius: 12px;
+          flex-shrink: 0;
           display: grid;
           place-items: center;
           font-size: 23px;
           font-weight: 800;
         }
 
-        .jm-brand strong {
+        .pl-brand strong {
           display: block;
-          color: #1e293b;
           font-size: 17px;
           letter-spacing: -.5px;
+          color: #1e293b;
         }
 
-        .jm-brand small {
+        .pl-brand small {
           display: block;
-          color: #8795a4;
+          margin-top: 4px;
           font-size: 9px;
           font-weight: 800;
           letter-spacing: 1.4px;
-          margin-top: 4px;
+          color: #8795a4;
         }
 
-        .jm-side-label {
+        .pl-sidebar-label {
           color: #9ba6b2;
           font-size: 10px;
           font-weight: 800;
@@ -588,57 +493,57 @@ export default function JobsPage() {
           margin-bottom: 10px;
         }
 
-        .jm-navigation {
+        .pl-navigation {
           display: grid;
           gap: 4px;
         }
 
-        .jm-nav-item {
+        .pl-nav-item {
           display: flex;
           align-items: center;
           gap: 12px;
           padding: 13px 15px;
           border-radius: 10px;
-          text-decoration: none;
           color: #657285;
           font-size: 13px;
           font-weight: 600;
+          text-decoration: none;
           border-left: 3px solid transparent;
           white-space: nowrap;
         }
 
-        .jm-nav-item span {
+        .pl-nav-item span {
           width: 23px;
           text-align: center;
           font-size: 19px;
         }
 
-        .jm-nav-item:hover {
+        .pl-nav-item:hover {
           background: #f4f7f6;
         }
 
-        .jm-nav-item.active {
+        .pl-nav-item.active {
           background: #eaf3ee;
           color: #245340;
           border-left-color: #315f50;
           font-weight: 800;
         }
 
-        .jm-side-footer {
-          margin-top: auto;
+        .pl-sidebar-footer {
           display: grid;
           gap: 9px;
+          margin-top: auto;
           padding-top: 30px;
         }
 
-        .jm-side-footer a {
-          color: #657285;
+        .pl-sidebar-footer a {
           padding: 12px 15px;
-          text-decoration: none;
+          color: #657285;
           font-size: 13px;
+          text-decoration: none;
         }
 
-        .jm-side-footer button {
+        .pl-sidebar-footer button {
           background: #f7f8fa;
           border: 1px solid #e6eaf0;
           color: #526073;
@@ -649,51 +554,51 @@ export default function JobsPage() {
           font-weight: 700;
         }
 
-        .jm-side-footer small {
+        .pl-sidebar-footer small {
+          margin-top: 7px;
           color: #a1acb8;
           font-size: 10px;
-          margin-top: 7px;
         }
 
-        .jm-content {
+        .pl-content {
           min-width: 0;
           padding: 29px clamp(17px, 3vw, 46px) 60px;
         }
 
-        .jm-header {
+        .pl-header {
           display: flex;
-          justify-content: space-between;
           align-items: center;
+          justify-content: space-between;
           flex-wrap: wrap;
           gap: 20px;
-          margin-bottom: 29px;
+          margin-bottom: 28px;
         }
 
-        .jm-breadcrumb {
+        .pl-breadcrumb {
           color: #8390a0;
           font-size: 12px;
           margin-bottom: 9px;
         }
 
-        .jm-breadcrumb strong {
+        .pl-breadcrumb strong {
           color: #315f50;
         }
 
-        .jm-title {
+        .pl-title {
           font-size: clamp(29px, 3vw, 38px);
           font-weight: 800;
           letter-spacing: -1.1px;
           margin: 0;
         }
 
-        .jm-subtitle {
+        .pl-subtitle {
           color: #8390a0;
           font-size: 13px;
           margin: 10px 0 0;
         }
 
-        .jm-primary,
-        .jm-secondary {
+        .pl-primary,
+        .pl-secondary {
           display: inline-flex;
           align-items: center;
           justify-content: center;
@@ -704,46 +609,41 @@ export default function JobsPage() {
           font-weight: 800;
           cursor: pointer;
           text-decoration: none;
-          white-space: nowrap;
         }
 
-        .jm-primary {
+        .pl-primary {
           background: #284e42;
-          color: white;
           border: 1px solid #284e42;
+          color: #fff;
         }
 
-        .jm-primary:hover {
-          background: #1d3f34;
-        }
-
-        .jm-secondary {
-          background: white;
-          color: #526073;
+        .pl-secondary {
+          background: #fff;
           border: 1px solid #e1e6ed;
+          color: #526073;
         }
 
-        .jm-stats {
+        .pl-metrics {
           display: grid;
-          grid-template-columns: repeat(4, minmax(0, 1fr));
+          grid-template-columns:
+            repeat(4, minmax(0, 1fr));
           gap: 15px;
           margin-bottom: 25px;
         }
 
-        .jm-metric,
-        .jm-panel,
-        .jm-job-card {
-          background: white;
+        .pl-metric,
+        .pl-panel {
+          background: #fff;
           border: 1px solid #e6eaf0;
           border-radius: 16px;
           box-shadow: 0 4px 18px rgba(23,35,50,.035);
         }
 
-        .jm-metric {
+        .pl-metric {
           padding: 21px;
         }
 
-        .jm-metric-top {
+        .pl-metric-head {
           display: flex;
           align-items: center;
           justify-content: space-between;
@@ -753,7 +653,7 @@ export default function JobsPage() {
           font-weight: 700;
         }
 
-        .jm-metric-icon {
+        .pl-metric-icon {
           width: 38px;
           height: 38px;
           background: #edf4f0;
@@ -764,369 +664,354 @@ export default function JobsPage() {
           font-size: 20px;
         }
 
-        .jm-metric strong {
+        .pl-metric strong {
           display: block;
           font-size: 32px;
-          letter-spacing: -1px;
+          font-weight: 800;
           color: #1e293b;
           margin-top: 11px;
+          letter-spacing: -1px;
         }
 
-        .jm-metric small {
+        .pl-metric small {
           display: block;
           color: #96a0ad;
           font-size: 11px;
           margin-top: 5px;
         }
 
-        .jm-panel {
-          padding: 25px;
-          margin-bottom: 25px;
+        .pl-panel {
+          padding: 20px;
+          margin-bottom: 24px;
         }
 
-        .jm-section-header {
+        .pl-filters {
+          display: flex;
+          align-items: center;
+          gap: 13px;
+          flex-wrap: wrap;
+        }
+
+        .pl-search,
+        .pl-select {
+          min-height: 44px;
+          border: 1px solid #e1e6ed;
+          background: #fff;
+          color: #526073;
+          border-radius: 10px;
+          padding: 11px 13px;
+          font-size: 13px;
+          outline: none;
+        }
+
+        .pl-search {
+          flex: 1;
+          min-width: 190px;
+        }
+
+        .pl-select {
+          min-width: 180px;
+        }
+
+        .pl-search:focus,
+        .pl-select:focus {
+          border-color: #6e9a86;
+          box-shadow: 0 0 0 3px #eaf3ee;
+        }
+
+        .pl-board-heading {
           display: flex;
           justify-content: space-between;
           align-items: center;
-          flex-wrap: wrap;
           gap: 15px;
-          margin-bottom: 23px;
+          flex-wrap: wrap;
+          margin: 27px 0 17px;
         }
 
-        .jm-section-header h2 {
-          font-size: 18px;
+        .pl-board-heading h2 {
+          font-size: 19px;
           font-weight: 800;
           margin: 0;
         }
 
-        .jm-section-header p {
+        .pl-board-heading p {
           color: #8994a3;
           font-size: 12px;
           margin: 7px 0 0;
         }
 
-        .jm-form-section {
-          padding-top: 22px;
-          margin-top: 23px;
-          border-top: 1px solid #edf0f3;
+        .pl-board-scroll {
+          overflow-x: auto;
+          width: 100%;
+          padding-bottom: 16px;
+          scrollbar-color: #c9d5d0 transparent;
         }
 
-        .jm-form-section:first-child {
-          padding-top: 0;
-          margin-top: 0;
-          border-top: none;
+        .pl-board {
+          display: grid;
+          grid-auto-flow: column;
+          grid-auto-columns: minmax(248px, 1fr);
+          gap: 14px;
+          align-items: stretch;
+          min-width: max-content;
         }
 
-        .jm-form-section h3 {
+        .pl-column {
+          width: 248px;
+          min-height: 490px;
+          background: #f0f3f6;
+          border: 1px solid #e7ebef;
+          border-radius: 15px;
+          padding: 13px;
+          transition: background .15s, border-color .15s;
+        }
+
+        .pl-column.drop-active {
+          background: #e6f0ea;
+          border-color: #75a28c;
+        }
+
+        .pl-column-header {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          gap: 10px;
+          padding: 5px 3px 15px;
+          border-bottom: 1px solid #dde4ea;
+          margin-bottom: 13px;
+        }
+
+        .pl-column-title {
+          display: flex;
+          align-items: center;
+          gap: 9px;
+          font-size: 13px;
+          font-weight: 800;
+          color: #344256;
+        }
+
+        .pl-column-dot {
+          width: 9px;
+          height: 9px;
+          border-radius: 50%;
+          flex-shrink: 0;
+        }
+
+        .pl-count {
+          padding: 4px 9px;
+          background: #fff;
+          border: 1px solid #e3e8ed;
+          color: #526073;
+          border-radius: 15px;
+          font-size: 11px;
+          font-weight: 800;
+        }
+
+        .pl-cards {
+          display: grid;
+          align-content: start;
+          gap: 11px;
+        }
+
+        .pl-candidate {
+          background: #fff;
+          border: 1px solid #e3e8ed;
+          border-radius: 12px;
+          padding: 15px;
+          box-shadow: 0 3px 10px rgba(23,35,50,.035);
+          cursor: grab;
+          transition: border-color .15s, transform .15s;
+        }
+
+        .pl-candidate:hover {
+          border-color: #b6cfc1;
+          transform: translateY(-1px);
+        }
+
+        .pl-candidate:active {
+          cursor: grabbing;
+        }
+
+        .pl-candidate.dragging {
+          opacity: .45;
+        }
+
+        .pl-candidate-head {
+          display: flex;
+          align-items: center;
+          gap: 10px;
+          margin-bottom: 12px;
+        }
+
+        .pl-avatar {
+          width: 36px;
+          height: 36px;
+          flex-shrink: 0;
+          display: grid;
+          place-items: center;
+          background: #eaf3ee;
+          color: #315f50;
+          border-radius: 10px;
           font-size: 15px;
           font-weight: 800;
-          margin: 0 0 18px;
         }
 
-        .jm-form-grid {
-          display: grid;
-          grid-template-columns:
-            repeat(2, minmax(0, 1fr));
-          gap: 16px;
-        }
-
-        .jm-field {
-          display: block;
-          min-width: 0;
-        }
-
-        .jm-field span {
-          display: block;
-          color: #526073;
+        .pl-candidate-name {
           font-size: 12px;
+          color: #1e293b;
           font-weight: 800;
-          margin-bottom: 8px;
-        }
-
-        .jm-control {
-          width: 100%;
-          min-height: 44px;
-          padding: 11px 12px;
-          border: 1px solid #e1e6ed;
-          background: white;
-          color: #263445;
-          border-radius: 9px;
-          font-size: 13px;
-          font-family: Arial, sans-serif;
-          outline: none;
-        }
-
-        .jm-control:focus {
-          border-color: #6e9a86;
-          box-shadow: 0 0 0 3px #eaf3ee;
-        }
-
-        .jm-textarea {
-          resize: vertical;
-          line-height: 1.6;
-        }
-
-        .jm-long-fields {
-          display: grid;
-          gap: 18px;
-        }
-
-        .jm-form-actions {
-          display: flex;
-          flex-wrap: wrap;
-          gap: 10px;
-          align-items: center;
-          margin-top: 25px;
-          padding-top: 23px;
-          border-top: 1px solid #edf0f3;
-        }
-
-        .jm-filters {
-          display: flex;
-          align-items: center;
-          gap: 12px;
-          flex-wrap: wrap;
-          margin-bottom: 19px;
-        }
-
-        .jm-search {
-          flex: 1;
-          min-width: 190px;
-        }
-
-        .jm-search,
-        .jm-filter-select {
-          padding: 12px 14px;
-          background: white;
-          border: 1px solid #e1e6ed;
-          border-radius: 10px;
-          color: #526073;
-          font-size: 13px;
-          outline: none;
-        }
-
-        .jm-job-list {
-          display: grid;
-          gap: 16px;
-        }
-
-        .jm-job-card {
-          padding: 23px;
-        }
-
-        .jm-job-top {
-          display: flex;
-          align-items: flex-start;
-          justify-content: space-between;
-          flex-wrap: wrap;
-          gap: 20px;
-        }
-
-        .jm-job-heading {
-          flex: 1;
-          min-width: 220px;
-        }
-
-        .jm-job-heading h3 {
-          font-size: 19px;
-          font-weight: 800;
-          margin: 0 0 10px;
-        }
-
-        .jm-job-meta {
-          display: flex;
-          flex-wrap: wrap;
-          gap: 9px 16px;
-          color: #8390a0;
-          font-size: 12px;
-          margin-top: 12px;
-        }
-
-        .jm-status {
-          display: inline-flex;
-          align-items: center;
-          border-radius: 20px;
-          padding: 6px 11px;
-          font-size: 11px;
-          font-weight: 800;
-        }
-
-        .jm-status-active {
-          background: #e6f7ef;
-          color: #16734d;
-        }
-
-        .jm-status-paused {
-          background: #fff7e6;
-          color: #a46a17;
-        }
-
-        .jm-status-closed {
-          background: #f1f5f9;
-          color: #64748b;
-        }
-
-        .jm-job-description {
-          color: #647182;
-          font-size: 13px;
-          line-height: 1.8;
-          white-space: pre-wrap;
-          overflow-wrap: anywhere;
-          margin: 18px 0;
-        }
-
-        .jm-job-footer {
-          display: flex;
-          align-items: center;
-          justify-content: space-between;
-          flex-wrap: wrap;
-          gap: 14px;
-          margin-top: 18px;
-          border-top: 1px solid #eef0f3;
-          padding-top: 18px;
-        }
-
-        .jm-candidate-list {
-          display: flex;
-          flex-wrap: wrap;
-          gap: 8px;
-          margin-top: 13px;
-        }
-
-        .jm-candidate-link {
-          background: #f3f7f5;
-          color: #315f50;
-          border: 1px solid #e0ece5;
-          border-radius: 8px;
-          padding: 7px 11px;
-          font-size: 11px;
           text-decoration: none;
+          overflow-wrap: anywhere;
         }
 
-        .jm-job-actions {
+        .pl-candidate-name:hover {
+          color: #315f50;
+        }
+
+        .pl-candidate-role {
+          color: #8390a0;
+          font-size: 11px;
+          line-height: 1.5;
+          margin: 0;
+          overflow-wrap: anywhere;
+        }
+
+        .pl-candidate-meta {
           display: flex;
-          flex-wrap: wrap;
           align-items: center;
-          gap: 10px;
+          gap: 6px;
+          color: #96a0ad;
+          font-size: 11px;
+          margin-top: 10px;
+          overflow-wrap: anywhere;
         }
 
-        .jm-job-actions select {
-          padding: 10px 12px;
-          border-radius: 9px;
-          background: #fff;
+        .pl-candidate-footer {
+          border-top: 1px solid #eef0f3;
+          margin-top: 13px;
+          padding-top: 12px;
+        }
+
+        .pl-stage-control {
+          width: 100%;
+          min-height: 36px;
+          padding: 8px 10px;
+          border-radius: 8px;
           border: 1px solid #e1e6ed;
-          color: #526073;
-          font-size: 12px;
+          background: #f8fafb;
+          color: #315f50;
+          font-size: 11px;
+          font-weight: 800;
+          cursor: pointer;
         }
 
-        .jm-alert {
+        .pl-empty {
+          border: 1px dashed #d4dce4;
+          border-radius: 10px;
+          text-align: center;
+          color: #a1acb8;
+          font-size: 12px;
+          padding: 28px 12px;
+        }
+
+        .pl-alert {
           background: #fff7f3;
           border: 1px solid #e8c7b7;
-          color: #a14e31;
           border-radius: 10px;
+          color: #a14e31;
           padding: 14px 17px;
-          margin-bottom: 20px;
+          margin-bottom: 18px;
           font-size: 13px;
         }
 
-        .jm-success {
+        .pl-success {
           background: #edf8f1;
           border: 1px solid #cde7d5;
-          color: #276446;
           border-radius: 10px;
+          color: #276446;
           padding: 14px 17px;
-          margin-bottom: 20px;
+          margin-bottom: 18px;
           font-size: 13px;
         }
 
-        .jm-empty {
-          border: 1px dashed #ced8df;
-          border-radius: 16px;
-          background: white;
-          text-align: center;
-          padding: 50px 25px;
-          color: #8994a3;
-        }
-
-        .jm-mobile-top {
+        .pl-mobile-top {
           display: none;
         }
 
-        @media (max-width: 1100px) {
-          .jm-stats {
+        @media (max-width: 1150px) {
+          .pl-metrics {
             grid-template-columns:
               repeat(2, minmax(0, 1fr));
           }
         }
 
         @media (max-width: 800px) {
-          .jm-shell {
+          .pl-shell {
             grid-template-columns: 1fr;
           }
 
-          .jm-sidebar {
+          .pl-sidebar {
             display: none;
           }
 
-          .jm-mobile-top {
+          .pl-mobile-top {
             display: flex;
             align-items: center;
             justify-content: space-between;
-            background: white;
+            background: #fff;
             padding: 15px 19px;
             border-bottom: 1px solid #e6eaf0;
           }
 
-          .jm-mobile-menu {
-            background: white;
+          .pl-mobile-menu {
+            background: #fff;
             padding: 14px 18px;
             border-bottom: 1px solid #e6eaf0;
           }
 
-          .jm-mobile-menu .jm-side-inner {
+          .pl-mobile-menu .pl-sidebar-inner {
             min-height: auto;
           }
 
-          .jm-content {
+          .pl-content {
             padding: 24px 16px;
           }
         }
 
         @media (max-width: 540px) {
-          .jm-stats {
+          .pl-metrics {
             gap: 10px;
           }
 
-          .jm-metric {
+          .pl-metric {
             padding: 16px;
           }
 
-          .jm-metric strong {
+          .pl-metric strong {
             font-size: 27px;
           }
 
-          .jm-form-grid {
-            grid-template-columns: 1fr;
-          }
-
-          .jm-panel,
-          .jm-job-card {
-            padding: 18px;
-          }
-
-          .jm-title {
+          .pl-title {
             font-size: 29px;
+          }
+
+          .pl-panel {
+            padding: 15px;
+          }
+
+          .pl-column {
+            width: 240px;
           }
         }
       `}</style>
 
-      <div className="jm-shell">
-        <aside className="jm-sidebar">
+      <div className="pl-shell">
+        <aside className="pl-sidebar">
           {sidebar}
         </aside>
 
         <div style={{ minWidth: 0 }}>
-          <div className="jm-mobile-top">
+          <div className="pl-mobile-top">
             <strong style={{ color: "#284e42" }}>
               ◈ Inspire Match
             </strong>
@@ -1148,29 +1033,29 @@ export default function JobsPage() {
           </div>
 
           {mobileNav && (
-            <div className="jm-mobile-menu">
+            <div className="pl-mobile-menu">
               {sidebar}
             </div>
           )}
 
-          <div className="jm-content">
-            {/* PAGE HEADER */}
+          <div className="pl-content">
+            {/* HEADER */}
 
-            <header className="jm-header">
+            <header className="pl-header">
               <div>
-                <div className="jm-breadcrumb">
+                <div className="pl-breadcrumb">
                   Workspace
                   <span style={{ margin: "0 9px" }}>/</span>
-                  <strong>Jobs</strong>
+                  <strong>Pipeline</strong>
                 </div>
 
-                <h1 className="jm-title">
-                  Job Management
+                <h1 className="pl-title">
+                  Candidate Pipeline
                 </h1>
 
-                <p className="jm-subtitle">
-                  Manage your recruitment opportunities,
-                  hiring teams and active requisitions.
+                <p className="pl-subtitle">
+                  Track candidates, manage hiring stages
+                  and move talent forward.
                 </p>
               </div>
 
@@ -1182,451 +1067,333 @@ export default function JobsPage() {
                 }}
               >
                 <button
+                  className="pl-secondary"
                   type="button"
-                  className="jm-secondary"
-                  onClick={loadJobs}
+                  onClick={loadPipeline}
                   disabled={loading}
                 >
                   ↻ Refresh
                 </button>
 
-                <button
-                  type="button"
-                  className="jm-primary"
-                  onClick={
-                    showForm ? cancelEditing : createNewJob
-                  }
+                <Link
+                  href="/app/candidates"
+                  className="pl-primary"
                 >
-                  {showForm ? "✕ Close Form" : "＋ Create Job"}
-                </button>
+                  View Candidates →
+                </Link>
               </div>
             </header>
 
             {errorMessage && (
-              <div role="alert" className="jm-alert">
+              <div className="pl-alert" role="alert">
                 {errorMessage}
               </div>
             )}
 
             {successMessage && (
-              <div role="status" className="jm-success">
+              <div className="pl-success" role="status">
                 {successMessage}
               </div>
             )}
 
-            {/* JOB ANALYTICS */}
+            {/* PIPELINE METRICS */}
 
-            <div className="jm-stats">
+            <div className="pl-metrics">
               <Metric
-                label="Total Jobs"
-                value={loading ? "—" : stats.total}
-                symbol="▣"
-                note="All saved requisitions"
+                label="Total Candidates"
+                value={loading ? "—" : metrics.total}
+                icon="♙"
+                subtitle="In current pipeline view"
               />
 
               <Metric
-                label="Active Jobs"
-                value={loading ? "—" : stats.active}
-                symbol="↗"
-                note="Open hiring opportunities"
+                label="In Progress"
+                value={loading ? "—" : metrics.inProgress}
+                icon="◉"
+                subtitle="Across active hiring stages"
               />
 
               <Metric
-                label="Paused Jobs"
-                value={loading ? "—" : stats.paused}
-                symbol="◷"
-                note="Temporarily on hold"
+                label="Hired"
+                value={loading ? "—" : metrics.hired}
+                icon="✓"
+                subtitle="Successfully hired"
               />
 
               <Metric
-                label="Closed Jobs"
-                value={loading ? "—" : stats.closed}
-                symbol="✓"
-                note="Closed requisitions"
+                label="Rejected"
+                value={loading ? "—" : metrics.rejected}
+                icon="×"
+                subtitle="Closed candidate journeys"
               />
             </div>
 
-            {/* CREATE / EDIT JOB FORM */}
+            {/* FILTERS */}
 
-            {showForm && (
-              <section className="jm-panel">
-                <div className="jm-section-header">
-                  <div>
-                    <h2>
-                      {form._editingId
-                        ? "Edit Job Requisition"
-                        : "Create New Job"}
-                    </h2>
-
-                    <p>
-                      Complete the position details and
-                      hiring requirements.
-                    </p>
-                  </div>
-
-                  <button
-                    type="button"
-                    className="jm-secondary"
-                    onClick={cancelEditing}
-                    disabled={saving}
-                  >
-                    Cancel
-                  </button>
-                </div>
-
-                <form onSubmit={saveJob}>
-                  {textFields.map((group) => (
-                    <div
-                      key={group.title}
-                      className="jm-form-section"
-                    >
-                      <h3>{group.title}</h3>
-
-                      <div className="jm-form-grid">
-                        {group.fields.map((field) => (
-                          <FormField
-                            key={field[0]}
-                            field={field}
-                            form={form}
-                            updateField={updateField}
-                          />
-                        ))}
-                      </div>
-                    </div>
-                  ))}
-
-                  <div className="jm-form-section">
-                    <h3>Skills & Role Details</h3>
-
-                    <div className="jm-long-fields">
-                      {longFields.map(
-                        ([key, label, placeholder, rows]) => (
-                          <label
-                            className="jm-field"
-                            key={key}
-                          >
-                            <span>{label}</span>
-
-                            <textarea
-                              value={form[key]}
-                              onChange={(e) =>
-                                updateField(
-                                  key,
-                                  e.target.value
-                                )
-                              }
-                              placeholder={placeholder}
-                              rows={rows}
-                              required={
-                                key === "description"
-                              }
-                              className="jm-control jm-textarea"
-                            />
-                          </label>
-                        )
-                      )}
-                    </div>
-                  </div>
-
-                  <div className="jm-form-actions">
-                    <button
-                      type="submit"
-                      disabled={saving}
-                      className="jm-primary"
-                    >
-                      {saving
-                        ? "Saving..."
-                        : form._editingId
-                          ? "✓ Save Changes"
-                          : "＋ Create Job"}
-                    </button>
-
-                    <button
-                      type="button"
-                      onClick={cancelEditing}
-                      disabled={saving}
-                      className="jm-secondary"
-                    >
-                      Cancel
-                    </button>
-                  </div>
-                </form>
-              </section>
-            )}
-
-            {/* JOB DIRECTORY */}
-
-            <section>
-              <div className="jm-section-header">
-                <div>
-                  <h2>Job Directory</h2>
-
-                  <p>
-                    {loading
-                      ? "Loading jobs..."
-                      : `Showing ${filteredJobs.length} of ${jobs.length} jobs`}
-                  </p>
-                </div>
-              </div>
-
-              <div className="jm-filters">
+            <section className="pl-panel">
+              <div className="pl-filters">
                 <input
-                  className="jm-search"
-                  placeholder="Search job title, skills, department..."
+                  className="pl-search"
                   value={search}
                   onChange={(e) =>
                     setSearch(e.target.value)
                   }
+                  placeholder="Search candidates, skills, location..."
+                  aria-label="Search candidates"
                 />
 
                 <select
-                  className="jm-filter-select"
-                  value={statusFilter}
+                  className="pl-select"
+                  value={jobFilter}
                   onChange={(e) =>
-                    setStatusFilter(e.target.value)
+                    setJobFilter(e.target.value)
                   }
+                  aria-label="Filter by job"
                 >
-                  <option value="All">
-                    All Statuses
+                  <option value="all">
+                    All Jobs
                   </option>
-                  <option value="Active">
-                    Active
+
+                  <option value="unassigned">
+                    No Assigned Job
                   </option>
-                  <option value="Paused">
-                    Paused
-                  </option>
-                  <option value="Closed">
-                    Closed
-                  </option>
+
+                  {jobs.map((job) => (
+                    <option
+                      key={job.id}
+                      value={String(job.id)}
+                    >
+                      {job.title}
+                    </option>
+                  ))}
                 </select>
+
+                <button
+                  type="button"
+                  className="pl-secondary"
+                  onClick={() => {
+                    setSearch("");
+                    setJobFilter("all");
+                  }}
+                >
+                  Clear Filters
+                </button>
+              </div>
+            </section>
+
+            {/* BOARD HEADING */}
+
+            <div className="pl-board-heading">
+              <div>
+                <h2>Recruitment Board</h2>
+
+                <p>
+                  Drag cards between stages or use
+                  the stage selector on each card.
+                </p>
               </div>
 
-              {loading ? (
-                <div className="jm-empty">
-                  Loading your recruitment jobs...
-                </div>
-              ) : filteredJobs.length === 0 ? (
-                <div className="jm-empty">
-                  <h3
-                    style={{
-                      fontSize: 18,
-                      margin: "0 0 8px",
-                    }}
-                  >
-                    No Jobs Found
-                  </h3>
+              <span
+                style={{
+                  fontSize: 12,
+                  color: "#8390a0",
+                }}
+              >
+                {loading
+                  ? "Loading..."
+                  : `${filteredCandidates.length} candidates`}
+              </span>
+            </div>
 
-                  <p style={{ margin: 0 }}>
-                    {jobs.length === 0
-                      ? "Create your first recruitment job to get started."
-                      : "Try adjusting your search or status filter."}
-                  </p>
-                </div>
-              ) : (
-                <div className="jm-job-list">
-                  {filteredJobs.map((job) => {
-                    const status = job.status || "Active";
+            {/* KANBAN BOARD */}
 
-                    const linkedCandidates =
-                      candidatesByJob[String(job.id)] || [];
+            {loading ? (
+              <div className="pl-panel">
+                Loading recruitment pipeline...
+              </div>
+            ) : (
+              <div className="pl-board-scroll">
+                <div className="pl-board">
+                  {visibleStages.map((stage) => {
+                    const stageCandidates =
+                      stageGroups[stage] || [];
 
-                    const statusClass =
-                      status === "Closed"
-                        ? "jm-status-closed"
-                        : status === "Paused"
-                          ? "jm-status-paused"
-                          : "jm-status-active";
+                    const canDrop =
+                      stages.includes(stage);
+
+                    const highlight =
+                      dragOverStage === stage && canDrop;
 
                     return (
-                      <article
-                        key={job.id}
-                        className="jm-job-card"
+                      <section
+                        key={stage}
+                        className={
+                          highlight
+                            ? "pl-column drop-active"
+                            : "pl-column"
+                        }
+                        onDragOver={
+                          canDrop
+                            ? (event) =>
+                                handleDragOver(event, stage)
+                            : undefined
+                        }
+                        onDragLeave={() =>
+                          setDragOverStage((current) =>
+                            current === stage ? null : current
+                          )
+                        }
+                        onDrop={
+                          canDrop
+                            ? (event) =>
+                                handleDrop(event, stage)
+                            : undefined
+                        }
                       >
-                        <div className="jm-job-top">
-                          <div className="jm-job-heading">
-                            <div
+                        <div className="pl-column-header">
+                          <div className="pl-column-title">
+                            <span
+                              className="pl-column-dot"
                               style={{
-                                display: "flex",
-                                alignItems: "center",
-                                flexWrap: "wrap",
-                                gap: 12,
+                                background:
+                                  stageColors[stage],
                               }}
-                            >
-                              <h3>{job.title}</h3>
+                            />
 
-                              <span
-                                className={`jm-status ${statusClass}`}
-                              >
-                                {status}
-                              </span>
-                            </div>
-
-                            <div className="jm-job-meta">
-                              {job.department && (
-                                <span>
-                                  ▣ {job.department}
-                                </span>
-                              )}
-
-                              {job.location && (
-                                <span>
-                                  ◎ {job.location}
-                                </span>
-                              )}
-
-                              {job.work_type && (
-                                <span>
-                                  ◈ {job.work_type}
-                                </span>
-                              )}
-
-                              {job.employment_type && (
-                                <span>
-                                  {job.employment_type}
-                                </span>
-                              )}
-
-                              {job.years_of_experience && (
-                                <span>
-                                  {job.years_of_experience} experience
-                                </span>
-                              )}
-
-                              {job.hiring_manager && (
-                                <span>
-                                  Hiring Manager: {job.hiring_manager}
-                                </span>
-                              )}
-
-                              {job.priority && (
-                                <span>
-                                  Priority: {job.priority}
-                                </span>
-                              )}
-                            </div>
+                            {stage}
                           </div>
 
-                          <div className="jm-job-actions">
-                            <button
-                              type="button"
-                              className="jm-secondary"
-                              onClick={() => editJob(job)}
-                            >
-                              ✎ Edit Job
-                            </button>
-
-                            <select
-                              aria-label={`Status for ${job.title}`}
-                              value={status}
-                              disabled={
-                                updatingJobId === job.id
-                              }
-                              onChange={(e) =>
-                                changeStatus(
-                                  job.id,
-                                  e.target.value
-                                )
-                              }
-                            >
-                              <option value="Active">
-                                Active
-                              </option>
-                              <option value="Paused">
-                                Paused
-                              </option>
-                              <option value="Closed">
-                                Closed
-                              </option>
-                            </select>
-                          </div>
-                        </div>
-
-                        <p className="jm-job-description">
-                          {job.description ||
-                            "No job description added."}
-                        </p>
-
-                        <div
-                          style={{
-                            display: "flex",
-                            gap: 14,
-                            flexWrap: "wrap",
-                            color: "#8390a0",
-                            fontSize: 12,
-                          }}
-                        >
-                          <span>
-                            Openings: {job.openings || 1}
+                          <span className="pl-count">
+                            {stageCandidates.length}
                           </span>
-
-                          {job.salary_proposed && (
-                            <span>
-                              Salary: {job.salary_proposed}
-                            </span>
-                          )}
-
-                          {job.deadline && (
-                            <span>
-                              Deadline: {String(job.deadline).slice(0, 10)}
-                            </span>
-                          )}
                         </div>
 
-                        <div className="jm-job-footer">
-                          <div>
-                            <strong
-                              style={{
-                                fontSize: 13,
-                                color: "#1e293b",
-                              }}
-                            >
-                              Candidates ({linkedCandidates.length})
-                            </strong>
+                        <div className="pl-cards">
+                          {stageCandidates.length === 0 ? (
+                            <div className="pl-empty">
+                              {highlight
+                                ? "Drop candidate here"
+                                : "No candidates"}
+                            </div>
+                          ) : (
+                            stageCandidates.map(
+                              (candidate) => {
+                                const name =
+                                  candidate.full_name ||
+                                  "Unnamed Candidate";
 
-                            {linkedCandidates.length > 0 ? (
-                              <div className="jm-candidate-list">
-                                {linkedCandidates.map(
-                                  (candidate) => (
-                                    <Link
-                                      key={candidate.id}
-                                      href={`/app/candidates/${candidate.id}`}
-                                      className="jm-candidate-link"
-                                    >
-                                      {candidate.full_name ||
-                                        "Unnamed Candidate"}
-                                      {" · "}
-                                      {candidate.status ||
-                                        "Applied"}
-                                    </Link>
-                                  )
-                                )}
-                              </div>
-                            ) : (
-                              <p
-                                style={{
-                                  color: "#9aa5b1",
-                                  fontSize: 12,
-                                  margin: "8px 0 0",
-                                }}
-                              >
-                                No candidates linked yet.
-                              </p>
-                            )}
-                          </div>
+                                return (
+                                  <article
+                                    key={candidate.id}
+                                    draggable={
+                                      updatingId === null
+                                    }
+                                    onDragStart={(event) =>
+                                      handleDragStart(
+                                        event,
+                                        candidate.id
+                                      )
+                                    }
+                                    onDragEnd={() => {
+                                      setDraggingId(null);
+                                      setDragOverStage(null);
+                                    }}
+                                    className={
+                                      String(draggingId) ===
+                                      String(candidate.id)
+                                        ? "pl-candidate dragging"
+                                        : "pl-candidate"
+                                    }
+                                  >
+                                    <div className="pl-candidate-head">
+                                      <div className="pl-avatar">
+                                        {name
+                                          .charAt(0)
+                                          .toUpperCase()}
+                                      </div>
 
-                          <Link
-                            href="/app/pipeline"
-                            className="jm-secondary"
-                          >
-                            View Pipeline →
-                          </Link>
+                                      <Link
+                                        href={`/app/candidates/${candidate.id}`}
+                                        className="pl-candidate-name"
+                                      >
+                                        {name}
+                                      </Link>
+                                    </div>
+
+                                    <p className="pl-candidate-role">
+                                      {candidate.current_title ||
+                                        "Title not specified"}
+                                    </p>
+
+                                    {candidate.location && (
+                                      <div className="pl-candidate-meta">
+                                        ◎ {candidate.location}
+                                      </div>
+                                    )}
+
+                                    {candidate.created_at && (
+                                      <div className="pl-candidate-meta">
+                                        ◷ Added{" "}
+                                        {new Date(
+                                          candidate.created_at
+                                        ).toLocaleDateString(
+                                          "en-GB"
+                                        )}
+                                      </div>
+                                    )}
+
+                                    <div className="pl-candidate-footer">
+                                      <select
+                                        className="pl-stage-control"
+                                        value={
+                                          stages.includes(
+                                            candidate.status
+                                          )
+                                            ? candidate.status
+                                            : ""
+                                        }
+                                        disabled={
+                                          updatingId !== null
+                                        }
+                                        aria-label={`Stage for ${name}`}
+                                        onChange={(event) =>
+                                          changeStage(
+                                            candidate.id,
+                                            event.target.value
+                                          )
+                                        }
+                                      >
+                                        <option
+                                          value=""
+                                          disabled
+                                        >
+                                          Select Stage
+                                        </option>
+
+                                        {stages.map(
+                                          (option) => (
+                                            <option
+                                              key={option}
+                                              value={option}
+                                            >
+                                              {option}
+                                            </option>
+                                          )
+                                        )}
+                                      </select>
+                                    </div>
+                                  </article>
+                                );
+                              }
+                            )
+                          )}
                         </div>
-                      </article>
+                      </section>
                     );
                   })}
                 </div>
-              )}
-            </section>
+              </div>
+            )}
           </div>
         </div>
       </div>
