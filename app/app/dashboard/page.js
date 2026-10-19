@@ -363,118 +363,359 @@ export default function DashboardPage() {
           />
         </div>
 
-        {/* PIPELINE SUMMARY */}
+ 
+{/* RECRUITMENT INTELLIGENCE */}
+{(() => {
+  const now = new Date();
 
-        <section
-          style={{
-            background: "#fff",
-            border: "1px solid #eee",
-            borderRadius: 16,
-            padding: 25,
-            marginBottom: 30,
-          }}
-        >
-          <div
-            style={{
-              display: "flex",
-              justifyContent: "space-between",
-              alignItems: "center",
-              marginBottom: 20,
-            }}
-          >
-            <div>
-              <h2
+  const monthlyActivity = Array.from({ length: 6 }, (_, i) => {
+    const start = new Date(
+      now.getFullYear(),
+      now.getMonth() - 5 + i,
+      1
+    );
+    const end = new Date(
+      start.getFullYear(),
+      start.getMonth() + 1,
+      1
+    );
+
+    const count = candidates.filter((candidate) => {
+      if (!candidate.created_at) return false;
+      const date = new Date(candidate.created_at);
+      return !Number.isNaN(date.getTime()) &&
+        date >= start && date < end;
+    }).length;
+
+    return {
+      label: start.toLocaleDateString("en-US", {
+        month: "short",
+      }),
+      count,
+    };
+  });
+
+  const maxMonthly = Math.max(
+    1,
+    ...monthlyActivity.map((item) => item.count)
+  );
+
+  const pipelineData = stages.map((stage) => ({
+    stage,
+    count: countStage(stage),
+  }));
+
+  const maxStage = Math.max(
+    1,
+    ...pipelineData.map((item) => item.count)
+  );
+
+  const newLast30Days = candidates.filter((candidate) => {
+    if (!candidate.created_at) return false;
+    const date = new Date(candidate.created_at);
+    return !Number.isNaN(date.getTime()) &&
+      date >= new Date(now.getTime() - 30 * 86400000) &&
+      date <= now;
+  }).length;
+
+  const unassigned = candidates.filter(
+    (candidate) => !candidate.job_id
+  ).length;
+
+  const hiredCount = countStage("Hired");
+
+  const hiringShare = totalCandidates
+    ? Math.round((hiredCount / totalCandidates) * 100)
+    : 0;
+
+  const card = {
+    background: "#ffffff",
+    border: "1px solid #e5ebe6",
+    borderRadius: 22,
+    padding: 26,
+    boxShadow: "0 6px 24px rgba(25,55,43,0.045)",
+  };
+
+  return (
+    <section style={{ marginBottom: 30 }}>
+      <div style={{ marginBottom: 20 }}>
+        <div style={{
+          fontSize: 11,
+          color: "#43866a",
+          fontWeight: 800,
+          letterSpacing: 2,
+          marginBottom: 8,
+        }}>
+          TALENT INTELLIGENCE
+        </div>
+
+        <h2 style={{
+          margin: 0,
+          color: "#173b30",
+          fontFamily: "Georgia, serif",
+          fontSize: 28,
+        }}>
+          Recruitment Intelligence
+        </h2>
+
+        <p style={{
+          color: "#7b8981",
+          fontSize: 13,
+          marginTop: 8,
+        }}>
+          Live recruitment analytics and hiring signals
+        </p>
+      </div>
+
+      <div style={{
+        display: "grid",
+        gridTemplateColumns:
+          "repeat(auto-fit, minmax(min(100%, 340px), 1fr))",
+        gap: 18,
+      }}>
+        {/* MONTHLY CHART */}
+        <div style={card}>
+          <h3 style={{
+            margin: 0,
+            fontSize: 17,
+            color: "#173b30",
+          }}>
+            Candidate Growth
+          </h3>
+
+          <p style={{
+            fontSize: 12,
+            color: "#89958d",
+            marginTop: 8,
+          }}>
+            New candidate records · Last 6 months
+          </p>
+
+          <div style={{
+            display: "flex",
+            alignItems: "end",
+            justifyContent: "space-around",
+            gap: 12,
+            height: 190,
+            paddingTop: 25,
+            borderBottom: "1px solid #e5ebe6",
+          }}>
+            {monthlyActivity.map((item, index) => (
+              <div
+                key={index}
                 style={{
-                  fontFamily: "Georgia, serif",
-                  margin: 0,
+                  flex: 1,
+                  minWidth: 0,
+                  height: "100%",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "end",
+                  flexDirection: "column",
+                  gap: 8,
                 }}
               >
-                Recruitment Pipeline
-              </h2>
+                <span style={{
+                  color: "#173b30",
+                  fontSize: 12,
+                  fontWeight: 700,
+                }}>
+                  {item.count}
+                </span>
 
-              <p
-                style={{
-                  color: "#777",
-                  margin: "6px 0 0",
-                }}
-              >
-                Current candidate distribution
-              </p>
-            </div>
+                <div
+                  title={`${item.label}: ${item.count} candidates`}
+                  style={{
+                    width: "70%",
+                    maxWidth: 48,
+                    minHeight: 4,
+                    height: `${
+                      (item.count / maxMonthly) * 125
+                    }px`,
+                    background: index === 5
+                      ? "linear-gradient(180deg,#3d9b72,#173b30)"
+                      : "#d6e9db",
+                    borderRadius: "9px 9px 2px 2px",
+                  }}
+                />
+
+                <span style={{
+                  color: "#849288",
+                  fontSize: 11,
+                }}>
+                  {item.label}
+                </span>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* PIPELINE DISTRIBUTION */}
+        <div style={card}>
+          <div style={{
+            display: "flex",
+            justifyContent: "space-between",
+            gap: 12,
+            alignItems: "center",
+          }}>
+            <h3 style={{
+              margin: 0,
+              fontSize: 17,
+              color: "#173b30",
+            }}>
+              Pipeline Distribution
+            </h3>
 
             <Link
               href="/app/pipeline"
               style={{
-                color: "#222",
-                fontWeight: 600,
+                color: "#43866a",
+                fontSize: 12,
+                fontWeight: 700,
                 textDecoration: "none",
               }}
             >
-              View Pipeline →
+              View →
             </Link>
           </div>
 
-          <div
-            style={{
-              display: "grid",
-              gridTemplateColumns:
-                "repeat(auto-fit, minmax(140px, 1fr))",
-              gap: 12,
-            }}
-          >
-            {stages.map((stage) => (
-              <div
-                key={stage}
-                style={{
-                  background: "#f0f6f2",
-                  border: "1px solid #dce9df",
-                  borderTop: "3px solid #245c4a",
-                  borderRadius: 12,
-                  padding: 18,
-                  boxShadow: "0 4px 12px rgba(36, 92, 74, 0.06)",
-                }}
-              >
-                <div
-                  style={{
-                    fontSize: 13,
-                    color: "#777",
-                    marginBottom: 8,
-                  }}
-                >
-                  {stage}
+          <p style={{
+            fontSize: 12,
+            color: "#89958d",
+            marginTop: 8,
+            marginBottom: 22,
+          }}>
+            Candidates by recruitment stage
+          </p>
+
+          <div style={{
+            display: "grid",
+            gap: 13,
+          }}>
+            {pipelineData.map((item) => (
+              <div key={item.stage}>
+                <div style={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  fontSize: 12,
+                  marginBottom: 6,
+                }}>
+                  <span style={{ color: "#53665b" }}>
+                    {item.stage}
+                  </span>
+
+                  <strong style={{ color: "#173b30" }}>
+                    {item.count}
+                  </strong>
                 </div>
 
-                <div
-                  style={{
-                    fontSize: 28,
-                    fontWeight: 700,
-                  }}
-                >
-                            {countStage(stage)}
-        </div>
-
-        <div
-          style={{
-            height: 6,
-            background: "#dce9df",
-            borderRadius: 10,
-            marginTop: 14,
-            overflow: "hidden",
-          }}
-        >
-          <div
-            style={{
-              height: "100%",
-              width: `${(countStage(stage) / Math.max(1, stages.reduce((sum, s) => sum + countStage(s), 0))) * 100}%`,
-              background: "#245c4a",
-              borderRadius: 10,
-            }}
-          />
+                <div style={{
+                  background: "#eef3ef",
+                  height: 8,
+                  borderRadius: 20,
+                  overflow: "hidden",
+                }}>
+                  <div style={{
+                    background: item.stage === "Hired"
+                      ? "#43866a"
+                      : item.stage === "Rejected"
+                      ? "#c4a4a4"
+                      : "#245c4a",
+                    height: "100%",
+                    width: `${
+                      (item.count / maxStage) * 100
+                    }%`,
+                    borderRadius: 20,
+                  }} />
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
       </div>
-    ))}
+
+      {/* RECRUITMENT SIGNALS */}
+      <div style={{
+        display: "grid",
+        gridTemplateColumns:
+          "repeat(auto-fit, minmax(190px, 1fr))",
+        gap: 14,
+        marginTop: 18,
+      }}>
+        {[
+          {
+            icon: "↗",
+            title: "Recent Intake",
+            value: newLast30Days,
+            detail: "Added in the last 30 days",
+          },
+          {
+            icon: "◎",
+            title: "Unassigned Talent",
+            value: unassigned,
+            detail: "Candidates without a job",
+          },
+          {
+            icon: "✦",
+            title: "Hired Share",
+            value: `${hiringShare}%`,
+            detail: "Of all candidate records",
+          },
+        ].map((item) => (
+          <div key={item.title} style={{
+            ...card,
+            padding: 20,
+            display: "flex",
+            alignItems: "center",
+            gap: 15,
+          }}>
+            <div style={{
+              width: 42,
+              height: 42,
+              borderRadius: 13,
+              background: "#edf4ef",
+              color: "#245c4a",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              fontSize: 22,
+              flexShrink: 0,
+            }}>
+              {item.icon}
+            </div>
+
+            <div>
+              <div style={{
+                fontSize: 24,
+                fontWeight: 800,
+                color: "#173b30",
+              }}>
+                {item.value}
+              </div>
+
+              <div style={{
+                fontSize: 12,
+                fontWeight: 700,
+                color: "#44574c",
+                marginTop: 3,
+              }}>
+                {item.title}
+              </div>
+
+              <div style={{
+                fontSize: 11,
+                color: "#89958d",
+                marginTop: 3,
+              }}>
+                {item.detail}
+              </div>
+            </div>
           </div>
-        </section>
+        ))}
+      </div>
+    </section>
+  );
+})()}
+
 
         {/* RECENT CANDIDATES */}
 
