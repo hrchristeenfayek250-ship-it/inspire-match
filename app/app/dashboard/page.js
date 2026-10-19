@@ -17,7 +17,6 @@ const stages = [
 ];
 
 
-];
 
 const palette = [
   "#315f50",
@@ -26,7 +25,7 @@ const palette = [
   "#d5e6de",
   "#b9cbbf",
   "#c8a6a2",
-
+];
 function Panel({ children, style = {} }) {
   return (
     <section
