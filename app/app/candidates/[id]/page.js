@@ -843,7 +843,46 @@ company_id: candidate.company_id,
             padding: 17px !important;
           }
         }
-      `}</style>
+     .cp-mobile-navigation {
+  display: none;
+}
+
+@media screen and (max-width: 850px) {
+  .cp-mobile-navigation {
+    display: flex;
+    gap: 8px;
+    overflow-x: auto;
+    padding: 14px 16px;
+    background: #fff;
+    border-bottom: 1px solid #e3e9e3;
+    position: sticky;
+    top: 0;
+    z-index: 30;
+  }
+
+  .cp-mobile-navigation a {
+    flex: 0 0 auto;
+    padding: 10px 14px;
+    border-radius: 9px;
+    color: #1e3b32;
+    text-decoration: none;
+    font-size: 12px;
+    font-weight: 600;
+    white-space: nowrap;
+  }
+
+  .cp-mobile-navigation a.active {
+    background: #e6ece2;
+    border-bottom: 2px solid #b06f45;
+    font-weight: 800;
+  }
+}
+
+@media print {
+  .cp-mobile-navigation {
+    display: none !important;
+  }
+} `}</style>
 
       <aside className="cp-sidebar">
         <div className="cp-brand">
