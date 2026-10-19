@@ -220,20 +220,22 @@ export default function MatchingPage() {
           AI Candidate Matching
         </h1>
 
-        <p style={{ color: "#65796D", lineHeight: 1.7 }}>
-          Select a job to review its assigned candidates.
-          
+        
         <p style={{ color: "#65796D", lineHeight: 1.7 }}>
           Select a job and compare any candidate in your company.
           AI results are saved separately for each job.
         </p>
 
+        {loading && <p>Loading matching workspace...</p>}
+
+        {errorMessage && (
           <div style={{ ...card, color: "#A23B3B" }}>
             {errorMessage}
           </div>
         )}
 
         {!loading && !errorMessage && (
+
           <>
             <section style={card}>
               <label
