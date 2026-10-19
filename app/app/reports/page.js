@@ -148,15 +148,20 @@ function countStage(stage) {
   const green = "#245c4a";
 
   return (
+    
     <main
       style={{
         minHeight: "100vh",
-        background: "#faf9f6",
-        padding: "40px 24px",
+        width: "100%",
+        maxWidth: "none",
+        margin: 0,
+        padding: 0,
+        background: "#f6f8fb",
         fontFamily: "Arial, sans-serif",
-        color: "#222",
+        color: "#1e293b",
       }}
     >
+
       <style>{`
         @media print {
           @page {
@@ -316,13 +321,16 @@ table th {
         }
 
         .ir-nav-footer a {
-          color: #657285;
-          font-size: 13px;
-          text-decoration: none;
-        }
-
+          
         .ir-workspace {
           margin-left: 254px;
+          max-width: none;
+          min-width: 0;
+          padding: 32px clamp(20px, 3vw, 48px) 50px;
+          font-family: Arial, sans-serif;
+          color: #1e293b;
+        }
+
           padding: 0 15px 45px;
           max-width: 1550px;
           font-family: Arial, sans-serif;
