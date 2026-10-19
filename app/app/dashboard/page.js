@@ -5,6 +5,7 @@ import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { supabase } from "@/lib/supabase";
 import NotificationBell from "@/components/NotificationBell";
+import ATSNavigation from "@/components/ATSNavigation";
 
 const stages = [
   "Applied",
@@ -15,15 +16,7 @@ const stages = [
   "Rejected",
 ];
 
-const navigation = [
-  ["Overview", "/app/dashboard", "◫"],
-  ["Jobs", "/app/jobs", "▣"],
-  ["Candidates", "/app/candidates", "♙"],
-  ["Pipeline", "/app/pipeline", "⇄"],
-  ["AI Matching", "/app/matching", "✧"],
-  ["Reports", "/app/reports", "▥"],
-  ["Executive", "/app/executive", "◈"],
-  ["Team", "/app/team", "♧"],
+
 ];
 
 const palette = [
@@ -33,7 +26,6 @@ const palette = [
   "#d5e6de",
   "#b9cbbf",
   "#c8a6a2",
-];
 
 function Panel({ children, style = {} }) {
   return (
@@ -368,26 +360,11 @@ export default function DashboardPage() {
         WORKSPACE
       </div>
 
-      <nav
-        aria-label="Main navigation"
-        className="im-links"
-      >
-        {navigation.map(([label, href, icon]) => (
-          <Link
-            key={href}
-            href={href}
-            onClick={() => setMobileNav(false)}
-            className={
-              href === "/app/dashboard"
-                ? "im-nav-link active"
-                : "im-nav-link"
-            }
-          >
-            <span>{icon}</span>
-            {label}
-          </Link>
-        ))}
-      </nav>
+   <ATSNavigation
+  className="im-links"
+  linkClassName="im-nav-link"
+  onNavigate={() => setMobileNav(false)}
+/>
 
       <div className="im-side-bottom">
         <Link href="/">
