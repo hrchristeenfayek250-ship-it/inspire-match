@@ -4,6 +4,7 @@
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { supabase } from "@/lib/supabase";
+import ATSNavigation from "@/components/ATSNavigation";
 
 const STATUSES = [
   "All statuses",
@@ -15,16 +16,6 @@ const STATUSES = [
   "Rejected",
 ];
 
-const NAVIGATION = [
-  ["Overview", "/app/dashboard", "◫"],
-  ["Jobs", "/app/jobs", "▣"],
-  ["Candidates", "/app/candidates", "♙"],
-  ["Pipeline", "/app/pipeline", "⇄"],
-  ["AI Matching", "/app/matching", "✧"],
-  ["Reports", "/app/reports", "▥"],
-  ["Executive", "/app/executive", "◈"],
-  ["Team", "/app/team", "♧"],
-];
 
 const STATUS_COLORS = {
   Applied: ["#eef2ff", "#4338ca"],
@@ -408,23 +399,11 @@ export default function CandidatesPage() {
             className={
               href === "/app/candidates"
                 ? "imc-nav-item active"
-                : "imc-nav-item"
-            }
-          >
-            <span className="imc-nav-icon">{icon}</span>
-            {label}
-          </Link>
-        ))}
-      </nav>
-
-      <div className="imc-sidebar-footer">
-        <Link href="/">↗ ATS Home</Link>
-
-        <button onClick={logOut}>↪ Log out</button>
-
-        <small>© Inspire Match ATS</small>
-      </div>
-    </div>
+             <ATSNavigation
+  className="imc-navigation"
+  linkClassName="imc-nav-item"
+  onNavigate={() => setMobileNav(false)}
+/>
   );
 
   return (
@@ -554,7 +533,7 @@ export default function CandidatesPage() {
           font-weight: 800;
         }
 
-        .imc-nav-icon {
+.imc-nav-item > span {
           width: 23px;
           font-size: 19px;
           text-align: center;
