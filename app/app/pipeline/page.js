@@ -15,7 +15,7 @@ const stages = [
   "Rejected",
 ];
 
-];
+
 
 const stageColors = {
   Applied: "#64748b",
