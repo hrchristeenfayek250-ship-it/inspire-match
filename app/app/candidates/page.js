@@ -390,21 +390,23 @@ export default function CandidatesPage() {
 
       <div className="imc-nav-label">WORKSPACE</div>
 
-      <nav className="imc-navigation">
-        {NAVIGATION.map(([label, href, icon]) => (
-          <Link
-            key={href}
-            href={href}
-            onClick={() => setMobileNav(false)}
-            className={
-              href === "/app/candidates"
-                ? "imc-nav-item active"
-             <ATSNavigation
+      <ATSNavigation
   className="imc-navigation"
   linkClassName="imc-nav-item"
   onNavigate={() => setMobileNav(false)}
 />
-  );
+
+<div className="imc-sidebar-footer">
+  <Link href="/">↗ ATS Home</Link>
+
+  <button onClick={logOut}>
+    ↪ Log out
+  </button>
+
+  <small>© Inspire Match ATS</small>
+</div>
+</div>
+);
 
   return (
     <main className="imc-root">
