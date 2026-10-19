@@ -651,57 +651,92 @@ href="/app/matching"
   );
 }
 
+
 function StatCard({ icon, number, label }) {
   return (
     <div
       style={{
-        
-background: "linear-gradient(145deg, #ffffff 0%, #f2f8f4 100%)",
-border: "1px solid #dce9df",
-borderTop: "4px solid #1E3B32",
-borderRadius: 16,
-padding: 24,
-minHeight: 130,
-boxShadow: "0 8px 24px rgba(30,59,50,0.06)",
-
+        position: "relative",
+        overflow: "hidden",
+        background: "#ffffff",
+        border: "1px solid #e5ebe6",
+        borderRadius: 22,
+        padding: "26px",
+        minHeight: 160,
+        boxShadow: "0 6px 24px rgba(25, 55, 43, 0.045)",
+        display: "flex",
+        flexDirection: "column",
+        justifyContent: "space-between",
+        gap: 20,
       }}
     >
-     
       <div
         style={{
+          position: "absolute",
+          width: 125,
+          height: 125,
+          borderRadius: "50%",
+          background: "#f1f7f2",
+          top: -65,
+          right: -45,
+          pointerEvents: "none",
+        }}
+      />
+
+      <div
+        style={{
+          width: 48,
+          height: 48,
+          borderRadius: 14,
+          background: "#edf4ef",
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
-          width: 48,
-          height: 48,
-          background: "#e7f0ea",
-          borderRadius: 12,
-          fontSize: 26,
-          marginBottom: 15,
+          fontSize: 23,
+          position: "relative",
         }}
       >
         {icon}
       </div>
 
+      <div style={{ position: "relative" }}>
+        <div
+          style={{
+            fontSize: 38,
+            fontWeight: 750,
+            letterSpacing: "-1.5px",
+            color: "#173b30",
+            lineHeight: 1.1,
+            marginBottom: 10,
+          }}
+        >
+          {number}
+        </div>
 
-      <div
-        style={{
-          fontSize: 34,
-          fontWeight: 700,
-          marginBottom: 8,
-        }}
-      >
-        {number}
+        <div
+          style={{
+            fontSize: 13,
+            fontWeight: 600,
+            color: "#718078",
+            letterSpacing: "0.1px",
+          }}
+        >
+          {label}
+        </div>
       </div>
 
       <div
         style={{
-          color: "#777",
-          fontSize: 14,
+          position: "absolute",
+          bottom: 0,
+          left: 26,
+          right: 26,
+          height: 3,
+          borderRadius: "3px 3px 0 0",
+          background:
+            "linear-gradient(90deg, #1e5945, #a9c9ad)",
         }}
-      >
-        {label}
-      </div>
+      />
     </div>
   );
 }
