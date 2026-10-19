@@ -102,8 +102,6 @@ export async function POST(request) {
       );
     }
 
-    }
-
     const jobDetails = {
       title: job.title,
       description: job.description,
