@@ -1,11 +1,10 @@
+
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-
 import { supabase } from "@/lib/supabase";
 import NotificationBell from "@/components/NotificationBell";
-
 
 const stages = [
   "Applied",
@@ -16,18 +15,166 @@ const stages = [
   "Rejected",
 ];
 
+const navigation = [
+  ["Overview", "/app/dashboard", "◫"],
+  ["Jobs", "/app/jobs", "▣"],
+  ["Candidates", "/app/candidates", "♙"],
+  ["Pipeline", "/app/pipeline", "⇄"],
+  ["AI Matching", "/app/matching", "✧"],
+  ["Reports", "/app/reports", "▥"],
+  ["Executive", "/app/executive", "◈"],
+  ["Team", "/app/team", "♧"],
+];
+
+const palette = [
+  "#315f50",
+  "#6c9d8a",
+  "#a3c6b7",
+  "#d5e6de",
+  "#b9cbbf",
+  "#c8a6a2",
+];
+
+function Panel({ children, style = {} }) {
+  return (
+    <section
+      style={{
+        background: "#fff",
+        border: "1px solid #e6eaf0",
+        borderRadius: 16,
+        boxShadow: "0 4px 18px rgba(23,35,50,.035)",
+        ...style,
+      }}
+    >
+      {children}
+    </section>
+  );
+}
+
+function Metric({ label, value, icon, note }) {
+  return (
+    <Panel
+      style={{
+        padding: 22,
+        minHeight: 148,
+        display: "flex",
+        flexDirection: "column",
+        justifyContent: "space-between",
+      }}
+    >
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          gap: 10,
+        }}
+      >
+        <span
+          style={{
+            color: "#637083",
+            fontSize: 13,
+            fontWeight: 600,
+          }}
+        >
+          {label}
+        </span>
+
+        <span
+          style={{
+            width: 39,
+            height: 39,
+            background: "#edf4f0",
+            color: "#315f50",
+            borderRadius: 10,
+            display: "grid",
+            placeItems: "center",
+            fontSize: 20,
+          }}
+        >
+          {icon}
+        </span>
+      </div>
+
+      <div>
+        <div
+          style={{
+            color: "#1e293b",
+            fontSize: 33,
+            fontWeight: 800,
+            letterSpacing: -1,
+          }}
+        >
+          {value}
+        </div>
+
+        <div
+          style={{
+            color: "#8994a3",
+            fontSize: 11,
+            marginTop: 7,
+          }}
+        >
+          {note}
+        </div>
+      </div>
+    </Panel>
+  );
+}
+
+function PanelHeading({ title, subtitle, action }) {
+  return (
+    <div
+      style={{
+        display: "flex",
+        justifyContent: "space-between",
+        alignItems: "start",
+        flexWrap: "wrap",
+        gap: 12,
+        marginBottom: 24,
+      }}
+    >
+      <div>
+        <h2
+          style={{
+            color: "#1e293b",
+            font: "700 17px Arial,sans-serif",
+            margin: 0,
+          }}
+        >
+          {title}
+        </h2>
+
+        <p
+          style={{
+            color: "#8994a3",
+            fontSize: 12,
+            margin: "8px 0 0",
+          }}
+        >
+          {subtitle}
+        </p>
+      </div>
+
+      {action}
+    </div>
+  );
+}
+
 export default function DashboardPage() {
   const [candidates, setCandidates] = useState([]);
   const [jobs, setJobs] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+  const [mobileNav, setMobileNav] = useState(false);
 
-    useEffect(() => {
+  useEffect(() => {
     loadDashboard();
   }, []);
 
-  
   async function loadDashboard() {
     setLoading(true);
+    setError("");
 
     try {
       const {
@@ -43,18 +190,23 @@ export default function DashboardPage() {
         return;
       }
 
-      const { data: memberships, error: membershipError } =
-        await supabase
-          .from("company_members")
-          .select("company_id")
-          .eq("user_id", user.id)
-          .limit(2);
+      const {
+        data: memberships,
+        error: membershipError,
+      } = await supabase
+        .from("company_members")
+        .select("company_id")
+        .eq("user_id", user.id)
+        .limit(2);
 
       if (membershipError) throw membershipError;
 
       if (!memberships || memberships.length !== 1) {
         setCandidates([]);
         setJobs([]);
+        setError(
+          "Your account needs one company membership to display recruitment data."
+        );
         return;
       }
 
@@ -70,13 +222,17 @@ export default function DashboardPage() {
             .from("candidates")
             .select("*")
             .or(filter)
-            .order("created_at", { ascending: false }),
+            .order("created_at", {
+              ascending: false,
+            }),
 
           supabase
             .from("jobs")
             .select("*")
             .or(filter)
-            .order("created_at", { ascending: false }),
+            .order("created_at", {
+              ascending: false,
+            }),
         ]);
 
       if (candidateResponse.error) {
@@ -89,874 +245,1065 @@ export default function DashboardPage() {
 
       setCandidates(candidateResponse.data || []);
       setJobs(jobResponse.data || []);
-    } catch (error) {
-      console.error("Could not load dashboard:", error);
+    } catch (e) {
+      console.error("Could not load dashboard:", e);
+
       setCandidates([]);
       setJobs([]);
+
+      setError(
+        "Could not load recruitment data. Please try again."
+      );
     } finally {
       setLoading(false);
     }
   }
-  function countStage(stage) {
-    return candidates.filter(
-      (candidate) =>
-        String(candidate.status || "").toLowerCase() ===
-        stage.toLowerCase()
-    ).length;
-  }
 
-  const totalCandidates = candidates.length;
-  const activeJobs = jobs.filter(
-    (job) => job.status !== "Closed"
-  ).length;
+  const analytics = useMemo(() => {
+    const count = (stage) =>
+      candidates.filter(
+        (c) =>
+          String(c.status || "").toLowerCase() ===
+          stage.toLowerCase()
+      ).length;
 
-  const screening = countStage("Screening");
-  const interviews = countStage("Interview");
-  const shortlisted = countStage("Shortlisted");
-  const hired = countStage("Hired");
+    const now = new Date();
 
-  if (loading) {
-    return (
-      <main
-        style={{
-          minHeight: "100vh",
-          padding: "60px 24px",
-          background: "#faf9f6",
-          fontFamily: "Arial, sans-serif",
-        }}
-      >
-        <div style={{ maxWidth: 1400, margin: "0 auto" }}>
-          <h1>Recruitment Dashboard</h1>
-          <p>Loading dashboard...</p>
-        </div>
-      </main>
-    );
-  }
+    const monthly = Array.from(
+      { length: 6 },
+      (_, i) => {
+        const start = new Date(
+          now.getFullYear(),
+          now.getMonth() - 5 + i,
+          1
+        );
 
-  return (
-  
-<main
-  style={{
-    width: "100%",
-    maxWidth: "none",
-    minHeight: "100vh",
-    margin: 0,
-    padding: "32px 24px 60px",
-    boxSizing: "border-box",
-    background: "#f8faf9",
-    fontFamily: "Arial, sans-serif",
-    color: "#182d25",
-  }}
->
+        const end = new Date(
+          start.getFullYear(),
+          start.getMonth() + 1,
+          1
+        );
 
-      <div
-        style={{
-          maxWidth: 1400,
-          margin: "0 auto",
-        }}
-      >
-      
+        return {
+          label: start.toLocaleDateString("en-US", {
+            month: "short",
+          }),
 
-{/* CLEAN PROFESSIONAL HEADER */}
-<header
-  style={{
-    background: "#ffffff",
-    border: "1px solid #e3e9e5",
-    borderRadius: 18,
-    padding: "30px 32px",
-    marginBottom: 18,
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "space-between",
-    flexWrap: "wrap",
-    gap: 20,
-    boxShadow: "0 3px 16px rgba(20,45,35,0.035)",
-  }}
->
-  <div>
-    <div
-      style={{
-        display: "flex",
-        alignItems: "center",
-        gap: 9,
-        marginBottom: 12,
-      }}
-    >
-      <span
-        style={{
-          width: 9,
-          height: 9,
-          borderRadius: "50%",
-          background: "#328364",
-        }}
-      />
+          count: candidates.filter((c) => {
+            const date = new Date(c.created_at);
 
-      <span
-        style={{
-          color: "#476557",
-          fontSize: 11,
-          fontWeight: 800,
-          letterSpacing: 1.7,
-        }}
-      >
-        INSPIRE MATCH ATS
-      </span>
-    </div>
-
-    <h1
-      style={{
-        color: "#182d25",
-        fontFamily: "Arial, sans-serif",
-        fontSize: "clamp(26px, 3vw, 36px)",
-        fontWeight: 800,
-        letterSpacing: "-0.8px",
-        lineHeight: 1.2,
-        margin: 0,
-      }}
-    >
-      Recruitment Overview
-    </h1>
-
-    <p
-      style={{
-        margin: "10px 0 0",
-        color: "#596c62",
-        fontSize: 14,
-        lineHeight: 1.6,
-      }}
-    >
-      Manage your talent pipeline and hiring performance
-      in one workspace.
-    </p>
-  </div>
-
-  <div
-    style={{
-      display: "flex",
-      alignItems: "center",
-      flexWrap: "wrap",
-      gap: 10,
-    }}
-  >
-    <NotificationBell />
-
-    <Link
-      href="/"
-      style={{
-        background: "#f4f7f5",
-        color: "#253d31",
-        border: "1px solid #dfe8e2",
-        borderRadius: 10,
-        padding: "11px 16px",
-        textDecoration: "none",
-        fontSize: 13,
-        fontWeight: 700,
-      }}
-    >
-      ATS Home
-    </Link>
-
-    <button
-      onClick={async () => {
-        await supabase.auth.signOut();
-        window.location.href = "/app/login";
-      }}
-      style={{
-        background: "#253d31",
-        color: "#ffffff",
-        border: "1px solid #253d31",
-        borderRadius: 10,
-        padding: "11px 16px",
-        fontSize: 13,
-        fontWeight: 700,
-        cursor: "pointer",
-      }}
-    >
-      Log Out
-    </button>
-  </div>
-</header>
-
-<div
-  id="notifications-panel"
-  style={{
-    display: "flex",
-    justifyContent: "flex-end",
-    width: "100%",
-    marginBottom: 16,
-  }}
-/>
-
-{/* CLEAN NAVIGATION */}
-<nav
-  aria-label="Recruitment navigation"
-  style={{
-    display: "flex",
-    flexWrap: "nowrap",
-    alignItems: "center",
-    gap: 5,
-    overflowX: "auto",
-    background: "#ffffff",
-    border: "1px solid #e3e9e5",
-    borderRadius: 14,
-    padding: 9,
-    marginBottom: 28,
-  }}
->
-  {[
-    ["Overview", "/app/dashboard"],
-    ["Jobs", "/app/jobs"],
-    ["Candidates", "/app/candidates"],
-    ["Pipeline", "/app/pipeline"],
-    ["AI Matching", "/app/matching"],
-    ["Reports", "/app/reports"],
-    ["Executive", "/app/executive"],
-    ["Team", "/app/team"],
-  ].map(([label, href]) => {
-    const active = href === "/app/dashboard";
-
-    return (
-      <Link
-        key={href}
-        href={href}
-        style={{
-          display: "inline-flex",
-          alignItems: "center",
-          justifyContent: "center",
-          flexShrink: 0,
-          whiteSpace: "nowrap",
-          padding: "11px 13px",
-          borderRadius: 9,
-          fontSize: 12,
-          fontWeight: active ? 800 : 600,
-          textDecoration: "none",
-          color: active ? "#ffffff" : "#43564b",
-          background: active
-            ? "#253d31"
-            : "transparent",
-        }}
-      >
-        {label}
-      </Link>
-    );
-  })}
-</nav>
-
-
-
-
-
-        {/* KPI CARDS */}
-
-        <div
-          style={{
-            display: "grid",
-            gridTemplateColumns:
-              "repeat(auto-fit, minmax(210px, 1fr))",
-            gap: 18,
-            marginBottom: 35,
-          }}
-        >
-          <StatCard
-            icon="👥"
-            number={totalCandidates}
-            label="Total Candidates"
-          />
-
-          <StatCard
-            icon="💼"
-            number={activeJobs}
-            label="Active Jobs"
-          />
-
-          <StatCard
-            icon="🔎"
-            number={screening}
-            label="In Screening"
-          />
-
-          <StatCard
-            icon="🎤"
-            number={interviews}
-            label="Interviews"
-          />
-
-          <StatCard
-            icon="⭐"
-            number={shortlisted}
-            label="Shortlisted"
-          />
-
-          <StatCard
-            icon="🎉"
-            number={hired}
-            label="Hired"
-          />
-        </div>
-
- 
-{/* RECRUITMENT INTELLIGENCE */}
-{(() => {
-  const now = new Date();
-
-  const monthlyActivity = Array.from({ length: 6 }, (_, i) => {
-    const start = new Date(
-      now.getFullYear(),
-      now.getMonth() - 5 + i,
-      1
-    );
-    const end = new Date(
-      start.getFullYear(),
-      start.getMonth() + 1,
-      1
+            return (
+              c.created_at &&
+              !Number.isNaN(date.getTime()) &&
+              date >= start &&
+              date < end
+            );
+          }).length,
+        };
+      }
     );
 
-    const count = candidates.filter((candidate) => {
-      if (!candidate.created_at) return false;
-      const date = new Date(candidate.created_at);
-      return !Number.isNaN(date.getTime()) &&
-        date >= start && date < end;
+    const distribution = stages.map((stage) => ({
+      stage,
+      count: count(stage),
+    }));
+
+    const last30 = candidates.filter((c) => {
+      const date = new Date(c.created_at);
+
+      return (
+        c.created_at &&
+        !Number.isNaN(date.getTime()) &&
+        date <= now &&
+        date >=
+          new Date(now.getTime() - 30 * 86400000)
+      );
     }).length;
 
+    const hired = count("Hired");
+
     return {
-      label: start.toLocaleDateString("en-US", {
-        month: "short",
-      }),
-      count,
+      monthly,
+      distribution,
+      last30,
+      hired,
+
+      activeJobs: jobs.filter(
+        (j) => j.status !== "Closed"
+      ).length,
+
+      unassigned: candidates.filter(
+        (c) => !c.job_id
+      ).length,
+
+      hiredShare: candidates.length
+        ? Math.round(
+            (hired / candidates.length) * 100
+          )
+        : 0,
     };
-  });
+  }, [candidates, jobs]);
 
-  const maxMonthly = Math.max(
-    1,
-    ...monthlyActivity.map((item) => item.count)
-  );
+  async function logOut() {
+    const { error: logoutError } =
+      await supabase.auth.signOut();
 
-  const pipelineData = stages.map((stage) => ({
-    stage,
-    count: countStage(stage),
-  }));
+    if (!logoutError) {
+      window.location.href = "/app/login";
+    }
+  }
 
-  const maxStage = Math.max(
-    1,
-    ...pipelineData.map((item) => item.count)
-  );
+  const sidebar = (
+    <div className="im-side-inner">
+      <div className="im-brand">
+        <div className="im-logo">I</div>
 
-  const newLast30Days = candidates.filter((candidate) => {
-    if (!candidate.created_at) return false;
-    const date = new Date(candidate.created_at);
-    return !Number.isNaN(date.getTime()) &&
-      date >= new Date(now.getTime() - 30 * 86400000) &&
-      date <= now;
-  }).length;
-
-  const unassigned = candidates.filter(
-    (candidate) => !candidate.job_id
-  ).length;
-
-  const hiredCount = countStage("Hired");
-
-  const hiringShare = totalCandidates
-    ? Math.round((hiredCount / totalCandidates) * 100)
-    : 0;
-
-  const card = {
-    background: "#ffffff",
-    border: "1px solid #e5ebe6",
-    borderRadius: 22,
-    padding: 26,
-    boxShadow: "0 6px 24px rgba(25,55,43,0.045)",
-  };
-
-  return (
-    <section style={{ marginBottom: 30 }}>
-      <div style={{ marginBottom: 20 }}>
-        <div style={{
-          fontSize: 11,
-          color: "#43866a",
-          fontWeight: 800,
-          letterSpacing: 2,
-          marginBottom: 8,
-        }}>
-          TALENT INTELLIGENCE
+        <div>
+          <strong>Inspire Match</strong>
+          <small>TALENT INTELLIGENCE</small>
         </div>
-
-        <h2 style={{
-          margin: 0,
-          color: "#173b30",
-          fontFamily: "Georgia, serif",
-          fontSize: 28,
-        }}>
-          Recruitment Intelligence
-        </h2>
-
-        <p style={{
-          color: "#7b8981",
-          fontSize: 13,
-          marginTop: 8,
-        }}>
-          Live recruitment analytics and hiring signals
-        </p>
       </div>
 
-      <div style={{
-        display: "grid",
-        gridTemplateColumns:
-          "repeat(auto-fit, minmax(min(100%, 340px), 1fr))",
-        gap: 18,
-      }}>
-        {/* MONTHLY CHART */}
-        <div style={card}>
-          <h3 style={{
-            margin: 0,
-            fontSize: 17,
-            color: "#173b30",
-          }}>
-            Candidate Growth
-          </h3>
+      <div className="im-side-label">
+        WORKSPACE
+      </div>
 
-          <p style={{
-            fontSize: 12,
-            color: "#89958d",
-            marginTop: 8,
-          }}>
-            New candidate records · Last 6 months
-          </p>
+      <nav
+        aria-label="Main navigation"
+        className="im-links"
+      >
+        {navigation.map(([label, href, icon]) => (
+          <Link
+            key={href}
+            href={href}
+            onClick={() => setMobileNav(false)}
+            className={
+              href === "/app/dashboard"
+                ? "im-nav-link active"
+                : "im-nav-link"
+            }
+          >
+            <span>{icon}</span>
+            {label}
+          </Link>
+        ))}
+      </nav>
 
-          <div style={{
-            display: "flex",
-            alignItems: "end",
-            justifyContent: "space-around",
-            gap: 12,
-            height: 190,
-            paddingTop: 25,
-            borderBottom: "1px solid #e5ebe6",
-          }}>
-            {monthlyActivity.map((item, index) => (
-              <div
-                key={index}
-                style={{
-                  flex: 1,
-                  minWidth: 0,
-                  height: "100%",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "end",
-                  flexDirection: "column",
-                  gap: 8,
-                }}
-              >
-                <span style={{
-                  color: "#173b30",
-                  fontSize: 12,
-                  fontWeight: 700,
-                }}>
-                  {item.count}
-                </span>
+      <div className="im-side-bottom">
+        <Link href="/">
+          ↗ ATS Home
+        </Link>
 
-                <div
-                  title={`${item.label}: ${item.count} candidates`}
-                  style={{
-                    width: "70%",
-                    maxWidth: 48,
-                    minHeight: 4,
-                    height: `${
-                      (item.count / maxMonthly) * 125
-                    }px`,
-                    background: index === 5
-                      ? "linear-gradient(180deg,#3d9b72,#173b30)"
-                      : "#d6e9db",
-                    borderRadius: "9px 9px 2px 2px",
-                  }}
-                />
+        <button onClick={logOut}>
+          ↪ Log out
+        </button>
 
-                <span style={{
-                  color: "#849288",
-                  fontSize: 11,
-                }}>
-                  {item.label}
-                </span>
-              </div>
-            ))}
-          </div>
-        </div>
+        <small>© Inspire Match ATS</small>
+      </div>
+    </div>
+  );
 
-        {/* PIPELINE DISTRIBUTION */}
-        <div style={card}>
-          <div style={{
-            display: "flex",
-            justifyContent: "space-between",
-            gap: 12,
-            alignItems: "center",
-          }}>
-            <h3 style={{
-              margin: 0,
-              fontSize: 17,
-              color: "#173b30",
-            }}>
-              Pipeline Distribution
-            </h3>
+  return (
+    <main className="im-dashboard">
+      <style>{`
+        .im-dashboard {
+          width: 100%;
+          max-width: none;
+          margin: 0;
+          padding: 0;
+          background: #f6f8fb;
+          min-height: 100vh;
+          color: #1e293b;
+          font-family: Arial, sans-serif;
+          font-size: 14px;
+          line-height: 1.5;
+        }
 
-            <Link
-              href="/app/pipeline"
+        .im-dashboard * {
+          box-sizing: border-box;
+        }
+
+        .im-dashboard h1,
+        .im-dashboard h2,
+        .im-dashboard h3 {
+          font-family: Arial, sans-serif;
+          color: #1e293b;
+        }
+
+        .im-shell {
+          display: grid;
+          grid-template-columns: 254px minmax(0, 1fr);
+          min-height: 100vh;
+        }
+
+        .im-sidebar {
+          background: #fff;
+          border-right: 1px solid #e6eaf0;
+          padding: 24px 15px;
+          position: sticky;
+          top: 0;
+          height: 100vh;
+          overflow-y: auto;
+        }
+
+        .im-side-inner {
+          height: 100%;
+          display: flex;
+          flex-direction: column;
+          min-height: 600px;
+        }
+
+        .im-brand {
+          display: flex;
+          align-items: center;
+          gap: 11px;
+          padding: 7px 12px 26px;
+          border-bottom: 1px solid #edf0f2;
+          margin-bottom: 25px;
+        }
+
+        .im-logo {
+          width: 42px;
+          height: 42px;
+          border-radius: 12px;
+          background: #284e42;
+          color: white;
+          display: grid;
+          place-items: center;
+          font-size: 23px;
+          font-weight: 800;
+        }
+
+        .im-brand strong {
+          display: block;
+          font-size: 17px;
+          color: #1e293b;
+          letter-spacing: -.5px;
+        }
+
+        .im-brand small {
+          display: block;
+          font-size: 9px;
+          color: #8795a4;
+          font-weight: 800;
+          letter-spacing: 1.4px;
+          margin-top: 4px;
+        }
+
+        .im-side-label {
+          padding: 0 14px;
+          color: #9ba6b2;
+          font-size: 10px;
+          letter-spacing: 1.5px;
+          font-weight: 800;
+          margin-bottom: 10px;
+        }
+
+        .im-links {
+          display: grid;
+          gap: 4px;
+        }
+
+        .im-nav-link {
+          display: flex;
+          align-items: center;
+          gap: 12px;
+          padding: 13px 15px;
+          border-radius: 10px;
+          text-decoration: none;
+          color: #657285;
+          font-size: 13px;
+          font-weight: 600;
+          border-left: 3px solid transparent;
+          white-space: nowrap;
+        }
+
+        .im-nav-link span {
+          width: 23px;
+          text-align: center;
+          font-size: 19px;
+        }
+
+        .im-nav-link.active {
+          color: #245340;
+          background: #eaf3ee;
+          border-left-color: #315f50;
+          font-weight: 800;
+        }
+
+        .im-nav-link:hover {
+          background: #f4f7f6;
+        }
+
+        .im-side-bottom {
+          margin-top: auto;
+          display: grid;
+          gap: 9px;
+          padding-top: 30px;
+        }
+
+        .im-side-bottom a {
+          text-decoration: none;
+          color: #657285;
+          padding: 12px 15px;
+          font-size: 13px;
+        }
+
+        .im-side-bottom button {
+          border: 1px solid #e6eaf0;
+          background: #f7f8fa;
+          color: #526073;
+          text-align: left;
+          border-radius: 10px;
+          padding: 12px 15px;
+          cursor: pointer;
+          font-weight: 700;
+        }
+
+        .im-side-bottom small {
+          color: #a1acb8;
+          font-size: 10px;
+          margin-top: 7px;
+        }
+
+        .im-content {
+          min-width: 0;
+          padding: 29px clamp(17px, 3vw, 46px) 60px;
+        }
+
+        .im-top {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          gap: 20px;
+          flex-wrap: wrap;
+          margin-bottom: 29px;
+        }
+
+        .im-kpis {
+          display: grid;
+          grid-template-columns:
+            repeat(3, minmax(0, 1fr));
+          gap: 16px;
+        }
+
+        .im-charts {
+          display: grid;
+          grid-template-columns: 1.1fr 1fr;
+          gap: 18px;
+        }
+
+        .im-signals {
+          display: grid;
+          grid-template-columns:
+            repeat(3, minmax(0, 1fr));
+          gap: 14px;
+        }
+
+        .im-mobile-top {
+          display: none;
+        }
+
+        .im-bars {
+          display: flex;
+          align-items: flex-end;
+          justify-content: space-around;
+          gap: 12px;
+          height: 215px;
+          border-bottom: 1px solid #e6eaf0;
+          padding-top: 22px;
+        }
+
+        @media (max-width: 1150px) {
+          .im-kpis {
+            grid-template-columns:
+              repeat(2, minmax(0, 1fr));
+          }
+
+          .im-charts {
+            grid-template-columns: 1fr;
+          }
+        }
+
+        @media (max-width: 800px) {
+          .im-shell {
+            grid-template-columns: 1fr;
+          }
+
+          .im-sidebar {
+            display: none;
+          }
+
+          .im-mobile-top {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: #fff;
+            border-bottom: 1px solid #e6eaf0;
+            padding: 14px 18px;
+          }
+
+          .im-mobile-menu {
+            background: #fff;
+            padding: 14px 18px;
+            border-bottom: 1px solid #e6eaf0;
+          }
+
+          .im-mobile-menu .im-side-inner {
+            min-height: auto;
+          }
+
+          .im-content {
+            padding: 24px 16px;
+          }
+
+          .im-signals {
+            grid-template-columns: 1fr;
+          }
+        }
+
+        @media (max-width: 540px) {
+          .im-kpis {
+            gap: 10px;
+          }
+
+          .im-kpis > section {
+            padding: 15px !important;
+            min-height: 138px !important;
+          }
+
+          .im-kpis > section > div:last-child
+          > div:first-child {
+            font-size: 27px !important;
+          }
+
+          .im-content h1 {
+            font-size: 28px !important;
+          }
+        }
+      `}</style>
+
+      <div className="im-shell">
+        <aside className="im-sidebar">
+          {sidebar}
+        </aside>
+
+        <div style={{ minWidth: 0 }}>
+          <div className="im-mobile-top">
+            <strong
+              style={{ color: "#284e42" }}
+            >
+              ◈ Inspire Match
+            </strong>
+
+            <button
+              onClick={() =>
+                setMobileNav((v) => !v)
+              }
               style={{
-                color: "#43866a",
-                fontSize: 12,
+                border: 0,
+                borderRadius: 9,
+                padding: "10px 13px",
+                background: "#eaf3ee",
+                color: "#284e42",
                 fontWeight: 700,
-                textDecoration: "none",
+                cursor: "pointer",
               }}
             >
-              View →
-            </Link>
+              {mobileNav
+                ? "Close ✕"
+                : "☰ Menu"}
+            </button>
           </div>
 
-          <p style={{
-            fontSize: 12,
-            color: "#89958d",
-            marginTop: 8,
-            marginBottom: 22,
-          }}>
-            Candidates by recruitment stage
-          </p>
+          {mobileNav && (
+            <div className="im-mobile-menu">
+              {sidebar}
+            </div>
+          )}
 
-          <div style={{
-            display: "grid",
-            gap: 13,
-          }}>
-            {pipelineData.map((item) => (
-              <div key={item.stage}>
-                <div style={{
-                  display: "flex",
-                  justifyContent: "space-between",
-                  fontSize: 12,
-                  marginBottom: 6,
-                }}>
-                  <span style={{ color: "#53665b" }}>
-                    {item.stage}
+          <div className="im-content">
+            <header className="im-top">
+              <div>
+                <div
+                  style={{
+                    color: "#8390a0",
+                    fontSize: 12,
+                    marginBottom: 9,
+                  }}
+                >
+                  Workspace
+                  <span
+                    style={{
+                      margin: "0 8px",
+                    }}
+                  >
+                    /
                   </span>
-
-                  <strong style={{ color: "#173b30" }}>
-                    {item.count}
+                  <strong
+                    style={{
+                      color: "#315f50",
+                    }}
+                  >
+                    Overview
                   </strong>
                 </div>
 
-                <div style={{
-                  background: "#eef3ef",
-                  height: 8,
-                  borderRadius: 20,
-                  overflow: "hidden",
-                }}>
-                  <div style={{
-                    background: item.stage === "Hired"
-                      ? "#43866a"
-                      : item.stage === "Rejected"
-                      ? "#c4a4a4"
-                      : "#245c4a",
-                    height: "100%",
-                    width: `${
-                      (item.count / maxStage) * 100
-                    }%`,
-                    borderRadius: 20,
-                  }} />
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
+                <h1
+                  style={{
+                    fontSize:
+                      "clamp(29px, 3vw, 38px)",
+                    letterSpacing: -1.1,
+                    fontWeight: 800,
+                    margin: 0,
+                  }}
+                >
+                  Recruitment Overview
+                </h1>
 
-      {/* RECRUITMENT SIGNALS */}
-      <div style={{
-        display: "grid",
-        gridTemplateColumns:
-          "repeat(auto-fit, minmax(190px, 1fr))",
-        gap: 14,
-        marginTop: 18,
-      }}>
-        {[
-          {
-            icon: "↗",
-            title: "Recent Intake",
-            value: newLast30Days,
-            detail: "Added in the last 30 days",
-          },
-          {
-            icon: "◎",
-            title: "Unassigned Talent",
-            value: unassigned,
-            detail: "Candidates without a job",
-          },
-          {
-            icon: "✦",
-            title: "Hired Share",
-            value: `${hiringShare}%`,
-            detail: "Of all candidate records",
-          },
-        ].map((item) => (
-          <div key={item.title} style={{
-            ...card,
-            padding: 20,
-            display: "flex",
-            alignItems: "center",
-            gap: 15,
-          }}>
-            <div style={{
-              width: 42,
-              height: 42,
-              borderRadius: 13,
-              background: "#edf4ef",
-              color: "#245c4a",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              fontSize: 22,
-              flexShrink: 0,
-            }}>
-              {item.icon}
-            </div>
-
-            <div>
-              <div style={{
-                fontSize: 24,
-                fontWeight: 800,
-                color: "#173b30",
-              }}>
-                {item.value}
+                <p
+                  style={{
+                    color: "#8390a0",
+                    fontSize: 13,
+                    margin: "10px 0 0",
+                  }}
+                >
+                  A clearer view of your hiring
+                  performance and talent pipeline.
+                </p>
               </div>
 
-              <div style={{
-                fontSize: 12,
-                fontWeight: 700,
-                color: "#44574c",
-                marginTop: 3,
-              }}>
-                {item.title}
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 13,
+                }}
+              >
+                <NotificationBell />
+
+                <Link
+                  href="/app/jobs"
+                  style={{
+                    background: "#284e42",
+                    color: "white",
+                    textDecoration: "none",
+                    borderRadius: 10,
+                    padding: "13px 17px",
+                    fontSize: 13,
+                    fontWeight: 800,
+                  }}
+                >
+                  ＋ Manage Jobs
+                </Link>
               </div>
+            </header>
 
-              <div style={{
-                fontSize: 11,
-                color: "#89958d",
-                marginTop: 3,
-              }}>
-                {item.detail}
-              </div>
-            </div>
-          </div>
-        ))}
-      </div>
-    </section>
-  );
-})()}
+            <div
+              id="notifications-panel"
+              style={{
+                display: "flex",
+                justifyContent: "flex-end",
+                marginBottom: 10,
+              }}
+            />
 
+            {error && (
+              <Panel
+                style={{
+                  borderColor: "#e6cba9",
+                  padding: 18,
+                  color: "#946326",
+                  marginBottom: 18,
+                }}
+              >
+                {error}
 
-        {/* RECENT CANDIDATES */}
+                <button
+                  onClick={loadDashboard}
+                  style={{
+                    marginLeft: 12,
+                    cursor: "pointer",
+                  }}
+                >
+                  Retry
+                </button>
+              </Panel>
+            )}
 
-        <section
-          style={{
-            background: "#fff",
-            border: "1px solid #eee",
-            borderRadius: 16,
-            padding: 25,
-          }}
-        >
-          <div
-            style={{
-              display: "flex",
-              justifyContent: "space-between",
-              alignItems: "center",
-              marginBottom: 20,
-            }}
-          >
-            <div>
-              
-              
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+                gap: 12,
+                alignItems: "center",
+                margin: "20px 0 17px",
+              }}
+            >
               <h2
                 style={{
-                  fontFamily: "Georgia, serif",
+                  fontSize: 16,
+                  fontWeight: 800,
                   margin: 0,
                 }}
               >
-                Recent Candidates
+                Performance at a glance
+              </h2>
+
+              <span
+                style={{
+                  color: "#8a96a3",
+                  fontSize: 12,
+                }}
+              >
+                Recruitment data
+              </span>
+            </div>
+
+            {/* KPI CARDS */}
+
+            <div className="im-kpis">
+              <Metric
+                label="Total Candidates"
+                value={
+                  loading
+                    ? "—"
+                    : candidates.length
+                }
+                icon="♙"
+                note="Profiles in your database"
+              />
+
+              <Metric
+                label="Active Jobs"
+                value={
+                  loading
+                    ? "—"
+                    : analytics.activeJobs
+                }
+                icon="▣"
+                note="Open recruitment opportunities"
+              />
+
+              <Metric
+                label="In Screening"
+                value={
+                  loading
+                    ? "—"
+                    : analytics.distribution[1].count
+                }
+                icon="◉"
+                note="Candidates under review"
+              />
+
+              <Metric
+                label="Interviews"
+                value={
+                  loading
+                    ? "—"
+                    : analytics.distribution[2].count
+                }
+                icon="▤"
+                note="In interview stage"
+              />
+
+              <Metric
+                label="Shortlisted"
+                value={
+                  loading
+                    ? "—"
+                    : analytics.distribution[3].count
+                }
+                icon="☆"
+                note="Potential hires"
+              />
+
+              <Metric
+                label="Hired"
+                value={
+                  loading
+                    ? "—"
+                    : analytics.hired
+                }
+                icon="✓"
+                note="Successfully hired"
+              />
+            </div>
+
+            {/* RECRUITMENT INTELLIGENCE */}
+
+            <div
+              style={{
+                margin: "34px 0 19px",
+              }}
+            >
+              <h2
+                style={{
+                  fontSize: 20,
+                  fontWeight: 800,
+                  margin: 0,
+                }}
+              >
+                Recruitment Intelligence
               </h2>
 
               <p
                 style={{
-                  color: "#777",
-                  margin: "6px 0 0",
+                  color: "#8a96a3",
+                  fontSize: 12,
+                  margin: "8px 0 0",
                 }}
               >
-                Latest candidates added to your database
+                Hiring trends and pipeline visibility
               </p>
-
-
             </div>
 
-            <Link
-              href="/app/candidates"
-              style={{
-                color: "#222",
-                fontWeight: 600,
-                textDecoration: "none",
-              }}
-            >
-              View Database →
-            </Link>
-          </div>
+            <div className="im-charts">
+              {/* CANDIDATE GROWTH */}
 
-          {candidates.length === 0 ? (
-            <p style={{ color: "#777" }}>
-              No candidates yet.
-            </p>
-          ) : (
-            <div
-              style={{
-                display: "grid",
-                gap: 12,
-              }}
-            >
-              {candidates.slice(0, 5).map((candidate) => (
-                <Link
-                  key={candidate.id}
-                  href={`/app/candidates/${candidate.id}`}
-                  style={{
-                    textDecoration: "none",
-                    color: "#222",
-                  }}
-                >
-                  <div
-                    style={{
-                      display: "flex",
-                      justifyContent: "space-between",
-                      alignItems: "center",
-                      padding: 16,
-                      border: "1px solid #eee",
-                      borderRadius: 12,
-                      gap: 15,
-                    }}
-                  >
-                    <div>
-                      <strong>
-                        {candidate.full_name ||
-                          "Unnamed Candidate"}
-                      </strong>
+              <Panel style={{ padding: 26 }}>
+                <PanelHeading
+                  title="Candidate Growth"
+                  subtitle="New profiles added over the last six months"
+                />
 
+                <div className="im-bars">
+                  {analytics.monthly.map(
+                    (item, i) => (
                       <div
+                        key={i}
                         style={{
-                          fontSize: 13,
-                          color: "#666",
-                          marginTop: 5,
+                          display: "flex",
+                          flex: 1,
+                          flexDirection: "column",
+                          alignItems: "center",
+                          justifyContent:
+                            "flex-end",
+                          gap: 9,
+                          height: "100%",
+                          minWidth: 0,
                         }}
                       >
-                        {candidate.current_title || "—"}
-                      </div>
-                    </div>
+                        <span
+                          style={{
+                            fontSize: 12,
+                            color: "#59697a",
+                            fontWeight: 700,
+                          }}
+                        >
+                          {loading
+                            ? "—"
+                            : item.count}
+                        </span>
 
-                    <span
+                        <div
+                          title={`${item.label}: ${item.count} candidates`}
+                          style={{
+                            width: "65%",
+                            maxWidth: 48,
+
+                            height: Math.max(
+                              4,
+                              (item.count /
+                                Math.max(
+                                  1,
+                                  ...analytics.monthly.map(
+                                    (m) => m.count
+                                  )
+                                )) *
+                                142
+                            ),
+
+                            background:
+                              i === 5
+                                ? "#315f50"
+                                : "#c8ddd2",
+
+                            borderRadius:
+                              "7px 7px 0 0",
+                          }}
+                        />
+
+                        <span
+                          style={{
+                            fontSize: 12,
+                            color: "#8a96a3",
+                          }}
+                        >
+                          {item.label}
+                        </span>
+                      </div>
+                    )
+                  )}
+                </div>
+              </Panel>
+
+              {/* PIPELINE DISTRIBUTION */}
+
+              <Panel style={{ padding: 26 }}>
+                <PanelHeading
+                  title="Pipeline Distribution"
+                  subtitle="Candidates across hiring stages"
+                  action={
+                    <Link
+                      href="/app/pipeline"
                       style={{
-                        padding: "6px 10px",
-                        borderRadius: 20,
-                        background: "#f1f1ee",
+                        color: "#315f50",
                         fontSize: 12,
+                        fontWeight: 800,
+                        textDecoration: "none",
                       }}
                     >
-                      {candidate.status || "Screening"}
-                    </span>
-                  </div>
-                </Link>
-              ))}
+                      View Pipeline →
+                    </Link>
+                  }
+                />
+
+                <div
+                  style={{
+                    display: "grid",
+                    gap: 18,
+                  }}
+                >
+                  {analytics.distribution.map(
+                    (item, i) => (
+                      <div key={item.stage}>
+                        <div
+                          style={{
+                            display: "flex",
+                            justifyContent:
+                              "space-between",
+                            fontSize: 12,
+                            marginBottom: 8,
+                          }}
+                        >
+                          <span
+                            style={{
+                              color: "#647182",
+                            }}
+                          >
+                            {item.stage}
+                          </span>
+
+                          <strong>
+                            {loading
+                              ? "—"
+                              : item.count}
+                          </strong>
+                        </div>
+
+                        <div
+                          style={{
+                            height: 8,
+                            background: "#eff2f5",
+                            borderRadius: 20,
+                            overflow: "hidden",
+                          }}
+                        >
+                          <div
+                            style={{
+                              width: `${
+                                (item.count /
+                                  Math.max(
+                                    1,
+                                    ...analytics.distribution.map(
+                                      (s) => s.count
+                                    )
+                                  )) *
+                                100
+                              }%`,
+
+                              height: "100%",
+                              background: palette[i],
+                              borderRadius: 20,
+                            }}
+                          />
+                        </div>
+                      </div>
+                    )
+                  )}
+                </div>
+              </Panel>
             </div>
-          )}
-        </section>
+
+            {/* RECRUITMENT SIGNALS */}
+
+            <div
+              className="im-signals"
+              style={{ marginTop: 18 }}
+            >
+              <Metric
+                label="Recent Intake"
+                value={
+                  loading
+                    ? "—"
+                    : analytics.last30
+                }
+                icon="↗"
+                note="Added in the last 30 days"
+              />
+
+              <Metric
+                label="Unassigned Talent"
+                value={
+                  loading
+                    ? "—"
+                    : analytics.unassigned
+                }
+                icon="◎"
+                note="Candidates without a linked job"
+              />
+
+              <Metric
+                label="Hired Share"
+                value={
+                  loading
+                    ? "—"
+                    : `${analytics.hiredShare}%`
+                }
+                icon="◈"
+                note="Of all candidate records"
+              />
+            </div>
+
+            {/* RECENT CANDIDATES */}
+
+            <Panel
+              style={{
+                padding: 26,
+                marginTop: 26,
+              }}
+            >
+              <PanelHeading
+                title="Recent Candidates"
+                subtitle="Latest talent profiles in your database"
+                action={
+                  <Link
+                    href="/app/candidates"
+                    style={{
+                      color: "#315f50",
+                      fontSize: 12,
+                      fontWeight: 800,
+                      textDecoration: "none",
+                    }}
+                  >
+                    View Database →
+                  </Link>
+                }
+              />
+
+              {loading ? (
+                <p
+                  style={{
+                    color: "#8a96a3",
+                  }}
+                >
+                  Loading candidates...
+                </p>
+              ) : candidates.length === 0 ? (
+                <p
+                  style={{
+                    color: "#8a96a3",
+                  }}
+                >
+                  No candidates yet.
+                </p>
+              ) : (
+                <div>
+                  {candidates
+                    .slice(0, 5)
+                    .map((candidate, i) => (
+                      <Link
+                        key={candidate.id}
+                        href={`/app/candidates/${candidate.id}`}
+                        style={{
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent:
+                            "space-between",
+                          gap: 14,
+                          flexWrap: "wrap",
+                          textDecoration: "none",
+                          padding: "15px 3px",
+                          borderTop:
+                            "1px solid #eef0f3",
+                        }}
+                      >
+                        <div
+                          style={{
+                            display: "flex",
+                            alignItems: "center",
+                            gap: 12,
+                          }}
+                        >
+                          <div
+                            style={{
+                              width: 39,
+                              height: 39,
+                              background:
+                                i % 2
+                                  ? "#eaf1f8"
+                                  : "#eaf3ee",
+                              color: "#315f50",
+                              borderRadius: 11,
+                              display: "grid",
+                              placeItems: "center",
+                              fontWeight: 800,
+                            }}
+                          >
+                            {String(
+                              candidate.full_name ||
+                                "?"
+                            )
+                              .charAt(0)
+                              .toUpperCase()}
+                          </div>
+
+                          <div>
+                            <strong
+                              style={{
+                                color: "#1e293b",
+                                fontSize: 13,
+                              }}
+                            >
+                              {candidate.full_name ||
+                                "Unnamed Candidate"}
+                            </strong>
+
+                            <div
+                              style={{
+                                color: "#8a96a3",
+                                fontSize: 12,
+                                marginTop: 4,
+                              }}
+                            >
+                              {candidate.current_title ||
+                                "No title specified"}
+                            </div>
+                          </div>
+                        </div>
+
+                        <span
+                          style={{
+                            background: "#f1f5f3",
+                            color: "#456457",
+                            padding: "7px 12px",
+                            borderRadius: 20,
+                            fontSize: 11,
+                            fontWeight: 700,
+                          }}
+                        >
+                          {candidate.status ||
+                            "Not classified"}
+                        </span>
+                      </Link>
+                    ))}
+                </div>
+              )}
+            </Panel>
+          </div>
+        </div>
       </div>
     </main>
-  );
-}
-
-
-function StatCard({ icon, number, label }) {
-  return (
-    <div
-      style={{
-        position: "relative",
-        overflow: "hidden",
-        background: "#ffffff",
-        border: "1px solid #e5ebe6",
-        borderRadius: 22,
-        padding: "26px",
-        minHeight: 160,
-        boxShadow: "0 6px 24px rgba(25, 55, 43, 0.045)",
-        display: "flex",
-        flexDirection: "column",
-        justifyContent: "space-between",
-        gap: 20,
-      }}
-    >
-      <div
-        style={{
-          position: "absolute",
-          width: 125,
-          height: 125,
-          borderRadius: "50%",
-          background: "#f1f7f2",
-          top: -65,
-          right: -45,
-          pointerEvents: "none",
-        }}
-      />
-
-      <div
-        style={{
-          width: 48,
-          height: 48,
-          borderRadius: 14,
-          background: "#edf4ef",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          fontSize: 23,
-          position: "relative",
-        }}
-      >
-        {icon}
-      </div>
-
-      <div style={{ position: "relative" }}>
-        <div
-          style={{
-            fontSize: 38,
-            fontWeight: 750,
-            letterSpacing: "-1.5px",
-            color: "#173b30",
-            lineHeight: 1.1,
-            marginBottom: 10,
-          }}
-        >
-          {number}
-        </div>
-
-        <div
-          style={{
-            fontSize: 13,
-            fontWeight: 600,
-            color: "#718078",
-            letterSpacing: "0.1px",
-          }}
-        >
-          {label}
-        </div>
-      </div>
-
-      <div
-        style={{
-          position: "absolute",
-          bottom: 0,
-          left: 26,
-          right: 26,
-          height: 3,
-          borderRadius: "3px 3px 0 0",
-          background:
-            "linear-gradient(90deg, #1e5945, #a9c9ad)",
-        }}
-      />
-    </div>
   );
 }
