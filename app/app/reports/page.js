@@ -777,7 +777,7 @@ table th {
             padding: 18px;
           }
         }
-</CodeBlock>`}</style>
+`}</style>
       `}</style>
       <aside className="ir-sidebar no-print">
         <div className="ir-brand">
