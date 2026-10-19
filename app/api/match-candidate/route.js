@@ -1,6 +1,7 @@
 
 import { createClient } from "@supabase/supabase-js";
 import { askClaude } from "@/lib/claude";
+import { fileToBlocks } from "@/lib/files";
 
 export const runtime = "nodejs";
 export const maxDuration = 60;
@@ -193,17 +194,45 @@ If evidence is insufficient, set score to null,
 confidence to "low", and explain why.
 `;
 
+    const analysisContent = [
+      {
+        type: "text",
+        text: JSON.stringify({
+          job: jobDetails,
+          candidate: candidateEvidence,
+        }),
+      },
+    ];
+
+    if (candidate.cv_file_url) {
+      const { data: cvFile, error: cvError } =
+        await db.storage
+          .from("candidate-cvs")
+          .download(candidate.cv_file_url);
+
+      if (cvError) {
+        console.warn("CV unavailable for matching:", cvError.message);
+      } else if (cvFile) {
+        try {
+          const fileName =
+            candidate.cv_file_name ||
+            candidate.cv_file_url.split("/").pop();
+
+          const file = new File([cvFile], fileName, {
+            type: cvFile.type || "application/octet-stream",
+          });
+
+          const cvBlocks = await fileToBlocks(file);
+          analysisContent.push(...cvBlocks);
+        } catch (error) {
+          console.warn("CV could not be analyzed:", error.message);
+        }
+      }
+    }
+
     const result = await askClaude({
       system,
-      content: [
-        {
-          type: "text",
-          text: JSON.stringify({
-            job: jobDetails,
-            candidate: candidateEvidence,
-          }),
-        },
-      ],
+      content: analysisContent,
       maxTokens: 1500,
     });
 
