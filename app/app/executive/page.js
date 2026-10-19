@@ -873,20 +873,22 @@ export default function ExecutivePage() {
           border-radius: 10px;
         }
 
+       <CodeBlock language="css" editable>
         .ex-nav a.active {
-         
-        .ex-workspace {
-          max-width: none;
-          min-width: 0;
-          margin-left: 254px;
-          padding: 32px clamp(20px, 3vw, 48px) 50px;
+          background: #eaf3ee;
+          color: #245340;
+          font-weight: 800;
         }
 
-        .ex-workspace {
-          max-width: 1550px;
-          margin-left: 254px;
-          padding: 0 10px 40px;
+.ex-workspace {
+          margin-left: 220px;
+          width: calc(100% - 220px);
+          max-width: none;
+          min-width: 0;
+          box-sizing: border-box;
+          padding: 32px clamp(20px, 3vw, 48px) 50px;
         }
+</CodeBlock>
 
         @media screen and (max-width: 850px) {
           .ex-sidebar {
