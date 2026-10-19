@@ -4,6 +4,7 @@
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { supabase } from "@/lib/supabase";
+import ATSNavigation from "@/components/ATSNavigation";
 
 const stages = [
   "Applied",
@@ -14,15 +15,6 @@ const stages = [
   "Rejected",
 ];
 
-const navigation = [
-  ["Overview", "/app/dashboard", "◫"],
-  ["Jobs", "/app/jobs", "▣"],
-  ["Candidates", "/app/candidates", "♙"],
-  ["Pipeline", "/app/pipeline", "⇄"],
-  ["AI Matching", "/app/matching", "✧"],
-  ["Reports", "/app/reports", "▥"],
-  ["Executive", "/app/executive", "◈"],
-  ["Team", "/app/team", "♧"],
 ];
 
 const stageColors = {
@@ -365,23 +357,11 @@ export default function PipelinePage() {
         WORKSPACE
       </div>
 
-      <nav className="pl-navigation">
-        {navigation.map(([label, href, icon]) => (
-          <Link
-            key={href}
-            href={href}
-            onClick={() => setMobileNav(false)}
-            className={
-              href === "/app/pipeline"
-                ? "pl-nav-item active"
-                : "pl-nav-item"
-            }
-          >
-            <span>{icon}</span>
-            {label}
-          </Link>
-        ))}
-      </nav>
+     <ATSNavigation
+  className="pl-navigation"
+  linkClassName="pl-nav-item"
+  onNavigate={() => setMobileNav(false)}
+/>
 
       <div className="pl-sidebar-footer">
         <Link href="/">↗ ATS Home</Link>
