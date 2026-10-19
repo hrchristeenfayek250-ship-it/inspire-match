@@ -94,15 +94,14 @@ export async function POST(request) {
 
     if (candidateError) throw candidateError;
 
-    if (
-      !job ||
-      !candidate ||
-      String(candidate.job_id) !== String(job.id)
-    ) {
+   
+    if (!job || !candidate) {
       return Response.json(
-        { error: "Job or assigned candidate not available." },
+        { error: "Job or candidate not available to your company." },
         { status: 404 }
       );
+    }
+
     }
 
     const jobDetails = {
