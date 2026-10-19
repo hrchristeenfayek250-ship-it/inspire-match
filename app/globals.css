@@ -144,3 +144,93 @@ textarea { width: 100%; min-height: 180px; border: 1px solid var(--line); border
   .report ul { margin: 4px 0 0; padding-left: 16px; }
   .report-foot { margin-top: 24px; font-size: 10px; color: var(--muted); text-align: center; }
 }
+/* INSPIRE MATCH — BRANDED NAVIGATION */
+
+:root {
+  --nav-green: var(--green);
+  --nav-copper: var(--copper);
+  --nav-sage: var(--sage-tint);
+}
+
+:is(
+  .im-sidebar, .jm-sidebar, .imc-sidebar,
+  .pl-sidebar, .am-sidebar, .tm-sidebar,
+  .ir-sidebar, .ex-sidebar, .cp-sidebar
+) {
+  border-right-color: #e3e9e3 !important;
+}
+
+:is(
+  .im-brand, .jm-brand, .imc-brand,
+  .pl-brand, .am-brand, .tm-brand,
+  .ir-brand, .ex-brand, .cp-brand
+) strong {
+  color: var(--nav-green) !important;
+  font-family: var(--font-body), sans-serif !important;
+  font-weight: 800;
+}
+
+:is(
+  .im-logo, .jm-logo, .imc-logo,
+  .pl-logo, .am-logo, .tm-logo,
+  .ir-logo, .ex-logo, .cp-logo
+) {
+  background: var(--nav-green) !important;
+  box-shadow: 0 4px 12px rgba(30, 59, 50, .12);
+}
+
+:is(
+  .im-links, .jm-navigation, .imc-navigation,
+  .pl-navigation, .am-navigation, .tm-navigation,
+  .ir-nav, .ex-nav, .cp-nav
+) > a {
+  display: flex;
+  align-items: center;
+  min-height: 45px;
+  border-radius: 11px;
+  border-left: 3px solid transparent;
+  color: #536259;
+  font-family: var(--font-body), sans-serif;
+  font-size: 12px;
+  font-weight: 600;
+  transition: background-color .18s, color .18s;
+}
+
+:is(
+  .im-links, .jm-navigation, .imc-navigation,
+  .pl-navigation, .am-navigation, .tm-navigation,
+  .ir-nav, .ex-nav, .cp-nav
+) > a:hover {
+  background: #f2f6f1;
+  color: var(--nav-green);
+}
+
+:is(
+  .im-links, .jm-navigation, .imc-navigation,
+  .pl-navigation, .am-navigation, .tm-navigation,
+  .ir-nav, .ex-nav, .cp-nav
+) > a.active {
+  background: var(--nav-sage);
+  color: var(--nav-green);
+  border-left-color: var(--nav-copper);
+  font-weight: 800;
+}
+
+:is(
+  .im-links, .jm-navigation, .imc-navigation,
+  .pl-navigation, .am-navigation, .tm-navigation,
+  .ir-nav, .ex-nav, .cp-nav
+) > a:focus-visible {
+  outline: 2px solid var(--nav-copper);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :is(
+    .im-links, .jm-navigation, .imc-navigation,
+    .pl-navigation, .am-navigation, .tm-navigation,
+    .ir-nav, .ex-nav, .cp-nav
+  ) > a {
+    transition: none;
+  }
+}
