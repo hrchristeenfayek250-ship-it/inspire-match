@@ -134,15 +134,21 @@ export default function DashboardPage() {
   }
 
   return (
-    <main
-      style={{
-        minHeight: "100vh",
-        padding: "50px 24px",
-        background: "#faf9f6",
-        fontFamily: "Arial, sans-serif",
-        color: "#222",
-      }}
-    >
+  
+<main
+  style={{
+    width: "100%",
+    maxWidth: "none",
+    minHeight: "100vh",
+    margin: 0,
+    padding: "32px 24px 60px",
+    boxSizing: "border-box",
+    background: "#f8faf9",
+    fontFamily: "Arial, sans-serif",
+    color: "#182d25",
+  }}
+>
+
       <div
         style={{
           maxWidth: 1400,
