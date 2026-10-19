@@ -910,7 +910,27 @@ width: 220px;
           }
         }
       `}</style>
-
+<nav className="ex-mobile-navigation" aria-label="Mobile navigation">
+  {[
+    ["Overview", "/app/dashboard"],
+    ["Jobs", "/app/jobs"],
+    ["Candidates", "/app/candidates"],
+    ["Pipeline", "/app/pipeline"],
+    ["AI Matching", "/app/matching"],
+    ["Reports", "/app/reports"],
+    ["Executive", "/app/executive"],
+    ["Team", "/app/team"],
+  ].map(([label, href]) => (
+    <Link
+      key={href}
+      href={href}
+      className={href === "/app/executive" ? "active" : ""}
+      aria-current={href === "/app/executive" ? "page" : undefined}
+    >
+      {label}
+    </Link>
+  ))}
+</nav>
       <aside className="ex-sidebar">
         <div className="ex-brand">
           <div className="ex-logo">I</div>
