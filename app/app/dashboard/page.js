@@ -150,39 +150,61 @@ export default function DashboardPage() {
         }}
       >
       
-{/* PREMIUM HEADER */}
-<div
+
+{/* CLEAN PROFESSIONAL HEADER */}
+<header
   style={{
-    background: "linear-gradient(135deg, #173b30, #285b49)",
-    borderRadius: 24,
-    padding: "32px",
-    color: "#fff",
-    marginBottom: 22,
+    background: "#ffffff",
+    border: "1px solid #e3e9e5",
+    borderRadius: 18,
+    padding: "30px 32px",
+    marginBottom: 18,
     display: "flex",
-    justifyContent: "space-between",
     alignItems: "center",
+    justifyContent: "space-between",
     flexWrap: "wrap",
-    gap: 24,
+    gap: 20,
+    boxShadow: "0 3px 16px rgba(20,45,35,0.035)",
   }}
 >
   <div>
     <div
       style={{
-        fontSize: 11,
-        fontWeight: 700,
-        letterSpacing: 3,
-        color: "#b9d7c1",
+        display: "flex",
+        alignItems: "center",
+        gap: 9,
         marginBottom: 12,
       }}
     >
-      INSPIRE MATCH • TALENT INTELLIGENCE
+      <span
+        style={{
+          width: 9,
+          height: 9,
+          borderRadius: "50%",
+          background: "#328364",
+        }}
+      />
+
+      <span
+        style={{
+          color: "#476557",
+          fontSize: 11,
+          fontWeight: 800,
+          letterSpacing: 1.7,
+        }}
+      >
+        INSPIRE MATCH ATS
+      </span>
     </div>
 
     <h1
       style={{
-        fontFamily: "Georgia, serif",
-        fontSize: "clamp(28px, 4vw, 42px)",
-        fontWeight: 500,
+        color: "#182d25",
+        fontFamily: "Arial, sans-serif",
+        fontSize: "clamp(26px, 3vw, 36px)",
+        fontWeight: 800,
+        letterSpacing: "-0.8px",
+        lineHeight: 1.2,
         margin: 0,
       }}
     >
@@ -191,13 +213,14 @@ export default function DashboardPage() {
 
     <p
       style={{
-        color: "#d5e4d9",
-        marginTop: 12,
-        marginBottom: 0,
+        margin: "10px 0 0",
+        color: "#596c62",
         fontSize: 14,
+        lineHeight: 1.6,
       }}
     >
-      Your entire hiring operation. One intelligent workspace.
+      Manage your talent pipeline and hiring performance
+      in one workspace.
     </p>
   </div>
 
@@ -205,8 +228,8 @@ export default function DashboardPage() {
     style={{
       display: "flex",
       alignItems: "center",
-      gap: 10,
       flexWrap: "wrap",
+      gap: 10,
     }}
   >
     <NotificationBell />
@@ -214,14 +237,14 @@ export default function DashboardPage() {
     <Link
       href="/"
       style={{
+        background: "#f4f7f5",
+        color: "#253d31",
+        border: "1px solid #dfe8e2",
+        borderRadius: 10,
         padding: "11px 16px",
-        background: "rgba(255,255,255,0.12)",
-        border: "1px solid rgba(255,255,255,0.2)",
-        borderRadius: 12,
-        color: "#fff",
         textDecoration: "none",
         fontSize: 13,
-        fontWeight: 600,
+        fontWeight: 700,
       }}
     >
       ATS Home
@@ -233,19 +256,20 @@ export default function DashboardPage() {
         window.location.href = "/app/login";
       }}
       style={{
+        background: "#253d31",
+        color: "#ffffff",
+        border: "1px solid #253d31",
+        borderRadius: 10,
         padding: "11px 16px",
-        background: "#fff",
-        border: "none",
-        borderRadius: 12,
-        color: "#173b30",
-        cursor: "pointer",
+        fontSize: 13,
         fontWeight: 700,
+        cursor: "pointer",
       }}
     >
       Log Out
     </button>
   </div>
-</div>
+</header>
 
 <div
   id="notifications-panel"
@@ -257,60 +281,61 @@ export default function DashboardPage() {
   }}
 />
 
-{/* WORKSPACE NAVIGATION */}
+{/* CLEAN NAVIGATION */}
 <nav
   aria-label="Recruitment navigation"
   style={{
-    background: "#fff",
-    border: "1px solid #e5ebe6",
-    borderRadius: 20,
-    padding: 14,
     display: "flex",
-    gap: 8,
-    flexWrap: "wrap",
-    marginBottom: 30,
-    boxShadow: "0 6px 24px rgba(25,55,43,0.04)",
+    flexWrap: "nowrap",
+    alignItems: "center",
+    gap: 5,
+    overflowX: "auto",
+    background: "#ffffff",
+    border: "1px solid #e3e9e5",
+    borderRadius: 14,
+    padding: 9,
+    marginBottom: 28,
   }}
 >
   {[
-    { label: "Overview", href: "/app/dashboard", icon: "◫" },
-    { label: "Jobs", href: "/app/jobs", icon: "▣" },
-    { label: "Candidates", href: "/app/candidates", icon: "♙" },
-    { label: "Pipeline", href: "/app/pipeline", icon: "↗" },
-    { label: "AI Matching", href: "/app/matching", icon: "✦" },
-    { label: "Reports", href: "/app/reports", icon: "▥" },
-    { label: "Executive", href: "/app/executive", icon: "◈" },
-    { label: "Team", href: "/app/team", icon: "♧" },
-  ].map((item) => {
-    const isActive = item.href === "/app/dashboard";
+    ["Overview", "/app/dashboard"],
+    ["Jobs", "/app/jobs"],
+    ["Candidates", "/app/candidates"],
+    ["Pipeline", "/app/pipeline"],
+    ["AI Matching", "/app/matching"],
+    ["Reports", "/app/reports"],
+    ["Executive", "/app/executive"],
+    ["Team", "/app/team"],
+  ].map(([label, href]) => {
+    const active = href === "/app/dashboard";
 
     return (
       <Link
-        key={item.href}
-        href={item.href}
+        key={href}
+        href={href}
         style={{
           display: "inline-flex",
           alignItems: "center",
-          gap: 9,
-          padding: "12px 16px",
-          borderRadius: 12,
+          justifyContent: "center",
+          flexShrink: 0,
+          whiteSpace: "nowrap",
+          padding: "11px 13px",
+          borderRadius: 9,
+          fontSize: 12,
+          fontWeight: active ? 800 : 600,
           textDecoration: "none",
-          fontSize: 13,
-          fontWeight: 650,
-          background: isActive ? "#173b30" : "#f6f8f6",
-          color: isActive ? "#fff" : "#44574c",
-          border: isActive
-            ? "1px solid #173b30"
-            : "1px solid transparent",
-          transition: "all 0.2s ease",
+          color: active ? "#ffffff" : "#43564b",
+          background: active
+            ? "#253d31"
+            : "transparent",
         }}
       >
-        <span style={{ fontSize: 16 }}>{item.icon}</span>
-        {item.label}
+        {label}
       </Link>
     );
   })}
 </nav>
+
 
 
 
