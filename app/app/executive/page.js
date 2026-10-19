@@ -800,13 +800,148 @@ export default function ExecutivePage() {
         }
       `}</style>
 
-                 <div
+                 
+      <style>{`
+        .ex-sidebar {
+          position: fixed;
+          top: 0;
+          left: 0;
+          bottom: 0;
+          width: 254px;
+          padding: 26px 16px;
+          background: #ffffff;
+          border-right: 1px solid #e6eaf0;
+          z-index: 20;
+          overflow-y: auto;
+          font-family: Arial, sans-serif;
+        }
 
-        style={{
-          maxWidth: 1300,
-          margin: "0 auto",
-        }}
-      >
+        .ex-brand {
+          display: flex;
+          align-items: center;
+          gap: 12px;
+          padding: 8px 10px 28px;
+          margin-bottom: 25px;
+          border-bottom: 1px solid #edf0f2;
+        }
+
+        .ex-logo {
+          display: grid;
+          place-items: center;
+          width: 43px;
+          height: 43px;
+          border-radius: 12px;
+          background: #284e42;
+          color: #ffffff;
+          font-size: 23px;
+          font-weight: 800;
+        }
+
+        .ex-brand strong {
+          display: block;
+          font-size: 17px;
+          color: #1e293b;
+        }
+
+        .ex-brand small {
+          display: block;
+          margin-top: 4px;
+          color: #8795a4;
+          font-size: 9px;
+          letter-spacing: 1.3px;
+        }
+
+        .ex-nav {
+          display: grid;
+          gap: 5px;
+        }
+
+        .ex-nav a {
+          display: flex;
+          gap: 12px;
+          align-items: center;
+          padding: 13px 15px;
+          color: #657285;
+          text-decoration: none;
+          font-size: 13px;
+          font-weight: 600;
+          border-radius: 10px;
+        }
+
+        .ex-nav a.active {
+          background: #eaf3ee;
+          color: #245340;
+          font-weight: 800;
+        }
+
+        .ex-workspace {
+          max-width: 1550px;
+          margin-left: 254px;
+          padding: 0 10px 40px;
+        }
+
+        @media screen and (max-width: 850px) {
+          .ex-sidebar {
+            display: none;
+          }
+
+          .ex-workspace {
+            margin-left: 0;
+            padding: 0;
+          }
+        }
+
+        @media print {
+          .ex-sidebar {
+            display: none !important;
+          }
+
+          .ex-workspace {
+            margin: 0 !important;
+            padding: 0 !important;
+            max-width: none !important;
+          }
+        }
+      `}</style>
+
+      <aside className="ex-sidebar">
+        <div className="ex-brand">
+          <div className="ex-logo">I</div>
+          <div>
+            <strong>Inspire Match</strong>
+            <small>TALENT INTELLIGENCE</small>
+          </div>
+        </div>
+
+        <nav className="ex-nav">
+          {[
+            ["◫", "Overview", "/app/dashboard"],
+            ["▣", "Jobs", "/app/jobs"],
+            ["♙", "Candidates", "/app/candidates"],
+            ["⇄", "Pipeline", "/app/pipeline"],
+            ["✧", "AI Matching", "/app/matching"],
+            ["▥", "Reports", "/app/reports"],
+            ["◈", "Executive", "/app/executive"],
+            ["♧", "Team", "/app/team"],
+          ].map(([icon, label, href]) => (
+            <Link
+              key={href}
+              href={href}
+              className={
+                href === "/app/executive"
+                  ? "active"
+                  : ""
+              }
+            >
+              <span>{icon}</span>
+              {label}
+            </Link>
+          ))}
+        </nav>
+      </aside>
+
+      <div className="ex-workspace">
+
         <div
           style={{
             display: "flex",
