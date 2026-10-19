@@ -299,12 +299,15 @@ confidence to "low", and explain why.
 
 
     if (saveError) {
-      console.error("Could not save AI match:", saveError);
-      return Response.json(
-        { error: "AI analysis completed, but saving failed." },
-        { status: 500 }
-      );
-    }
+  console.error("Could not save AI match:", saveError);
+
+  return Response.json(
+    {
+      error: `AI save failed: ${saveError.message}`,
+    },
+    { status: 500 }
+  );
+}
 
     return Response.json(matchResult);
 
