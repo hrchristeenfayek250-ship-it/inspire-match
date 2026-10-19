@@ -883,7 +883,27 @@ company_id: candidate.company_id,
     display: none !important;
   }
 } `}</style>
-
+<nav className="cp-mobile-navigation" aria-label="Mobile navigation">
+  {[
+    ["Overview", "/app/dashboard"],
+    ["Jobs", "/app/jobs"],
+    ["Candidates", "/app/candidates"],
+    ["Pipeline", "/app/pipeline"],
+    ["AI Matching", "/app/matching"],
+    ["Reports", "/app/reports"],
+    ["Executive", "/app/executive"],
+    ["Team", "/app/team"],
+  ].map(([label, href]) => (
+    <Link
+      key={href}
+      href={href}
+      className={href === "/app/candidates" ? "active" : ""}
+      aria-current={href === "/app/candidates" ? "page" : undefined}
+    >
+      {label}
+    </Link>
+  ))}
+</nav>
       <aside className="cp-sidebar">
         <div className="cp-brand">
           <div className="cp-logo">I</div>
