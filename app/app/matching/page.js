@@ -105,11 +105,9 @@ export default function MatchingPage() {
   const [matchResults, setMatchResults] = useState({});
   const [matchingCandidateId, setMatchingCandidateId] = useState(null);
 
-  const linkedCandidates = candidates.filter(
-    (candidate) =>
-      selectedJobId &&
-      String(candidate.job_id) === String(selectedJobId)
-  );
+  
+  const linkedCandidates = candidates;
+
 
   async function runAIMatch(candidateId) {
     if (!selectedJobId || matchingCandidateId !== null) return;
@@ -224,12 +222,12 @@ export default function MatchingPage() {
 
         <p style={{ color: "#65796D", lineHeight: 1.7 }}>
           Select a job to review its assigned candidates.
-          Job-specific AI ranking will be added next.
+          
+        <p style={{ color: "#65796D", lineHeight: 1.7 }}>
+          Select a job and compare any candidate in your company.
+          AI results are saved separately for each job.
         </p>
 
-        {loading && <p>Loading matching workspace...</p>}
-
-        {errorMessage && (
           <div style={{ ...card, color: "#A23B3B" }}>
             {errorMessage}
           </div>
