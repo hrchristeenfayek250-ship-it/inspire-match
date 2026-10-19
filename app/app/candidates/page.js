@@ -5,7 +5,8 @@ import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { supabase } from "@/lib/supabase";
 
-const stages = [
+const STATUSES = [
+  "All statuses",
   "Applied",
   "Screening",
   "Interview",
@@ -14,7 +15,7 @@ const stages = [
   "Rejected",
 ];
 
-const navigation = [
+const NAVIGATION = [
   ["Overview", "/app/dashboard", "◫"],
   ["Jobs", "/app/jobs", "▣"],
   ["Candidates", "/app/candidates", "♙"],
@@ -25,48 +26,160 @@ const navigation = [
   ["Team", "/app/team", "♧"],
 ];
 
-const stageColors = {
-  Applied: "#64748b",
-  Screening: "#4b7eb5",
-  Interview: "#8065a7",
-  Shortlisted: "#b48a42",
-  Hired: "#278560",
-  Rejected: "#ba6b70",
-  Unassigned: "#9ca3af",
+const STATUS_COLORS = {
+  Applied: ["#eef2ff", "#4338ca"],
+  Screening: ["#fff7e6", "#a46a17"],
+  Interview: ["#eff6ff", "#2563eb"],
+  Shortlisted: ["#f0fdf4", "#15803d"],
+  Hired: ["#e6f7ef", "#16734d"],
+  Rejected: ["#fff1f2", "#be123c"],
 };
 
-function Metric({ label, value, icon, subtitle }) {
-  return (
-    <section className="pl-metric">
-      <div className="pl-metric-head">
-        <span>{label}</span>
-        <div className="pl-metric-icon">{icon}</div>
-      </div>
+const formatText = (value) => {
+  if (value === null || value === undefined) {
+    return "";
+  }
 
-      <strong>{value}</strong>
-      <small>{subtitle}</small>
-    </section>
+  if (Array.isArray(value)) {
+    return value.join(", ");
+  }
+
+  if (typeof value === "object") {
+    return Object.values(value).join(", ");
+  }
+
+  return String(value);
+};
+
+function Icon({ name, size = 18 }) {
+  const paths = {
+    search: (
+      <>
+        <circle cx="11" cy="11" r="7" />
+        <path d="m20 20-4-4" />
+      </>
+    ),
+    users: (
+      <>
+        <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
+        <circle cx="9" cy="7" r="4" />
+        <path d="M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75" />
+      </>
+    ),
+    briefcase: (
+      <>
+        <rect x="3" y="7" width="18" height="14" rx="2" />
+        <path d="M8 7V5a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2M3 12a20 20 0 0 0 18 0" />
+      </>
+    ),
+    filter: (
+      <>
+        <path d="M4 7h16M7 12h10M10 17h4" />
+      </>
+    ),
+    upload: (
+      <>
+        <path d="M12 16V3m-5 5 5-5 5 5" />
+        <path d="M4 16v4a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-4" />
+      </>
+    ),
+    pin: (
+      <>
+        <path d="M20 10c0 5-8 11-8 11S4 15 4 10a8 8 0 1 1 16 0Z" />
+        <circle cx="12" cy="10" r="2.5" />
+      </>
+    ),
+    calendar: (
+      <>
+        <rect x="3" y="5" width="18" height="16" rx="2" />
+        <path d="M7 3v4M17 3v4M3 10h18" />
+      </>
+    ),
+    mail: (
+      <>
+        <rect x="3" y="5" width="18" height="14" rx="2" />
+        <path d="m3 7 9 6 9-6" />
+      </>
+    ),
+    phone: (
+      <path d="M22 16.9v3a2 2 0 0 1-2.2 2A19 19 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7l.5 3a2 2 0 0 1-.6 1.8L7.1 10a15 15 0 0 0 6.9 6.9l1.5-1.9a2 2 0 0 1 1.8-.6l3 .5a2 2 0 0 1 1.7 2Z" />
+    ),
+    file: (
+      <>
+        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8Z" />
+        <path d="M14 2v6h6M8 13h8M8 17h8" />
+      </>
+    ),
+    arrow: <path d="M5 12h14m-6-6 6 6-6 6" />,
+    refresh: (
+      <>
+        <path d="M20 11a8 8 0 0 0-14-5L3 9" />
+        <path d="M3 3v6h6M4 13a8 8 0 0 0 14 5l3-3" />
+        <path d="M21 21v-6h-6" />
+      </>
+    ),
+  };
+
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.7"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+    >
+      {paths[name] || paths.users}
+    </svg>
   );
 }
 
-export default function PipelinePage() {
-  const [candidates, setCandidates] = useState([]);
-  const [jobs, setJobs] = useState([]);
+function StatCard({ label, value, icon, description }) {
+  return (
+    <div className="imc-stat">
+      <div className="imc-stat-top">
+        <span>{label}</span>
 
+        <div className="imc-stat-icon">
+          <Icon name={icon} size={19} />
+        </div>
+      </div>
+
+      <div className="imc-stat-value">{value}</div>
+      <div className="imc-stat-description">{description}</div>
+    </div>
+  );
+}
+
+function Field({ label, children }) {
+  return (
+    <div className="imc-field">
+      <label>{label}</label>
+      {children}
+    </div>
+  );
+}
+
+export default function CandidatesPage() {
+  const [candidates, setCandidates] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [errorMessage, setErrorMessage] = useState("");
-  const [successMessage, setSuccessMessage] = useState("");
+  const [error, setError] = useState("");
+  const [updatingId, setUpdatingId] = useState(null);
+  const [mobileNav, setMobileNav] = useState(false);
 
   const [search, setSearch] = useState("");
-  const [jobFilter, setJobFilter] = useState("all");
-
-  const [mobileNav, setMobileNav] = useState(false);
-  const [draggingId, setDraggingId] = useState(null);
-  const [dragOverStage, setDragOverStage] = useState(null);
-  const [updatingId, setUpdatingId] = useState(null);
+  const [statusFilter, setStatusFilter] =
+    useState("All statuses");
+  const [recruitmentFilter, setRecruitmentFilter] =
+    useState("All types");
+  const [locationFilter, setLocationFilter] = useState("");
+  const [minExperience, setMinExperience] = useState("");
 
   useEffect(() => {
-    loadPipeline();
+    loadCandidates();
   }, []);
 
   async function getCompanyScope() {
@@ -79,14 +192,12 @@ export default function PipelinePage() {
       throw new Error("Please log in again.");
     }
 
-    const {
-      data: memberships,
-      error: membershipError,
-    } = await supabase
-      .from("company_members")
-      .select("company_id")
-      .eq("user_id", user.id)
-      .limit(2);
+    const { data: memberships, error: membershipError } =
+      await supabase
+        .from("company_members")
+        .select("company_id")
+        .eq("user_id", user.id)
+        .limit(2);
 
     if (membershipError) throw membershipError;
 
@@ -98,97 +209,53 @@ export default function PipelinePage() {
 
     const companyId = memberships[0].company_id;
 
-    const filter =
+    return (
       `company_id.eq.${companyId},` +
-      `and(company_id.is.null,user_id.eq.${user.id})`;
-
-    return { filter };
+      `and(company_id.is.null,user_id.eq.${user.id})`
+    );
   }
 
-  async function loadPipeline() {
+  async function loadCandidates() {
     setLoading(true);
-    setErrorMessage("");
+    setError("");
 
     try {
-      const { filter } = await getCompanyScope();
+      const filter = await getCompanyScope();
 
-      const [candidateResponse, jobResponse] =
-        await Promise.all([
-          supabase
-            .from("candidates")
-            .select("*")
-            .or(filter)
-            .order("created_at", {
-              ascending: false,
-            }),
+      const { data, error: queryError } = await supabase
+        .from("candidates")
+        .select("*")
+        .or(filter)
+        .order("created_at", { ascending: false });
 
-          supabase
-            .from("jobs")
-            .select("id, title, status")
-            .or(filter)
-            .order("created_at", {
-              ascending: false,
-            }),
-        ]);
+      if (queryError) throw queryError;
 
-      if (candidateResponse.error) {
-        throw candidateResponse.error;
-      }
-
-      setCandidates(candidateResponse.data || []);
-
-      if (jobResponse.error) {
-        console.error(
-          "Could not load job filters:",
-          jobResponse.error
-        );
-        setJobs([]);
-      } else {
-        setJobs(jobResponse.data || []);
-      }
-    } catch (error) {
-      console.error("Could not load pipeline:", error);
-
+      setCandidates(data || []);
+    } catch (err) {
+      console.error("Could not load candidates:", err);
       setCandidates([]);
-      setJobs([]);
-      setErrorMessage(error.message);
+      setError(err.message || "Could not load candidates.");
     } finally {
       setLoading(false);
     }
   }
 
-  async function changeStage(candidateId, stage) {
-    if (!stages.includes(stage)) {
-      setErrorMessage("Invalid recruitment stage.");
-      return;
-    }
-
-    if (updatingId !== null) return;
-
-    const candidate = candidates.find(
-      (item) => String(item.id) === String(candidateId)
-    );
-
-    if (!candidate) return;
-
-    if (candidate.status === stage) return;
-
+  async function updateRecruitmentType(candidateId, newType) {
     setUpdatingId(candidateId);
-    setErrorMessage("");
-    setSuccessMessage("");
+    setError("");
 
     try {
-      const { filter } = await getCompanyScope();
+      const filter = await getCompanyScope();
 
-      const { data, error } = await supabase
+      const { data, error: updateError } = await supabase
         .from("candidates")
-        .update({ status: stage })
+        .update({ recruitment_type: newType || null })
         .eq("id", candidateId)
         .or(filter)
-        .select("id, status")
+        .select("id, recruitment_type")
         .maybeSingle();
 
-      if (error) throw error;
+      if (updateError) throw updateError;
 
       if (!data) {
         throw new Error(
@@ -196,154 +263,123 @@ export default function PipelinePage() {
         );
       }
 
-      setCandidates((current) =>
-        current.map((item) =>
-          String(item.id) === String(data.id)
-            ? { ...item, status: data.status }
-            : item
+      setCandidates((previous) =>
+        previous.map((candidate) =>
+          String(candidate.id) === String(data.id)
+            ? {
+                ...candidate,
+                recruitment_type: data.recruitment_type,
+              }
+            : candidate
         )
       );
-
-      setSuccessMessage(
-        `${candidate.full_name || "Candidate"} moved to ${stage}.`
-      );
-    } catch (error) {
-      console.error("Could not update candidate:", error);
-
-      setErrorMessage(
-        `Could not update candidate: ${error.message}`
+    } catch (err) {
+      console.error("Could not update classification:", err);
+      setError(
+        `Could not update classification: ${err.message}`
       );
     } finally {
       setUpdatingId(null);
-      setDraggingId(null);
-      setDragOverStage(null);
-    }
-  }
-
-  function handleDragStart(event, candidateId) {
-    if (updatingId !== null) {
-      event.preventDefault();
-      return;
-    }
-
-    const id = String(candidateId);
-
-    event.dataTransfer.effectAllowed = "move";
-    event.dataTransfer.setData("text/plain", id);
-
-    setDraggingId(id);
-  }
-
-  function handleDragOver(event, stage) {
-    if (updatingId !== null) return;
-
-    event.preventDefault();
-    event.dataTransfer.dropEffect = "move";
-    setDragOverStage(stage);
-  }
-
-  function handleDrop(event, stage) {
-    event.preventDefault();
-
-    if (updatingId !== null) return;
-
-    const candidateId =
-      event.dataTransfer.getData("text/plain") ||
-      draggingId;
-
-    setDragOverStage(null);
-    setDraggingId(null);
-
-    if (candidateId) {
-      changeStage(candidateId, stage);
     }
   }
 
   const filteredCandidates = useMemo(() => {
-    const query = search.trim().toLowerCase();
+    const q = search.trim().toLowerCase();
+    const location = locationFilter.trim().toLowerCase();
+    const experience = Number(minExperience);
 
     return candidates.filter((candidate) => {
-      const searchable = [
+      const searchableText = [
         candidate.full_name,
         candidate.current_title,
         candidate.location,
-        candidate.email,
         candidate.skills,
+        candidate.cv_file_name,
+        candidate.cv_text,
+        candidate.email,
       ]
+        .map(formatText)
         .filter(Boolean)
-        .map((value) =>
-          Array.isArray(value)
-            ? value.join(" ")
-            : String(value)
-        )
         .join(" ")
         .toLowerCase();
 
       const matchesSearch =
-        !query || searchable.includes(query);
+        !q || searchableText.includes(q);
 
-      const matchesJob =
-        jobFilter === "all" ||
-        (jobFilter === "unassigned"
-          ? candidate.job_id == null
-          : String(candidate.job_id) === jobFilter);
+      const matchesStatus =
+        statusFilter === "All statuses" ||
+        candidate.status === statusFilter;
 
-      return matchesSearch && matchesJob;
+      const matchesRecruitment =
+        recruitmentFilter === "All types" ||
+        (recruitmentFilter === "Not Classified"
+          ? !candidate.recruitment_type
+          : candidate.recruitment_type === recruitmentFilter);
+
+      const matchesLocation =
+        !location ||
+        formatText(candidate.location)
+          .toLowerCase()
+          .includes(location);
+
+      const matchesExperience =
+        !minExperience ||
+        Number(candidate.years_experience || 0) >= experience;
+
+      return (
+        matchesSearch &&
+        matchesStatus &&
+        matchesRecruitment &&
+        matchesLocation &&
+        matchesExperience
+      );
     });
-  }, [candidates, search, jobFilter]);
+  }, [
+    candidates,
+    search,
+    statusFilter,
+    recruitmentFilter,
+    locationFilter,
+    minExperience,
+  ]);
 
-  const stageGroups = useMemo(() => {
-    const groups = {};
+  const hasFilters =
+    search !== "" ||
+    statusFilter !== "All statuses" ||
+    recruitmentFilter !== "All types" ||
+    locationFilter !== "" ||
+    minExperience !== "";
 
-    for (const stage of stages) {
-      groups[stage] = [];
-    }
+  function clearFilters() {
+    setSearch("");
+    setStatusFilter("All statuses");
+    setRecruitmentFilter("All types");
+    setLocationFilter("");
+    setMinExperience("");
+  }
 
-    groups.Unassigned = [];
-
-    for (const candidate of filteredCandidates) {
-      const status = candidate.status;
-
-      if (stages.includes(status)) {
-        groups[status].push(candidate);
-      } else {
-        groups.Unassigned.push(candidate);
-      }
-    }
-
-    return groups;
-  }, [filteredCandidates]);
-
-  const metrics = useMemo(() => {
-    const total = filteredCandidates.length;
-
-    const hired = stageGroups.Hired.length;
-    const rejected = stageGroups.Rejected.length;
-
-    const inProgress =
-      stageGroups.Applied.length +
-      stageGroups.Screening.length +
-      stageGroups.Interview.length +
-      stageGroups.Shortlisted.length;
-
-    return {
-      total,
-      inProgress,
-      hired,
-      rejected,
-    };
-  }, [filteredCandidates, stageGroups]);
-
-  const visibleStages =
-    stageGroups.Unassigned.length > 0
-      ? [...stages, "Unassigned"]
-      : stages;
+  const stats = useMemo(
+    () => ({
+      total: filteredCandidates.length,
+      active: filteredCandidates.filter(
+        (c) => c.recruitment_type === "Active Recruitment"
+      ).length,
+      talent: filteredCandidates.filter(
+        (c) => c.recruitment_type === "Talent Pool"
+      ).length,
+      unclassified: filteredCandidates.filter(
+        (c) => !c.recruitment_type
+      ).length,
+    }),
+    [filteredCandidates]
+  );
 
   async function logOut() {
-    const { error } = await supabase.auth.signOut();
+    const { error: logoutError } =
+      await supabase.auth.signOut();
 
-    if (error) {
-      setErrorMessage(error.message);
+    if (logoutError) {
+      setError(logoutError.message);
       return;
     }
 
@@ -351,9 +387,9 @@ export default function PipelinePage() {
   }
 
   const sidebar = (
-    <div className="pl-sidebar-inner">
-      <div className="pl-brand">
-        <div className="pl-logo">I</div>
+    <div className="imc-sidebar-inner">
+      <div className="imc-brand">
+        <div className="imc-logo">I</div>
 
         <div>
           <strong>Inspire Match</strong>
@@ -361,34 +397,30 @@ export default function PipelinePage() {
         </div>
       </div>
 
-      <div className="pl-sidebar-label">
-        WORKSPACE
-      </div>
+      <div className="imc-nav-label">WORKSPACE</div>
 
-      <nav className="pl-navigation">
-        {navigation.map(([label, href, icon]) => (
+      <nav className="imc-navigation">
+        {NAVIGATION.map(([label, href, icon]) => (
           <Link
             key={href}
             href={href}
             onClick={() => setMobileNav(false)}
             className={
-              href === "/app/pipeline"
-                ? "pl-nav-item active"
-                : "pl-nav-item"
+              href === "/app/candidates"
+                ? "imc-nav-item active"
+                : "imc-nav-item"
             }
           >
-            <span>{icon}</span>
+            <span className="imc-nav-icon">{icon}</span>
             {label}
           </Link>
         ))}
       </nav>
 
-      <div className="pl-sidebar-footer">
+      <div className="imc-sidebar-footer">
         <Link href="/">↗ ATS Home</Link>
 
-        <button onClick={logOut}>
-          ↪ Log out
-        </button>
+        <button onClick={logOut}>↪ Log out</button>
 
         <small>© Inspire Match ATS</small>
       </div>
@@ -396,14 +428,14 @@ export default function PipelinePage() {
   );
 
   return (
-    <main className="pl-root">
+    <main className="imc-root">
       <style>{`
-        .pl-root {
+        .imc-root {
           width: 100%;
           max-width: none;
           min-height: 100vh;
-          padding: 0;
           margin: 0;
+          padding: 0;
           background: #f6f8fb;
           color: #1e293b;
           font-family: Arial, sans-serif;
@@ -411,42 +443,41 @@ export default function PipelinePage() {
           line-height: 1.5;
         }
 
-        .pl-root * {
+        .imc-root * {
           box-sizing: border-box;
         }
 
-        .pl-root h1,
-        .pl-root h2,
-        .pl-root h3,
-        .pl-root h4 {
+        .imc-root h1,
+        .imc-root h2,
+        .imc-root h3 {
           color: #1e293b;
           font-family: Arial, sans-serif;
         }
 
-        .pl-shell {
+        .imc-shell {
           display: grid;
           grid-template-columns: 254px minmax(0, 1fr);
           min-height: 100vh;
         }
 
-        .pl-sidebar {
-          background: #fff;
-          border-right: 1px solid #e6eaf0;
+        .imc-sidebar {
           height: 100vh;
           position: sticky;
           top: 0;
           overflow-y: auto;
+          background: white;
+          border-right: 1px solid #e6eaf0;
           padding: 24px 15px;
         }
 
-        .pl-sidebar-inner {
+        .imc-sidebar-inner {
           height: 100%;
           min-height: 600px;
           display: flex;
           flex-direction: column;
         }
 
-        .pl-brand {
+        .imc-brand {
           display: flex;
           align-items: center;
           gap: 11px;
@@ -455,569 +486,624 @@ export default function PipelinePage() {
           margin-bottom: 25px;
         }
 
-        .pl-logo {
+        .imc-logo {
           width: 42px;
           height: 42px;
-          background: #284e42;
-          color: #fff;
-          border-radius: 12px;
           flex-shrink: 0;
+          background: #284e42;
+          color: white;
+          border-radius: 12px;
           display: grid;
           place-items: center;
           font-size: 23px;
           font-weight: 800;
         }
 
-        .pl-brand strong {
+        .imc-brand strong {
           display: block;
           font-size: 17px;
           letter-spacing: -.5px;
           color: #1e293b;
         }
 
-        .pl-brand small {
+        .imc-brand small {
           display: block;
-          margin-top: 4px;
           font-size: 9px;
-          font-weight: 800;
           letter-spacing: 1.4px;
           color: #8795a4;
+          font-weight: 800;
+          margin-top: 4px;
         }
 
-        .pl-sidebar-label {
+        .imc-nav-label {
           color: #9ba6b2;
           font-size: 10px;
-          font-weight: 800;
           letter-spacing: 1.5px;
+          font-weight: 800;
           padding: 0 14px;
           margin-bottom: 10px;
         }
 
-        .pl-navigation {
+        .imc-navigation {
           display: grid;
           gap: 4px;
         }
 
-        .pl-nav-item {
+        .imc-nav-item {
           display: flex;
           align-items: center;
           gap: 12px;
           padding: 13px 15px;
           border-radius: 10px;
-          color: #657285;
+          text-decoration: none;
           font-size: 13px;
           font-weight: 600;
-          text-decoration: none;
+          color: #657285;
           border-left: 3px solid transparent;
           white-space: nowrap;
         }
 
-        .pl-nav-item span {
-          width: 23px;
-          text-align: center;
-          font-size: 19px;
-        }
-
-        .pl-nav-item:hover {
+        .imc-nav-item:hover {
           background: #f4f7f6;
         }
 
-        .pl-nav-item.active {
-          background: #eaf3ee;
+        .imc-nav-item.active {
           color: #245340;
+          background: #eaf3ee;
           border-left-color: #315f50;
           font-weight: 800;
         }
 
-        .pl-sidebar-footer {
+        .imc-nav-icon {
+          width: 23px;
+          font-size: 19px;
+          text-align: center;
+        }
+
+        .imc-sidebar-footer {
+          margin-top: auto;
           display: grid;
           gap: 9px;
-          margin-top: auto;
           padding-top: 30px;
         }
 
-        .pl-sidebar-footer a {
+        .imc-sidebar-footer a {
           padding: 12px 15px;
           color: #657285;
-          font-size: 13px;
           text-decoration: none;
+          font-size: 13px;
         }
 
-        .pl-sidebar-footer button {
+        .imc-sidebar-footer button {
           background: #f7f8fa;
           border: 1px solid #e6eaf0;
-          color: #526073;
           border-radius: 10px;
+          color: #526073;
           padding: 12px 15px;
           text-align: left;
           cursor: pointer;
           font-weight: 700;
         }
 
-        .pl-sidebar-footer small {
-          margin-top: 7px;
+        .imc-sidebar-footer small {
           color: #a1acb8;
           font-size: 10px;
+          margin-top: 7px;
         }
 
-        .pl-content {
+        .imc-content {
           min-width: 0;
           padding: 29px clamp(17px, 3vw, 46px) 60px;
         }
 
-        .pl-header {
+        .imc-header {
           display: flex;
-          align-items: center;
           justify-content: space-between;
+          align-items: center;
           flex-wrap: wrap;
           gap: 20px;
-          margin-bottom: 28px;
+          margin-bottom: 30px;
         }
 
-        .pl-breadcrumb {
+        .imc-breadcrumb {
           color: #8390a0;
           font-size: 12px;
           margin-bottom: 9px;
         }
 
-        .pl-breadcrumb strong {
+        .imc-breadcrumb strong {
           color: #315f50;
         }
 
-        .pl-title {
+        .imc-page-title {
           font-size: clamp(29px, 3vw, 38px);
-          font-weight: 800;
+          line-height: 1.2;
           letter-spacing: -1.1px;
+          font-weight: 800;
           margin: 0;
         }
 
-        .pl-subtitle {
+        .imc-subtitle {
           color: #8390a0;
           font-size: 13px;
           margin: 10px 0 0;
         }
 
-        .pl-primary,
-        .pl-secondary {
-          display: inline-flex;
+        .imc-actions {
+          display: flex;
           align-items: center;
+          gap: 10px;
+          flex-wrap: wrap;
+        }
+
+        .imc-primary,
+        .imc-secondary {
+          display: inline-flex;
           justify-content: center;
-          gap: 8px;
+          align-items: center;
+          gap: 9px;
+          padding: 12px 16px;
           border-radius: 10px;
-          padding: 12px 17px;
           font-size: 12px;
           font-weight: 800;
-          cursor: pointer;
           text-decoration: none;
+          white-space: nowrap;
+          cursor: pointer;
         }
 
-        .pl-primary {
+        .imc-primary {
           background: #284e42;
+          color: white;
           border: 1px solid #284e42;
-          color: #fff;
         }
 
-        .pl-secondary {
-          background: #fff;
-          border: 1px solid #e1e6ed;
+        .imc-primary:hover {
+          background: #1d3f34;
+        }
+
+        .imc-secondary {
+          background: white;
           color: #526073;
+          border: 1px solid #e3e8ed;
         }
 
-        .pl-metrics {
+        .imc-stats {
           display: grid;
-          grid-template-columns:
-            repeat(4, minmax(0, 1fr));
+          grid-template-columns: repeat(4, minmax(0, 1fr));
           gap: 15px;
           margin-bottom: 25px;
         }
 
-        .pl-metric,
-        .pl-panel {
-          background: #fff;
+        .imc-stat,
+        .imc-panel,
+        .imc-candidate {
+          background: white;
           border: 1px solid #e6eaf0;
           border-radius: 16px;
           box-shadow: 0 4px 18px rgba(23,35,50,.035);
         }
 
-        .pl-metric {
+        .imc-stat {
           padding: 21px;
+          min-width: 0;
         }
 
-        .pl-metric-head {
+        .imc-stat-top {
           display: flex;
-          align-items: center;
           justify-content: space-between;
+          align-items: center;
           gap: 10px;
           color: #647182;
           font-size: 12px;
           font-weight: 700;
         }
 
-        .pl-metric-icon {
-          width: 38px;
-          height: 38px;
+        .imc-stat-icon {
+          width: 37px;
+          height: 37px;
+          flex-shrink: 0;
           background: #edf4f0;
           color: #315f50;
           border-radius: 10px;
           display: grid;
           place-items: center;
-          font-size: 20px;
         }
 
-        .pl-metric strong {
-          display: block;
+        .imc-stat-value {
           font-size: 32px;
           font-weight: 800;
-          color: #1e293b;
-          margin-top: 11px;
           letter-spacing: -1px;
+          color: #1e293b;
+          margin-top: 12px;
         }
 
-        .pl-metric small {
-          display: block;
+        .imc-stat-description {
           color: #96a0ad;
           font-size: 11px;
           margin-top: 5px;
         }
 
-        .pl-panel {
-          padding: 20px;
+        .imc-panel {
+          padding: 24px;
           margin-bottom: 24px;
         }
 
-        .pl-filters {
+        .imc-panel-header {
           display: flex;
           align-items: center;
-          gap: 13px;
+          justify-content: space-between;
+          gap: 16px;
           flex-wrap: wrap;
+          margin-bottom: 21px;
         }
 
-        .pl-search,
-        .pl-select {
-          min-height: 44px;
-          border: 1px solid #e1e6ed;
-          background: #fff;
+        .imc-panel-header h2 {
+          margin: 0;
+          font-size: 17px;
+          font-weight: 800;
+        }
+
+        .imc-panel-header p {
+          margin: 6px 0 0;
+          color: #8994a3;
+          font-size: 12px;
+        }
+
+        .imc-filter-grid {
+          display: grid;
+          grid-template-columns:
+            repeat(auto-fit, minmax(min(100%, 175px), 1fr));
+          gap: 15px;
+          align-items: end;
+        }
+
+        .imc-field label {
+          display: block;
+          margin-bottom: 8px;
           color: #526073;
-          border-radius: 10px;
-          padding: 11px 13px;
+          font-size: 12px;
+          font-weight: 800;
+        }
+
+        .imc-input,
+        .imc-select {
+          width: 100%;
+          min-height: 43px;
+          padding: 11px 12px;
+          border: 1px solid #e1e6ed;
+          background: white;
+          color: #263445;
+          border-radius: 9px;
           font-size: 13px;
+          font-family: Arial, sans-serif;
           outline: none;
         }
 
-        .pl-search {
-          flex: 1;
-          min-width: 190px;
-        }
-
-        .pl-select {
-          min-width: 180px;
-        }
-
-        .pl-search:focus,
-        .pl-select:focus {
+        .imc-input:focus,
+        .imc-select:focus {
           border-color: #6e9a86;
           box-shadow: 0 0 0 3px #eaf3ee;
         }
 
-        .pl-board-heading {
+        .imc-results-bar {
           display: flex;
-          justify-content: space-between;
           align-items: center;
-          gap: 15px;
+          justify-content: space-between;
           flex-wrap: wrap;
-          margin: 27px 0 17px;
+          gap: 14px;
+          margin-bottom: 17px;
         }
 
-        .pl-board-heading h2 {
-          font-size: 19px;
-          font-weight: 800;
+        .imc-results-bar h2 {
+          font-size: 18px;
           margin: 0;
+          font-weight: 800;
         }
 
-        .pl-board-heading p {
+        .imc-results-bar p {
+          margin: 6px 0 0;
           color: #8994a3;
           font-size: 12px;
-          margin: 7px 0 0;
         }
 
-        .pl-board-scroll {
-          overflow-x: auto;
-          width: 100%;
-          padding-bottom: 16px;
-          scrollbar-color: #c9d5d0 transparent;
-        }
-
-        .pl-board {
-          display: grid;
-          grid-auto-flow: column;
-          grid-auto-columns: minmax(248px, 1fr);
-          gap: 14px;
-          align-items: stretch;
-          min-width: max-content;
-        }
-
-        .pl-column {
-          width: 248px;
-          min-height: 490px;
-          background: #f0f3f6;
-          border: 1px solid #e7ebef;
-          border-radius: 15px;
-          padding: 13px;
-          transition: background .15s, border-color .15s;
-        }
-
-        .pl-column.drop-active {
-          background: #e6f0ea;
-          border-color: #75a28c;
-        }
-
-        .pl-column-header {
-          display: flex;
-          align-items: center;
-          justify-content: space-between;
-          gap: 10px;
-          padding: 5px 3px 15px;
-          border-bottom: 1px solid #dde4ea;
-          margin-bottom: 13px;
-        }
-
-        .pl-column-title {
-          display: flex;
-          align-items: center;
-          gap: 9px;
-          font-size: 13px;
-          font-weight: 800;
-          color: #344256;
-        }
-
-        .pl-column-dot {
-          width: 9px;
-          height: 9px;
-          border-radius: 50%;
-          flex-shrink: 0;
-        }
-
-        .pl-count {
-          padding: 4px 9px;
-          background: #fff;
-          border: 1px solid #e3e8ed;
+        .imc-clear {
+          background: white;
           color: #526073;
-          border-radius: 15px;
-          font-size: 11px;
-          font-weight: 800;
-        }
-
-        .pl-cards {
-          display: grid;
-          align-content: start;
-          gap: 11px;
-        }
-
-        .pl-candidate {
-          background: #fff;
-          border: 1px solid #e3e8ed;
-          border-radius: 12px;
-          padding: 15px;
-          box-shadow: 0 3px 10px rgba(23,35,50,.035);
-          cursor: grab;
-          transition: border-color .15s, transform .15s;
-        }
-
-        .pl-candidate:hover {
-          border-color: #b6cfc1;
-          transform: translateY(-1px);
-        }
-
-        .pl-candidate:active {
-          cursor: grabbing;
-        }
-
-        .pl-candidate.dragging {
-          opacity: .45;
-        }
-
-        .pl-candidate-head {
-          display: flex;
-          align-items: center;
-          gap: 10px;
-          margin-bottom: 12px;
-        }
-
-        .pl-avatar {
-          width: 36px;
-          height: 36px;
-          flex-shrink: 0;
-          display: grid;
-          place-items: center;
-          background: #eaf3ee;
-          color: #315f50;
-          border-radius: 10px;
-          font-size: 15px;
-          font-weight: 800;
-        }
-
-        .pl-candidate-name {
-          font-size: 12px;
-          color: #1e293b;
-          font-weight: 800;
-          text-decoration: none;
-          overflow-wrap: anywhere;
-        }
-
-        .pl-candidate-name:hover {
-          color: #315f50;
-        }
-
-        .pl-candidate-role {
-          color: #8390a0;
-          font-size: 11px;
-          line-height: 1.5;
-          margin: 0;
-          overflow-wrap: anywhere;
-        }
-
-        .pl-candidate-meta {
-          display: flex;
-          align-items: center;
-          gap: 6px;
-          color: #96a0ad;
-          font-size: 11px;
-          margin-top: 10px;
-          overflow-wrap: anywhere;
-        }
-
-        .pl-candidate-footer {
-          border-top: 1px solid #eef0f3;
-          margin-top: 13px;
-          padding-top: 12px;
-        }
-
-        .pl-stage-control {
-          width: 100%;
-          min-height: 36px;
-          padding: 8px 10px;
-          border-radius: 8px;
           border: 1px solid #e1e6ed;
-          background: #f8fafb;
-          color: #315f50;
-          font-size: 11px;
-          font-weight: 800;
+          border-radius: 9px;
+          padding: 10px 14px;
+          font-size: 12px;
+          font-weight: 700;
           cursor: pointer;
         }
 
-        .pl-empty {
-          border: 1px dashed #d4dce4;
-          border-radius: 10px;
-          text-align: center;
-          color: #a1acb8;
+        .imc-candidate-list {
+          display: grid;
+          gap: 15px;
+        }
+
+        .imc-candidate {
+          padding: 23px;
+          transition: border-color .2s, box-shadow .2s;
+        }
+
+        .imc-candidate:hover {
+          border-color: #c5d9ce;
+          box-shadow: 0 8px 25px rgba(23,35,50,.055);
+        }
+
+        .imc-candidate-top {
+          display: flex;
+          justify-content: space-between;
+          gap: 20px;
+          flex-wrap: wrap;
+          align-items: flex-start;
+        }
+
+        .imc-profile {
+          display: flex;
+          align-items: flex-start;
+          gap: 15px;
+          flex: 1;
+          min-width: 200px;
+        }
+
+        .imc-avatar {
+          width: 48px;
+          height: 48px;
+          border-radius: 13px;
+          flex-shrink: 0;
+          background: #eaf3ee;
+          color: #315f50;
+          display: grid;
+          place-items: center;
+          font-size: 19px;
+          font-weight: 800;
+        }
+
+        .imc-profile-name {
+          color: #1e293b;
+          font-weight: 800;
+          font-size: 17px;
+          text-decoration: none;
+        }
+
+        .imc-profile-name:hover {
+          color: #315f50;
+        }
+
+        .imc-role {
+          color: #657285;
+          font-size: 13px;
+          margin-top: 6px;
+        }
+
+        .imc-meta {
+          display: flex;
+          align-items: center;
+          flex-wrap: wrap;
+          gap: 13px;
+          margin-top: 13px;
           font-size: 12px;
-          padding: 28px 12px;
+          color: #8994a3;
         }
 
-        .pl-alert {
-          background: #fff7f3;
-          border: 1px solid #e8c7b7;
-          border-radius: 10px;
-          color: #a14e31;
-          padding: 14px 17px;
-          margin-bottom: 18px;
-          font-size: 13px;
+        .imc-meta span {
+          display: inline-flex;
+          align-items: center;
+          gap: 5px;
         }
 
-        .pl-success {
-          background: #edf8f1;
-          border: 1px solid #cde7d5;
-          border-radius: 10px;
-          color: #276446;
-          padding: 14px 17px;
-          margin-bottom: 18px;
-          font-size: 13px;
+        .imc-status-area {
+          display: flex;
+          flex-direction: column;
+          align-items: flex-end;
+          gap: 11px;
+          min-width: 175px;
         }
 
-        .pl-mobile-top {
+        .imc-status {
+          display: inline-flex;
+          border-radius: 20px;
+          padding: 7px 12px;
+          font-size: 11px;
+          font-weight: 800;
+        }
+
+        .imc-classification {
+          width: 100%;
+          max-width: 195px;
+          padding: 10px;
+          border: 1px solid #e1e6ed;
+          border-radius: 9px;
+          background: #f8fafb;
+          color: #315f50;
+          font-size: 12px;
+          font-weight: 700;
+          cursor: pointer;
+        }
+
+        .imc-info {
+          display: flex;
+          flex-wrap: wrap;
+          gap: 10px 24px;
+          padding: 18px 0;
+          margin-top: 12px;
+          border-bottom: 1px solid #eef0f3;
+          color: #758193;
+          font-size: 12px;
+        }
+
+        .imc-info-item {
+          display: inline-flex;
+          align-items: center;
+          gap: 7px;
+          overflow-wrap: anywhere;
+        }
+
+        .imc-skills {
+          padding: 16px 0;
+          color: #647182;
+          font-size: 12px;
+          line-height: 1.8;
+          overflow-wrap: anywhere;
+        }
+
+        .imc-skills strong {
+          display: inline-block;
+          color: #475569;
+          margin-right: 8px;
+        }
+
+        .imc-candidate-footer {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          flex-wrap: wrap;
+          gap: 14px;
+          border-top: 1px solid #eef0f3;
+          padding-top: 17px;
+          margin-top: 8px;
+        }
+
+        .imc-cv {
+          display: inline-flex;
+          align-items: center;
+          gap: 9px;
+          min-width: 0;
+          color: #8390a0;
+          font-size: 12px;
+          overflow-wrap: anywhere;
+        }
+
+        .imc-view {
+          display: inline-flex;
+          align-items: center;
+          gap: 8px;
+          text-decoration: none;
+          padding: 10px 14px;
+          border-radius: 9px;
+          background: #284e42;
+          color: white;
+          font-size: 12px;
+          font-weight: 800;
+        }
+
+        .imc-view:hover {
+          background: #1d3f34;
+        }
+
+        .imc-empty {
+          background: white;
+          border: 1px dashed #ced8df;
+          border-radius: 16px;
+          text-align: center;
+          padding: 55px 25px;
+        }
+
+        .imc-mobile-top {
           display: none;
         }
 
-        @media (max-width: 1150px) {
-          .pl-metrics {
+        .imc-alert {
+          padding: 14px 17px;
+          border: 1px solid #e8c7b7;
+          background: #fff7f3;
+          border-radius: 10px;
+          color: #a14e31;
+          margin-bottom: 20px;
+          font-size: 13px;
+        }
+
+        @media (max-width: 1250px) {
+          .imc-stats {
             grid-template-columns:
               repeat(2, minmax(0, 1fr));
           }
         }
 
         @media (max-width: 800px) {
-          .pl-shell {
+          .imc-shell {
             grid-template-columns: 1fr;
           }
 
-          .pl-sidebar {
+          .imc-sidebar {
             display: none;
           }
 
-          .pl-mobile-top {
+          .imc-mobile-top {
             display: flex;
-            align-items: center;
             justify-content: space-between;
-            background: #fff;
+            align-items: center;
             padding: 15px 19px;
+            background: white;
             border-bottom: 1px solid #e6eaf0;
           }
 
-          .pl-mobile-menu {
-            background: #fff;
+          .imc-mobile-menu {
+            background: white;
             padding: 14px 18px;
             border-bottom: 1px solid #e6eaf0;
           }
 
-          .pl-mobile-menu .pl-sidebar-inner {
+          .imc-mobile-menu .imc-sidebar-inner {
             min-height: auto;
           }
 
-          .pl-content {
+          .imc-content {
             padding: 24px 16px;
           }
         }
 
         @media (max-width: 540px) {
-          .pl-metrics {
+          .imc-stats {
             gap: 10px;
           }
 
-          .pl-metric {
+          .imc-stat {
             padding: 16px;
           }
 
-          .pl-metric strong {
-            font-size: 27px;
+          .imc-stat-value {
+            font-size: 26px;
           }
 
-          .pl-title {
+          .imc-stat-top {
+            font-size: 11px;
+          }
+
+          .imc-candidate {
+            padding: 17px;
+          }
+
+          .imc-status-area {
+            align-items: flex-start;
+            width: 100%;
+          }
+
+          .imc-classification {
+            max-width: none;
+          }
+
+          .imc-page-title {
             font-size: 29px;
-          }
-
-          .pl-panel {
-            padding: 15px;
-          }
-
-          .pl-column {
-            width: 240px;
           }
         }
       `}</style>
 
-      <div className="pl-shell">
-        <aside className="pl-sidebar">
+      <div className="imc-shell">
+        <aside className="imc-sidebar">
           {sidebar}
         </aside>
 
         <div style={{ minWidth: 0 }}>
-          <div className="pl-mobile-top">
+          <div className="imc-mobile-top">
             <strong style={{ color: "#284e42" }}>
               ◈ Inspire Match
             </strong>
 
             <button
-              onClick={() => setMobileNav((value) => !value)}
+              onClick={() => setMobileNav((v) => !v)}
               style={{
                 border: 0,
                 borderRadius: 9,
@@ -1033,365 +1119,409 @@ export default function PipelinePage() {
           </div>
 
           {mobileNav && (
-            <div className="pl-mobile-menu">
+            <div className="imc-mobile-menu">
               {sidebar}
             </div>
           )}
 
-          <div className="pl-content">
-            {/* HEADER */}
+          <div className="imc-content">
+            {/* PAGE HEADER */}
 
-            <header className="pl-header">
+            <header className="imc-header">
               <div>
-                <div className="pl-breadcrumb">
+                <div className="imc-breadcrumb">
                   Workspace
                   <span style={{ margin: "0 9px" }}>/</span>
-                  <strong>Pipeline</strong>
+                  <strong>Candidates</strong>
                 </div>
 
-                <h1 className="pl-title">
-                  Candidate Pipeline
+                <h1 className="imc-page-title">
+                  Candidate Database
                 </h1>
 
-                <p className="pl-subtitle">
-                  Track candidates, manage hiring stages
-                  and move talent forward.
+                <p className="imc-subtitle">
+                  Search, organize and manage your talent
+                  in one place.
                 </p>
               </div>
 
-              <div
-                style={{
-                  display: "flex",
-                  gap: 10,
-                  flexWrap: "wrap",
-                }}
-              >
+              <div className="imc-actions">
                 <button
-                  className="pl-secondary"
-                  type="button"
-                  onClick={loadPipeline}
+                  onClick={loadCandidates}
+                  className="imc-secondary"
                   disabled={loading}
                 >
-                  ↻ Refresh
+                  <Icon name="refresh" size={15} />
+                  Refresh
                 </button>
 
                 <Link
-                  href="/app/candidates"
-                  className="pl-primary"
+                  href="/app/candidates/upload"
+                  className="imc-primary"
                 >
-                  View Candidates →
+                  <Icon name="upload" size={16} />
+                  Upload CV with AI
                 </Link>
               </div>
             </header>
 
-            {errorMessage && (
-              <div className="pl-alert" role="alert">
-                {errorMessage}
+            {error && (
+              <div role="alert" className="imc-alert">
+                {error}
               </div>
             )}
 
-            {successMessage && (
-              <div className="pl-success" role="status">
-                {successMessage}
-              </div>
-            )}
+            {/* CLASSIFICATION OVERVIEW */}
 
-            {/* PIPELINE METRICS */}
-
-            <div className="pl-metrics">
-              <Metric
-                label="Total Candidates"
-                value={loading ? "—" : metrics.total}
-                icon="♙"
-                subtitle="In current pipeline view"
+            <div className="imc-stats">
+              <StatCard
+                label="Matching Candidates"
+                value={loading ? "—" : stats.total}
+                icon="users"
+                description="Candidates in current results"
               />
 
-              <Metric
-                label="In Progress"
-                value={loading ? "—" : metrics.inProgress}
-                icon="◉"
-                subtitle="Across active hiring stages"
+              <StatCard
+                label="Active Recruitment"
+                value={loading ? "—" : stats.active}
+                icon="briefcase"
+                description="In active recruitment"
               />
 
-              <Metric
-                label="Hired"
-                value={loading ? "—" : metrics.hired}
-                icon="✓"
-                subtitle="Successfully hired"
+              <StatCard
+                label="Talent Pool"
+                value={loading ? "—" : stats.talent}
+                icon="users"
+                description="Available talent profiles"
               />
 
-              <Metric
-                label="Rejected"
-                value={loading ? "—" : metrics.rejected}
-                icon="×"
-                subtitle="Closed candidate journeys"
+              <StatCard
+                label="Not Classified"
+                value={loading ? "—" : stats.unclassified}
+                icon="filter"
+                description="Awaiting classification"
               />
             </div>
 
-            {/* FILTERS */}
+            {/* SEARCH AND FILTERS */}
 
-            <section className="pl-panel">
-              <div className="pl-filters">
-                <input
-                  className="pl-search"
-                  value={search}
-                  onChange={(e) =>
-                    setSearch(e.target.value)
-                  }
-                  placeholder="Search candidates, skills, location..."
-                  aria-label="Search candidates"
-                />
-
-                <select
-                  className="pl-select"
-                  value={jobFilter}
-                  onChange={(e) =>
-                    setJobFilter(e.target.value)
-                  }
-                  aria-label="Filter by job"
-                >
-                  <option value="all">
-                    All Jobs
-                  </option>
-
-                  <option value="unassigned">
-                    No Assigned Job
-                  </option>
-
-                  {jobs.map((job) => (
-                    <option
-                      key={job.id}
-                      value={String(job.id)}
-                    >
-                      {job.title}
-                    </option>
-                  ))}
-                </select>
+            <section className="imc-panel">
+              <div className="imc-panel-header">
+                <div>
+                  <h2>Search & Filters</h2>
+                  <p>
+                    Find candidates using their profile
+                    information.
+                  </p>
+                </div>
 
                 <button
-                  type="button"
-                  className="pl-secondary"
-                  onClick={() => {
-                    setSearch("");
-                    setJobFilter("all");
+                  className="imc-clear"
+                  onClick={clearFilters}
+                  disabled={!hasFilters}
+                  style={{
+                    opacity: hasFilters ? 1 : 0.5,
                   }}
                 >
                   Clear Filters
                 </button>
               </div>
+
+              <div className="imc-filter-grid">
+                <Field label="Search Candidates">
+                  <input
+                    className="imc-input"
+                    value={search}
+                    onChange={(e) =>
+                      setSearch(e.target.value)
+                    }
+                    placeholder="Name, title, skills..."
+                  />
+                </Field>
+
+                <Field label="Candidate Status">
+                  <select
+                    className="imc-select"
+                    value={statusFilter}
+                    onChange={(e) =>
+                      setStatusFilter(e.target.value)
+                    }
+                  >
+                    {STATUSES.map((status) => (
+                      <option key={status} value={status}>
+                        {status}
+                      </option>
+                    ))}
+                  </select>
+                </Field>
+
+                <Field label="Recruitment Type">
+                  <select
+                    className="imc-select"
+                    value={recruitmentFilter}
+                    onChange={(e) =>
+                      setRecruitmentFilter(e.target.value)
+                    }
+                  >
+                    <option value="All types">
+                      All Types
+                    </option>
+                    <option value="Active Recruitment">
+                      Active Recruitment
+                    </option>
+                    <option value="Talent Pool">
+                      Talent Pool
+                    </option>
+                    <option value="Not Classified">
+                      Not Classified
+                    </option>
+                  </select>
+                </Field>
+
+                <Field label="Location">
+                  <input
+                    className="imc-input"
+                    value={locationFilter}
+                    onChange={(e) =>
+                      setLocationFilter(e.target.value)
+                    }
+                    placeholder="e.g. Cairo"
+                  />
+                </Field>
+
+                <Field label="Min. Experience">
+                  <input
+                    className="imc-input"
+                    type="number"
+                    min="0"
+                    value={minExperience}
+                    onChange={(e) =>
+                      setMinExperience(e.target.value)
+                    }
+                    placeholder="Years"
+                  />
+                </Field>
+              </div>
             </section>
 
-            {/* BOARD HEADING */}
+            {/* RESULTS HEADER */}
 
-            <div className="pl-board-heading">
+            <div className="imc-results-bar">
               <div>
-                <h2>Recruitment Board</h2>
+                <h2>Talent Directory</h2>
 
                 <p>
-                  Drag cards between stages or use
-                  the stage selector on each card.
+                  {loading
+                    ? "Loading candidate records..."
+                    : `Showing ${filteredCandidates.length} of ${candidates.length} candidates`}
                 </p>
               </div>
 
-              <span
-                style={{
-                  fontSize: 12,
-                  color: "#8390a0",
-                }}
+              <Link
+                href="/app/pipeline"
+                className="imc-secondary"
               >
-                {loading
-                  ? "Loading..."
-                  : `${filteredCandidates.length} candidates`}
-              </span>
+                View Pipeline
+                <Icon name="arrow" size={15} />
+              </Link>
             </div>
 
-            {/* KANBAN BOARD */}
+            {/* CANDIDATES */}
 
             {loading ? (
-              <div className="pl-panel">
-                Loading recruitment pipeline...
+              <div className="imc-empty">
+                <h3>Loading Candidates...</h3>
+                <p style={{ color: "#8994a3" }}>
+                  Retrieving your talent database.
+                </p>
+              </div>
+            ) : filteredCandidates.length === 0 ? (
+              <div className="imc-empty">
+                <div
+                  style={{
+                    display: "flex",
+                    justifyContent: "center",
+                    color: "#315f50",
+                    marginBottom: 15,
+                  }}
+                >
+                  <Icon name="users" size={36} />
+                </div>
+
+                <h3 style={{ margin: "0 0 8px" }}>
+                  No candidates found
+                </h3>
+
+                <p style={{ color: "#8994a3" }}>
+                  Try adjusting your filters or uploading
+                  a new CV.
+                </p>
+
+                {hasFilters && (
+                  <button
+                    className="imc-clear"
+                    onClick={clearFilters}
+                    style={{ marginTop: 10 }}
+                  >
+                    Reset Filters
+                  </button>
+                )}
               </div>
             ) : (
-              <div className="pl-board-scroll">
-                <div className="pl-board">
-                  {visibleStages.map((stage) => {
-                    const stageCandidates =
-                      stageGroups[stage] || [];
+              <div className="imc-candidate-list">
+                {filteredCandidates.map((candidate) => {
+                  const statusColors =
+                    STATUS_COLORS[candidate.status] || [
+                      "#f1f5f9",
+                      "#475569",
+                    ];
 
-                    const canDrop =
-                      stages.includes(stage);
+                  const name =
+                    candidate.full_name ||
+                    "Unnamed Candidate";
 
-                    const highlight =
-                      dragOverStage === stage && canDrop;
+                  const experience =
+                    candidate.years_experience !== null &&
+                    candidate.years_experience !== undefined
+                      ? `${candidate.years_experience} years experience`
+                      : "Experience not specified";
 
-                    return (
-                      <section
-                        key={stage}
-                        className={
-                          highlight
-                            ? "pl-column drop-active"
-                            : "pl-column"
-                        }
-                        onDragOver={
-                          canDrop
-                            ? (event) =>
-                                handleDragOver(event, stage)
-                            : undefined
-                        }
-                        onDragLeave={() =>
-                          setDragOverStage((current) =>
-                            current === stage ? null : current
-                          )
-                        }
-                        onDrop={
-                          canDrop
-                            ? (event) =>
-                                handleDrop(event, stage)
-                            : undefined
-                        }
-                      >
-                        <div className="pl-column-header">
-                          <div className="pl-column-title">
-                            <span
-                              className="pl-column-dot"
-                              style={{
-                                background:
-                                  stageColors[stage],
-                              }}
-                            />
-
-                            {stage}
+                  return (
+                    <article
+                      key={candidate.id}
+                      className="imc-candidate"
+                    >
+                      <div className="imc-candidate-top">
+                        <div className="imc-profile">
+                          <div className="imc-avatar">
+                            {name.charAt(0).toUpperCase()}
                           </div>
 
-                          <span className="pl-count">
-                            {stageCandidates.length}
+                          <div style={{ minWidth: 0 }}>
+                            <Link
+                              href={`/app/candidates/${candidate.id}`}
+                              className="imc-profile-name"
+                            >
+                              {name}
+                            </Link>
+
+                            <div className="imc-role">
+                              {candidate.current_title ||
+                                "Title not specified"}
+                            </div>
+
+                            <div className="imc-meta">
+                              <span>
+                                <Icon name="briefcase" size={14} />
+                                {experience}
+                              </span>
+
+                              {candidate.location && (
+                                <span>
+                                  <Icon name="pin" size={14} />
+                                  {formatText(candidate.location)}
+                                </span>
+                              )}
+
+                              {candidate.created_at && (
+                                <span>
+                                  <Icon name="calendar" size={14} />
+                                  {new Date(
+                                    candidate.created_at
+                                  ).toLocaleDateString("en-GB")}
+                                </span>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+
+                        <div className="imc-status-area">
+                          <span
+                            className="imc-status"
+                            style={{
+                              background: statusColors[0],
+                              color: statusColors[1],
+                            }}
+                          >
+                            {candidate.status || "Not Set"}
+                          </span>
+
+                          <select
+                            className="imc-classification"
+                            aria-label={`Recruitment type for ${name}`}
+                            value={
+                              candidate.recruitment_type || ""
+                            }
+                            disabled={
+                              updatingId === candidate.id
+                            }
+                            onChange={(e) =>
+                              updateRecruitmentType(
+                                candidate.id,
+                                e.target.value
+                              )
+                            }
+                          >
+                            <option value="">
+                              Not Classified
+                            </option>
+                            <option value="Talent Pool">
+                              Talent Pool
+                            </option>
+                            <option value="Active Recruitment">
+                              Active Recruitment
+                            </option>
+                          </select>
+                        </div>
+                      </div>
+
+                      {(candidate.email ||
+                        candidate.phone) && (
+                        <div className="imc-info">
+                          {candidate.email && (
+                            <span className="imc-info-item">
+                              <Icon name="mail" size={15} />
+                              {candidate.email}
+                            </span>
+                          )}
+
+                          {candidate.phone && (
+                            <span className="imc-info-item">
+                              <Icon name="phone" size={15} />
+                              {candidate.phone}
+                            </span>
+                          )}
+                        </div>
+                      )}
+
+                      {candidate.skills && (
+                        <div className="imc-skills">
+                          <strong>Skills</strong>
+                          {formatText(candidate.skills)}
+                        </div>
+                      )}
+
+                      <div className="imc-candidate-footer">
+                        <div className="imc-cv">
+                          <Icon name="file" size={17} />
+
+                          <span>
+                            {candidate.cv_file_name ||
+                              "No CV file attached"}
                           </span>
                         </div>
 
-                        <div className="pl-cards">
-                          {stageCandidates.length === 0 ? (
-                            <div className="pl-empty">
-                              {highlight
-                                ? "Drop candidate here"
-                                : "No candidates"}
-                            </div>
-                          ) : (
-                            stageCandidates.map(
-                              (candidate) => {
-                                const name =
-                                  candidate.full_name ||
-                                  "Unnamed Candidate";
-
-                                return (
-                                  <article
-                                    key={candidate.id}
-                                    draggable={
-                                      updatingId === null
-                                    }
-                                    onDragStart={(event) =>
-                                      handleDragStart(
-                                        event,
-                                        candidate.id
-                                      )
-                                    }
-                                    onDragEnd={() => {
-                                      setDraggingId(null);
-                                      setDragOverStage(null);
-                                    }}
-                                    className={
-                                      String(draggingId) ===
-                                      String(candidate.id)
-                                        ? "pl-candidate dragging"
-                                        : "pl-candidate"
-                                    }
-                                  >
-                                    <div className="pl-candidate-head">
-                                      <div className="pl-avatar">
-                                        {name
-                                          .charAt(0)
-                                          .toUpperCase()}
-                                      </div>
-
-                                      <Link
-                                        href={`/app/candidates/${candidate.id}`}
-                                        className="pl-candidate-name"
-                                      >
-                                        {name}
-                                      </Link>
-                                    </div>
-
-                                    <p className="pl-candidate-role">
-                                      {candidate.current_title ||
-                                        "Title not specified"}
-                                    </p>
-
-                                    {candidate.location && (
-                                      <div className="pl-candidate-meta">
-                                        ◎ {candidate.location}
-                                      </div>
-                                    )}
-
-                                    {candidate.created_at && (
-                                      <div className="pl-candidate-meta">
-                                        ◷ Added{" "}
-                                        {new Date(
-                                          candidate.created_at
-                                        ).toLocaleDateString(
-                                          "en-GB"
-                                        )}
-                                      </div>
-                                    )}
-
-                                    <div className="pl-candidate-footer">
-                                      <select
-                                        className="pl-stage-control"
-                                        value={
-                                          stages.includes(
-                                            candidate.status
-                                          )
-                                            ? candidate.status
-                                            : ""
-                                        }
-                                        disabled={
-                                          updatingId !== null
-                                        }
-                                        aria-label={`Stage for ${name}`}
-                                        onChange={(event) =>
-                                          changeStage(
-                                            candidate.id,
-                                            event.target.value
-                                          )
-                                        }
-                                      >
-                                        <option
-                                          value=""
-                                          disabled
-                                        >
-                                          Select Stage
-                                        </option>
-
-                                        {stages.map(
-                                          (option) => (
-                                            <option
-                                              key={option}
-                                              value={option}
-                                            >
-                                              {option}
-                                            </option>
-                                          )
-                                        )}
-                                      </select>
-                                    </div>
-                                  </article>
-                                );
-                              }
-                            )
-                          )}
-                        </div>
-                      </section>
-                    );
-                  })}
-                </div>
+                        <Link
+                          href={`/app/candidates/${candidate.id}`}
+                          className="imc-view"
+                        >
+                          View Profile
+                          <Icon name="arrow" size={15} />
+                        </Link>
+                      </div>
+                    </article>
+                  );
+                })}
               </div>
             )}
           </div>
