@@ -990,103 +990,9 @@ job_id: selectedJobId ? Number(selectedJobId) : null,
 
               <div className="panel">
 
-                {/* SAVED JOB */}
-
-                <div
-                  style={{
-                    marginBottom:
-                      "22px",
-                    padding:
-                      "18px",
-                    background:
-                      "#faf9f6",
-                    border:
-                      "1px solid var(--line)",
-                    borderRadius:
-                      "12px",
-                  }}
-                >
-
-                  <label
-                    style={{
-                      display:
-                        "block",
-                      fontWeight:
-                        700,
-                      marginBottom:
-                        "8px",
-                    }}
-                  >
-                    Use a Saved Job
-                  </label>
-
-                  <select
-                    value={
-                      selectedJobId
-                    }
-                    onChange={(e) =>
-                      selectSavedJob(
-                        e.target.value
-                      )
-                    }
-                    style={{
-                      width:
-                        "100%",
-                      padding:
-                        "12px",
-                      borderRadius:
-                        "8px",
-                      border:
-                        "1px solid #ddd",
-                      background:
-                        "#fff",
-                    }}
-                  >
-                    <option value="">
-                      {loadingJobs
-                        ? "Loading saved jobs..."
-                        : "Select a saved job..."}
-                    </option>
-
-                    {jobs.map(
-                      (job) => (
-                        <option
-                          key={
-                            job.id
-                          }
-                          value={
-                            job.id
-                          }
-                        >
-                          {job.title}
-                          {job.location
-                            ? ` — ${job.location}`
-                            : ""}
-                        </option>
-                      )
-                    )}
-                  </select>
-
-                  {jobs.length ===
-                    0 &&
-                    !loadingJobs && (
-                      <p
-                        className="hint"
-                        style={{
-                          marginBottom:
-                            0,
-                        }}
-                      >
-                        No saved jobs
-                        yet. Create one
-                        from the Jobs page.
-                      </p>
-                    )}
-
-                </div>
-
-              {/* JOB DESCRIPTION TABS */}
-<div className="im-jd-tabs">
+               
+{/* JOB DESCRIPTION INPUT OPTIONS */}
+<div className="im-jd-tabs im-jd-tabs-three">
   <button
     type="button"
     className={jdMode === "upload" ? "active" : ""}
@@ -1102,7 +1008,43 @@ job_id: selectedJobId ? Number(selectedJobId) : null,
   >
     <span>☷</span> Paste Text
   </button>
+
+  <details className="im-saved-job-tab">
+    <summary>▤ Use a Saved Job</summary>
+
+    <div className="im-saved-job-dropdown">
+      <label htmlFor="im-saved-job-select">
+        Select a saved job
+      </label>
+
+      <select
+        id="im-saved-job-select"
+        value={selectedJobId}
+        onChange={(e) => selectSavedJob(e.target.value)}
+      >
+        <option value="">
+          {loadingJobs
+            ? "Loading saved jobs..."
+            : "Select a saved job..."}
+        </option>
+
+        {jobs.map((job) => (
+          <option key={job.id} value={job.id}>
+            {job.title}
+            {job.location ? ` — ${job.location}` : ""}
+          </option>
+        ))}
+      </select>
+
+      {jobs.length === 0 && !loadingJobs && (
+        <p className="hint">
+          No saved jobs yet. Create one from the Jobs page.
+        </p>
+      )}
+    </div>
+  </details>
 </div>
+
 <div className="im-jd-layout">
   <div className="im-jd-upload-area">
                 {jdMode ===
