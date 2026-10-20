@@ -2041,7 +2041,7 @@ job_id: selectedJobId ? Number(selectedJobId) : null,
           )}
 
         </main>
-
+</div>
       </div>
 
       {/* PRINT REPORT */}
