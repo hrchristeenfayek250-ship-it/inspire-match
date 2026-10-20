@@ -1475,69 +1475,48 @@ job_id: selectedJobId ? Number(selectedJobId) : null,
                   </ul>
                 )}
 
-                <div
-                  style={{
-                    display:
-                      "grid",
-                    gap: "10px",
-                    marginTop:
-                      "16px",
-                  }}
-                >
+              
+{/* CONSENT & AI SHORTLISTING ACTION */}
+<div className="im-shortlisting-action">
+  <label className="im-shortlisting-consent">
+    <input
+      type="checkbox"
+      checked={consent}
+      onChange={(e) => setConsent(e.target.checked)}
+    />
 
-                 
-                  <label className="check">
+    <span>
+      I confirm these candidates shared their CVs
+      for this hiring process.
+      <small>
+        Candidate information will be used for
+        recruitment screening.
+      </small>
+    </span>
+  </label>
 
-                    <input
-                      type="checkbox"
-                      checked={consent}
-                      onChange={(e) =>
-                        setConsent(
-                          e.target
-                            .checked
-                        )
-                      }
-                    />
+  <button
+    type="button"
+    className="im-run-ai-button"
+    onClick={scoreAll}
+    disabled={
+      !cvFiles.length ||
+      !consent ||
+      scoring ||
+      !criteria.length
+    }
+  >
+    <span className="im-run-ai-sparkle">✦</span>
 
-                    <span>
-                      I confirm these
-                      candidates shared their
-                      CVs for this hiring
-                      process.
-                    </span>
+    <span>
+      {scoring
+        ? `Analyzing ${doneCount} of ${results.length} CVs...`
+        : "Run AI Shortlisting"}
+    </span>
 
-                  </label>
-
-                </div>
-
-                <div className="row">
-
-                  <button
-                    className="btn"
-                    onClick={
-                      scoreAll
-                    }
-                    disabled={
-                      !cvFiles.length ||
-                      !consent ||
-                      scoring ||
-                      !criteria.length
-                    }
-                  >
-                    {scoring
-                      ? `Scoring ${doneCount} of ${results.length}…`
-                      : `Score ${
-                          cvFiles.length ||
-                          ""
-                        } CV${
-                          cvFiles.length ===
-                          1
-                            ? ""
-                            : "s"
-                        }`}
-                  </button>
-
-                </div>
+    <span aria-hidden="true">→</span>
+  </button>
+</div>
 
                 {scoring && (
                   <div
