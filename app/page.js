@@ -948,23 +948,39 @@ job_id: selectedJobId ? Number(selectedJobId) : null,
         <main>
 
           {/* INTRO */}
+<section className="intro im-premium-hero">
+  <div className="im-hero-copy">
+    <span className="im-hero-eyebrow">
+      AI-POWERED RECRUITMENT
+    </span>
 
-          <section className="intro">
-            <h1>
-              Find the right people
-              in the pile, in minutes.
-            </h1>
+    <h1>AI Shortlisting Studio</h1>
 
-            <p>
-              Choose a saved job or
-              add a job description,
-              upload CVs, and get a
-              ranked shortlist with
-              AI-powered match scores,
-              evidence and interview
-              questions.
-            </p>
-          </section>
+    <p>
+      Choose a saved job or add a job description,
+      upload CVs, and get a ranked shortlist with
+      AI-powered match scores, evidence and
+      interview questions.
+    </p>
+  </div>
+
+  <div className="im-hero-visual" aria-hidden="true">
+    <div className="im-hero-cv im-hero-cv-back">
+      <span>◉</span>
+    </div>
+
+    <div className="im-hero-cv im-hero-cv-front">
+      <span>◉</span>
+      <i />
+      <i />
+      <i />
+    </div>
+
+    <div className="im-hero-match">
+      95% Match
+    </div>
+  </div>
+</section>
 
           {/* STEP 1 */}
 
