@@ -229,11 +229,13 @@ textarea { width: 100%; min-height: 180px; border: 1px solid var(--line); border
   :is(
     .im-links, .jm-navigation, .imc-navigation,
     .pl-navigation, .am-navigation, .tm-navigation,
-    
     .ir-nav, .ex-nav, .cp-nav
   ) > a {
     transition: none;
-    /* Executive — Mobile Navigation */
+  }
+}
+
+/* Executive — Mobile Navigation */
 .ex-mobile-navigation {
   display: none;
 }
@@ -277,7 +279,5 @@ textarea { width: 100%; min-height: 180px; border: 1px solid var(--line); border
 @media print {
   .ex-mobile-navigation {
     display: none !important;
-  }
-}
   }
 }
