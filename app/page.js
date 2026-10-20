@@ -2221,7 +2221,8 @@ job_id: selectedJobId ? Number(selectedJobId) : null,
                         >
                           {item}
                         </li>
-                                        )}
+                                                         )
+                  )}
                   </ul>
 
                 </div>
