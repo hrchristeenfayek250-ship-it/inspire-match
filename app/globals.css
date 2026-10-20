@@ -1160,3 +1160,42 @@ textarea { width: 100%; min-height: 180px; border: 1px solid var(--line); border
     font-size: 29px;
   }
 }
+/* PREMIUM JOB DESCRIPTION TABS */
+
+.im-jd-tabs {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 0 22px;
+  padding: 5px;
+  width: fit-content;
+  background: #f2f5f2;
+  border: 1px solid #e5ebe6;
+  border-radius: 12px;
+}
+
+.im-jd-tabs button {
+  border: 0;
+  border-radius: 9px;
+  background: transparent;
+  color: #637269;
+  font-size: 13px;
+  font-weight: 700;
+  padding: 12px 19px;
+  cursor: pointer;
+}
+
+.im-jd-tabs button.active {
+  background: #ffffff;
+  color: #1c704b;
+  box-shadow: 0 2px 8px rgba(21, 61, 49, 0.08);
+}
+
+.im-jd-tabs button span {
+  margin-right: 7px;
+  font-size: 16px;
+}
+
+.im-jd-tabs button:hover {
+  color: #1c704b;
+}
