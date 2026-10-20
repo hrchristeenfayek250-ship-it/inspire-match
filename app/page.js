@@ -934,9 +934,12 @@ job_id: selectedJobId ? Number(selectedJobId) : null,
     ✨ Pro Plan — Coming Soon
   </span>
 </div>
-          >
-            Hire &amp; Inspire by Christine
-          </a>
+         <a
+  className="im-home-footer"
+  href="https://hireandinspirebychristine.com/"
+>
+  Hire &amp; Inspire by Christine
+</a>
         </aside>
 
        
