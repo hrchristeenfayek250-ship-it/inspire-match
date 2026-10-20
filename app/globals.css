@@ -1501,3 +1501,75 @@ body {
     padding: 17px;
   }
 }
+
+/* THREE JOB DESCRIPTION OPTIONS */
+
+.im-home-content .im-jd-tabs-three {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  width: fit-content;
+  max-width: 100%;
+  gap: 5px;
+  margin-bottom: 16px;
+}
+
+.im-saved-job-tab {
+  position: relative;
+}
+
+.im-saved-job-tab summary {
+  list-style: none;
+  cursor: pointer;
+  padding: 11px 16px;
+  border-radius: 8px;
+  color: #355247;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.im-saved-job-tab summary::-webkit-details-marker {
+  display: none;
+}
+
+.im-saved-job-tab[open] summary {
+  background: #185a41;
+  color: #fff;
+}
+
+.im-saved-job-dropdown {
+  position: absolute;
+  z-index: 20;
+  top: calc(100% + 8px);
+  right: 0;
+  width: min(330px, 85vw);
+  padding: 17px;
+  background: #fff;
+  border: 1px solid #e2ebe5;
+  border-radius: 13px;
+  box-shadow: 0 14px 35px rgba(20, 55, 39, .14);
+}
+
+.im-saved-job-dropdown label {
+  display: block;
+  font-size: 12px;
+  font-weight: 700;
+  margin-bottom: 9px;
+  color: #244a37;
+}
+
+.im-saved-job-dropdown select {
+  width: 100%;
+  padding: 11px;
+  border: 1px solid #dce7df;
+  border-radius: 8px;
+  background: #fff;
+  color: #244a37;
+}
+
+@media (max-width: 650px) {
+  .im-saved-job-dropdown {
+    left: 0;
+    right: auto;
+  }
+}
