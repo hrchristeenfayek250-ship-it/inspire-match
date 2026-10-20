@@ -1,8 +1,11 @@
 
 "use client";
 
-import { useSearchParams } from "next/navigation";
+
+import { useEffect, useMemo, useState } from "react";
+import Link from "next/link";
 import { supabase } from "@/lib/supabase";
+
 import ATSNavigation from "@/components/ATSNavigation";
 
 const STATUSES = [
@@ -153,7 +156,6 @@ function Field({ label, children }) {
   );
 }
 
-export default function CandidatesPage() {
    
 export default function CandidatesPage() {
   const [candidates, setCandidates] = useState([]);
