@@ -920,7 +920,7 @@ job_id: selectedJobId ? Number(selectedJobId) : null,
             className="im-home-navigation"
           />
 
-          <a
+ <div className="im-upgrade-card">
   <div className="im-upgrade-card">
   <div className="im-upgrade-icon">✦</div>
 
@@ -935,6 +935,7 @@ job_id: selectedJobId ? Number(selectedJobId) : null,
     ✨ Pro Plan — Coming Soon
   </span>
 </div>
+  <a
             className="im-home-footer"
             href="https://hireandinspirebychristine.com/"
           >
