@@ -922,7 +922,6 @@ job_id: selectedJobId ? Number(selectedJobId) : null,
           <div className="im-home-mobile-nav">
             <ATSNavigation />
           </div>
-        </header>
 
         <main>
 
