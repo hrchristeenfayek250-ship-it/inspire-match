@@ -1096,40 +1096,24 @@ job_id: selectedJobId ? Number(selectedJobId) : null,
 
                 </div>
 
-                {/* TABS */}
+              {/* JOB DESCRIPTION TABS */}
+<div className="im-jd-tabs">
+  <button
+    type="button"
+    className={jdMode === "upload" ? "active" : ""}
+    onClick={() => setJdMode("upload")}
+  >
+    <span>↑</span> Upload File
+  </button>
 
-                <div
-                  className="tabs"
-                  role="group"
-                >
-                  <button
-                    aria-pressed={
-                      jdMode ===
-                      "upload"
-                    }
-                    onClick={() =>
-                      setJdMode(
-                        "upload"
-                      )
-                    }
-                  >
-                    Upload file
-                  </button>
-
-                  <button
-                    aria-pressed={
-                      jdMode ===
-                      "paste"
-                    }
-                    onClick={() =>
-                      setJdMode(
-                        "paste"
-                      )
-                    }
-                  >
-                    Paste text
-                  </button>
-                </div>
+  <button
+    type="button"
+    className={jdMode === "paste" ? "active" : ""}
+    onClick={() => setJdMode("paste")}
+  >
+    <span>☷</span> Paste Text
+  </button>
+</div>
 
                 {jdMode ===
                 "upload" ? (
