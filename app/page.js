@@ -951,7 +951,14 @@ job_id: selectedJobId ? Number(selectedJobId) : null,
       AI-powered match scores, evidence and
       interview questions.
     </p>
+  
+    <div className="im-hero-features">
+      <span>⚡ Faster Screening</span>
+      <span>◎ Smarter Matches</span>
+      <span>▥ Actionable Insights</span>
+    </div>
   </div>
+
 
   <div className="im-hero-visual" aria-hidden="true">
     <div className="im-hero-cv im-hero-cv-back">
