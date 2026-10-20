@@ -1154,7 +1154,30 @@ job_id: selectedJobId ? Number(selectedJobId) : null,
                     rows={12}
                   />
                 )}
+  </div>
 
+  <aside className="im-jd-tips">
+    <div className="im-tips-icon">✦</div>
+
+    <h3>Tips for better results</h3>
+
+    <p>
+      A detailed job description helps our AI
+      understand what makes a great candidate.
+    </p>
+
+    <ul>
+      <li>Include key responsibilities</li>
+      <li>List required skills and experience</li>
+      <li>Specify seniority and qualifications</li>
+      <li>Add preferred skills if relevant</li>
+    </ul>
+
+    <div className="im-tips-formats">
+      Supported formats: PDF · DOCX · TXT
+    </div>
+  </aside>
+</div>
                 <div className="row">
 
                   <button
