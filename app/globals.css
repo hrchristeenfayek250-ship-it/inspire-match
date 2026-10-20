@@ -711,51 +711,300 @@ textarea { width: 100%; min-height: 180px; border: 1px solid var(--line); border
     font-size: 16px;
   }
 }
-/* INSPIRE MATCH — PREMIUM SHORTLISTING STUDIO / FINAL LAYOUT */
-/* Paste at the END of app/globals.css. No JSX or functionality changes. */
-.app.im-home-shell,.app{background:#f7f9f7}
-.im-home-sidebar{width:232px;flex-basis:232px;box-shadow:2px 0 18px rgba(16,52,38,.025)}
-.im-home-content>main{max-width:1360px;padding:26px 30px 80px}
-.im-home-topbar{padding:18px 30px}
-.im-home-content .intro{min-height:170px;padding:34px 40px;margin:0 0 22px;background:linear-gradient(110deg,#174f3b 0%,#286b51 58%,#77a58a 100%);border-radius:20px;display:flex;flex-direction:column;justify-content:center;box-shadow:0 10px 22px rgba(24,73,50,.10)}
-.im-home-content .intro h1{font-family:var(--font-body),sans-serif;font-size:clamp(25px,2.8vw,37px);line-height:1.18;letter-spacing:-.8px;margin:0 0 12px;max-width:780px}
-.im-home-content .intro p{font-size:14px;line-height:1.65;max-width:800px;margin:0}
-.im-home-content .step{display:grid;grid-template-columns:46px minmax(0,1fr);gap:12px;margin:18px 0 0;padding:22px 24px;background:#fff;border:1px solid #e6eee8;border-radius:21px;box-shadow:0 6px 24px rgba(17,59,41,.055)}
-.im-home-content .step-num{width:42px;height:42px;border-radius:50%;background:#e6f0e9;color:#14513b;display:grid;place-items:center;font-size:18px;font-weight:800}
-.im-home-content .step h2{font-size:22px;color:#163c32;margin:6px 0 18px}
-.im-home-content .step>div:last-child{min-width:0}
-.im-home-content .step .panel{display:grid;grid-template-columns:minmax(0,1.65fr) minmax(225px,.85fr);align-items:start;column-gap:18px;row-gap:16px;padding:0;border:0;border-radius:0;box-shadow:none;background:transparent;min-width:0}
-/* Saved job spans the full width, preserving the existing selection logic. */
-.im-home-content .step .panel>div[style*="margin-bottom"],.im-home-content .step .panel>div[style*="marginBottom"]{grid-column:1/-1}
-.im-home-content .step .panel>.tabs{grid-column:1;grid-row:auto;margin:0;display:flex;gap:8px;background:#f3f7f4;border:1px solid #e3ebe6;border-radius:12px;padding:5px;min-width:0}
-.im-home-content .step .panel>.tabs button{flex:1;min-width:0;border:0;border-radius:9px;padding:12px 10px;font-size:13px;font-weight:750;white-space:nowrap}
-.im-home-content .step .panel>.tabs button[aria-pressed="true"]{background:#1e6048;color:#fff;box-shadow:0 3px 8px rgba(21,73,51,.14)}
-.im-home-content .step .panel>.drop{grid-column:1;min-height:244px;margin:0;border:1.5px dashed #8db59d;border-radius:15px;background:linear-gradient(135deg,#f6fbf7,#f0f7f2);padding:24px 18px;display:flex;align-items:center;justify-content:center;box-shadow:none}
-.im-home-content .step .panel>.drop:hover,.im-home-content .step .panel>.drop.over{background:#e9f5ed;border-color:#286b51}
-.im-home-content .step .panel>.drop .im-upload-inner{gap:10px}
-.im-home-content .step .panel>.drop .im-upload-icon{width:55px;height:55px;font-size:29px}
-.im-home-content .step .panel>.drop .im-upload-inner strong{font-size:17px}
-.im-home-content .step .panel>.drop .im-upload-button{margin-top:5px;background:#1c6047;padding:12px 22px}
-.im-home-content .step .panel>.drop .im-upload-count{font-size:12px}
-/* Visual guidance panel beside the drop zone, with no new data dependencies. */
-.im-home-content .step .panel>.drop::after{content:"";display:none}
-.im-home-content .step .panel>.drop{position:relative}
-.im-home-content .step .panel>.drop+.file-list{grid-column:1}
-.im-home-content .step .panel>textarea{grid-column:1;min-height:244px;border-radius:14px}
-.im-home-content .step .panel>.row{grid-column:1/-1;margin-top:0}
-.im-home-content .step .panel>.file-list{grid-column:1/-1}
-/* Give the upload card a companion guidance column via a non-interactive CSS box. */
-.im-home-content .step .panel{position:relative}
-.im-home-content .step .panel::after{content:"BEST PRACTICES  ✓  Include required skills and tools\A ✓  Add years of experience\A ✓  Specify location or work model\A ✓  PDF · DOCX · TXT supported";white-space:pre-line;grid-column:2;grid-row:2 / span 2;align-self:stretch;padding:26px 20px;border-radius:15px;background:#edf4ef;color:#315a47;font-size:13px;line-height:2.25;font-weight:600;box-sizing:border-box;min-height:244px}
-/* In the CV section the second column explains the workflow. */
-.im-home-content .step:nth-of-type(3) .panel::after{content:"CV UPLOAD GUIDE  ✓  Select multiple CVs together\A ✓  Each file: up to 4 MB\A ✓  PDF · DOCX · TXT supported\A ✓  Review the file list below"}
-/* The second step can be locked until JD parsing, matching existing behavior. */
-.im-home-content .step.locked{opacity:.7}
-.im-home-content .step .panel>.drop:first-child{grid-row:1}
-.im-home-content .step .panel>.drop:first-child~.row{grid-column:1/-1}
-.im-home-content .step .panel>.drop:first-child~div[style]{grid-column:1/-1}
-.im-home-content .step .panel>.drop:first-child~.file-list{grid-column:1/-1}
-@media(max-width:1080px){.im-home-content .step .panel{grid-template-columns:minmax(0,1fr) 220px}.im-home-content .step .panel::after{padding:20px 14px;font-size:12px}.im-home-content>main{padding:22px}}
-@media(max-width:850px){.im-home-content .step .panel{display:flex;flex-direction:column}.im-home-content .step .panel>*{width:100%;box-sizing:border-box}.im-home-content .step .panel::after{display:none}.im-home-content .step{padding:18px}.im-home-content .intro{padding:26px 24px}}
-@media(max-width:700px){.im-home-content .step{grid-template-columns:1fr;gap:8px}.im-home-content .step h2{margin:2px 0 10px}.im-home-content .intro h1{font-size:27px}.im-home-content>main{padding:14px}.im-home-content .step .panel>.tabs button{font-size:12px;padding:11px 7px}}
-@media print{.app{display:none!important}}
+/* INSPIRE MATCH — CORRECTED SHORTLISTING LAYOUT */
+
+.app {
+  background: #f7f9f7;
+}
+
+.im-home-content > main {
+  max-width: 1360px;
+  padding: 24px 30px 70px;
+}
+
+.im-home-content .intro {
+  min-height: unset;
+  padding: 28px 34px;
+  margin: 0 0 20px;
+  background: linear-gradient(115deg, #164b38, #367b5d);
+  border-radius: 18px;
+  box-shadow: none;
+}
+
+.im-home-content .intro h1 {
+  font-family: var(--font-body), sans-serif;
+  font-size: clamp(25px, 2.5vw, 34px);
+  line-height: 1.2;
+  letter-spacing: -0.5px;
+  margin: 0 0 8px;
+  max-width: none;
+}
+
+.im-home-content .intro p {
+  font-size: 13px;
+  line-height: 1.55;
+  margin: 0;
+  max-width: 760px;
+}
+
+.im-home-content .step {
+  display: grid;
+  grid-template-columns: 40px minmax(0, 1fr);
+  gap: 12px;
+  margin: 16px 0 0;
+  padding: 22px 24px;
+  background: #fff;
+  border: 1px solid #e6eee8;
+  border-radius: 18px;
+  box-shadow: 0 5px 18px rgba(17, 59, 41, 0.045);
+}
+
+.im-home-content .step-num {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background: #e6f0e9;
+  color: #14513b;
+  display: grid;
+  place-items: center;
+  font-size: 16px;
+  font-weight: 800;
+}
+
+.im-home-content .step > div:last-child {
+  min-width: 0;
+}
+
+.im-home-content .step h2 {
+  font-size: 21px;
+  color: #163c32;
+  margin: 6px 0 17px;
+}
+
+/* TWO-COLUMN UPLOAD LAYOUT */
+
+.im-home-content .step .panel {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 235px;
+  column-gap: 18px;
+  row-gap: 15px;
+  align-items: start;
+  position: relative;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+  background: transparent;
+  min-width: 0;
+}
+
+.im-home-content .step .panel > div[style*="marginBottom"],
+.im-home-content .step .panel > div[style*="margin-bottom"] {
+  grid-column: 1 / -1;
+}
+
+.im-home-content .step .panel > .tabs {
+  grid-column: 1;
+  grid-row: auto;
+  display: flex;
+  gap: 5px;
+  background: #f1f6f2;
+  border: 1px solid #e2ebe4;
+  border-radius: 11px;
+  padding: 5px;
+  margin: 0;
+}
+
+.im-home-content .step .panel > .tabs button {
+  flex: 1;
+  border: 0;
+  border-radius: 8px;
+  padding: 11px 9px;
+  font-size: 13px;
+  white-space: nowrap;
+}
+
+.im-home-content .step .panel > .tabs button[aria-pressed="true"] {
+  background: #1e6048;
+  color: white;
+}
+
+.im-home-content .step .panel > .drop,
+.im-home-content .step .panel > textarea {
+  grid-column: 1;
+  grid-row: auto;
+  min-height: 225px;
+  margin: 0;
+  border-radius: 14px;
+  box-sizing: border-box;
+  width: 100%;
+}
+
+.im-home-content .step .panel > .drop {
+  border: 1.5px dashed #93b6a1;
+  background: #f5faf6;
+  padding: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.im-home-content .step .panel > .drop:hover,
+.im-home-content .step .panel > .drop.over {
+  background: #eaf5ee;
+  border-color: #286b51;
+}
+
+.im-home-content .step .panel > .drop .im-upload-inner {
+  gap: 9px;
+}
+
+.im-home-content .step .panel > .drop .im-upload-icon {
+  width: 50px;
+  height: 50px;
+  font-size: 27px;
+}
+
+.im-home-content .step .panel > .drop .im-upload-inner strong {
+  font-size: 16px;
+}
+
+.im-home-content .step .panel > .drop .im-upload-button {
+  margin-top: 4px;
+  background: #1c6047;
+  padding: 11px 21px;
+}
+
+/* GUIDANCE PANEL */
+
+.im-home-content .step .panel::after {
+  content:
+    "BEST PRACTICES\A\A"
+    "✓ Include required skills\A"
+    "✓ Mention experience level\A"
+    "✓ Specify work location\A"
+    "✓ PDF, DOCX or TXT";
+  white-space: pre-line;
+  grid-column: 2;
+  grid-row: 3;
+  width: 100%;
+  min-height: 225px;
+  box-sizing: border-box;
+  padding: 22px 18px;
+  border-radius: 14px;
+  background: #edf5ef;
+  color: #365e4a;
+  font-size: 12px;
+  line-height: 1.9;
+  font-weight: 600;
+  pointer-events: none;
+}
+
+.im-home-content .step .panel:has(> .tabs)::after {
+  grid-row: 3;
+}
+
+/* CV UPLOAD GUIDE */
+
+.im-home-content .step .panel:has(> .drop:first-child)::after {
+  content:
+    "CV UPLOAD GUIDE\A\A"
+    "✓ Upload multiple CVs\A"
+    "✓ Up to 4 MB each\A"
+    "✓ PDF, DOCX or TXT\A"
+    "✓ Review files below";
+  grid-row: 1;
+}
+
+.im-home-content .step .panel > .row,
+.im-home-content .step .panel > .file-list,
+.im-home-content .step .panel > div[style]:not(:first-child) {
+  grid-column: 1 / -1;
+}
+
+.im-home-content .step .panel > .drop ~ .row {
+  margin-top: 0;
+}
+
+.im-home-content .step .panel > .file-list {
+  margin-top: 0;
+}
+
+.im-home-content .step .panel:has(> .drop:first-child) > .drop {
+  grid-column: 1;
+  grid-row: 1;
+}
+
+.im-home-content .step .panel:has(> .drop:first-child) > .file-list {
+  grid-row: auto;
+}
+
+.im-home-content .step.locked {
+  opacity: 0.76;
+}
+
+/* RESPONSIVE */
+
+@media (max-width: 1100px) {
+  .im-home-content .step .panel {
+    grid-template-columns: minmax(0, 1fr) 195px;
+  }
+
+  .im-home-content .step .panel::after {
+    padding: 17px 12px;
+    font-size: 11px;
+  }
+
+  .im-home-content > main {
+    padding: 20px;
+  }
+}
+
+@media (max-width: 850px) {
+  .im-home-content .step .panel {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .im-home-content .step .panel::after {
+    display: none;
+  }
+
+  .im-home-content .step .panel > .tabs,
+  .im-home-content .step .panel > .drop,
+  .im-home-content .step .panel > textarea {
+    grid-column: 1;
+  }
+
+  .im-home-content .step {
+    padding: 17px;
+  }
+
+  .im-home-content .intro {
+    padding: 24px;
+  }
+}
+
+@media (max-width: 700px) {
+  .im-home-content .step {
+    grid-template-columns: 1fr;
+    gap: 7px;
+  }
+
+  .im-home-content .step h2 {
+    margin: 2px 0 12px;
+  }
+
+  .im-home-content > main {
+    padding: 14px;
+  }
+
+  .im-home-content .intro h1 {
+    font-size: 26px;
+  }
+}
+
+@media print {
+  .app {
+    display: none !important;
+  }
+}
