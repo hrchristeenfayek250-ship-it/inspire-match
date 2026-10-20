@@ -1866,3 +1866,43 @@ body {
     max-width: none;
   }
 }
+/* CV SECTION — FULL COLOR & CONTRAST */
+
+.step.locked {
+  opacity: 1 !important;
+}
+
+.step.locked .panel {
+  opacity: 1 !important;
+}
+
+.im-cv-upload-area {
+  opacity: 1 !important;
+}
+
+.im-cv-tips {
+  background: #edf7f0 !important;
+  color: #173d2c !important;
+  opacity: 1 !important;
+}
+
+.im-cv-tips h3,
+.im-cv-tips strong {
+  color: #145b3d !important;
+}
+
+.im-cv-tips p,
+.im-cv-tips li {
+  color: #365747 !important;
+}
+
+.im-cv-upload-area .im-upload-button {
+  background: linear-gradient(135deg, #126b47, #21875c) !important;
+  color: #ffffff !important;
+  opacity: 1 !important;
+}
+
+.im-cv-upload-area .im-upload-count {
+  color: #176342 !important;
+  font-weight: 700;
+}
