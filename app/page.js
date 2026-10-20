@@ -937,12 +937,30 @@ job_id: selectedJobId ? Number(selectedJobId) : null,
 
   {/* PREMIUM WORKSPACE TOPBAR */}
   <header className="im-workspace-topbar">
-    <div className="im-workspace-heading">
-      <span className="im-workspace-kicker">
-        RECRUITMENT WORKSPACE
-      </span>
-      <h2>AI Shortlisting</h2>
-    </div>
+   
+<div className="im-workspace-heading">
+  <span className="im-workspace-kicker">
+    RECRUITMENT WORKSPACE
+  </span>
+  <h2>AI Shortlisting</h2>
+</div>
+
+<form
+  className="im-topbar-search"
+  action="/app/candidates"
+  method="get"
+>
+  <span aria-hidden="true">⌕</span>
+  <input
+    type="search"
+    name="search"
+    placeholder="Search candidates..."
+    aria-label="Search candidates"
+    required
+  />
+  <button type="submit">Search</button>
+</form>
+
 
     <div className="im-workspace-actions">
       <a
