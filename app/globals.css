@@ -1704,3 +1704,113 @@ body {
     grid-template-columns: 1fr;
   }
 }
+
+/* INSPIRE MATCH — PREMIUM WORKSPACE TOPBAR */
+
+.im-workspace-topbar {
+  min-height: 86px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  padding: 17px 35px;
+  background: #ffffff;
+  border-bottom: 1px solid #e9efeb;
+}
+
+.im-workspace-heading {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.im-workspace-kicker {
+  font-size: 10px;
+  letter-spacing: 1.6px;
+  font-weight: 800;
+  color: #83988b;
+}
+
+.im-workspace-heading h2 {
+  margin: 0;
+  font-size: 21px;
+  font-weight: 800;
+  letter-spacing: -.5px;
+  color: #193e30;
+}
+
+.im-workspace-actions {
+  display: flex;
+  align-items: center;
+  gap: 25px;
+}
+
+.im-workspace-overview {
+  text-decoration: none;
+  color: #23734e;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.im-workspace-overview:hover {
+  color: #144d35;
+}
+
+.im-workspace-account {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  padding-left: 22px;
+  border-left: 1px solid #e4ece6;
+}
+
+.im-workspace-avatar {
+  display: grid;
+  place-items: center;
+  width: 42px;
+  height: 42px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  background: #e4f2e9;
+  color: #246a48;
+  font-size: 12px;
+  font-weight: 900;
+}
+
+.im-workspace-account-name {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  color: #213c30;
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.im-workspace-account-name small {
+  color: #879b8d;
+  font-size: 10px;
+  font-weight: 500;
+}
+
+@media (max-width: 700px) {
+  .im-workspace-topbar {
+    min-height: 70px;
+    padding: 15px 18px;
+  }
+
+  .im-workspace-heading h2 {
+    font-size: 17px;
+  }
+
+  .im-workspace-account-name {
+    display: none;
+  }
+
+  .im-workspace-account {
+    padding-left: 12px;
+  }
+
+  .im-workspace-actions {
+    gap: 12px;
+  }
+}
