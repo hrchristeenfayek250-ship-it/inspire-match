@@ -928,13 +928,42 @@ job_id: selectedJobId ? Number(selectedJobId) : null,
           </a>
         </aside>
 
-        <div className="im-home-content">
+       
+<div className="im-home-content">
 
-          <div className="im-home-mobile-nav">
-            <ATSNavigation />
-          </div>
+  <div className="im-home-mobile-nav">
+    <ATSNavigation />
+  </div>
 
-        <main>
+  {/* PREMIUM WORKSPACE TOPBAR */}
+  <header className="im-workspace-topbar">
+    <div className="im-workspace-heading">
+      <span className="im-workspace-kicker">
+        RECRUITMENT WORKSPACE
+      </span>
+      <h2>AI Shortlisting</h2>
+    </div>
+
+    <div className="im-workspace-actions">
+      <a
+        className="im-workspace-overview"
+        href="/app/dashboard"
+      >
+        Overview ↗
+      </a>
+
+      <div className="im-workspace-account">
+        <span className="im-workspace-avatar">IM</span>
+        <span className="im-workspace-account-name">
+          Inspire Match
+          <small>Talent Intelligence</small>
+        </span>
+      </div>
+    </div>
+  </header>
+
+  <main>
+
 
           {/* INTRO */}
 <section className="intro im-premium-hero">
