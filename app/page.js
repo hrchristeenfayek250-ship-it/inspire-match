@@ -930,71 +930,7 @@ job_id: selectedJobId ? Number(selectedJobId) : null,
 
         <div className="im-home-content">
 
-        /* PREMIUM CV UPLOAD LAYOUT */
-
-.im-cv-layout {
-  display: grid;
-  grid-template-columns: minmax(0, 1.6fr) minmax(240px, 1fr);
-  gap: 22px;
-  align-items: stretch;
-  margin-bottom: 22px;
-}
-
-.im-cv-upload-area {
-  min-width: 0;
-  display: flex;
-  flex-direction: column;
-}
-
-.im-cv-upload-area > * {
-  flex: 1;
-}
-
-.im-cv-tips {
-  background: #edf7ef;
-  border: 1px solid #d9ebdd;
-  border-radius: 16px;
-  padding: 25px;
-  color: #244b37;
-}
-
-.im-cv-tips h3 {
-  margin: 0 0 10px;
-  font-size: 17px;
-  color: #174d32;
-}
-
-.im-cv-tips p {
-  font-size: 13px;
-  line-height: 1.7;
-  margin-bottom: 18px;
-}
-
-.im-cv-tips ul {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-}
-
-.im-cv-tips li {
-  position: relative;
-  padding-left: 25px;
-  margin-bottom: 13px;
-  font-size: 13px;
-  line-height: 1.5;
-}
-
-.im-cv-tips li::before {
-  content: "✓";
-  position: absolute;
-  left: 0;
-  color: #278453;
-  font-weight: 900;
-}
-
-@media (max-width: 900px) {
-  .im-cv-layout {
-    grid-template-columns: 1fr;
+       
   }
 }
           <div className="im-home-mobile-nav">
