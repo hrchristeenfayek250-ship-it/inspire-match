@@ -1114,7 +1114,8 @@ job_id: selectedJobId ? Number(selectedJobId) : null,
     <span>☷</span> Paste Text
   </button>
 </div>
-
+<div className="im-jd-layout">
+  <div className="im-jd-upload-area">
                 {jdMode ===
                 "upload" ? (
                   <DropZone
