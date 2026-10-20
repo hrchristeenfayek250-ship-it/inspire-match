@@ -1906,3 +1906,7 @@ body {
   color: #176342 !important;
   font-weight: 700;
 }
+/* FIX: CV SECTION FADED COLORS */
+.im-home-content .step.locked {
+  opacity: 1 !important;
+}
