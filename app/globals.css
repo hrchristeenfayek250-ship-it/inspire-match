@@ -572,3 +572,142 @@ textarea { width: 100%; min-height: 180px; border: 1px solid var(--line); border
     display: none !important;
   }
 }
+/* INSPIRE MATCH — PREMIUM UPLOAD STUDIO */
+
+.im-home-content .step {
+  margin-top: 24px;
+  gap: 18px;
+}
+
+.im-home-content .step > div:last-child {
+  min-width: 0;
+}
+
+.im-home-content .step h2 {
+  color: #173d33;
+  font-size: 23px;
+  font-weight: 800;
+}
+
+.im-home-content .panel {
+  background: #fff;
+  border: 1px solid #e5ebe7;
+  border-radius: 20px;
+  padding: 26px;
+  box-shadow: 0 8px 28px rgba(27, 64, 48, 0.05);
+}
+
+.im-home-content .drop {
+  min-height: 245px;
+  padding: 28px;
+  border: 1.5px dashed #76a28b;
+  border-radius: 16px;
+  background: linear-gradient(135deg, #f3f8f5, #fcfdfb);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: 0.2s ease;
+}
+
+.im-home-content .drop:hover,
+.im-home-content .drop.over {
+  border-color: #1d5944;
+  background: #edf6f0;
+  box-shadow: 0 0 0 4px rgba(29, 89, 68, 0.06);
+}
+
+.im-upload-inner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  gap: 12px;
+  width: 100%;
+}
+
+.im-upload-icon {
+  width: 58px;
+  height: 58px;
+  border-radius: 50%;
+  background: #e1ece5;
+  color: #1c654b;
+  font-size: 32px;
+  display: grid;
+  place-items: center;
+}
+
+.im-upload-inner strong {
+  color: #183c33;
+  font-size: 18px;
+  font-weight: 800;
+  overflow-wrap: anywhere;
+}
+
+.im-upload-inner small {
+  color: #698075;
+  font-size: 13px;
+}
+
+.im-upload-button {
+  margin-top: 8px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 175px;
+  padding: 13px 22px;
+  background: #205b45;
+  color: #fff;
+  border-radius: 11px;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.im-upload-count {
+  font-size: 12px;
+  font-weight: 700;
+  color: #477a60;
+}
+
+.im-home-content .tabs {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.im-home-content .tabs button {
+  border-radius: 10px;
+  padding: 12px 20px;
+  font-weight: 700;
+}
+
+.im-home-content .file-list {
+  margin-top: 18px;
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.im-home-content .file-list li {
+  padding: 13px 16px;
+  background: #f5f9f6;
+  border: 1px solid #e3ece5;
+  border-radius: 9px;
+  margin-bottom: 8px;
+  overflow-wrap: anywhere;
+}
+
+@media (max-width: 700px) {
+  .im-home-content .panel {
+    padding: 16px;
+  }
+
+  .im-home-content .drop {
+    min-height: 215px;
+    padding: 18px;
+  }
+
+  .im-upload-inner strong {
+    font-size: 16px;
+  }
+}
