@@ -1104,16 +1104,18 @@ job_id: selectedJobId ? Number(selectedJobId) : null,
                       )
                     }
                   >
-                    <strong>
-                      {jdFile
-                        ? jdFile.name
-                        : "Drop the JD here or click to choose"}
-                    </strong>
-
-                    <small>
-                      PDF, DOCX or TXT,
-                      up to 4 MB
-                    </small>
+                    <div className="im-upload-inner">
+  <span className="im-upload-icon">⇧</span>
+  <strong>
+    {jdFile
+      ? jdFile.name
+      : "Drop your job description here"}
+  </strong>
+  <small>PDF, DOCX or TXT · Up to 4 MB</small>
+  <span className="im-upload-button">
+    {jdFile ? "Change File" : "Choose File"}
+  </span>
+</div>
                   </DropZone>
                 ) : (
                   <textarea
@@ -1398,15 +1400,19 @@ job_id: selectedJobId ? Number(selectedJobId) : null,
 
                 <DropZone
                   multiple
-                  onFiles={addCvs}
-                >
-                  <strong>
-                    Drop CVs here or
-                    click to choose
-                  </strong>
-
-                  <small>
-                    PDF, DOCX or TXT,
+                  <div className="im-upload-inner">
+  <span className="im-upload-icon">♧</span>
+  <strong>Drop candidate CVs here</strong>
+  <small>
+    Upload multiple CVs · PDF, DOCX or TXT · 4 MB each
+  </small>
+  <span className="im-upload-button">
+    Upload CVs
+  </span>
+  <span className="im-upload-count">
+    {cvFiles.length} CVs selected
+  </span>
+</div>
                     up to 4 MB each
                   </small>
                 </DropZone>
