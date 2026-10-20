@@ -1210,3 +1210,108 @@ textarea { width: 100%; min-height: 180px; border: 1px solid var(--line); border
     font-size: 16px;
   }
 }
+
+/* INSPIRE MATCH — CLEAN SHORTLISTING LAYOUT */
+
+.im-home-content > main {
+  max-width: 1280px;
+  margin-inline: auto;
+}
+
+.im-home-content .intro.im-premium-hero {
+  min-height: 210px;
+  padding: 30px 38px;
+  margin-bottom: 18px;
+}
+
+.im-home-content .intro.im-premium-hero h1 {
+  font-size: clamp(29px, 3.4vw, 42px);
+  line-height: 1.12;
+}
+
+.im-home-content .step {
+  margin-top: 16px;
+  padding: 22px 24px;
+  gap: 14px;
+}
+
+.im-home-content .step .panel {
+  display: block;
+  padding: 18px;
+  box-shadow: none;
+  border-color: #edf1ee;
+}
+
+.im-home-content .im-jd-layout,
+.im-home-content .im-cv-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(210px, 0.52fr);
+  align-items: stretch;
+  gap: 16px;
+  margin: 14px 0 0;
+}
+
+.im-home-content .im-jd-upload-area,
+.im-home-content .im-cv-upload-area {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+}
+
+.im-home-content .im-jd-upload-area .drop,
+.im-home-content .im-cv-upload-area .drop {
+  flex: 1;
+  min-height: 225px;
+  height: 100%;
+  padding: 22px;
+  border-radius: 14px;
+  background: #f8fbf9;
+}
+
+.im-home-content .im-jd-tips,
+.im-home-content .im-cv-tips {
+  min-width: 0;
+  padding: 19px;
+  border-radius: 14px;
+  background: #f0f7f2;
+  border: 1px solid #e1eee5;
+}
+
+.im-home-content .im-jd-tips h3,
+.im-home-content .im-cv-tips h3 {
+  font-size: 16px;
+  line-height: 1.35;
+}
+
+.im-home-content .im-jd-tips p,
+.im-home-content .im-cv-tips p,
+.im-home-content .im-jd-tips li,
+.im-home-content .im-cv-tips li {
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.im-home-content .im-jd-tips li,
+.im-home-content .im-cv-tips li {
+  margin-bottom: 8px;
+}
+
+.im-home-content .im-jd-upload-area textarea {
+  min-height: 225px;
+}
+
+.im-home-content .step .panel::after {
+  content: none !important;
+  display: none !important;
+}
+
+@media (max-width: 980px) {
+  .im-home-content .im-jd-layout,
+  .im-home-content .im-cv-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .im-home-content .intro.im-premium-hero {
+    padding: 24px;
+  }
+}
