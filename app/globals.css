@@ -1573,3 +1573,57 @@ body {
     right: auto;
   }
 }
+
+
+/* REFERENCE DESIGN DETAILS */
+
+.im-hero-features {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 22px;
+  margin-top: 24px;
+  color: #fff;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.im-hero-features span {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+}
+
+.im-jd-tips ul,
+.im-cv-tips ul {
+  padding-left: 0;
+}
+
+.im-jd-tips li,
+.im-cv-tips li {
+  list-style: none;
+  position: relative;
+  padding-left: 30px;
+  margin-bottom: 13px;
+}
+
+.im-jd-tips li::before,
+.im-cv-tips li::before {
+  content: "✓";
+  position: absolute;
+  left: 0;
+  top: 1px;
+  width: 19px;
+  height: 19px;
+  display: grid;
+  place-items: center;
+  background: #419773;
+  color: #fff;
+  border-radius: 50%;
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.im-jd-tips,
+.im-cv-tips {
+  background: #f0f7f2 !important;
+}
