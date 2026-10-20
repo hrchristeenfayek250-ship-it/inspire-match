@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import { supabase } from "@/lib/supabase";
+import ATSNavigation from "@/components/ATSNavigation";
 
 const ACCEPT = ".pdf,.docx,.txt";
 const CONCURRENCY = 3;
@@ -874,134 +875,52 @@ job_id: selectedJobId ? Number(selectedJobId) : null,
   return (
     <>
       <div className="app">
+        {/* UNIFIED ATS NAVIGATION */}
 
-        {/* HEADER */}
+        <aside className="im-home-sidebar">
+          <a
+            className="im-home-brand"
+            href="/app/dashboard"
+          >
+            <span className="im-home-logo">✦</span>
 
-        <header className="topbar">
-          <div className="topbar-inner">
+            <span>
+              <strong>Inspire Match</strong>
+              <small>TALENT INTELLIGENCE</small>
+            </span>
+          </a>
 
-            <a
-              href="https://hireandinspirebychristine.com/"
-              className="wordmark"
-              style={{
-                textDecoration:
-                  "none",
-              }}
-            >
-              Hire{" "}
-              <span className="amp">
-                &amp;
-              </span>{" "}
-              Inspire
-              <span className="by">
-                by Christine
-              </span>
+          <div className="im-home-label">
+            WORKSPACE
+          </div>
+
+          <ATSNavigation
+            className="im-home-navigation"
+          />
+
+          <a
+            className="im-home-footer"
+            href="https://hireandinspirebychristine.com/"
+          >
+            Hire &amp; Inspire by Christine
+          </a>
+        </aside>
+
+        <div className="im-home-content">
+
+          <header className="im-home-topbar">
+            <div>
+              <small>AI-POWERED RECRUITMENT</small>
+              <h2>AI Shortlisting Studio</h2>
+            </div>
+
+            <a href="/app/dashboard">
+              ← Dashboard
             </a>
+          </header>
 
-            <div className="product">
-              Inspire Match
-            </div>
-
-            <div
-              style={{
-                display:
-                  "flex",
-                gap: "8px",
-                marginTop:
-                  "10px",
-                flexWrap:
-                  "wrap",
-              }}
-            >
-              <a
-                href="/app/dashboard"
-                style={{
-                  textDecoration:
-                    "none",
-                  padding:
-                    "8px 12px",
-                  borderRadius:
-                    "8px",
-                  border:
-                    "1px solid var(--line)",
-                  background:
-                    "#fff",
-                  color:
-                    "#222",
-                  fontSize:
-                    "13px",
-                }}
-              >
-                Dashboard
-              </a>
-
-              <a
-                href="/app/jobs"
-                style={{
-                  textDecoration:
-                    "none",
-                  padding:
-                    "8px 12px",
-                  borderRadius:
-                    "8px",
-                  border:
-                    "1px solid var(--line)",
-                  background:
-                    "#fff",
-                  color:
-                    "#222",
-                  fontSize:
-                    "13px",
-                }}
-              >
-                Jobs
-              </a>
-
-              <a
-                href="/app/pipeline"
-                style={{
-                  textDecoration:
-                    "none",
-                  padding:
-                    "8px 12px",
-                  borderRadius:
-                    "8px",
-                  border:
-                    "1px solid var(--line)",
-                  background:
-                    "#fff",
-                  color:
-                    "#222",
-                  fontSize:
-                    "13px",
-                }}
-              >
-                Candidate Pipeline
-              </a>
-
-              <a
-                href="/app/candidates"
-                style={{
-                  textDecoration:
-                    "none",
-                  padding:
-                    "8px 12px",
-                  borderRadius:
-                    "8px",
-                  border:
-                    "1px solid var(--line)",
-                  background:
-                    "#fff",
-                  color:
-                    "#222",
-                  fontSize:
-                    "13px",
-                }}
-              >
-                Candidate Database
-              </a>
-            </div>
-
+          <div className="im-home-mobile-nav">
+            <ATSNavigation />
           </div>
         </header>
 
@@ -2332,5 +2251,179 @@ job_id: selectedJobId ? Number(selectedJobId) : null,
       </div>
     </>
   );
+}
+/* INSPIRE MATCH — UNIFIED SIDEBAR */
+
+.app {
+  display: flex;
+  min-height: 100vh;
+  align-items: stretch;
+}
+
+.im-home-sidebar {
+  width: 245px;
+  flex: 0 0 245px;
+  min-height: 100vh;
+  background: #fff;
+  border-right: 1px solid #e3e9e3;
+  padding: 28px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.im-home-brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  text-decoration: none;
+  color: #1e3b32;
+}
+
+.im-home-logo {
+  width: 42px;
+  height: 42px;
+  background: #1e3b32;
+  color: white;
+  border-radius: 12px;
+  display: grid;
+  place-items: center;
+  font-size: 24px;
+}
+
+.im-home-brand strong {
+  display: block;
+  font-size: 17px;
+  font-weight: 800;
+}
+
+.im-home-brand small {
+  display: block;
+  font-size: 9px;
+  letter-spacing: 1.5px;
+  color: #879a8e;
+}
+
+.im-home-label {
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 1.5px;
+  color: #91a198;
+  margin: 12px 10px 0;
+}
+
+.im-home-navigation {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.im-home-navigation a {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+  color: #536259;
+  text-decoration: none;
+  font-size: 13px;
+  font-weight: 600;
+  border-radius: 10px;
+}
+
+.im-home-navigation a:hover,
+.im-home-navigation a.active {
+  background: #e6ece2;
+  color: #1e3b32;
+}
+
+.im-home-footer {
+  margin-top: auto;
+  padding: 20px 10px;
+  border-top: 1px solid #e3e9e3;
+  color: #b06f45;
+  text-decoration: none;
+  font-size: 12px;
+}
+
+.im-home-content {
+  flex: 1;
+  min-width: 0;
+}
+
+.im-home-topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 24px 36px;
+  background: #fff;
+  border-bottom: 1px solid #e3e9e3;
+}
+
+.im-home-topbar h2 {
+  font-family: var(--font-body), sans-serif;
+  font-size: 23px;
+  font-weight: 800;
+}
+
+.im-home-topbar small {
+  color: #879a8e;
+  font-size: 10px;
+  letter-spacing: 1.5px;
+}
+
+.im-home-topbar a {
+  color: #315f50;
+  text-decoration: none;
+  font-weight: 700;
+}
+
+.im-home-content > main {
+  width: 100%;
+  max-width: 1250px;
+  margin: 0 auto;
+  padding: 32px;
+}
+
+.im-home-mobile-nav {
+  display: none;
+}
+
+@media (max-width: 800px) {
+  .im-home-sidebar {
+    display: none;
+  }
+
+  .im-home-mobile-nav {
+    display: block;
+    overflow-x: auto;
+    background: white;
+    padding: 12px;
+  }
+
+  .im-home-mobile-nav nav {
+    display: flex;
+    gap: 12px;
+    white-space: nowrap;
+  }
+
+  .im-home-mobile-nav a {
+    color: #315f50;
+    text-decoration: none;
+    font-size: 12px;
+    padding: 8px;
+  }
+
+  .im-home-content > main {
+    padding: 18px;
+  }
+}
+
+@media print {
+  .im-home-sidebar,
+  .im-home-topbar,
+  .im-home-mobile-nav {
+    display: none !important;
+  }
 }
 
