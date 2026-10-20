@@ -2222,4 +2222,32 @@ job_id: selectedJobId ? Number(selectedJobId) : null,
                         >
                           {item}
                         </li>
-                    
+                                        )}
+                  </ul>
+
+                </div>
+
+              </div>
+
+            </div>
+          )
+        )}
+
+        <div className="report-foot">
+          Prepared by Hire &amp; Inspire by
+          Christine: Recruitment,
+          Organization Development,
+          Payroll Management.
+          <br />
+          Scores support, and never
+          replace, recruiter judgement.
+          <br />
+          hireandinspirebychristine.com
+          {" | "}
+          hello@hireandinspirebychristine.com
+        </div>
+
+      </div>
+    </>
+  );
+}
