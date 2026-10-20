@@ -1443,7 +1443,8 @@ job_id: selectedJobId ? Number(selectedJobId) : null,
               </h2>
 
               <div className="panel">
-
+<div className="im-cv-layout">
+  <div className="im-cv-upload-area">
                               <DropZone
                   multiple
                   onFiles={addCvs}
@@ -1468,7 +1469,30 @@ job_id: selectedJobId ? Number(selectedJobId) : null,
                     </span>
                   </div>
                 </DropZone>
+  </div>
 
+  <aside className="im-cv-tips">
+    <div className="im-tips-icon">✦</div>
+
+    <h3>Upload candidate resumes</h3>
+
+    <p>
+      Add multiple candidate CVs and let Inspire Match
+      analyze their suitability for the role.
+    </p>
+
+    <ul>
+      <li>Upload multiple CVs at once</li>
+      <li>Use PDF, DOCX or TXT files</li>
+      <li>Maximum 4 MB per file</li>
+      <li>Review selected files before analysis</li>
+    </ul>
+
+    <div className="im-tips-formats">
+      AI-powered candidate shortlisting
+    </div>
+  </aside>
+</div>
                 {cvFiles.length >
                   0 && (
                   <ul className="file-list">
