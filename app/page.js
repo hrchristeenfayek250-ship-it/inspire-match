@@ -1398,23 +1398,29 @@ job_id: selectedJobId ? Number(selectedJobId) : null,
 
               <div className="panel">
 
-                <DropZone
+                              <DropZone
                   multiple
+                  onFiles={addCvs}
+                >
                   <div className="im-upload-inner">
-  <span className="im-upload-icon">♧</span>
-  <strong>Drop candidate CVs here</strong>
-  <small>
-    Upload multiple CVs · PDF, DOCX or TXT · 4 MB each
-  </small>
-  <span className="im-upload-button">
-    Upload CVs
-  </span>
-  <span className="im-upload-count">
-    {cvFiles.length} CVs selected
-  </span>
-</div>
-                    up to 4 MB each
-                  </small>
+                    <span className="im-upload-icon">♧</span>
+
+                    <strong>
+                      Drop candidate CVs here
+                    </strong>
+
+                    <small>
+                      Upload multiple CVs · PDF, DOCX or TXT · 4 MB each
+                    </small>
+
+                    <span className="im-upload-button">
+                      Upload CVs
+                    </span>
+
+                    <span className="im-upload-count">
+                      {cvFiles.length} CVs selected
+                    </span>
+                  </div>
                 </DropZone>
 
                 {cvFiles.length >
