@@ -921,6 +921,20 @@ job_id: selectedJobId ? Number(selectedJobId) : null,
           />
 
           <a
+  <div className="im-upgrade-card">
+  <div className="im-upgrade-icon">✦</div>
+
+  <h3>Unlock More Potential</h3>
+
+  <p>
+    Take your recruitment workflow to the next
+    level with Inspire Match Pro.
+  </p>
+
+  <span className="im-upgrade-label">
+    ✨ Pro Plan — Coming Soon
+  </span>
+</div>
             className="im-home-footer"
             href="https://hireandinspirebychristine.com/"
           >
