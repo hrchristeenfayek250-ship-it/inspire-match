@@ -1,7 +1,6 @@
 
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 import ATSNavigation from "@/components/ATSNavigation";
@@ -155,25 +154,24 @@ function Field({ label, children }) {
 }
 
 export default function CandidatesPage() {
-    const searchParams = useSearchParams();
+   
+export default function CandidatesPage() {
+  const [candidates, setCandidates] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [updatingId, setUpdatingId] = useState(null);
   const [mobileNav, setMobileNav] = useState(false);
 
   const [search, setSearch] = useState("");
-    useEffect(() => {
-    setSearch(searchParams.get("search") || "");
-  }, [searchParams]);
- 
+  const [statusFilter, setStatusFilter] = useState("All statuses");
+  const [recruitmentFilter, setRecruitmentFilter] = useState("All types");
+  const [locationFilter, setLocationFilter] = useState("");
+  const [minExperience, setMinExperience] = useState("");
+
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     setSearch(params.get("search") || "");
   }, []);
-
-    useState("All types");
-  const [locationFilter, setLocationFilter] = useState("");
-  const [minExperience, setMinExperience] = useState("");
 
   useEffect(() => {
     loadCandidates();
