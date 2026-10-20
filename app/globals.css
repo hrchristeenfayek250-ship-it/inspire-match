@@ -781,164 +781,94 @@ textarea { width: 100%; min-height: 180px; border: 1px solid var(--line); border
   margin: 6px 0 17px;
 }
 
-/* TWO-COLUMN UPLOAD LAYOUT */
+/* CLEAN SHORTLISTING PANELS */
 
 .im-home-content .step .panel {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) 235px;
-  column-gap: 18px;
-  row-gap: 15px;
-  align-items: start;
-  position: relative;
-  padding: 0;
-  border: 0;
-  border-radius: 0;
-  box-shadow: none;
-  background: transparent;
+  display: block;
   min-width: 0;
+  padding: 24px;
+  background: #ffffff;
+  border: 1px solid #e5ebe7;
+  border-radius: 16px;
+  box-shadow: 0 5px 20px rgba(27, 64, 48, 0.04);
 }
 
-.im-home-content .step .panel > div[style*="marginBottom"],
-.im-home-content .step .panel > div[style*="margin-bottom"] {
-  grid-column: 1 / -1;
+/* Remove fake guidance panels */
+.im-home-content .step .panel::after {
+  content: none;
+  display: none;
 }
 
-.im-home-content .step .panel > .tabs {
-  grid-column: 1;
-  grid-row: auto;
-  display: flex;
-  gap: 5px;
-  background: #f1f6f2;
-  border: 1px solid #e2ebe4;
-  border-radius: 11px;
-  padding: 5px;
-  margin: 0;
+/* JD and CV layouts */
+.im-home-content .im-jd-layout,
+.im-home-content .im-cv-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1.6fr) minmax(230px, 1fr);
+  gap: 20px;
+  align-items: stretch;
 }
 
-.im-home-content .step .panel > .tabs button {
-  flex: 1;
-  border: 0;
-  border-radius: 8px;
-  padding: 11px 9px;
-  font-size: 13px;
-  white-space: nowrap;
+/* Upload boxes */
+.im-home-content .im-jd-upload-area,
+.im-home-content .im-cv-upload-area {
+  min-width: 0;
+  display: block;
 }
 
-.im-home-content .step .panel > .tabs button[aria-pressed="true"] {
-  background: #1e6048;
-  color: white;
-}
-
-.im-home-content .step .panel > .drop,
-.im-home-content .step .panel > textarea {
-  grid-column: 1;
-  grid-row: auto;
-  min-height: 225px;
-  margin: 0;
-  border-radius: 14px;
-  box-sizing: border-box;
-  width: 100%;
-}
-
-.im-home-content .step .panel > .drop {
-  border: 1.5px dashed #93b6a1;
-  background: #f5faf6;
-  padding: 20px;
+.im-home-content .im-jd-upload-area .drop,
+.im-home-content .im-cv-upload-area .drop {
   display: flex;
   align-items: center;
   justify-content: center;
-}
-
-.im-home-content .step .panel > .drop:hover,
-.im-home-content .step .panel > .drop.over {
-  background: #eaf5ee;
-  border-color: #286b51;
-}
-
-.im-home-content .step .panel > .drop .im-upload-inner {
-  gap: 9px;
-}
-
-.im-home-content .step .panel > .drop .im-upload-icon {
-  width: 50px;
-  height: 50px;
-  font-size: 27px;
-}
-
-.im-home-content .step .panel > .drop .im-upload-inner strong {
-  font-size: 16px;
-}
-
-.im-home-content .step .panel > .drop .im-upload-button {
-  margin-top: 4px;
-  background: #1c6047;
-  padding: 11px 21px;
-}
-
-/* GUIDANCE PANEL */
-
-.im-home-content .step .panel::after {
-  content:
-    "BEST PRACTICES\A\A"
-    "✓ Include required skills\A"
-    "✓ Mention experience level\A"
-    "✓ Specify work location\A"
-    "✓ PDF, DOCX or TXT";
-  white-space: pre-line;
-  grid-column: 2;
-  grid-row: 3;
   width: 100%;
-  min-height: 225px;
-  box-sizing: border-box;
-  padding: 22px 18px;
+  min-height: 255px;
+  height: auto;
+  padding: 25px;
+  margin: 0;
+  border: 1.5px dashed #91b5a0;
   border-radius: 14px;
-  background: #edf5ef;
-  color: #365e4a;
-  font-size: 12px;
-  line-height: 1.9;
-  font-weight: 600;
-  pointer-events: none;
+  background: #f5faf6;
+  box-sizing: border-box;
 }
 
-.im-home-content .step .panel:has(> .tabs)::after {
-  grid-row: 3;
+.im-home-content .im-jd-upload-area textarea {
+  width: 100%;
+  min-height: 255px;
 }
 
-/* CV UPLOAD GUIDE */
-
-.im-home-content .step .panel:has(> .drop:first-child)::after {
-  content:
-    "CV UPLOAD GUIDE\A\A"
-    "✓ Upload multiple CVs\A"
-    "✓ Up to 4 MB each\A"
-    "✓ PDF, DOCX or TXT\A"
-    "✓ Review files below";
-  grid-row: 1;
+/* Compact tips panels */
+.im-home-content .im-jd-tips,
+.im-home-content .im-cv-tips {
+  min-width: 0;
+  height: auto;
+  padding: 22px;
+  border-radius: 14px;
+  background: #edf7ef;
 }
 
-.im-home-content .step .panel > .row,
-.im-home-content .step .panel > .file-list,
-.im-home-content .step .panel > div[style]:not(:first-child) {
-  grid-column: 1 / -1;
-}
-
-.im-home-content .step .panel > .drop ~ .row {
-  margin-top: 0;
+/* Remove excessive spacing */
+.im-home-content .step .panel > .row {
+  margin-top: 18px;
 }
 
 .im-home-content .step .panel > .file-list {
-  margin-top: 0;
+  margin-top: 16px;
 }
 
-.im-home-content .step .panel:has(> .drop:first-child) > .drop {
-  grid-column: 1;
-  grid-row: 1;
+.im-home-content .step .panel > div[style] {
+  min-height: 0;
 }
 
-.im-home-content .step .panel:has(> .drop:first-child) > .file-list {
-  grid-row: auto;
-}
+@media (max-width: 900px) {
+  .im-home-content .im-jd-layout,
+  .im-home-content .im-cv-layout {
+    grid-template-columns: 1fr;
+  }
 
+  .im-home-content .step .panel {
+    padding: 18px;
+  }
+}
 .im-home-content .step.locked {
   opacity: 0.76;
 }
