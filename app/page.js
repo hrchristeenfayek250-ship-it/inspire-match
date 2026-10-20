@@ -808,16 +808,38 @@ job_id: selectedJobId ? Number(selectedJobId) : null,
         ]
       );
 
-    const csv = [
-      headers,
-      ...rows,
-    ]
-      .map((row) =>
-        row
-          .map(escape)
-          .join(",")
-      )
-      .join("\n");
+   <header className="im-home-topbar">
+  <div className="im-topbar-search">
+    <span>⌕</span>
+    <input
+      type="search"
+      placeholder="Search jobs, candidates, or keywords..."
+      aria-label="Search"
+    />
+  </div>
+
+  <div className="im-topbar-actions">
+    <a
+      href="/app/dashboard"
+      className="im-topbar-dashboard"
+    >
+      Dashboard
+    </a>
+
+    <a
+      href="/app/notifications"
+      className="im-topbar-notifications"
+      aria-label="Notifications"
+    >
+      ♧
+    </a>
+
+    <div className="im-topbar-profile">
+      <span className="im-profile-avatar">CF</span>
+      <span>My Workspace</span>
+    </div>
+  </div>
+</header>
 
     const url =
       URL.createObjectURL(
