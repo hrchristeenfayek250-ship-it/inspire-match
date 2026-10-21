@@ -1081,6 +1081,36 @@ value: monthlyCandidates.length,
   </div>
 </section>
 
+<section className="ir-panel" style={{ marginBottom: 24 }}>
+  <div className="ir-panel-heading">
+    <h2>Source Effectiveness</h2>
+    <p>Candidate sources and hiring conversion rates</p>
+  </div>
+
+  <div style={{ padding: 20, overflowX: "auto" }}>
+    <table style={{ width: "100%", textAlign: "left" }}>
+      <thead>
+        <tr>
+          <th>Source</th>
+          <th>Candidates</th>
+          <th>Hired</th>
+          <th>Conversion Rate</th>
+        </tr>
+      </thead>
+      <tbody>
+        {sourceEffectiveness.map(item => (
+          <tr key={item.source}>
+            <td>{item.source}</td>
+            <td>{item.total}</td>
+            <td>{item.hired}</td>
+            <td>{item.conversionRate}%</td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  </div>
+</section>
+
           <div className="ir-analytics">
             <section className="ir-panel">
               <div className="ir-panel-heading">
