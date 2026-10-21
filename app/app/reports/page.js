@@ -83,7 +83,9 @@ export default function ReportsPage() {
         .from("candidates")
         
         .select(
-          "id, full_name, current_title, status, created_at, hired_at, stage_entered_at, job_id, recruitment_type"
+
+"id, full_name, current_title, status, source, created_at, hired_at, stage_entered_at, job_id, recruitment_type"
+
         )
 
         .or(
