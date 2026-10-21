@@ -337,7 +337,7 @@ table th {
           color: #1e293b;
         }
 
-          margin-bottom: 27px;
+                   margin-bottom: 27px;
         }
 
 
