@@ -1177,6 +1177,102 @@ export default function DashboardPage() {
               />
             </div>
 
+            {/* RECRUITMENT FUNNEL REPORT */}
+
+            <Panel
+              style={{
+                padding: 26,
+                marginTop: 26,
+              }}
+            >
+              <PanelHeading
+                title="Recruitment Funnel"
+                subtitle="Current candidate distribution by hiring stage"
+                action={
+                  <Link
+                    href="/app/pipeline"
+                    style={{
+                      color: "#315f50",
+                      fontSize: 12,
+                      fontWeight: 800,
+                      textDecoration: "none",
+                    }}
+                  >
+                    View Pipeline →
+                  </Link>
+                }
+              />
+
+              <div style={{ display: "grid", gap: 18 }}>
+                {analytics.distribution
+                  .filter(item => item.stage !== "Rejected")
+                  .map((item, index) => {
+                    const total = candidates.length;
+
+                    const percentage = total
+                      ? (item.count / total) * 100
+                      : 0;
+
+                    return (
+                      <div key={item.stage}>
+                        <div
+                          style={{
+                            display: "flex",
+                            justifyContent: "space-between",
+                            marginBottom: 8,
+                            fontSize: 13,
+                          }}
+                        >
+                          <strong>{item.stage}</strong>
+
+                          <span>
+                            {loading ? "—" : item.count}
+                            {" · "}
+                            {loading
+                              ? "—"
+                              : `${percentage.toFixed(1)}%`}
+                          </span>
+                        </div>
+
+                        <div
+                          style={{
+                            height: 13,
+                            background: "#edf3ef",
+                            borderRadius: 20,
+                            overflow: "hidden",
+                          }}
+                        >
+                          <div
+                            style={{
+                              height: "100%",
+                              width: `${percentage}%`,
+                              background:
+                                palette[index] || "#315f50",
+                              borderRadius: 20,
+                              transition: "width .3s ease",
+                            }}
+                          />
+                        </div>
+                      </div>
+                    );
+                  })}
+              </div>
+
+              <p
+                style={{
+                  fontSize: 12,
+                  color: "#8994a3",
+                  marginTop: 20,
+                  marginBottom: 0,
+                }}
+              >
+                Percentages represent current candidate
+                distribution, not historical stage conversion.
+                Rejected candidates are excluded from the
+                displayed stages but included in the total.
+              </p>
+            </Panel>
+
 
             {/* RECENT CANDIDATES */}
 
