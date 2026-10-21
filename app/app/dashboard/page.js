@@ -311,9 +311,46 @@ export default function DashboardPage() {
       );
     }).length;
 
+    
     const hired = count("Hired");
 
-    return {
+    const hiredCandidates = candidates.filter(
+      (c) =>
+        String(c.status || "").toLowerCase() === "hired"
+    );
+
+    const hiringDurations = hiredCandidates
+      .map((c) => {
+        const start = c.applied_at || c.created_at;
+        const end = c.hired_at;
+
+        if (!start || !end) return null;
+
+        const startDate = new Date(start);
+        const endDate = new Date(end);
+
+        if (
+          Number.isNaN(startDate.getTime()) ||
+          Number.isNaN(endDate.getTime()) ||
+          endDate < startDate
+        ) {
+          return null;
+        }
+
+        return (
+          (endDate.getTime() - startDate.getTime()) /
+          86400000
+        );
+      })
+      .filter((days) => days !== null);
+
+    const averageTimeToHire = hiringDurations.length
+      ? (
+          hiringDurations.reduce((sum, days) => sum + days, 0) /
+          hiringDurations.length
+        ).toFixed(1)
+      : null;
+
       monthly,
       distribution,
       last30,
