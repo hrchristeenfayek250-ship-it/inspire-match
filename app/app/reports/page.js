@@ -145,6 +145,27 @@ function countStage(stage) {
       stage.toLowerCase()
   ).length;
 }
+
+const averageDays = (items, start, end) => {
+  const days = items
+    .filter(x => x[start] && x[end])
+    .map(x => (new Date(x[end]) - new Date(x[start])) / 86400000)
+    .filter(x => Number.isFinite(x) && x >= 0);
+
+  return days.length
+    ? (days.reduce((a, b) => a + b, 0) / days.length).toFixed(1)
+    : "N/A";
+};
+
+const timeToHire = averageDays(
+  candidates.filter(x => x.hired_at?.startsWith(month)),
+  "created_at", "hired_at"
+);
+
+const timeToFill = averageDays(
+  jobs.filter(x => x.filled_at?.startsWith(month)),
+  "created_at", "filled_at"
+);
   
 const averageDays = (records, startKey, endKey) => {
   const durations = records
