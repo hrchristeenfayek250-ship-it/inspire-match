@@ -1102,6 +1102,7 @@ export default function DashboardPage() {
               </Panel>
             </div>
 
+            
             {/* RECRUITMENT SIGNALS */}
 
             <div
@@ -1110,22 +1111,14 @@ export default function DashboardPage() {
             >
               <Metric
                 label="Recent Intake"
-                value={
-                  loading
-                    ? "—"
-                    : analytics.last30
-                }
+                value={loading ? "—" : analytics.last30}
                 icon="↗"
-                note="Added in the last 30 days"
+                note="Candidates added in the last 30 days"
               />
 
               <Metric
                 label="Unassigned Talent"
-                value={
-                  loading
-                    ? "—"
-                    : analytics.unassigned
-                }
+                value={loading ? "—" : analytics.unassigned}
                 icon="◎"
                 note="Candidates without a linked job"
               />
@@ -1138,9 +1131,52 @@ export default function DashboardPage() {
                     : `${analytics.hiredShare}%`
                 }
                 icon="◈"
-                note="Of all candidate records"
+                note="Hired candidates / total candidates"
+              />
+
+              <Metric
+                label="Candidates per Active Job"
+                value={
+                  loading
+                    ? "—"
+                    : analytics.activeJobs
+                      ? (
+                          candidates.filter(c => c.job_id).length /
+                          analytics.activeJobs
+                        ).toFixed(1)
+                      : "N/A"
+                }
+                icon="▤"
+                note="Linked candidates / active jobs"
+              />
+
+              <Metric
+                label="Interview Pipeline"
+                value={
+                  loading
+                    ? "—"
+                    : analytics.distribution.find(
+                        s => s.stage === "Interview"
+                      )?.count ?? 0
+                }
+                icon="◉"
+                note="Candidates currently in Interview"
+              />
+
+              <Metric
+                label="Shortlisted Talent"
+                value={
+                  loading
+                    ? "—"
+                    : analytics.distribution.find(
+                        s => s.stage === "Shortlisted"
+                      )?.count ?? 0
+                }
+                icon="✦"
+                note="Candidates currently shortlisted"
               />
             </div>
+
 
             {/* RECENT CANDIDATES */}
 
