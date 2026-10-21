@@ -87,8 +87,9 @@ export default function ReportsPage() {
         .or(
           `company_id.eq.${companyId},and(company_id.is.null,user_id.eq.${authData.user.id})`
         )
-        .gte("created_at", start.toISOString())
-        .lt("created_at", end.toISOString())
+       
+        .not("created_at", "is", null)
+
         .order("created_at", { ascending: false });
 
       const { data: jobData, error: jobError } =
