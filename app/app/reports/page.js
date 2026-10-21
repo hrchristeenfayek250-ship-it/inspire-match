@@ -81,11 +81,11 @@ export default function ReportsPage() {
     
       const { data, error: queryError } = await supabase
         .from("candidates")
+        
         .select(
-
-"id, full_name, current_title, status, created_at, hired_at, job_id, recruitment_type"
-
+          "id, full_name, current_title, status, created_at, hired_at, stage_entered_at, job_id, recruitment_type"
         )
+
         .or(
           `company_id.eq.${companyId},and(company_id.is.null,user_id.eq.${authData.user.id})`
         )
