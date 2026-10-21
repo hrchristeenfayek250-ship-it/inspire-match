@@ -167,32 +167,7 @@ const timeToFill = averageDays(
   "created_at", "filled_at"
 );
   
-const averageDays = (records, startKey, endKey) => {
-  const durations = records
-    .filter((item) => item[startKey] && item[endKey])
-    .map((item) =>
-      (new Date(item[endKey]) - new Date(item[startKey])) /
-      86400000
-    )
-    .filter((days) => Number.isFinite(days) && days >= 0);
 
-  return durations.length
-    ? (durations.reduce((sum, days) => sum + days, 0) /
-        durations.length).toFixed(1)
-    : "N/A";
-};
-
-const timeToHire = averageDays(
-  candidates.filter((c) => c.hired_at?.startsWith(month)),
-  "created_at",
-  "hired_at"
-);
-
-const timeToFill = averageDays(
-  jobs.filter((j) => j.filled_at?.startsWith(month)),
-  "created_at",
-  "filled_at"
-);
 
 
 
