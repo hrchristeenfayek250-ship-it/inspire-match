@@ -340,6 +340,7 @@ table th {
           margin-bottom: 27px;
         }
 
+
         .ir-breadcrumb {
           color: #8390a0;
           font-size: 12px;
