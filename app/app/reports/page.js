@@ -99,8 +99,6 @@ export default function ReportsPage() {
         await supabase
           .from("jobs")
           .select("id, title, status, created_at, filled_at")
-
-          .select("id, title, status")
           .or(
             `company_id.eq.${companyId},and(company_id.is.null,user_id.eq.${authData.user.id})`
           )
