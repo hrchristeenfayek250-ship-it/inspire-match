@@ -328,6 +328,7 @@ table th {
           font-weight: 600;
         }
 
+        
         .ir-workspace {
           margin-left: 254px;
           max-width: none;
@@ -337,8 +338,6 @@ table th {
           color: #1e293b;
         }
 
-                   margin-bottom: 27px;
-        }
 
 
         .ir-breadcrumb {
