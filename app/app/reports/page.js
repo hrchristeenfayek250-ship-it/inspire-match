@@ -167,6 +167,38 @@ const timeToFill = averageDays(
   "created_at", "filled_at"
 );
   
+const stageSLA = {
+  Applied: 3,
+  Screening: 5,
+  Interview: 7,
+  Shortlisted: 5,
+};
+
+const stageAging = candidates
+  .filter(c =>
+    c.stage_entered_at &&
+    Object.keys(stageSLA).includes(c.status)
+  )
+  .map(c => {
+    const days = Math.max(
+      0,
+      Math.floor(
+        (Date.now() - new Date(c.stage_entered_at).getTime()) /
+        86400000
+      )
+    );
+
+    return {
+      ...c,
+      daysInStage: days,
+      slaDays: stageSLA[c.status],
+      overdue: days > stageSLA[c.status],
+    };
+  });
+
+const overdueCandidates = stageAging.filter(c => c.overdue);
+
+  
 
 
 
