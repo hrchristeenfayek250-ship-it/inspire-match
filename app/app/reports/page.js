@@ -1008,6 +1008,53 @@ value: monthlyCandidates.length,
             ))}
           </div>
 
+<section className="ir-panel" style={{ marginBottom: 24 }}>
+  <div className="ir-panel-heading">
+    <h2>Stage Aging & SLA</h2>
+    <p>Current pipeline aging across all candidates</p>
+  </div>
+
+  <div style={{ padding: 20 }}>
+    <h3 style={{ color: "#245c4a" }}>
+      Overdue Candidates: {overdueCandidates.length}
+    </h3>
+
+    {stageAging.length === 0 ? (
+      <p>No stage aging data available yet.</p>
+    ) : (
+      <div style={{ overflowX: "auto" }}>
+        <table style={{ width: "100%", textAlign: "left" }}>
+          <thead>
+            <tr>
+              <th>Candidate</th>
+              <th>Stage</th>
+              <th>Days</th>
+              <th>SLA</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            {stageAging.map(c => (
+              <tr key={c.id}>
+                <td>{c.full_name || "Unnamed"}</td>
+                <td>{c.status}</td>
+                <td>{c.daysInStage}</td>
+                <td>{c.slaDays} days</td>
+                <td style={{
+                  color: c.overdue ? "#b91c1c" : "#245c4a",
+                  fontWeight: 700
+                }}>
+                  {c.overdue ? "Overdue" : "On Track"}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    )}
+  </div>
+</section>
+
           <div className="ir-analytics">
             <section className="ir-panel">
               <div className="ir-panel-heading">
