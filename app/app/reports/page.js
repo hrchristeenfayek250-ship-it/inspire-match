@@ -320,8 +320,14 @@ table th {
           padding: 30px 14px 5px;
         }
 
+       
         .ir-nav-footer a {
-          
+          color: #657285;
+          text-decoration: none;
+          font-size: 13px;
+          font-weight: 600;
+        }
+
         .ir-workspace {
           margin-left: 254px;
           max-width: none;
@@ -331,13 +337,6 @@ table th {
           color: #1e293b;
         }
 
-          padding: 0 15px 45px;
-          max-width: 1550px;
-          font-family: Arial, sans-serif;
-          color: #1e293b;
-        }
-
-        .ir-screen {
           margin-bottom: 27px;
         }
 
