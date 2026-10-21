@@ -352,6 +352,44 @@ export default function DashboardPage() {
       : null;
 
     
+    const fillDurations = jobs
+      .filter(
+        (job) =>
+          String(job.status || "").toLowerCase() === "closed"
+      )
+      .map((job) => {
+        const start = job.opened_at || job.created_at;
+        const end = job.closed_at;
+
+        if (!start || !end) return null;
+
+        const startDate = new Date(start);
+        const endDate = new Date(end);
+
+        if (
+          Number.isNaN(startDate.getTime()) ||
+          Number.isNaN(endDate.getTime()) ||
+          endDate < startDate
+        ) {
+          return null;
+        }
+
+        return (
+          (endDate.getTime() - startDate.getTime()) /
+          86400000
+        );
+      })
+      .filter((days) => days !== null);
+
+    const averageTimeToFill = fillDurations.length
+      ? (
+          fillDurations.reduce(
+            (sum, days) => sum + days,
+            0
+          ) / fillDurations.length
+        ).toFixed(1)
+      : null;
+
     return {
       monthly,
       distribution,
@@ -359,6 +397,8 @@ export default function DashboardPage() {
       hired,
       averageTimeToHire,
       hiringDurationsCount: hiringDurations.length,
+      averageTimeToFill,
+      fillDurationsCount: fillDurations.length,
 
       activeJobs: jobs.filter(
         (j) => j.status !== "Closed"
@@ -374,6 +414,7 @@ export default function DashboardPage() {
           )
         : 0,
     };
+
 
   }, [candidates, jobs]);
 
