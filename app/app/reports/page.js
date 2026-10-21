@@ -944,6 +944,20 @@ value: monthlyCandidates.length,
                 note: "Hired from the selected-month cohort",
                 icon: "✓",
               },
+              
+              {
+                label: "Time to Hire",
+                value: timeToHire === "N/A" ? "N/A" : `${timeToHire} days`,
+                note: "Average days from candidate creation to hire",
+                icon: "◷",
+              },
+              {
+                label: "Time to Fill",
+                value: timeToFill === "N/A" ? "N/A" : `${timeToFill} days`,
+                note: "Average days from job creation to closure",
+                icon: "◴",
+              },
+
             ].map((item) => (
               <div className="ir-kpi" key={item.label}>
                 <div className="ir-kpi-top">
