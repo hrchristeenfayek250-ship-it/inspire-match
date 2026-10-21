@@ -199,6 +199,30 @@ const stageAging = candidates
   });
 
 const overdueCandidates = stageAging.filter(c => c.overdue);
+  
+const sourceEffectiveness = Object.values(
+  candidates.reduce((acc, candidate) => {
+    const source = candidate.source?.trim() || "Unknown";
+
+    if (!acc[source]) {
+      acc[source] = { source, total: 0, hired: 0 };
+    }
+
+    acc[source].total += 1;
+
+    if (candidate.status?.toLowerCase() === "hired") {
+      acc[source].hired += 1;
+    }
+
+    return acc;
+  }, {})
+).map(item => ({
+  ...item,
+  conversionRate: item.total
+    ? ((item.hired / item.total) * 100).toFixed(1)
+    : "0.0",
+}));
+
 
   
 
