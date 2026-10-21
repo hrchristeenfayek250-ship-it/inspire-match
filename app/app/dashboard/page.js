@@ -1316,6 +1316,62 @@ export default function DashboardPage() {
               </p>
             </Panel>
 
+            {/* TIME TO FILL */}
+
+            <Panel
+              style={{
+                padding: 26,
+                marginTop: 22,
+              }}
+            >
+              <PanelHeading
+                title="Time to Fill"
+                subtitle="Average days from job opening to closure"
+              />
+
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "baseline",
+                  gap: 10,
+                }}
+              >
+                <strong
+                  style={{
+                    fontSize: 38,
+                    color: "#315f50",
+                    fontWeight: 800,
+                  }}
+                >
+                  {loading
+                    ? "—"
+                    : analytics.averageTimeToFill ?? "N/A"}
+                </strong>
+
+                {!loading &&
+                  analytics.averageTimeToFill !== null && (
+                    <span style={{ color: "#8994a3" }}>
+                      days
+                    </span>
+                  )}
+              </div>
+
+              <p
+                style={{
+                  color: "#8994a3",
+                  fontSize: 12,
+                  marginBottom: 0,
+                }}
+              >
+                Based on{" "}
+                {loading
+                  ? "—"
+                  : analytics.fillDurationsCount}{" "}
+                closed jobs with valid opening and closing dates.
+              </p>
+            </Panel>
+
+
 
             {/* RECRUITMENT FUNNEL REPORT */}
 
