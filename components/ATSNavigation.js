@@ -10,6 +10,9 @@ export const ATS_NAVIGATION = [
   ["Pipeline", "/app/pipeline", "⇄"],
   ["AI Matching", "/app/matching", "✧"],
   ["Reports", "/app/reports", "▥"],
+  
+  ["Ask Inspire AI", "/app/ask-inspire", "✦"],
+
   ["Executive", "/app/executive", "◈"],
   ["Team", "/app/team", "♧"],
 ];
