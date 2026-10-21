@@ -125,7 +125,12 @@ export default function ReportsPage() {
   }, [month]);
 
   
-const activeCandidates = candidates.filter(
+
+const monthlyCandidates = candidates.filter((candidate) =>
+  candidate.created_at?.startsWith(month)
+);
+
+const activeCandidates = monthlyCandidates.filter(
   (candidate) =>
     candidate.recruitment_type === "Active Recruitment"
 );
@@ -882,7 +887,9 @@ table th {
             {[
               {
                 label: "Candidates Added",
-                value: candidates.length,
+              
+value: monthlyCandidates.length,
+
                 note: "Added in the selected month",
                 icon: "♙",
               },
