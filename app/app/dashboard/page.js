@@ -1219,6 +1219,63 @@ export default function DashboardPage() {
               />
             </div>
 
+            {/* TIME TO HIRE */}
+
+            <Panel
+              style={{
+                padding: 26,
+                marginTop: 22,
+              }}
+            >
+              <PanelHeading
+                title="Time to Hire"
+                subtitle="Average days from application to hiring"
+              />
+
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "baseline",
+                  gap: 10,
+                }}
+              >
+                <strong
+                  style={{
+                    fontSize: 38,
+                    color: "#315f50",
+                    fontWeight: 800,
+                  }}
+                >
+                  {loading
+                    ? "—"
+                    : analytics.averageTimeToHire ?? "N/A"}
+                </strong>
+
+                {analytics.averageTimeToHire !== null &&
+                  !loading && (
+                    <span style={{ color: "#8994a3" }}>
+                      days
+                    </span>
+                  )}
+              </div>
+
+              <p
+                style={{
+                  color: "#8994a3",
+                  fontSize: 12,
+                  marginBottom: 0,
+                }}
+              >
+                Based on{" "}
+                {loading
+                  ? "—"
+                  : analytics.hiringDurationsCount}{" "}
+                hired candidates with valid application
+                and hiring dates.
+              </p>
+            </Panel>
+
+
             {/* RECRUITMENT FUNNEL REPORT */}
 
             <Panel
