@@ -1371,6 +1371,118 @@ export default function DashboardPage() {
               </p>
             </Panel>
 
+            {/* STAGE AGING REPORT */}
+
+            <Panel
+              style={{
+                padding: 26,
+                marginTop: 22,
+              }}
+            >
+              <PanelHeading
+                title="Stage Aging"
+                subtitle="Time since candidates entered their current stage"
+              />
+
+              {(() => {
+                const currentTime = Date.now();
+
+                const stageAging = stages
+                  .filter(
+                    (stage) =>
+                      stage !== "Hired" &&
+                      stage !== "Rejected"
+                  )
+                  .map((stage) => {
+                    const records = candidates.filter(
+                      (c) =>
+                        String(c.status || "").toLowerCase() ===
+                          stage.toLowerCase() &&
+                        Boolean(c.stage_entered_at)
+                    );
+
+                    const durations = records
+                      .map((c) => {
+                        const entered = new Date(
+                          c.stage_entered_at
+                        ).getTime();
+
+                        if (
+                          !Number.isFinite(entered) ||
+                          entered > currentTime
+                        ) {
+                          return null;
+                        }
+
+                        return (
+                          (currentTime - entered) / 86400000
+                        );
+                      })
+                      .filter((days) => days !== null);
+
+                    return {
+                      stage,
+                      count: durations.length,
+                      average: durations.length
+                        ? (
+                            durations.reduce(
+                              (sum, days) => sum + days,
+                              0
+                            ) / durations.length
+                          ).toFixed(1)
+                        : null,
+                    };
+                  });
+
+                return (
+                  <div style={{ display: "grid", gap: 14 }}>
+                    {stageAging.map((item) => (
+                      <div
+                        key={item.stage}
+                        style={{
+                          display: "flex",
+                          justifyContent: "space-between",
+                          alignItems: "center",
+                          padding: 14,
+                          border: "1px solid #e6eaf0",
+                          borderRadius: 12,
+                        }}
+                      >
+                        <span style={{ fontWeight: 700 }}>
+                          {item.stage}
+                        </span>
+
+                        <span
+                          style={{
+                            color: "#315f50",
+                            fontWeight: 800,
+                          }}
+                        >
+                          {loading
+                            ? "—"
+                            : item.average === null
+                              ? "N/A"
+                              : `${item.average} days`}
+                        </span>
+                      </div>
+                    ))}
+
+                    <p
+                      style={{
+                        color: "#8994a3",
+                        fontSize: 12,
+                        marginBottom: 0,
+                      }}
+                    >
+                      Requires valid stage_entered_at dates.
+                      Missing dates are excluded.
+                    </p>
+                  </div>
+                );
+              })()}
+            </Panel>
+
+
 
 
             {/* RECRUITMENT FUNNEL REPORT */}
