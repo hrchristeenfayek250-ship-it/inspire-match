@@ -351,10 +351,14 @@ export default function DashboardPage() {
         ).toFixed(1)
       : null;
 
+    
+    return {
       monthly,
       distribution,
       last30,
       hired,
+      averageTimeToHire,
+      hiringDurationsCount: hiringDurations.length,
 
       activeJobs: jobs.filter(
         (j) => j.status !== "Closed"
@@ -370,6 +374,7 @@ export default function DashboardPage() {
           )
         : 0,
     };
+
   }, [candidates, jobs]);
 
   async function logOut() {
