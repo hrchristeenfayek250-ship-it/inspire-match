@@ -157,12 +157,41 @@ Return valid JSON only:
         ? result.recommendations.slice(0, 5).map(String)
         : [],
     });
+ 
   } catch (error) {
     console.error("Ask Inspire AI failed:", error);
 
+    const message = String(error?.message || "");
+
+    let errorCode = "AI_REQUEST_FAILED";
+
+    if (message.includes("GEMINI_API_KEY")) {
+      errorCode = "AI_CONFIGURATION_ERROR";
+    } else if (
+      message.includes("429") ||
+      message.includes("RESOURCE_EXHAUSTED")
+    ) {
+      errorCode = "AI_RATE_LIMITED";
+    } else if (
+      message.includes("503") ||
+      message.includes("502") ||
+      message.includes("504")
+    ) {
+      errorCode = "AI_PROVIDER_UNAVAILABLE";
+    } else if (
+      message.includes("valid JSON") ||
+      message.includes("JSON")
+    ) {
+      errorCode = "AI_RESPONSE_FORMAT_ERROR";
+    }
+
     return Response.json(
-      { error: "Ask Inspire AI is temporarily unavailable." },
+      {
+        error: "Ask Inspire AI could not complete this request.",
+        code: errorCode,
+      },
       { status: 500 }
     );
   }
 }
+
