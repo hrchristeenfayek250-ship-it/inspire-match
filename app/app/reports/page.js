@@ -82,7 +82,9 @@ export default function ReportsPage() {
       const { data, error: queryError } = await supabase
         .from("candidates")
         .select(
-"id, full_name, current_title, status, created_at, job_id, recruitment_type"
+
+"id, full_name, current_title, status, created_at, hired_at, job_id, recruitment_type"
+
         )
         .or(
           `company_id.eq.${companyId},and(company_id.is.null,user_id.eq.${authData.user.id})`
@@ -93,7 +95,9 @@ export default function ReportsPage() {
         .order("created_at", { ascending: false });
 
       const { data: jobData, error: jobError } =
-        await supabase
+
+.select("id, title, status, created_at, filled_at")
+
           .from("jobs")
           .select("id, title, status")
           .or(
