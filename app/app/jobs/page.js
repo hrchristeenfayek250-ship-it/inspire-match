@@ -1492,7 +1492,19 @@ export default function JobsPage() {
                                 gap: 12,
                               }}
                             >
-                              <h3>{job.title}</h3>
+                              <h3>
+                                <Link
+                                  href={`/app/jobs/${job.id}`}
+                                  style={{
+                                    color: "inherit",
+                                    textDecoration: "none",
+                                    cursor: "pointer",
+                                  }}
+                                  title="View job details"
+                                >
+                                  {job.title}
+                                </Link>
+                              </h3>
 
                               <span
                                 className={`jm-status ${statusClass}`}
