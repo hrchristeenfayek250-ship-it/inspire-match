@@ -1735,7 +1735,7 @@ value: monthlyCandidates.length,
     ))}
   </div>
 
-  <
+ 
   <p style={{ color: "#87988e", fontSize: 12, marginTop: 20 }}>
     Conversion rates are calculated using recorded candidate stage
     history, including progression to later stages when intermediate
