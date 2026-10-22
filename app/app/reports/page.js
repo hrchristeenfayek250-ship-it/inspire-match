@@ -405,6 +405,49 @@ const activeCandidateIds = new Set(
   activeCandidates.map(candidate => String(candidate.id))
 );
 
+
+const reachedStages = new Map();
+
+transitionsByCandidate.forEach((transitions, id) => {
+  if (!activeCandidateIds.has(id)) return;
+
+  if (!reachedStages.has(id)) {
+    reachedStages.set(id, new Set());
+  }
+
+  transitions.forEach(transition => {
+    [transition.from_stage, transition.to_stage].forEach(value => {
+      const stage = conversionStages.find(
+        item =>
+          item.toLowerCase() ===
+          String(value || "").trim().toLowerCase()
+      );
+
+      if (stage) {
+        reachedStages.get(id).add(stage);
+      }
+    });
+  });
+});
+
+activeCandidates.forEach(candidate => {
+  const id = String(candidate.id);
+
+  const currentStage = conversionStages.find(
+    stage =>
+      stage.toLowerCase() ===
+      String(candidate.status || "").trim().toLowerCase()
+  );
+
+  if (!currentStage) return;
+
+  if (!reachedStages.has(id)) {
+    reachedStages.set(id, new Set());
+  }
+
+  reachedStages.get(id).add(currentStage);
+});
+
 const stageConversion = conversionStages
   .slice(0, -1)
   .map((from, index) => {
@@ -412,59 +455,6 @@ const stageConversion = conversionStages
 
     const entered = new Set();
     const progressed = new Set();
-
-    const reachedStages = new Map();
-
-
-    transitionsByCandidate.forEach((transitions, id) => {
-      if (!activeCandidateIds.has(id)) return;
-
-      if (!reachedStages.has(id)) {
-        reachedStages.set(id, new Set());
-      }
-
-      transitions.forEach(transition => {
-        const previousStage = conversionStages.find(
-          stage =>
-            stage.toLowerCase() ===
-            String(transition.from_stage || "").trim().toLowerCase()
-        );
-
-        const nextStage = conversionStages.find(
-          stage =>
-            stage.toLowerCase() ===
-            String(transition.to_stage || "").trim().toLowerCase()
-        );
-
-        if (previousStage) {
-          reachedStages.get(id).add(previousStage);
-        }
-
-        if (nextStage) {
-          reachedStages.get(id).add(nextStage);
-        }
-      });
-    });
-
-
-   
-    activeCandidates.forEach(candidate => {
-      const id = String(candidate.id);
-
-      const currentStage = conversionStages.find(
-        stage =>
-          stage.toLowerCase() ===
-          String(candidate.status || "").trim().toLowerCase()
-      );
-
-      if (!currentStage) return;
-
-      if (!reachedStages.has(id)) {
-        reachedStages.set(id, new Set());
-      }
-
-      reachedStages.get(id).add(currentStage);
-    });
 
 
 
