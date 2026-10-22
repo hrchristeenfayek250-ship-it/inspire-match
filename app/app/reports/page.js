@@ -1571,6 +1571,150 @@ value: monthlyCandidates.length,
     before tracking was enabled are not included.
   </p>
 </section>
+      
+<section style={{
+  background: "#fff",
+  border: "1px solid #e4eee9",
+  borderRadius: 22,
+  padding: 28,
+  marginBottom: 28,
+  boxShadow: "0 8px 30px rgba(20,65,49,0.05)"
+}}>
+  <div style={{
+    fontSize: 11,
+    fontWeight: 800,
+    letterSpacing: 2,
+    color: "#3c9375"
+  }}>
+    RECRUITMENT INTELLIGENCE
+  </div>
+
+  <h2 style={{
+    fontSize: 26,
+    fontWeight: 800,
+    color: "#173e32",
+    margin: "10px 0"
+  }}>
+    Recruitment Bottleneck Analysis
+  </h2>
+
+  <p style={{
+    color: "#81938b",
+    fontSize: 13,
+    marginBottom: 26
+  }}>
+    Identify stages with long waiting times and SLA breaches.
+  </p>
+
+  <div style={{
+    display: "grid",
+    gridTemplateColumns: "repeat(auto-fit, minmax(210px, 1fr))",
+    gap: 16
+  }}>
+    {bottleneckAnalysis.map(item => (
+      <div key={item.stage} style={{
+        padding: 22,
+        borderRadius: 16,
+        background: "#f8fbf9",
+        border: "1px solid #e5eee8"
+      }}>
+        <div style={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          gap: 10,
+          marginBottom: 20
+        }}>
+          <strong style={{ color: "#204d3e", fontSize: 16 }}>
+            {item.stage}
+          </strong>
+
+          <span style={{
+            padding: "6px 10px",
+            borderRadius: 999,
+            fontSize: 11,
+            fontWeight: 800,
+            color: item.overdue > 0 ? "#b45309" : "#247a57",
+            background: item.overdue > 0 ? "#fff1e6" : "#e8f5ed"
+          }}>
+            {item.total === 0
+              ? "No Data"
+              : item.overdue > 0
+                ? "Attention"
+                : "On Track"}
+          </span>
+        </div>
+
+        <div style={{
+          fontSize: 32,
+          fontWeight: 800,
+          color: "#245c4a"
+        }}>
+          {item.averageDays === null
+            ? "N/A"
+            : `${item.averageDays} days`}
+        </div>
+
+        <div style={{
+          fontSize: 12,
+          color: "#81938b",
+          margin: "8px 0 18px"
+        }}>
+          Average current stage aging
+        </div>
+
+        <div style={{
+          height: 9,
+          background: "#e8f0ea",
+          borderRadius: 999,
+          overflow: "hidden",
+          marginBottom: 18
+        }}>
+          <div style={{
+            height: "100%",
+            width: `${Math.min(
+              100,
+              ((item.averageDays || 0) / item.sla) * 100
+            )}%`,
+            background: item.overdue > 0
+              ? "#e7a15b"
+              : "linear-gradient(90deg, #245c4a, #68b996)",
+            borderRadius: 999
+          }} />
+        </div>
+
+        <div style={{
+          display: "flex",
+          justifyContent: "space-between",
+          fontSize: 12,
+          color: "#688072"
+        }}>
+          <span>{item.total} Candidates</span>
+          <span>SLA: {item.sla} days</span>
+        </div>
+
+        <div style={{
+          marginTop: 14,
+          fontSize: 12,
+          fontWeight: 700,
+          color: item.overdue > 0 ? "#b45309" : "#247a57"
+        }}>
+          {item.overdue} Overdue Candidates
+        </div>
+      </div>
+    ))}
+  </div>
+
+  <p style={{
+    color: "#87988e",
+    fontSize: 12,
+    marginTop: 22
+  }}>
+    Based on current tracked candidates. Historical completed-stage
+    durations are not included.
+  </p>
+</section>
+
 <div className="ir-analytics">
             <section className="ir-panel">
               <div className="ir-panel-heading">
