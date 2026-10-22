@@ -203,18 +203,30 @@ const stageSLA = {
   Shortlisted: 5,
 };
 
+
 const stageAging = candidates
-  .filter(c =>
-    c.stage_entered_at &&
-    Object.keys(stageSLA).includes(c.status)
-  )
+  .filter(c => Object.keys(stageSLA).includes(c.status))
   .map(c => {
+    const latestTransition = stageHistory.find(
+      h =>
+        String(h.candidate_id) === String(c.id) &&
+        h.to_stage === c.status
+    );
+
+    const enteredAt =
+      latestTransition?.changed_at ||
+      c.stage_entered_at ||
+      (c.status === "Applied" ? c.created_at : null);
+
+    if (!enteredAt) return null;
+
+    const timestamp = new Date(enteredAt).getTime();
+
+    if (!Number.isFinite(timestamp)) return null;
+
     const days = Math.max(
       0,
-      Math.floor(
-        (Date.now() - new Date(c.stage_entered_at).getTime()) /
-        86400000
-      )
+      Math.floor((Date.now() - timestamp) / 86400000)
     );
 
     return {
@@ -223,7 +235,9 @@ const stageAging = candidates
       slaDays: stageSLA[c.status],
       overdue: days > stageSLA[c.status],
     };
-  });
+  })
+  .filter(Boolean);
+
 
 const overdueCandidates = stageAging.filter(c => c.overdue);
   
