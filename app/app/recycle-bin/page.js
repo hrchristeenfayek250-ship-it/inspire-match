@@ -139,329 +139,98 @@ export default function RecycleBinPage() {
 
   
   return (
-    <main className="imr-root">
+    <main className="imc-root">
       <style>{`
-        .imr-root {
-          min-height: 100vh;
-          background: #f6f8fb;
-          color: #1e293b;
-          font-family: Arial, sans-serif;
-          font-size: 14px;
-        }
-        .imr-root * { box-sizing: border-box; }
-        .imr-shell {
-          display: grid;
-          grid-template-columns: 254px minmax(0, 1fr);
-          min-height: 100vh;
-        }
-        .imr-sidebar {
-          background: #fff;
-          border-right: 1px solid #e6eaf0;
-          padding: 24px 15px;
-        }
-        .imr-brand {
-          display: flex;
-          align-items: center;
-          gap: 11px;
-          padding: 7px 12px 26px;
-          border-bottom: 1px solid #edf0f2;
-          margin-bottom: 25px;
-        }
-        .imr-logo {
-          width: 42px;
-          height: 42px;
-          border-radius: 12px;
-          display: grid;
-          place-items: center;
-          background: #284e42;
-          color: #fff;
-          font-size: 23px;
-          font-weight: 800;
-        }
-        .imr-brand strong {
-          display: block;
-          font-size: 17px;
-          letter-spacing: -.5px;
-        }
-        .imr-brand small {
-          display: block;
-          margin-top: 4px;
-          font-size: 9px;
-          letter-spacing: 1.4px;
-          color: #8795a4;
-          font-weight: 800;
-        }
-        .imr-nav-label {
-          padding: 0 14px;
-          margin-bottom: 10px;
-          color: #9ba6b2;
-          font-size: 10px;
-          letter-spacing: 1.5px;
-          font-weight: 800;
-        }
-        .imr-navigation {
-          display: grid;
-          gap: 4px;
-        }
-        .imr-nav-item {
-          display: flex;
-          align-items: center;
-          gap: 12px;
-          padding: 13px 15px;
-          border-radius: 10px;
-          text-decoration: none;
-          font-size: 13px;
-          font-weight: 600;
-          color: #657285;
-          border-left: 3px solid transparent;
-        }
-        .imr-nav-item:hover { background: #f4f7f6; }
-        .imr-nav-item.active {
-          color: #245340;
-          background: #eaf3ee;
-          border-left-color: #315f50;
-          font-weight: 800;
-        }
-        .imr-nav-item > span {
-          width: 23px;
-          text-align: center;
-          font-size: 19px;
-        }
-        .imr-content { min-width: 0; }
-        .imr-header {
-          background: #fff;
-          border-bottom: 1px solid #e6eaf0;
-          padding: 24px 36px;
-          display: flex;
-          align-items: center;
-          justify-content: space-between;
-          gap: 16px;
-          flex-wrap: wrap;
-        }
-        .imr-header small {
-          color: #8795a4;
-          font-weight: 700;
-          letter-spacing: 1px;
-        }
-        .imr-header h1 {
-          margin: 7px 0 0;
-          font-size: 23px;
-          color: #1e293b;
-        }
-        .imr-back {
-          text-decoration: none;
-          border: 1px solid #dce5df;
-          background: #fff;
-          color: #284e42;
-          padding: 11px 16px;
-          border-radius: 10px;
-          font-weight: 700;
-        }
-        .imr-main {
-          max-width: 1200px;
-          margin: auto;
-          padding: 32px 36px;
-        }
-        .imr-intro {
-          background: #fff;
-          border: 1px solid #e6eaf0;
-          border-radius: 16px;
-          padding: 28px;
-          margin-bottom: 24px;
-        }
-        .imr-intro h2 {
-          margin: 0 0 10px;
-          font-size: 24px;
-          color: #284e42;
-        }
-        .imr-intro p {
-          margin: 0;
-          color: #657285;
-          line-height: 1.7;
-        }
-        .imr-card {
-          background: #fff;
-          border: 1px solid #e6eaf0;
-          border-radius: 16px;
-          padding: 26px;
-          box-shadow: 0 5px 18px rgba(20,40,35,.03);
-        }
-        .imr-card-heading {
-          display: flex;
-          align-items: center;
-          justify-content: space-between;
-          gap: 12px;
-          flex-wrap: wrap;
-          margin-bottom: 24px;
-        }
-        .imr-card-heading h2 {
-          margin: 0;
-          font-size: 19px;
-        }
-        .imr-count {
-          background: #eaf3ee;
-          color: #245340;
-          border-radius: 20px;
-          padding: 7px 13px;
-          font-size: 12px;
-          font-weight: 800;
-        }
-        .imr-empty {
-          text-align: center;
-          background: #f8fafb;
-          border: 1px dashed #dce5df;
-          border-radius: 14px;
-          padding: 60px 20px;
-        }
-        .imr-empty h3 {
-          margin: 14px 0 8px;
-          font-size: 20px;
-        }
-        .imr-empty p { color: #657285; }
-        .imr-candidate {
-          display: flex;
-          align-items: center;
-          justify-content: space-between;
-          gap: 16px;
-          flex-wrap: wrap;
-          border: 1px solid #e6eaf0;
-          border-radius: 12px;
-          padding: 18px;
-          margin-bottom: 12px;
-        }
-        .imr-candidate strong { font-size: 15px; }
-        .imr-candidate p {
-          margin: 7px 0 0;
-          color: #8795a4;
-          font-size: 12px;
-        }
-        .imr-restore {
-          border: none;
-          border-radius: 9px;
-          background: #284e42;
-          color: white;
-          padding: 11px 18px;
-          font-weight: 700;
-          cursor: pointer;
-        }
-        .imr-restore:disabled {
-          opacity: .55;
-          cursor: wait;
-        }
-        @media (max-width: 800px) {
-          .imr-shell { grid-template-columns: 1fr; }
-          .imr-sidebar { border-right: none; }
-          .imr-main { padding: 20px 16px; }
-          .imr-header { padding: 20px 16px; }
-        }
+        .imc-root{min-height:100vh;background:#f6f8fb;color:#1e293b;font:14px Arial,sans-serif}
+        .imc-root *{box-sizing:border-box}
+        .imc-shell{display:grid;grid-template-columns:254px minmax(0,1fr);min-height:100vh}
+        .imc-sidebar{background:white;border-right:1px solid #e6eaf0;padding:24px 15px;position:sticky;top:0;height:100vh;overflow-y:auto}
+        .imc-sidebar-inner{display:flex;flex-direction:column;min-height:100%}
+        .imc-brand{display:flex;align-items:center;gap:11px;padding:7px 12px 26px;border-bottom:1px solid #edf0f2;margin-bottom:25px}
+        .imc-logo{display:grid;place-items:center;width:42px;height:42px;border-radius:12px;background:#284e42;color:white;font-size:23px;font-weight:800}
+        .imc-brand strong{display:block;font-size:17px;letter-spacing:-.5px}
+        .imc-brand small{display:block;margin-top:4px;font-size:9px;letter-spacing:1.4px;color:#8795a4;font-weight:800}
+        .imc-nav-label{padding:0 14px;margin-bottom:10px;color:#9ba6b2;font-size:10px;letter-spacing:1.5px;font-weight:800}
+        .imc-navigation{display:grid;gap:4px}
+        .imc-nav-item{display:flex;align-items:center;gap:12px;padding:13px 15px;border-radius:10px;text-decoration:none;color:#657285;font-size:13px;font-weight:600;border-left:3px solid transparent}
+        .imc-nav-item:hover{background:#f4f7f6}
+        .imc-nav-item.active{color:#245340;background:#eaf3ee;border-left-color:#315f50;font-weight:800}
+        .imc-nav-item > span{width:23px;text-align:center;font-size:19px}
+        .imc-sidebar-footer{margin-top:auto;padding:22px 14px 8px;border-top:1px solid #edf0f2;display:grid;gap:12px}
+        .imc-sidebar-footer a{color:#657285;text-decoration:none;font-size:12px;font-weight:700}
+        .imc-sidebar-footer small{color:#a1acb8;font-size:10px}
+        .imc-content{min-width:0;padding:29px clamp(17px,3vw,46px) 60px}
+        .imc-header{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:20px;margin-bottom:30px}
+        .imc-breadcrumb{font-size:12px;color:#8390a0;margin-bottom:9px}
+        .imc-breadcrumb strong{color:#315f50}
+        .imc-page-title{margin:0;font-size:clamp(29px,3vw,38px);letter-spacing:-1.1px;font-weight:800}
+        .imc-subtitle{color:#8390a0;font-size:13px;margin:10px 0 0}
+        .imc-secondary{padding:12px 16px;background:white;border:1px solid #e3e8ed;border-radius:10px;color:#526073;font-size:12px;font-weight:800;text-decoration:none}
+        .imc-panel{padding:24px;background:white;border:1px solid #e6eaf0;border-radius:16px;box-shadow:0 4px 18px rgba(23,35,50,.035)}
+        .imc-panel-header{display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;margin-bottom:21px}
+        .imc-panel-header h2{font-size:17px;margin:0}
+        .imc-count{padding:9px 13px;border-radius:10px;background:#edf4f0;color:#315f50;font-size:12px;font-weight:800}
+        .imc-empty{text-align:center;padding:60px 20px;background:#f8fafb;border:1px dashed #e3e8ed;border-radius:12px}
+        .imc-empty h3{margin:10px 0 6px;font-size:18px}
+        .imc-empty p{color:#8390a0}
+        .imc-candidate{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:16px;border:1px solid #e6eaf0;border-radius:12px;padding:18px;margin-bottom:12px}
+        .imc-candidate p{color:#8390a0;font-size:12px;margin:7px 0 0}
+        .imc-primary{padding:12px 16px;border:0;border-radius:10px;background:#284e42;color:white;font-size:12px;font-weight:800;cursor:pointer}
+        .imc-primary:disabled{opacity:.55;cursor:wait}
+        @media(max-width:760px){.imc-shell{grid-template-columns:1fr}.imc-sidebar{position:static;height:auto}.imc-content{padding:22px 16px}}
       `}</style>
-
-      <div className="imr-shell">
-        <aside className="imr-sidebar">
-          <div className="imr-brand">
-            <div className="imr-logo">I</div>
-            <div>
-              <strong>Inspire Match</strong>
-              <small>TALENT INTELLIGENCE</small>
+      <div className="imc-shell">
+        <aside className="imc-sidebar">
+          <div className="imc-sidebar-inner">
+            <div className="imc-brand">
+              <div className="imc-logo">I</div>
+              <div><strong>Inspire Match</strong><small>TALENT INTELLIGENCE</small></div>
+            </div>
+            <div className="imc-nav-label">WORKSPACE</div>
+            <ATSNavigation className="imc-navigation" linkClassName="imc-nav-item" />
+            <div className="imc-sidebar-footer">
+              <Link href="/">↗ ATS Home</Link>
+              <small>© Inspire Match ATS</small>
             </div>
           </div>
-
-          <div className="imr-nav-label">WORKSPACE</div>
-
-          <ATSNavigation
-            className="imr-navigation"
-            linkClassName="imr-nav-item"
-          />
         </aside>
-
-        <div className="imr-content">
-          <header className="imr-header">
+        <div className="imc-content">
+          <header className="imc-header">
             <div>
-              <small>WORKSPACE / CANDIDATES</small>
-              <h1>Recycle Bin</h1>
+              <div className="imc-breadcrumb">Workspace / <strong>Candidates / Recycle Bin</strong></div>
+              <h1 className="imc-page-title">Recycle Bin</h1>
+              <p className="imc-subtitle">Restore deleted candidates with their CVs, notes and recruitment history.</p>
             </div>
-
-            <Link href="/app/candidates" className="imr-back">
-              ← Back to Candidates
-            </Link>
+            <Link href="/app/candidates" className="imc-secondary">← Back to Candidates</Link>
           </header>
-
-          <div className="imr-main">
-            <section className="imr-intro">
-              <h2>Recycle Bin</h2>
-              <p>
-                Restore deleted candidates while preserving
-                their CVs, notes, and recruitment history.
-              </p>
-            </section>
-
-            <section className="imr-card">
-              <div className="imr-card-heading">
-                <h2>Deleted Candidates</h2>
-                <span className="imr-count">
-                  {candidates.length} candidates
-                </span>
+          <section className="imc-panel">
+            <div className="imc-panel-header">
+              <h2>Deleted Candidates</h2>
+              <span className="imc-count">{candidates.length} candidates</span>
+            </div>
+            {loading && <p>Loading deleted candidates...</p>}
+            {error && <p role="alert" style={{color:"#b91c1c"}}>{error}</p>}
+            {!loading && !error && candidates.length === 0 && (
+              <div className="imc-empty">
+                <div style={{fontSize:36,color:"#315f50"}}>♻</div>
+                <h3>Your Recycle Bin is empty</h3>
+                <p>Deleted candidates will appear here and can be restored when needed.</p>
               </div>
-
-              {loading && <p>Loading deleted candidates...</p>}
-
-              {error && (
-                <p role="alert" style={{ color: "#b91c1c" }}>
-                  {error}
-                </p>
-              )}
-
-              {!loading && !error && candidates.length === 0 && (
-                <div className="imr-empty">
-                  <div style={{ fontSize: 40 }}>♻</div>
-                  <h3>Your Recycle Bin is empty</h3>
-                  <p>
-                    Deleted candidates will appear here
-                    and can be restored when needed.
-                  </p>
-                </div>
-              )}
-
-              {!loading && !error && candidates.length > 0 && (
+            )}
+            {!loading && !error && candidates.map((candidate) => (
+              <div key={candidate.id} className="imc-candidate">
                 <div>
-                  {candidates.map((candidate) => (
-                    <div
-                      key={candidate.id}
-                      className="imr-candidate"
-                    >
-                      <div>
-                        <strong>
-                          {candidate.full_name || "Unnamed Candidate"}
-                        </strong>
-                        <p>
-                          Deleted:{" "}
-                          {new Date(
-                            candidate.deleted_at
-                          ).toLocaleString()}
-                        </p>
-                      </div>
-
-                      <button
-                        type="button"
-                        className="imr-restore"
-                        disabled={restoringId !== null}
-                        onClick={() =>
-                          restoreCandidate(candidate.id)
-                        }
-                      >
-                        {restoringId === candidate.id
-                          ? "Restoring..."
-                          : "↺ Restore Candidate"}
-                      </button>
-                    </div>
-                  ))}
+                  <strong>{candidate.full_name || "Unnamed Candidate"}</strong>
+                  <p>Deleted: {new Date(candidate.deleted_at).toLocaleString()}</p>
                 </div>
-              )}
-            </section>
-          </div>
+                <button type="button" className="imc-primary" disabled={restoringId !== null} onClick={() => restoreCandidate(candidate.id)}>
+                  {restoringId === candidate.id ? "Restoring..." : "↺ Restore Candidate"}
+                </button>
+              </div>
+            ))}
+          </section>
         </div>
       </div>
     </main>
   );
 }
-
