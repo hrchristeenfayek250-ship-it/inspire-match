@@ -369,11 +369,99 @@ const sourceEffectiveness = Object.values(
   
 
 
+
 const conversionStages = [
   "Applied",
   "Screening",
   "Interview",
   "Shortlisted",
+  "Hired",
+];
+
+const activeCandidateIds = new Set(
+  activeCandidates.map(candidate => String(candidate.id))
+);
+
+const transitionsByCandidate = new Map();
+const reachedStages = new Map();
+const firstReachedByCandidate = new Map();
+
+stageHistory.forEach(transition => {
+  const id = String(transition.candidate_id || "");
+
+  if (!activeCandidateIds.has(id)) return;
+
+  const timestamp = new Date(
+    transition.changed_at
+  ).getTime();
+
+  if (!Number.isFinite(timestamp)) return;
+
+  if (!transitionsByCandidate.has(id)) {
+    transitionsByCandidate.set(id, []);
+  }
+
+  transitionsByCandidate.get(id).push(transition);
+});
+
+transitionsByCandidate.forEach((transitions, id) => {
+  transitions.sort(
+    (a, b) =>
+      new Date(a.changed_at).getTime() -
+      new Date(b.changed_at).getTime()
+  );
+
+  const stages = new Set();
+  const firstReachedAt = new Map();
+
+  transitions.forEach(transition => {
+    const timestamp = new Date(
+      transition.changed_at
+    ).getTime();
+
+    [
+      transition.from_stage,
+      transition.to_stage
+    ].forEach(value => {
+      const stage = conversionStages.find(
+        item =>
+          item.toLowerCase() ===
+          String(value || "").trim().toLowerCase()
+      );
+
+      if (!stage) return;
+
+      stages.add(stage);
+
+      const key = stage.toLowerCase();
+
+      if (!firstReachedAt.has(key)) {
+        firstReachedAt.set(key, timestamp);
+      }
+    });
+  });
+
+  reachedStages.set(id, stages);
+  firstReachedByCandidate.set(id, firstReachedAt);
+});
+
+activeCandidates.forEach(candidate => {
+  const id = String(candidate.id);
+
+  const currentStage = conversionStages.find(
+    stage =>
+      stage.toLowerCase() ===
+      String(candidate.status || "").trim().toLowerCase()
+  );
+
+  if (!currentStage) return;
+
+  if (!reachedStages.has(id)) {
+    reachedStages.set(id, new Set());
+  }
+
+  reachedStages.get(id).add(currentStage);
+});
 
 const stageConversion = conversionStages
   .slice(0, -1)
@@ -426,6 +514,7 @@ const stageConversion = conversionStages
         : null,
     };
   });
+
 
 
   
