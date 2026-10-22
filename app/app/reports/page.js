@@ -374,6 +374,40 @@ const stageAging = candidates
   })
   .filter(Boolean);
 
+    const currentStage = String(candidate.status || "").trim();
+
+    const latestEntry = latestStageEntryByCandidate.get(
+      String(candidate.id)
+    );
+
+    const enteredAt =
+      latestEntry?.stage === currentStage.toLowerCase()
+        ? latestEntry.changed_at
+        : candidate.stage_entered_at ||
+          (currentStage === "Applied"
+            ? candidate.created_at
+            : null);
+
+    if (!enteredAt) return null;
+
+    const timestamp = new Date(enteredAt).getTime();
+
+    if (!Number.isFinite(timestamp)) return null;
+
+    const days = Math.max(
+      0,
+      Math.floor((Date.now() - timestamp) / 86400000)
+    );
+
+    return {
+      ...candidate,
+      daysInStage: days,
+      slaDays: stageSLA[currentStage],
+      overdue: days > stageSLA[currentStage],
+    };
+  })
+  .filter(Boolean);
+
 
 
 const overdueCandidates = stageAging.filter(c => c.overdue);
