@@ -241,13 +241,12 @@ const monthlyCandidates = candidates.filter((candidate) =>
 );
 
 
+
 const activeCandidates = candidates.filter(
   (candidate) =>
-    candidate.recruitment_type === "Active Recruitment" &&
-    ["Applied", "Screening", "Interview", "Shortlisted"].includes(
-      String(candidate.status || "").trim()
-    )
+    candidate.recruitment_type === "Active Recruitment"
 );
+
 
 
 function countStage(stage) {
