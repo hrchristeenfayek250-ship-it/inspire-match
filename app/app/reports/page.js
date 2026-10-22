@@ -452,14 +452,20 @@ const stageConversion = conversionStages
 
       entered.add(id);
 
+     
       const candidateTransitions = stageHistory
-        .filter(h => String(h.candidate_id) === id)
-        .filter(h => h.changed_at)
+        .filter(
+          h =>
+            String(h.candidate_id) === id &&
+            h.changed_at &&
+            Number.isFinite(new Date(h.changed_at).getTime())
+        )
         .sort(
           (a, b) =>
             new Date(a.changed_at).getTime() -
             new Date(b.changed_at).getTime()
         );
+
 
       
       let reachedFromAt = null;
