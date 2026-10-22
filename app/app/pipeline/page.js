@@ -109,6 +109,7 @@ export default function PipelinePage() {
           supabase
             .from("candidates")
             .select("*")
+            .is("deleted_at", null)
             .or(filter)
             .order("created_at", {
               ascending: false,
