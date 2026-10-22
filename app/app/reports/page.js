@@ -2396,12 +2396,13 @@ value: monthlyCandidates.length,
   note: "Added during the selected month",
 },
 
-                  {
-                    label: "ACTIVE PIPELINE",
-                    value: ["Applied", "Screening", "Interview", "Shortlisted"]
-                      .reduce((sum, stage) => sum + countStage(stage), 0),
-                    note: "Currently in active stages",
-                  },
+               
+{
+  label: "ACTIVE PIPELINE",
+  value: activePipelineCandidates.length,
+  note: "Currently in active stages across all months",
+},
+
                 
 {
   label: "HIRED SHARE",
