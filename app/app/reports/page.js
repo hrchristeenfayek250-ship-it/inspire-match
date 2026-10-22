@@ -94,6 +94,7 @@ export default function ReportsPage() {
           .select(
             "id, full_name, current_title, status, source, created_at, hired_at, stage_entered_at, job_id, recruitment_type"
           )
+          .is("deleted_at", null)
           .or(
             `company_id.eq.${companyId},and(company_id.is.null,user_id.eq.${authData.user.id})`
           )
