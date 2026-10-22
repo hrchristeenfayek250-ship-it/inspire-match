@@ -1081,35 +1081,184 @@ value: monthlyCandidates.length,
   </div>
 </section>
 
-<section className="ir-panel" style={{ marginBottom: 24 }}>
-  <div className="ir-panel-heading">
-    <h2>Source Effectiveness</h2>
-    <p>Candidate sources and hiring conversion rates</p>
+
+<section
+  className="ir-panel"
+  style={{
+    marginBottom: 28,
+    padding: 28,
+    borderRadius: 22,
+    background: "#ffffff",
+    border: "1px solid #e4eee9",
+    boxShadow: "0 8px 30px rgba(20, 65, 49, 0.05)"
+  }}
+>
+  <div style={{ marginBottom: 26 }}>
+    <div style={{
+      fontSize: 11,
+      fontWeight: 800,
+      letterSpacing: 2,
+      color: "#3c9375",
+      marginBottom: 9
+    }}>
+      TALENT ACQUISITION INTELLIGENCE
+    </div>
+
+    <h2 style={{
+      fontSize: 26,
+      fontWeight: 800,
+      color: "#173e32",
+      margin: "0 0 8px"
+    }}>
+      Source Effectiveness
+    </h2>
+
+    <p style={{ color: "#81938b", margin: 0, fontSize: 13 }}>
+      Understand where your talent comes from and which
+      channels deliver successful hires.
+    </p>
   </div>
 
-  <div style={{ padding: 20, overflowX: "auto" }}>
-    <table style={{ width: "100%", textAlign: "left" }}>
-      <thead>
-        <tr>
-          <th>Source</th>
-          <th>Candidates</th>
-          <th>Hired</th>
-          <th>Conversion Rate</th>
-        </tr>
-      </thead>
-      <tbody>
-        {sourceEffectiveness.map(item => (
-          <tr key={item.source}>
-            <td>{item.source}</td>
-            <td>{item.total}</td>
-            <td>{item.hired}</td>
-            <td>{item.conversionRate}%</td>
-          </tr>
-        ))}
-      </tbody>
-    </table>
+  <div style={{
+    display: "grid",
+    gridTemplateColumns: "repeat(auto-fit, minmax(160px, 1fr))",
+    gap: 14,
+    marginBottom: 30
+  }}>
+    {[
+      {
+        label: "TOTAL SOURCES",
+        value: sourceEffectiveness.length
+      },
+      {
+        label: "TOTAL CANDIDATES",
+        value: sourceEffectiveness.reduce((s, x) => s + x.total, 0)
+      },
+      {
+        label: "TOTAL HIRED",
+        value: sourceEffectiveness.reduce((s, x) => s + x.hired, 0)
+      }
+    ].map(card => (
+      <div key={card.label} style={{
+        padding: "20px 22px",
+        background: "#f5faf7",
+        border: "1px solid #e2efe8",
+        borderRadius: 16
+      }}>
+        <div style={{
+          fontSize: 10,
+          letterSpacing: 1.2,
+          fontWeight: 800,
+          color: "#759486",
+          marginBottom: 12
+        }}>
+          {card.label}
+        </div>
+        <div style={{
+          fontSize: 30,
+          fontWeight: 800,
+          color: "#205e48"
+        }}>
+          {card.value}
+        </div>
+      </div>
+    ))}
+  </div>
+
+  <div style={{
+    display: "flex",
+    flexDirection: "column",
+    gap: 20
+  }}>
+    {sourceEffectiveness
+      .slice()
+      .sort((a, b) => b.total - a.total)
+      .map(item => {
+        const max = Math.max(
+          1,
+          ...sourceEffectiveness.map(s => s.total)
+        );
+
+        return (
+          <div key={item.source} style={{
+            padding: "20px 22px",
+            border: "1px solid #e8efeb",
+            borderRadius: 16,
+            background: "#ffffff"
+          }}>
+            <div style={{
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+              flexWrap: "wrap",
+              gap: 12,
+              marginBottom: 16
+            }}>
+              <strong style={{
+                fontSize: 16,
+                color: "#204d3e"
+              }}>
+                {item.source}
+              </strong>
+
+              <span style={{
+                background: "#e8f5ed",
+                color: "#257251",
+                borderRadius: 999,
+                padding: "7px 13px",
+                fontSize: 12,
+                fontWeight: 800
+              }}>
+                {item.conversionRate}% Conversion
+              </span>
+            </div>
+
+            <div style={{
+              height: 12,
+              background: "#edf3ef",
+              borderRadius: 999,
+              overflow: "hidden",
+              marginBottom: 16
+            }}>
+              <div style={{
+                height: "100%",
+                width: `${(item.total / max) * 100}%`,
+                background: "linear-gradient(90deg, #245c4a, #68b996)",
+                borderRadius: 999
+              }} />
+            </div>
+
+            <div style={{
+              display: "flex",
+              gap: 24,
+              flexWrap: "wrap",
+              fontSize: 13,
+              color: "#687f73"
+            }}>
+              <span>
+                <strong style={{ color: "#214e3c" }}>
+                  {item.total}
+                </strong> Candidates
+              </span>
+
+              <span>
+                <strong style={{ color: "#214e3c" }}>
+                  {item.hired}
+                </strong> Hired
+              </span>
+            </div>
+          </div>
+        );
+      })}
+
+    {sourceEffectiveness.length === 0 && (
+      <p style={{ color: "#82968b" }}>
+        No candidate source data available yet.
+      </p>
+    )}
   </div>
 </section>
+
 
           <div className="ir-analytics">
             <section className="ir-panel">
