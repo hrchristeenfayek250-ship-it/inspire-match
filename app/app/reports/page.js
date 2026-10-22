@@ -1296,9 +1296,14 @@ value: monthlyCandidates.length,
     }}>
       Stage Aging & SLA
     </h2>
+    
     <p style={{ color: "#81938b", fontSize: 13, margin: 0 }}>
       Monitor candidate waiting times and identify SLA breaches.
+      Includes all currently tracked candidates across all months.
+      SLA is measured from each candidate's latest recorded
+      stage entry date.
     </p>
+
   </div>
 
   <div style={{
