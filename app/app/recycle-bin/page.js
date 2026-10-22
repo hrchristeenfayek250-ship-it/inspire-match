@@ -137,307 +137,331 @@ export default function RecycleBinPage() {
   }
 
 
+  
   return (
-    <div
-      style={{
-        minHeight: "100vh",
-        display: "flex",
-        background: "#f4f8f6",
-        color: "#173b30",
-        fontFamily: "inherit",
-      }}
-    >
-      <aside
-        style={{
-          width: 245,
-          flexShrink: 0,
-          background: "#103f32",
-          color: "#fff",
-          padding: "28px 18px",
-          minHeight: "100vh",
-        }}
-      >
-        <div style={{ padding: "0 12px", marginBottom: 38 }}>
-          <div style={{ fontSize: 21, fontWeight: 800 }}>
-            Inspire Match
+    <main className="imr-root">
+      <style>{`
+        .imr-root {
+          min-height: 100vh;
+          background: #f6f8fb;
+          color: #1e293b;
+          font-family: Arial, sans-serif;
+          font-size: 14px;
+        }
+        .imr-root * { box-sizing: border-box; }
+        .imr-shell {
+          display: grid;
+          grid-template-columns: 254px minmax(0, 1fr);
+          min-height: 100vh;
+        }
+        .imr-sidebar {
+          background: #fff;
+          border-right: 1px solid #e6eaf0;
+          padding: 24px 15px;
+        }
+        .imr-brand {
+          display: flex;
+          align-items: center;
+          gap: 11px;
+          padding: 7px 12px 26px;
+          border-bottom: 1px solid #edf0f2;
+          margin-bottom: 25px;
+        }
+        .imr-logo {
+          width: 42px;
+          height: 42px;
+          border-radius: 12px;
+          display: grid;
+          place-items: center;
+          background: #284e42;
+          color: #fff;
+          font-size: 23px;
+          font-weight: 800;
+        }
+        .imr-brand strong {
+          display: block;
+          font-size: 17px;
+          letter-spacing: -.5px;
+        }
+        .imr-brand small {
+          display: block;
+          margin-top: 4px;
+          font-size: 9px;
+          letter-spacing: 1.4px;
+          color: #8795a4;
+          font-weight: 800;
+        }
+        .imr-nav-label {
+          padding: 0 14px;
+          margin-bottom: 10px;
+          color: #9ba6b2;
+          font-size: 10px;
+          letter-spacing: 1.5px;
+          font-weight: 800;
+        }
+        .imr-navigation {
+          display: grid;
+          gap: 4px;
+        }
+        .imr-nav-item {
+          display: flex;
+          align-items: center;
+          gap: 12px;
+          padding: 13px 15px;
+          border-radius: 10px;
+          text-decoration: none;
+          font-size: 13px;
+          font-weight: 600;
+          color: #657285;
+          border-left: 3px solid transparent;
+        }
+        .imr-nav-item:hover { background: #f4f7f6; }
+        .imr-nav-item.active {
+          color: #245340;
+          background: #eaf3ee;
+          border-left-color: #315f50;
+          font-weight: 800;
+        }
+        .imr-nav-item > span {
+          width: 23px;
+          text-align: center;
+          font-size: 19px;
+        }
+        .imr-content { min-width: 0; }
+        .imr-header {
+          background: #fff;
+          border-bottom: 1px solid #e6eaf0;
+          padding: 24px 36px;
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          gap: 16px;
+          flex-wrap: wrap;
+        }
+        .imr-header small {
+          color: #8795a4;
+          font-weight: 700;
+          letter-spacing: 1px;
+        }
+        .imr-header h1 {
+          margin: 7px 0 0;
+          font-size: 23px;
+          color: #1e293b;
+        }
+        .imr-back {
+          text-decoration: none;
+          border: 1px solid #dce5df;
+          background: #fff;
+          color: #284e42;
+          padding: 11px 16px;
+          border-radius: 10px;
+          font-weight: 700;
+        }
+        .imr-main {
+          max-width: 1200px;
+          margin: auto;
+          padding: 32px 36px;
+        }
+        .imr-intro {
+          background: #fff;
+          border: 1px solid #e6eaf0;
+          border-radius: 16px;
+          padding: 28px;
+          margin-bottom: 24px;
+        }
+        .imr-intro h2 {
+          margin: 0 0 10px;
+          font-size: 24px;
+          color: #284e42;
+        }
+        .imr-intro p {
+          margin: 0;
+          color: #657285;
+          line-height: 1.7;
+        }
+        .imr-card {
+          background: #fff;
+          border: 1px solid #e6eaf0;
+          border-radius: 16px;
+          padding: 26px;
+          box-shadow: 0 5px 18px rgba(20,40,35,.03);
+        }
+        .imr-card-heading {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          gap: 12px;
+          flex-wrap: wrap;
+          margin-bottom: 24px;
+        }
+        .imr-card-heading h2 {
+          margin: 0;
+          font-size: 19px;
+        }
+        .imr-count {
+          background: #eaf3ee;
+          color: #245340;
+          border-radius: 20px;
+          padding: 7px 13px;
+          font-size: 12px;
+          font-weight: 800;
+        }
+        .imr-empty {
+          text-align: center;
+          background: #f8fafb;
+          border: 1px dashed #dce5df;
+          border-radius: 14px;
+          padding: 60px 20px;
+        }
+        .imr-empty h3 {
+          margin: 14px 0 8px;
+          font-size: 20px;
+        }
+        .imr-empty p { color: #657285; }
+        .imr-candidate {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          gap: 16px;
+          flex-wrap: wrap;
+          border: 1px solid #e6eaf0;
+          border-radius: 12px;
+          padding: 18px;
+          margin-bottom: 12px;
+        }
+        .imr-candidate strong { font-size: 15px; }
+        .imr-candidate p {
+          margin: 7px 0 0;
+          color: #8795a4;
+          font-size: 12px;
+        }
+        .imr-restore {
+          border: none;
+          border-radius: 9px;
+          background: #284e42;
+          color: white;
+          padding: 11px 18px;
+          font-weight: 700;
+          cursor: pointer;
+        }
+        .imr-restore:disabled {
+          opacity: .55;
+          cursor: wait;
+        }
+        @media (max-width: 800px) {
+          .imr-shell { grid-template-columns: 1fr; }
+          .imr-sidebar { border-right: none; }
+          .imr-main { padding: 20px 16px; }
+          .imr-header { padding: 20px 16px; }
+        }
+      `}</style>
+
+      <div className="imr-shell">
+        <aside className="imr-sidebar">
+          <div className="imr-brand">
+            <div className="imr-logo">I</div>
+            <div>
+              <strong>Inspire Match</strong>
+              <small>TALENT INTELLIGENCE</small>
+            </div>
           </div>
-          <div
-            style={{
-              fontSize: 11,
-              color: "#a8d8c5",
-              marginTop: 5,
-              letterSpacing: 1.5,
-            }}
-          >
-            AI RECRUITMENT PLATFORM
+
+          <div className="imr-nav-label">WORKSPACE</div>
+
+          <ATSNavigation
+            className="imr-navigation"
+            linkClassName="imr-nav-item"
+          />
+        </aside>
+
+        <div className="imr-content">
+          <header className="imr-header">
+            <div>
+              <small>WORKSPACE / CANDIDATES</small>
+              <h1>Recycle Bin</h1>
+            </div>
+
+            <Link href="/app/candidates" className="imr-back">
+              ← Back to Candidates
+            </Link>
+          </header>
+
+          <div className="imr-main">
+            <section className="imr-intro">
+              <h2>Recycle Bin</h2>
+              <p>
+                Restore deleted candidates while preserving
+                their CVs, notes, and recruitment history.
+              </p>
+            </section>
+
+            <section className="imr-card">
+              <div className="imr-card-heading">
+                <h2>Deleted Candidates</h2>
+                <span className="imr-count">
+                  {candidates.length} candidates
+                </span>
+              </div>
+
+              {loading && <p>Loading deleted candidates...</p>}
+
+              {error && (
+                <p role="alert" style={{ color: "#b91c1c" }}>
+                  {error}
+                </p>
+              )}
+
+              {!loading && !error && candidates.length === 0 && (
+                <div className="imr-empty">
+                  <div style={{ fontSize: 40 }}>♻</div>
+                  <h3>Your Recycle Bin is empty</h3>
+                  <p>
+                    Deleted candidates will appear here
+                    and can be restored when needed.
+                  </p>
+                </div>
+              )}
+
+              {!loading && !error && candidates.length > 0 && (
+                <div>
+                  {candidates.map((candidate) => (
+                    <div
+                      key={candidate.id}
+                      className="imr-candidate"
+                    >
+                      <div>
+                        <strong>
+                          {candidate.full_name || "Unnamed Candidate"}
+                        </strong>
+                        <p>
+                          Deleted:{" "}
+                          {new Date(
+                            candidate.deleted_at
+                          ).toLocaleString()}
+                        </p>
+                      </div>
+
+                      <button
+                        type="button"
+                        className="imr-restore"
+                        disabled={restoringId !== null}
+                        onClick={() =>
+                          restoreCandidate(candidate.id)
+                        }
+                      >
+                        {restoringId === candidate.id
+                          ? "Restoring..."
+                          : "↺ Restore Candidate"}
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </section>
           </div>
         </div>
-
-        <ATSNavigation
-          className="im-recycle-navigation"
-          linkClassName="im-recycle-link"
-        />
-
-        <style>{`
-          .im-recycle-navigation {
-            display: flex;
-            flex-direction: column;
-            gap: 6px;
-          }
-          .im-recycle-link {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            color: #d1e9df;
-            text-decoration: none;
-            padding: 12px 14px;
-            border-radius: 10px;
-            font-size: 14px;
-            font-weight: 600;
-            transition: background .2s ease;
-          }
-          .im-recycle-link:hover {
-            background: rgba(255,255,255,.10);
-          }
-          .im-recycle-link.active {
-            background: #237a5b;
-            color: white;
-          }
-          .im-recycle-link span {
-            font-size: 18px;
-          }
-          @media (max-width: 760px) {
-            .im-recycle-layout {
-              flex-direction: column;
-            }
-            .im-recycle-sidebar {
-              width: 100% !important;
-              min-height: auto !important;
-            }
-          }
-        `}</style>
-      </aside>
-
-      <div style={{ flex: 1, minWidth: 0 }}>
-        <header
-          style={{
-            background: "#fff",
-            borderBottom: "1px solid #e1eae5",
-            padding: "22px 36px",
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "center",
-            gap: 16,
-            flexWrap: "wrap",
-          }}
-        >
-          <div>
-            <div style={{ fontSize: 12, color: "#7b9287" }}>
-              WORKSPACE / CANDIDATES
-            </div>
-            <strong style={{ fontSize: 20 }}>
-              Recycle Bin
-            </strong>
-          </div>
-
-          <Link
-            href="/app/candidates"
-            style={{
-              background: "#edf7f1",
-              color: "#166344",
-              padding: "11px 18px",
-              borderRadius: 10,
-              fontWeight: 700,
-              textDecoration: "none",
-            }}
-          >
-            ← Back to Candidates
-          </Link>
-        </header>
-
-        <main
-          style={{
-            maxWidth: 1150,
-            margin: "0 auto",
-            padding: "38px 32px",
-          }}
-        >
-          <div
-            style={{
-              background:
-                "linear-gradient(120deg,#104734,#238462)",
-              borderRadius: 20,
-              padding: "32px 34px",
-              color: "white",
-              marginBottom: 28,
-            }}
-          >
-            <div
-              style={{
-                fontSize: 12,
-                letterSpacing: 2,
-                opacity: 0.8,
-                marginBottom: 12,
-              }}
-            >
-              CANDIDATE MANAGEMENT
-            </div>
-
-            <h1
-              style={{
-                fontSize: 32,
-                fontWeight: 800,
-                margin: "0 0 10px",
-              }}
-            >
-              Recycle Bin
-            </h1>
-
-            <p
-              style={{
-                margin: 0,
-                color: "#d9f4e7",
-                lineHeight: 1.7,
-              }}
-            >
-              Recover deleted candidates while preserving
-              their CVs, notes, and recruitment history.
-            </p>
-          </div>
-
-          <div
-            style={{
-              background: "#fff",
-              border: "1px solid #e0ebe4",
-              borderRadius: 18,
-              padding: 26,
-              boxShadow: "0 8px 30px rgba(16,63,50,.04)",
-            }}
-          >
-            <div
-              style={{
-                display: "flex",
-                justifyContent: "space-between",
-                alignItems: "center",
-                marginBottom: 24,
-                flexWrap: "wrap",
-                gap: 12,
-              }}
-            >
-              <h2 style={{ margin: 0, fontSize: 20 }}>
-                Deleted Candidates
-              </h2>
-
-              <span
-                style={{
-                  background: "#e9f6ee",
-                  color: "#14724d",
-                  borderRadius: 30,
-                  padding: "7px 14px",
-                  fontSize: 13,
-                  fontWeight: 700,
-                }}
-              >
-                {candidates.length} candidates
-              </span>
-            </div>
-
-            {loading && <p>Loading deleted candidates...</p>}
-
-            {error && (
-              <p role="alert" style={{ color: "#b91c1c" }}>
-                {error}
-              </p>
-            )}
-
-            {!loading && !error && candidates.length === 0 && (
-              <div
-                style={{
-                  textAlign: "center",
-                  padding: "65px 20px",
-                  background: "#f8fbf9",
-                  borderRadius: 16,
-                  border: "1px dashed #c9ded2",
-                }}
-              >
-                <div style={{ fontSize: 46, marginBottom: 16 }}>
-                  ♻
-                </div>
-                <h3 style={{ fontSize: 21, margin: "0 0 8px" }}>
-                  Your Recycle Bin is empty
-                </h3>
-                <p style={{ color: "#6c8577", margin: 0 }}>
-                  Deleted candidates will appear here
-                  and can be restored when needed.
-                </p>
-              </div>
-            )}
-
-            {!loading && !error && candidates.length > 0 && (
-              <div style={{ display: "grid", gap: 14 }}>
-                {candidates.map((candidate) => (
-                  <div
-                    key={candidate.id}
-                    style={{
-                      border: "1px solid #e0ebe4",
-                      borderRadius: 14,
-                      padding: 20,
-                      display: "flex",
-                      justifyContent: "space-between",
-                      alignItems: "center",
-                      flexWrap: "wrap",
-                      gap: 16,
-                    }}
-                  >
-                    <div>
-                      <strong style={{ fontSize: 16 }}>
-                        {candidate.full_name || "Unnamed Candidate"}
-                      </strong>
-
-                      <p
-                        style={{
-                          color: "#82968b",
-                          fontSize: 13,
-                          margin: "8px 0 0",
-                        }}
-                      >
-                        Deleted:{" "}
-                        {new Date(
-                          candidate.deleted_at
-                        ).toLocaleString()}
-                      </p>
-                    </div>
-
-                    <button
-                      type="button"
-                      disabled={restoringId !== null}
-                      onClick={() =>
-                        restoreCandidate(candidate.id)
-                      }
-                      style={{
-                        background: "#167a54",
-                        color: "#fff",
-                        border: 0,
-                        borderRadius: 10,
-                        padding: "12px 22px",
-                        fontWeight: 700,
-                        cursor: "pointer",
-                        opacity: restoringId !== null ? 0.6 : 1,
-                      }}
-                    >
-                      {restoringId === candidate.id
-                        ? "Restoring..."
-                        : "↺ Restore Candidate"}
-                    </button>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-        </main>
       </div>
-    </div>
+    </main>
   );
 }
-
 
