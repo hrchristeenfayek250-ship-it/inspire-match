@@ -1803,11 +1803,14 @@ value: monthlyCandidates.length,
 
  
   <p style={{ color: "#87988e", fontSize: 12, marginTop: 20 }}>
-    Conversion rates are calculated using recorded candidate stage
-    history, including progression to later stages when intermediate
-    stages were skipped. Historical transitions before tracking was
-    enabled are not included. Results may be incomplete for older
-    candidates.
+   
+    Conversion rates are based on recorded stage history and
+    current candidate status for Active Recruitment candidates.
+    Each candidate is counted once per stage. Progression means
+    reaching any later stage, including when intermediate stages
+    were skipped. Missing historical records may affect accuracy,
+    and stage visit order is not fully verified.
+
   </p>
 
 </section>
