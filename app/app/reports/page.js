@@ -1283,12 +1283,34 @@ value: monthlyCandidates.length,
                 note: "Interview and shortlisted stages",
                 icon: "◈",
               },
+             
+              {
+                label: "Active Pipeline",
+                value: activePipelineCandidates.length,
+                note: "Current active pipeline across all months",
+                icon: "⇄",
+              },
+              {
+                label: "Interview Ready",
+                value: activePipelineCandidates.filter(
+                  (candidate) =>
+                    ["Interview", "Shortlisted"].includes(
+                      String(candidate.status || "").trim()
+                    )
+                ).length,
+                note: "Current interview and shortlisted candidates",
+                icon: "◈",
+              },
               {
                 label: "Hired",
-                value: countStage("Hired"),
-                note: "Hired from the selected-month cohort",
+                value: recruitmentOutcomes.filter(
+                  (candidate) =>
+                    String(candidate.status || "").trim() === "Hired"
+                ).length,
+                note: "Total hired across all months",
                 icon: "✓",
               },
+
               
               {
                 label: "Time to Hire",
