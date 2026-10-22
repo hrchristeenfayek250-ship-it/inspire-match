@@ -240,10 +240,15 @@ const monthlyCandidates = candidates.filter((candidate) =>
   candidate.created_at?.startsWith(month)
 );
 
-const activeCandidates = monthlyCandidates.filter(
+
+const activeCandidates = candidates.filter(
   (candidate) =>
-    candidate.recruitment_type === "Active Recruitment"
+    candidate.recruitment_type === "Active Recruitment" &&
+    ["Applied", "Screening", "Interview", "Shortlisted"].includes(
+      String(candidate.status || "").trim()
+    )
 );
+
 
 function countStage(stage) {
   return activeCandidates.filter(
