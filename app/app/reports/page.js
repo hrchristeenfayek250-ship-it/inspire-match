@@ -294,6 +294,36 @@ const stageConversion = [
       : null,
   };
 });
+  
+const bottleneckAnalysis = Object.keys(stageSLA).map(stage => {
+  const currentCandidates = stageAging.filter(
+    c => c.status === stage
+  );
+
+  const total = currentCandidates.length;
+
+  const overdue = currentCandidates.filter(
+    c => c.overdue
+  ).length;
+
+  const averageDays = total
+    ? currentCandidates.reduce(
+        (sum, c) => sum + c.daysInStage, 0
+      ) / total
+    : null;
+
+  return {
+    stage,
+    total,
+    overdue,
+    averageDays: averageDays === null
+      ? null
+      : Number(averageDays.toFixed(1)),
+    sla: stageSLA[stage],
+    risk: overdue > 0 ? "High" : "Normal"
+  };
+});
+
 
 
 
