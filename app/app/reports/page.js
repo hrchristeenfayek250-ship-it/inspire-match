@@ -307,19 +307,52 @@ const stageSLA = {
 };
 
 
+
+const latestStageEntryByCandidate = new Map();
+
+stageHistory.forEach(transition => {
+  const id = String(transition.candidate_id || "");
+  const stage = String(transition.to_stage || "")
+    .trim()
+    .toLowerCase();
+
+  const timestamp = new Date(
+    transition.changed_at
+  ).getTime();
+
+  if (!id || !stage || !Number.isFinite(timestamp)) return;
+
+  const existing = latestStageEntryByCandidate.get(id);
+
+  if (!existing || timestamp > existing.timestamp) {
+    latestStageEntryByCandidate.set(id, {
+      stage,
+      timestamp,
+      changed_at: transition.changed_at,
+    });
+  }
+});
+
 const stageAging = candidates
-  .filter(c => Object.keys(stageSLA).includes(c.status))
-  .map(c => {
-    const latestTransition = stageHistory.find(
-      h =>
-        String(h.candidate_id) === String(c.id) &&
-        h.to_stage === c.status
+  .filter(candidate =>
+    Object.keys(stageSLA).includes(
+      String(candidate.status || "").trim()
+    )
+  )
+  .map(candidate => {
+    const currentStage = String(candidate.status || "").trim();
+
+    const latestEntry = latestStageEntryByCandidate.get(
+      String(candidate.id)
     );
 
     const enteredAt =
-      latestTransition?.changed_at ||
-      c.stage_entered_at ||
-      (c.status === "Applied" ? c.created_at : null);
+      latestEntry?.stage === currentStage.toLowerCase()
+        ? latestEntry.changed_at
+        : candidate.stage_entered_at ||
+          (currentStage === "Applied"
+            ? candidate.created_at
+            : null);
 
     if (!enteredAt) return null;
 
@@ -333,13 +366,14 @@ const stageAging = candidates
     );
 
     return {
-      ...c,
+      ...candidate,
       daysInStage: days,
-      slaDays: stageSLA[c.status],
-      overdue: days > stageSLA[c.status],
+      slaDays: stageSLA[currentStage],
+      overdue: days > stageSLA[currentStage],
     };
   })
   .filter(Boolean);
+
 
 
 const overdueCandidates = stageAging.filter(c => c.overdue);
