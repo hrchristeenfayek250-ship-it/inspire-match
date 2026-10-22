@@ -1456,10 +1456,91 @@ value: monthlyCandidates.length,
       </p>
     )}
   </div>
+
+<section style={{
+  background: "#fff",
+  border: "1px solid #e1eae4",
+  borderRadius: 22,
+  padding: 28,
+  marginBottom: 28
+}}>
+  <div style={{
+    fontSize: 11,
+    fontWeight: 800,
+    letterSpacing: 2,
+    color: "#5b9277"
+  }}>
+    PIPELINE INTELLIGENCE
+  </div>
+
+  <h2 style={{ color: "#204d3e", margin: "10px 0" }}>
+    Stage Conversion Rates
+  </h2>
+
+  <p style={{ color: "#71867a", marginBottom: 24 }}>
+    Track candidate progression and identify recruitment bottlenecks.
+  </p>
+
+  <div style={{
+    display: "grid",
+    gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))",
+    gap: 16
+  }}>
+    {stageConversion.map(item => (
+      <div key={`${item.from}-${item.to}`} style={{
+        padding: 22,
+        border: "1px solid #e5eee8",
+        borderRadius: 16,
+        background: "#fbfdfb"
+      }}>
+        <div style={{
+          color: "#637e6f",
+          fontSize: 13,
+          fontWeight: 700
+        }}>
+          {item.from} → {item.to}
+        </div>
+
+        <div style={{
+          fontSize: 34,
+          fontWeight: 800,
+          color: "#245c4a",
+          margin: "14px 0"
+        }}>
+          {item.rate === null ? "N/A" : `${item.rate}%`}
+        </div>
+
+        <div style={{
+          height: 9,
+          borderRadius: 20,
+          background: "#e8f0ea",
+          overflow: "hidden"
+        }}>
+          <div style={{
+            width: `${item.rate ?? 0}%`,
+            height: "100%",
+            borderRadius: 20,
+            background: "linear-gradient(90deg, #245c4a, #68b996)"
+          }} />
+        </div>
+
+        <p style={{
+          color: "#74877b",
+          fontSize: 12,
+          marginTop: 14
+        }}>
+          {item.converted} of {item.total} tracked candidates progressed
+        </p>
+      </div>
+    ))}
+  </div>
+
+  <p style={{ color: "#87988e", fontSize: 12, marginTop: 20 }}>
+    Based on recorded direct stage transitions. Historical transitions
+    before tracking was enabled are not included.
+  </p>
 </section>
 
-
-          <div className="ir-analytics">
             <section className="ir-panel">
               <div className="ir-panel-heading">
                 <h2>Recruitment Pipeline</h2>
