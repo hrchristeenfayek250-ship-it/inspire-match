@@ -472,7 +472,12 @@ const stageConversion = conversionStages
       let confirmedProgression = false;
       const firstReachedAt = new Map();
 
-      candidateTransitions.forEach((transition, position) => {
+      
+      candidateTransitions.forEach((transition) => {
+        const timestamp = new Date(
+          transition.changed_at
+        ).getTime();
+
         const previousStage = String(
           transition.from_stage || ""
         ).trim().toLowerCase();
@@ -482,13 +487,14 @@ const stageConversion = conversionStages
         ).trim().toLowerCase();
 
         if (previousStage && !firstReachedAt.has(previousStage)) {
-          firstReachedAt.set(previousStage, position);
+          firstReachedAt.set(previousStage, timestamp);
         }
 
         if (nextStage && !firstReachedAt.has(nextStage)) {
-          firstReachedAt.set(nextStage, position + 0.5);
+          firstReachedAt.set(nextStage, timestamp);
         }
       });
+
 
       reachedFromAt = firstReachedAt.get(from.toLowerCase());
 
