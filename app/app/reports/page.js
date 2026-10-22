@@ -82,22 +82,37 @@ export default function ReportsPage() {
       );
 
     
-      const { data, error: queryError } = await supabase
-        .from("candidates")
-        
-        .select(
+     
+      const data = [];
+      let queryError = null;
+      const pageSize = 500;
+      let candidateOffset = 0;
 
-"id, full_name, current_title, status, source, created_at, hired_at, stage_entered_at, job_id, recruitment_type"
+      while (true) {
+        const { data: batch, error: batchError } = await supabase
+          .from("candidates")
+          .select(
+            "id, full_name, current_title, status, source, created_at, hired_at, stage_entered_at, job_id, recruitment_type"
+          )
+          .or(
+            `company_id.eq.${companyId},and(company_id.is.null,user_id.eq.${authData.user.id})`
+          )
+          .not("created_at", "is", null)
+          .order("created_at", { ascending: false })
+          .order("id", { ascending: false })
+          .range(candidateOffset, candidateOffset + pageSize - 1);
 
-        )
+        if (batchError) {
+          queryError = batchError;
+          break;
+        }
 
-        .or(
-          `company_id.eq.${companyId},and(company_id.is.null,user_id.eq.${authData.user.id})`
-        )
-       
-        .not("created_at", "is", null)
+        data.push(...(batch || []));
 
-        .order("created_at", { ascending: false });
+        if (!batch || batch.length < pageSize) break;
+
+        candidateOffset += pageSize;
+      }
 
      
       const { data: jobData, error: jobError } =
