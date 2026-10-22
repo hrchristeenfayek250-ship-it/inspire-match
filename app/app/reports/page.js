@@ -323,6 +323,57 @@ const bottleneckAnalysis = Object.keys(stageSLA).map(stage => {
     risk: overdue > 0 ? "High" : "Normal"
   };
 });
+  
+const timeInStage = Object.keys(stageSLA).map(stage => {
+  const durations = [];
+
+  const historyByCandidate = {};
+
+  stageHistory.forEach(h => {
+    const id = String(h.candidate_id);
+    if (!historyByCandidate[id]) {
+      historyByCandidate[id] = [];
+    }
+    historyByCandidate[id].push(h);
+  });
+
+  Object.values(historyByCandidate).forEach(history => {
+    const sorted = [...history].sort(
+      (a, b) => new Date(a.changed_at) - new Date(b.changed_at)
+    );
+
+    sorted.forEach((entry, index) => {
+      if (entry.to_stage !== stage) return;
+
+      const next = sorted.slice(index + 1).find(
+        h => h.from_stage === stage
+      );
+
+      if (!next) return;
+
+      const days =
+        (new Date(next.changed_at) - new Date(entry.changed_at)) /
+        86400000;
+
+      if (Number.isFinite(days) && days >= 0) {
+        durations.push(days);
+      }
+    });
+  });
+
+  return {
+    stage,
+    transitions: durations.length,
+    averageDays: durations.length
+      ? Number(
+          (durations.reduce((a, b) => a + b, 0) /
+            durations.length).toFixed(1)
+        )
+      : null,
+    sla: stageSLA[stage]
+  };
+});
+
 
 
 
