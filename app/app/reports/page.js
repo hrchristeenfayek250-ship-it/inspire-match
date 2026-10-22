@@ -1766,6 +1766,117 @@ value: monthlyCandidates.length,
   </p>
 </section>
 
+<section style={{
+  background: "#ffffff",
+  border: "1px solid #e1ebe5",
+  borderRadius: 24,
+  padding: 28,
+  margin: "26px 0",
+  boxShadow: "0 12px 35px rgba(23,62,50,0.05)"
+}}>
+  <div style={{ marginBottom: 24 }}>
+    <h2 style={{
+      color: "#173e32",
+      fontSize: 26,
+      fontWeight: 800,
+      margin: "0 0 10px"
+    }}>
+      Time in Stage Analysis
+    </h2>
+    <p style={{ color: "#81938b", fontSize: 13 }}>
+      Historical time spent in completed recruitment stages,
+      based on recorded candidate transitions.
+    </p>
+  </div>
+
+  <div style={{
+    display: "grid",
+    gridTemplateColumns: "repeat(auto-fit, minmax(210px, 1fr))",
+    gap: 16
+  }}>
+    {timeInStage.map(item => {
+      const hasData = item.averageDays !== null;
+      const exceedsSLA = hasData && item.averageDays > item.sla;
+
+      return (
+        <div key={item.stage} style={{
+          background: "#f8fbf9",
+          border: "1px solid #e2eee7",
+          borderRadius: 18,
+          padding: 22
+        }}>
+          <div style={{
+            fontSize: 13,
+            color: "#688072",
+            fontWeight: 700
+          }}>
+            {item.stage}
+          </div>
+
+          <div style={{
+            fontSize: 34,
+            fontWeight: 800,
+            color: "#173e32",
+            margin: "14px 0 6px"
+          }}>
+            {hasData ? `${item.averageDays} days` : "N/A"}
+          </div>
+
+          <div style={{
+            fontSize: 12,
+            color: "#81938b"
+          }}>
+            Average completed-stage duration
+          </div>
+
+          <div style={{
+            height: 1,
+            background: "#e1ebe5",
+            margin: "18px 0"
+          }} />
+
+          <div style={{
+            display: "flex",
+            justifyContent: "space-between",
+            fontSize: 12,
+            color: "#688072"
+          }}>
+            <span>{item.transitions} Transitions</span>
+            <span>SLA: {item.sla} days</span>
+          </div>
+
+          <div style={{
+            marginTop: 14,
+            fontSize: 12,
+            fontWeight: 700,
+            color: !hasData
+              ? "#81938b"
+              : exceedsSLA
+                ? "#b45309"
+                : "#247a57"
+          }}>
+            {!hasData
+              ? "Insufficient History"
+              : exceedsSLA
+                ? "Above SLA Average"
+                : "Within SLA Average"}
+          </div>
+        </div>
+      );
+    })}
+  </div>
+
+  <p style={{
+    color: "#87988e",
+    fontSize: 12,
+    marginTop: 22
+  }}>
+    Only completed stages with recorded entry and exit
+    transitions are included. Historical activity before
+    stage tracking was enabled is unavailable.
+  </p>
+</section>
+
 <div className="ir-analytics">
             <section className="ir-panel">
               <div className="ir-panel-heading">
