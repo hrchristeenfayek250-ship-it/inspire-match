@@ -1232,6 +1232,28 @@ export default function JobsPage() {
               </div>
             )}
 
+            {successMessage === "Job deleted successfully." && (
+              <div
+                role="status"
+                aria-live="polite"
+                style={{
+                  position: "fixed",
+                  top: 20,
+                  right: 20,
+                  zIndex: 9999,
+                  maxWidth: "min(360px, calc(100vw - 40px))",
+                  padding: "14px 18px",
+                  borderRadius: 12,
+                  background: "#176b4a",
+                  color: "#ffffff",
+                  boxShadow: "0 10px 30px rgba(0,0,0,0.18)",
+                  fontWeight: 700,
+                }}
+              >
+                ✓ Job deleted successfully.
+              </div>
+            )}
+
             {/* JOB ANALYTICS */}
 
             <div className="jm-stats">
