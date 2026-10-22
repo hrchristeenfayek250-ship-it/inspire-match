@@ -374,105 +374,6 @@ const conversionStages = [
   "Screening",
   "Interview",
   "Shortlisted",
-  "Hired",
-];
-
-const transitionsByCandidate = new Map();
-
-stageHistory.forEach(transition => {
-  const id = String(transition.candidate_id || "");
-  const timestamp = new Date(transition.changed_at).getTime();
-
-  if (!id || !Number.isFinite(timestamp)) return;
-
-  if (!transitionsByCandidate.has(id)) {
-    transitionsByCandidate.set(id, []);
-  }
-
-  transitionsByCandidate.get(id).push(transition);
-});
-
-transitionsByCandidate.forEach(transitions => {
-  transitions.sort(
-    (a, b) =>
-      new Date(a.changed_at).getTime() -
-      new Date(b.changed_at).getTime()
-  );
-});
-
-
-const activeCandidateIds = new Set(
-  activeCandidates.map(candidate => String(candidate.id))
-);
-
-
-const reachedStages = new Map();
-
-transitionsByCandidate.forEach((transitions, id) => {
-  if (!activeCandidateIds.has(id)) return;
-
-  if (!reachedStages.has(id)) {
-    reachedStages.set(id, new Set());
-  }
-
-  transitions.forEach(transition => {
-    [transition.from_stage, transition.to_stage].forEach(value => {
-      const stage = conversionStages.find(
-        item =>
-          item.toLowerCase() ===
-          String(value || "").trim().toLowerCase()
-      );
-
-      if (stage) {
-        reachedStages.get(id).add(stage);
-      }
-    });
-  });
-});
-
-activeCandidates.forEach(candidate => {
-  const id = String(candidate.id);
-
-  const currentStage = conversionStages.find(
-    stage =>
-      stage.toLowerCase() ===
-      String(candidate.status || "").trim().toLowerCase()
-  );
-
-  if (!currentStage) return;
-
-  if (!reachedStages.has(id)) {
-    reachedStages.set(id, new Set());
-  }
-
-  reachedStages.get(id).add(currentStage);
-});
-
-
-const firstReachedByCandidate = new Map();
-
-transitionsByCandidate.forEach((transitions, id) => {
-  if (!activeCandidateIds.has(id)) return;
-
-  const firstReachedAt = new Map();
-
-  transitions.forEach(transition => {
-    const timestamp = new Date(transition.changed_at).getTime();
-
-    [
-      transition.from_stage,
-      transition.to_stage
-    ].forEach(value => {
-      const stage = String(value || "").trim().toLowerCase();
-
-      if (stage && !firstReachedAt.has(stage)) {
-        firstReachedAt.set(stage, timestamp);
-      }
-    });
-  });
-
-  firstReachedByCandidate.set(id, firstReachedAt);
-});
 
 const stageConversion = conversionStages
   .slice(0, -1)
@@ -487,38 +388,33 @@ const stageConversion = conversionStages
 
       entered.add(id);
 
-      const firstReachedAt =
-        firstReachedByCandidate.get(id) || new Map();
+      const firstReachedAt = firstReachedByCandidate.get(id);
 
-      const reachedFromAt =
-        firstReachedAt.get(from.toLowerCase());
+      if (!firstReachedAt) return;
 
-      let confirmedProgression = false;
+      const reachedFromAt = firstReachedAt.get(
+        from.toLowerCase()
+      );
 
+      if (reachedFromAt === undefined) return;
 
-      reachedFromAt = firstReachedAt.get(from.toLowerCase());
+      const confirmedProgression = conversionStages
+        .slice(index + 1)
+        .some(stage => {
+          const laterReachedAt = firstReachedAt.get(
+            stage.toLowerCase()
+          );
 
-      if (reachedFromAt !== undefined) {
-        confirmedProgression = conversionStages
-          .slice(index + 1)
-          .some(stage => {
-            const laterReachedAt = firstReachedAt.get(
-              stage.toLowerCase()
-            );
-
-            return (
-              laterReachedAt !== undefined &&
-              laterReachedAt > reachedFromAt
-            );
-          });
-      }
+          return (
+            laterReachedAt !== undefined &&
+            laterReachedAt > reachedFromAt
+          );
+        });
 
       if (confirmedProgression) {
         progressed.add(id);
       }
     });
-
-
 
     return {
       from,
@@ -530,6 +426,7 @@ const stageConversion = conversionStages
         : null,
     };
   });
+
 
   
 const bottleneckAnalysis = Object.keys(stageSLA).map(stage => {
