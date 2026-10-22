@@ -5,6 +5,9 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { supabase } from "@/lib/supabase";
 
+import ATSNavigation from "@/components/ATSNavigation";
+
+
 export default function RecycleBinPage() {
   const [candidates, setCandidates] = useState([]);
   const [loading, setLoading] = useState(true);
