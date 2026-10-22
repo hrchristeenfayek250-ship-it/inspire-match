@@ -115,6 +115,7 @@ export default function JobsPage() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [updatingJobId, setUpdatingJobId] = useState(null);
+  const [deletingJobId, setDeletingJobId] = useState(null);
 
   const [showForm, setShowForm] = useState(false);
   const [mobileNav, setMobileNav] = useState(false);
@@ -336,6 +337,45 @@ export default function JobsPage() {
       setErrorMessage(`Could not save job: ${error.message}`);
     } finally {
       setSaving(false);
+    }
+  }
+
+  async function deleteJob(job) {
+    const confirmed = window.confirm(
+      `Permanently delete "${job.title}"? This cannot be undone and may affect related recruitment records.`
+    );
+    if (!confirmed) return;
+
+    setDeletingJobId(job.id);
+    setErrorMessage("");
+    setSuccessMessage("");
+
+    try {
+      const { companyId } = await getCompanyScope();
+      if (!companyId || String(job.company_id) !== String(companyId)) {
+        throw new Error("Job does not belong to your company.");
+      }
+
+      const { data, error } = await supabase
+        .from("jobs")
+        .delete()
+        .eq("id", job.id)
+        .eq("company_id", companyId)
+        .select("id");
+
+      if (error) throw error;
+      if (!data?.length) {
+        throw new Error("Job not found or deletion not permitted.");
+      }
+
+      setJobs((current) =>
+        current.filter((item) => String(item.id) !== String(job.id))
+      );
+      setSuccessMessage("Job deleted successfully.");
+    } catch (error) {
+      setErrorMessage(`Could not delete job: ${error.message}`);
+    } finally {
+      setDeletingJobId(null);
     }
   }
 
@@ -1491,6 +1531,16 @@ export default function JobsPage() {
                               onClick={() => editJob(job)}
                             >
                               ✎ Edit Job
+                            </button>
+
+                            <button
+                              type="button"
+                              className="jm-secondary"
+                              onClick={() => deleteJob(job)}
+                              disabled={deletingJobId === job.id}
+                              style={{ color: "#b42318", borderColor: "#f3b4ae" }}
+                            >
+                              {deletingJobId === job.id ? "Deleting..." : "Delete Job"}
                             </button>
 
                             <select
