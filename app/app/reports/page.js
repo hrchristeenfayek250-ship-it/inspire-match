@@ -144,21 +144,59 @@ export default function ReportsPage() {
       }
 
 
-      const candidateIds = (data || []).map(c => c.id);
+    
+      const candidateIds = data.map(c => c.id);
 
-      let historyData = [];
+      const historyData = [];
       let historyError = null;
 
       if (!queryError && candidateIds.length > 0) {
-        const result = await supabase
-          .from("candidate_stage_history")
-          .select("candidate_id, from_stage, to_stage, changed_at")
-          .in("candidate_id", candidateIds)
-          .order("changed_at", { ascending: false });
+        const idBatchSize = 100;
 
-        historyData = result.data || [];
-        historyError = result.error;
+        for (
+          let i = 0;
+          i < candidateIds.length;
+          i += idBatchSize
+        ) {
+          const idBatch = candidateIds.slice(i, i + idBatchSize);
+          let historyOffset = 0;
+
+          while (true) {
+            const { data: historyBatch, error: batchError } =
+              await supabase
+                .from("candidate_stage_history")
+                .select("candidate_id, from_stage, to_stage, changed_at")
+                .in("candidate_id", idBatch)
+                .order("changed_at", { ascending: false })
+                .range(
+                  historyOffset,
+                  historyOffset + pageSize - 1
+                );
+
+            if (batchError) {
+              historyError = batchError;
+              break;
+            }
+
+            historyData.push(...(historyBatch || []));
+
+            if (!historyBatch || historyBatch.length < pageSize) {
+              break;
+            }
+
+            historyOffset += pageSize;
+          }
+
+          if (historyError) break;
+        }
       }
+
+      historyData.sort(
+        (a, b) =>
+          new Date(b.changed_at).getTime() -
+          new Date(a.changed_at).getTime()
+      );
+
 
       if (!active) return;
 
