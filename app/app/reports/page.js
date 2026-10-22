@@ -1595,7 +1595,7 @@ value: monthlyCandidates.length,
     color: "#173e32",
     margin: "10px 0"
   }}>
-    Recruitment Bottleneck Analysis
+  Stage Aging & SLA Intelligence
   </h2>
 
   <p style={{
@@ -3070,7 +3070,7 @@ activeCandidates.length
               
               })()}
 
-              {/* RECRUITMENT BOTTLENECK ANALYSIS */}
+              {/* Pipeline Distribution & Bottlenecks */}
               {(() => {
                 const activeStages = [
                   "Applied",
