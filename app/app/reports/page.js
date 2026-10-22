@@ -3135,7 +3135,7 @@ activeCandidates.length
                         marginBottom: 10,
                       }}
                     >
-                      Recruitment Bottleneck Analysis
+                    Pipeline Distribution & Bottlenecks
                     </h2>
 
                     <p
