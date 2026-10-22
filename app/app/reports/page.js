@@ -410,7 +410,8 @@ const stageConversion = conversionStages
 
     });
 
-    candidates.forEach(candidate => {
+   
+    activeCandidates.forEach(candidate => {
       const id = String(candidate.id);
 
       const currentStage = conversionStages.find(
@@ -427,6 +428,7 @@ const stageConversion = conversionStages
 
       reachedStages.get(id).add(currentStage);
     });
+
 
 
     reachedStages.forEach((reached, id) => {
