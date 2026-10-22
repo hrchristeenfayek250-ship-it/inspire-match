@@ -1265,24 +1265,6 @@ value: monthlyCandidates.length,
                 note: "Added in the selected month",
                 icon: "♙",
               },
-              {
-                label: "Active Pipeline",
-                value:
-                  countStage("Applied") +
-                  countStage("Screening") +
-                  countStage("Interview") +
-                  countStage("Shortlisted"),
-                note: "Active Recruitment candidates",
-                icon: "⇄",
-              },
-              {
-                label: "Interview Ready",
-                value:
-                  countStage("Interview") +
-                  countStage("Shortlisted"),
-                note: "Interview and shortlisted stages",
-                icon: "◈",
-              },
              
               {
                 label: "Active Pipeline",
