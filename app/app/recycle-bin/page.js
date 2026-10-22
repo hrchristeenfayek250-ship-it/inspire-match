@@ -141,8 +141,10 @@ export default function RecycleBinPage() {
   return (
     <main className="imc-root">
       <style>{`
-        .imc-root{min-height:100vh;background:#f6f8fb;color:#1e293b;font:14px Arial,sans-serif}
+        .imc-root{min-height:100vh;width:100%;background:#f6f8fb;color:#1e293b;font:14px/1.5 Arial,Helvetica,sans-serif}
         .imc-root *{box-sizing:border-box}
+        .imc-root h1,.imc-root h2,.imc-root h3{font-family:Arial,Helvetica,sans-serif;color:#1e293b}
+        .imc-root button,.imc-root a{font-family:inherit}
         .imc-shell{display:grid;grid-template-columns:254px minmax(0,1fr);min-height:100vh}
         .imc-sidebar{background:white;border-right:1px solid #e6eaf0;padding:24px 15px;position:sticky;top:0;height:100vh;overflow-y:auto}
         .imc-sidebar-inner{display:flex;flex-direction:column;min-height:100%}
@@ -159,18 +161,18 @@ export default function RecycleBinPage() {
         .imc-sidebar-footer{margin-top:auto;padding:22px 14px 8px;border-top:1px solid #edf0f2;display:grid;gap:12px}
         .imc-sidebar-footer a{color:#657285;text-decoration:none;font-size:12px;font-weight:700}
         .imc-sidebar-footer small{color:#a1acb8;font-size:10px}
-        .imc-content{min-width:0;padding:29px clamp(17px,3vw,46px) 60px}
+        .imc-content{min-width:0;width:100%;padding:29px clamp(17px,3vw,46px) 60px}
         .imc-header{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:20px;margin-bottom:30px}
         .imc-breadcrumb{font-size:12px;color:#8390a0;margin-bottom:9px}
         .imc-breadcrumb strong{color:#315f50}
-        .imc-page-title{margin:0;font-size:clamp(29px,3vw,38px);letter-spacing:-1.1px;font-weight:800}
+        .imc-page-title{margin:0;font-size:clamp(29px,3vw,38px);line-height:1.2;letter-spacing:-1.1px;font-weight:800}
         .imc-subtitle{color:#8390a0;font-size:13px;margin:10px 0 0}
         .imc-secondary{padding:12px 16px;background:white;border:1px solid #e3e8ed;border-radius:10px;color:#526073;font-size:12px;font-weight:800;text-decoration:none}
-        .imc-panel{padding:24px;background:white;border:1px solid #e6eaf0;border-radius:16px;box-shadow:0 4px 18px rgba(23,35,50,.035)}
+        .imc-panel{width:100%;padding:24px;background:white;border:1px solid #e6eaf0;border-radius:16px;box-shadow:0 4px 18px rgba(23,35,50,.035)}
         .imc-panel-header{display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;margin-bottom:21px}
         .imc-panel-header h2{font-size:17px;margin:0}
         .imc-count{padding:9px 13px;border-radius:10px;background:#edf4f0;color:#315f50;font-size:12px;font-weight:800}
-        .imc-empty{text-align:center;padding:60px 20px;background:#f8fafb;border:1px dashed #e3e8ed;border-radius:12px}
+        .imc-empty{text-align:center;padding:54px 20px;background:#f8fafb;border:1px dashed #e3e8ed;border-radius:12px}
         .imc-empty h3{margin:10px 0 6px;font-size:18px}
         .imc-empty p{color:#8390a0}
         .imc-candidate{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:16px;border:1px solid #e6eaf0;border-radius:12px;padding:18px;margin-bottom:12px}
