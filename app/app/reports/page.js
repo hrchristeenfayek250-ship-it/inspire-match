@@ -410,6 +410,25 @@ const stageConversion = conversionStages
 
     });
 
+    candidates.forEach(candidate => {
+      const id = String(candidate.id);
+
+      const currentStage = conversionStages.find(
+        stage =>
+          stage.toLowerCase() ===
+          String(candidate.status || "").trim().toLowerCase()
+      );
+
+      if (!currentStage) return;
+
+      if (!reachedStages.has(id)) {
+        reachedStages.set(id, new Set());
+      }
+
+      reachedStages.get(id).add(currentStage);
+    });
+
+
     reachedStages.forEach((reached, id) => {
       if (!reached.has(from)) return;
 
