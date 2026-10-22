@@ -3,19 +3,20 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
+
 export const ATS_NAVIGATION = [
   ["Overview", "/app/dashboard", "◫"],
   ["Jobs", "/app/jobs", "▣"],
   ["Candidates", "/app/candidates", "♙"],
+  ["Recycle Bin", "/app/recycle-bin", "♻"],
   ["Pipeline", "/app/pipeline", "⇄"],
   ["AI Matching", "/app/matching", "✧"],
   ["Reports", "/app/reports", "▥"],
-  
   ["Ask Inspire AI", "/app/ask-inspire", "✦"],
-
   ["Executive", "/app/executive", "◈"],
   ["Team", "/app/team", "♧"],
 ];
+
 
 export default function ATSNavigation({
   className = "",
