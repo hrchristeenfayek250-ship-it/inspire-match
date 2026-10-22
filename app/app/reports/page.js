@@ -412,43 +412,41 @@ const stageConversion = conversionStages
     const reachedStages = new Map();
 
    
+    
     const activeCandidateIds = new Set(
       activeCandidates.map(candidate => String(candidate.id))
     );
 
-    
-    stageHistory
-      .filter(h => activeCandidateIds.has(String(h.candidate_id)))
-      .sort(
-        (a, b) =>
-          new Date(a.changed_at).getTime() -
-          new Date(b.changed_at).getTime()
-      )
-      .forEach(h => {
-
-
-      const id = String(h.candidate_id);
+    transitionsByCandidate.forEach((transitions, id) => {
+      if (!activeCandidateIds.has(id)) return;
 
       if (!reachedStages.has(id)) {
         reachedStages.set(id, new Set());
       }
 
-     
-      if (h.from_stage) {
-        const stage = conversionStages.find(
-          s => s.toLowerCase() === String(h.from_stage).trim().toLowerCase()
+      transitions.forEach(transition => {
+        const previousStage = conversionStages.find(
+          stage =>
+            stage.toLowerCase() ===
+            String(transition.from_stage || "").trim().toLowerCase()
         );
-        if (stage) reachedStages.get(id).add(stage);
-      }
 
-      if (h.to_stage) {
-        const stage = conversionStages.find(
-          s => s.toLowerCase() === String(h.to_stage).trim().toLowerCase()
+        const nextStage = conversionStages.find(
+          stage =>
+            stage.toLowerCase() ===
+            String(transition.to_stage || "").trim().toLowerCase()
         );
-        if (stage) reachedStages.get(id).add(stage);
-      }
 
+        if (previousStage) {
+          reachedStages.get(id).add(previousStage);
+        }
+
+        if (nextStage) {
+          reachedStages.get(id).add(nextStage);
+        }
+      });
     });
+
 
    
     activeCandidates.forEach(candidate => {
