@@ -391,9 +391,16 @@ const stageConversion = conversionStages
       activeCandidates.map(candidate => String(candidate.id))
     );
 
+    
     stageHistory
       .filter(h => activeCandidateIds.has(String(h.candidate_id)))
+      .sort(
+        (a, b) =>
+          new Date(a.changed_at).getTime() -
+          new Date(b.changed_at).getTime()
+      )
       .forEach(h => {
+
 
       const id = String(h.candidate_id);
 
