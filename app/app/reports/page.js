@@ -368,6 +368,7 @@ const sourceEffectiveness = Object.values(
 }));
   
 
+
 const conversionStages = [
   "Applied",
   "Screening",
@@ -376,7 +377,31 @@ const conversionStages = [
   "Hired",
 ];
 
+const transitionsByCandidate = new Map();
+
+stageHistory.forEach(transition => {
+  const id = String(transition.candidate_id || "");
+  const timestamp = new Date(transition.changed_at).getTime();
+
+  if (!id || !Number.isFinite(timestamp)) return;
+
+  if (!transitionsByCandidate.has(id)) {
+    transitionsByCandidate.set(id, []);
+  }
+
+  transitionsByCandidate.get(id).push(transition);
+});
+
+transitionsByCandidate.forEach(transitions => {
+  transitions.sort(
+    (a, b) =>
+      new Date(a.changed_at).getTime() -
+      new Date(b.changed_at).getTime()
+  );
+});
+
 const stageConversion = conversionStages
+
   .slice(0, -1)
   .map((from, index) => {
     const to = conversionStages[index + 1];
