@@ -461,10 +461,12 @@ const stageConversion = conversionStages
             new Date(b.changed_at).getTime()
         );
 
-      let reachedFrom = false;
+      
+      let reachedFromAt = null;
       let confirmedProgression = false;
+      const firstReachedAt = new Map();
 
-      for (const transition of candidateTransitions) {
+      candidateTransitions.forEach((transition, position) => {
         const previousStage = String(
           transition.from_stage || ""
         ).trim().toLowerCase();
@@ -473,29 +475,37 @@ const stageConversion = conversionStages
           transition.to_stage || ""
         ).trim().toLowerCase();
 
-        if (previousStage === from.toLowerCase()) {
-          reachedFrom = true;
+        if (previousStage && !firstReachedAt.has(previousStage)) {
+          firstReachedAt.set(previousStage, position);
         }
 
-        if (
-          reachedFrom &&
-          conversionStages
-            .slice(index + 1)
-            .some(stage => stage.toLowerCase() === nextStage)
-        ) {
-          confirmedProgression = true;
-          break;
+        if (nextStage && !firstReachedAt.has(nextStage)) {
+          firstReachedAt.set(nextStage, position + 0.5);
         }
+      });
 
-        if (nextStage === from.toLowerCase()) {
-          reachedFrom = true;
-        }
+      reachedFromAt = firstReachedAt.get(from.toLowerCase());
+
+      if (reachedFromAt !== undefined) {
+        confirmedProgression = conversionStages
+          .slice(index + 1)
+          .some(stage => {
+            const laterReachedAt = firstReachedAt.get(
+              stage.toLowerCase()
+            );
+
+            return (
+              laterReachedAt !== undefined &&
+              laterReachedAt > reachedFromAt
+            );
+          });
       }
 
       if (confirmedProgression) {
         progressed.add(id);
       }
     });
+
 
 
     return {
