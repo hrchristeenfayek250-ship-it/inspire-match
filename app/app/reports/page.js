@@ -448,6 +448,32 @@ activeCandidates.forEach(candidate => {
   reachedStages.get(id).add(currentStage);
 });
 
+
+const firstReachedByCandidate = new Map();
+
+transitionsByCandidate.forEach((transitions, id) => {
+  if (!activeCandidateIds.has(id)) return;
+
+  const firstReachedAt = new Map();
+
+  transitions.forEach(transition => {
+    const timestamp = new Date(transition.changed_at).getTime();
+
+    [
+      transition.from_stage,
+      transition.to_stage
+    ].forEach(value => {
+      const stage = String(value || "").trim().toLowerCase();
+
+      if (stage && !firstReachedAt.has(stage)) {
+        firstReachedAt.set(stage, timestamp);
+      }
+    });
+  });
+
+  firstReachedByCandidate.set(id, firstReachedAt);
+});
+
 const stageConversion = conversionStages
   .slice(0, -1)
   .map((from, index) => {
@@ -456,47 +482,18 @@ const stageConversion = conversionStages
     const entered = new Set();
     const progressed = new Set();
 
-
-
-    
     reachedStages.forEach((reached, id) => {
       if (!reached.has(from)) return;
 
       entered.add(id);
 
-     
-      
-      const candidateTransitions = transitionsByCandidate.get(id) || [];
+      const firstReachedAt =
+        firstReachedByCandidate.get(id) || new Map();
 
+      const reachedFromAt =
+        firstReachedAt.get(from.toLowerCase());
 
-
-      
-      let reachedFromAt = null;
       let confirmedProgression = false;
-      const firstReachedAt = new Map();
-
-      
-      candidateTransitions.forEach((transition) => {
-        const timestamp = new Date(
-          transition.changed_at
-        ).getTime();
-
-        const previousStage = String(
-          transition.from_stage || ""
-        ).trim().toLowerCase();
-
-        const nextStage = String(
-          transition.to_stage || ""
-        ).trim().toLowerCase();
-
-        if (previousStage && !firstReachedAt.has(previousStage)) {
-          firstReachedAt.set(previousStage, timestamp);
-        }
-
-        if (nextStage && !firstReachedAt.has(nextStage)) {
-          firstReachedAt.set(nextStage, timestamp);
-        }
-      });
 
 
       reachedFromAt = firstReachedAt.get(from.toLowerCase());
