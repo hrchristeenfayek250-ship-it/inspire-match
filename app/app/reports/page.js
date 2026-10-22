@@ -1735,10 +1735,15 @@ value: monthlyCandidates.length,
     ))}
   </div>
 
+  <
   <p style={{ color: "#87988e", fontSize: 12, marginTop: 20 }}>
-    Based on recorded direct stage transitions. Historical transitions
-    before tracking was enabled are not included.
+    Conversion rates are calculated using recorded candidate stage
+    history, including progression to later stages when intermediate
+    stages were skipped. Historical transitions before tracking was
+    enabled are not included. Results may be incomplete for older
+    candidates.
   </p>
+
 </section>
       
 <section style={{
