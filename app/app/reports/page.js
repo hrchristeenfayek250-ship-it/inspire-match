@@ -413,28 +413,42 @@ const stageAging = candidates
 
 const overdueCandidates = stageAging.filter(c => c.overdue);
   
-const sourceEffectiveness = Object.values(
-  candidates.reduce((acc, candidate) => {
-    const source = candidate.source?.trim() || "Unknown";
 
-    if (!acc[source]) {
-      acc[source] = { source, total: 0, hired: 0 };
-    }
+const sourceGroups = new Map();
 
-    acc[source].total += 1;
+candidates.forEach(candidate => {
+  const rawSource = String(candidate.source || "").trim();
+  const source = rawSource || "Unknown";
+  const key = source.toLowerCase().replace(/\s+/g, " ");
 
-    if (candidate.status?.toLowerCase() === "hired") {
-      acc[source].hired += 1;
-    }
+  if (!sourceGroups.has(key)) {
+    sourceGroups.set(key, {
+      source,
+      total: 0,
+      hired: 0,
+    });
+  }
 
-    return acc;
-  }, {})
+  const group = sourceGroups.get(key);
+
+  group.total += 1;
+
+  if (
+    String(candidate.status || "").trim().toLowerCase() === "hired"
+  ) {
+    group.hired += 1;
+  }
+});
+
+const sourceEffectiveness = Array.from(
+  sourceGroups.values()
 ).map(item => ({
   ...item,
   conversionRate: item.total
     ? ((item.hired / item.total) * 100).toFixed(1)
     : "0.0",
 }));
+
   
 
 
