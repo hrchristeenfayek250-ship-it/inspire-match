@@ -1861,12 +1861,13 @@ value: monthlyCandidates.length,
  
   <p style={{ color: "#87988e", fontSize: 12, marginTop: 20 }}>
    
-    Conversion rates are based on recorded stage history and
-    current candidate status for Active Recruitment candidates.
-    Each candidate is counted once per stage. Progression means
-    reaching any later stage, including when intermediate stages
-    were skipped. Missing historical records may affect accuracy,
-    and stage visit order is not fully verified.
+   
+    Stage entry counts use recorded history and current status
+    for Active Recruitment candidates. Confirmed progression
+    requires a recorded first arrival at a later stage after
+    the original stage. Each candidate is counted once per stage.
+    Missing historical transitions may understate conversion rates.
+
 
   </p>
 
