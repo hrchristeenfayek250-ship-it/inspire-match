@@ -446,19 +446,57 @@ const stageConversion = conversionStages
 
 
 
+    
     reachedStages.forEach((reached, id) => {
       if (!reached.has(from)) return;
 
       entered.add(id);
 
-      const reachedLaterStage = conversionStages
-        .slice(index + 1)
-        .some(stage => reached.has(stage));
+      const candidateTransitions = stageHistory
+        .filter(h => String(h.candidate_id) === id)
+        .filter(h => h.changed_at)
+        .sort(
+          (a, b) =>
+            new Date(a.changed_at).getTime() -
+            new Date(b.changed_at).getTime()
+        );
 
-      if (reachedLaterStage) {
+      let reachedFrom = false;
+      let confirmedProgression = false;
+
+      for (const transition of candidateTransitions) {
+        const previousStage = String(
+          transition.from_stage || ""
+        ).trim().toLowerCase();
+
+        const nextStage = String(
+          transition.to_stage || ""
+        ).trim().toLowerCase();
+
+        if (previousStage === from.toLowerCase()) {
+          reachedFrom = true;
+        }
+
+        if (
+          reachedFrom &&
+          conversionStages
+            .slice(index + 1)
+            .some(stage => stage.toLowerCase() === nextStage)
+        ) {
+          confirmedProgression = true;
+          break;
+        }
+
+        if (nextStage === from.toLowerCase()) {
+          reachedFrom = true;
+        }
+      }
+
+      if (confirmedProgression) {
         progressed.add(id);
       }
     });
+
 
     return {
       from,
