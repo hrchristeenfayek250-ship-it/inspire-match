@@ -219,10 +219,12 @@ export default function CandidatesPage() {
     try {
       const filter = await getCompanyScope();
 
+     
       const { data, error: queryError } = await supabase
         .from("candidates")
         .select("*")
         .or(filter)
+        .is("deleted_at", null)
         .order("created_at", { ascending: false });
 
       if (queryError) throw queryError;
