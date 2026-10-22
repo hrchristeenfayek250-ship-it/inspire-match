@@ -1452,11 +1452,12 @@ value: monthlyCandidates.length,
 
     {sourceEffectiveness.length === 0 && (
       <p style={{ color: "#82968b" }}>
+<div className="ir-analytics">
         No candidate source data available yet.
       </p>
     )}
   </div>
-
+</section>
 <section style={{
   background: "#fff",
   border: "1px solid #e1eae4",
