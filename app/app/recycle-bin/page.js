@@ -141,9 +141,9 @@ export default function RecycleBinPage() {
   return (
     <main className="imc-root">
       <style>{`
-        .imc-root{min-height:100vh;width:100%;background:#f6f8fb;color:#1e293b;font:14px/1.5 Arial,Helvetica,sans-serif}
+        .imc-root{min-height:100vh;width:100%;max-width:none!important;margin:0!important;padding:0!important;background:#f6f8fb;color:#1e293b;font:14px/1.5 Arial,Helvetica,sans-serif}
         .imc-root *{box-sizing:border-box}
-        .imc-root h1,.imc-root h2,.imc-root h3{font-family:Arial,Helvetica,sans-serif;color:#1e293b}
+        .imc-root h1,.imc-root h2,.imc-root h3{font-family:Arial,Helvetica,sans-serif!important;color:#1e293b}
         .imc-root button,.imc-root a{font-family:inherit}
         .imc-shell{display:grid;grid-template-columns:254px minmax(0,1fr);min-height:100vh}
         .imc-sidebar{background:white;border-right:1px solid #e6eaf0;padding:24px 15px;position:sticky;top:0;height:100vh;overflow-y:auto}
@@ -161,7 +161,7 @@ export default function RecycleBinPage() {
         .imc-sidebar-footer{margin-top:auto;padding:22px 14px 8px;border-top:1px solid #edf0f2;display:grid;gap:12px}
         .imc-sidebar-footer a{color:#657285;text-decoration:none;font-size:12px;font-weight:700}
         .imc-sidebar-footer small{color:#a1acb8;font-size:10px}
-        .imc-content{min-width:0;width:100%;padding:29px clamp(17px,3vw,46px) 60px}
+        .imc-content{min-width:0;width:100%;max-width:none;padding:29px clamp(17px,3vw,46px) 60px}
         .imc-header{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:20px;margin-bottom:30px}
         .imc-breadcrumb{font-size:12px;color:#8390a0;margin-bottom:9px}
         .imc-breadcrumb strong{color:#315f50}
