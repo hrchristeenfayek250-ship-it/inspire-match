@@ -115,14 +115,34 @@ export default function ReportsPage() {
       }
 
      
-      const { data: jobData, error: jobError } =
-        await supabase
+     
+      const jobData = [];
+      let jobError = null;
+      let jobOffset = 0;
+
+      while (true) {
+        const { data: jobBatch, error: batchError } = await supabase
           .from("jobs")
           .select("id, title, status, created_at, filled_at")
           .or(
             `company_id.eq.${companyId},and(company_id.is.null,user_id.eq.${authData.user.id})`
           )
-          .order("created_at", { ascending: false });
+          .order("created_at", { ascending: false })
+          .order("id", { ascending: false })
+          .range(jobOffset, jobOffset + pageSize - 1);
+
+        if (batchError) {
+          jobError = batchError;
+          break;
+        }
+
+        jobData.push(...(jobBatch || []));
+
+        if (!jobBatch || jobBatch.length < pageSize) break;
+
+        jobOffset += pageSize;
+      }
+
 
       const candidateIds = (data || []).map(c => c.id);
 
