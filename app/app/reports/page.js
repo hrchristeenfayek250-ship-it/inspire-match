@@ -393,13 +393,21 @@ const stageConversion = conversionStages
         reachedStages.set(id, new Set());
       }
 
+     
       if (h.from_stage) {
-        reachedStages.get(id).add(h.from_stage);
+        const stage = conversionStages.find(
+          s => s.toLowerCase() === String(h.from_stage).trim().toLowerCase()
+        );
+        if (stage) reachedStages.get(id).add(stage);
       }
 
       if (h.to_stage) {
-        reachedStages.get(id).add(h.to_stage);
+        const stage = conversionStages.find(
+          s => s.toLowerCase() === String(h.to_stage).trim().toLowerCase()
+        );
+        if (stage) reachedStages.get(id).add(stage);
       }
+
     });
 
     reachedStages.forEach((reached, id) => {
