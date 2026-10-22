@@ -242,20 +242,41 @@ const monthlyCandidates = candidates.filter((candidate) =>
 
 
 
+
 const activeCandidates = candidates.filter(
   (candidate) =>
     candidate.recruitment_type === "Active Recruitment"
 );
 
+const pipelineStages = [
+  "Applied",
+  "Screening",
+  "Interview",
+  "Shortlisted",
+];
 
+const activePipelineCandidates = activeCandidates.filter(
+  (candidate) =>
+    pipelineStages.includes(
+      String(candidate.status || "").trim()
+    )
+);
+
+const recruitmentOutcomes = activeCandidates.filter(
+  (candidate) =>
+    ["Hired", "Rejected"].includes(
+      String(candidate.status || "").trim()
+    )
+);
 
 function countStage(stage) {
   return activeCandidates.filter(
     (candidate) =>
-      String(candidate.status || "").toLowerCase() ===
+      String(candidate.status || "").trim().toLowerCase() ===
       stage.toLowerCase()
   ).length;
 }
+
 
 const averageDays = (items, start, end) => {
   const days = items
