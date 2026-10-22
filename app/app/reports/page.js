@@ -278,26 +278,59 @@ function countStage(stage) {
 }
 
 
-const averageDays = (items, start, end) => {
-  const days = items
-    .filter(x => x[start] && x[end])
-    .map(x => (new Date(x[end]) - new Date(x[start])) / 86400000)
-    .filter(x => Number.isFinite(x) && x >= 0);
 
-  return days.length
-    ? (days.reduce((a, b) => a + b, 0) / days.length).toFixed(1)
-    : "N/A";
+const averageDays = (items, startField, endField) => {
+  const validDurations = items
+    .map(item => {
+      const startValue = item[startField];
+      const endValue = item[endField];
+
+      if (!startValue || !endValue) return null;
+
+      const startDate = new Date(startValue);
+      const endDate = new Date(endValue);
+
+      const startTime = startDate.getTime();
+      const endTime = endDate.getTime();
+
+      if (
+        !Number.isFinite(startTime) ||
+        !Number.isFinite(endTime) ||
+        endTime < startTime
+      ) {
+        return null;
+      }
+
+      return (endTime - startTime) / 86400000;
+    })
+    .filter(days => days !== null);
+
+  if (validDurations.length === 0) return "N/A";
+
+  const totalDays = validDurations.reduce(
+    (sum, days) => sum + days,
+    0
+  );
+
+  return (totalDays / validDurations.length).toFixed(1);
 };
 
 const timeToHire = averageDays(
-  candidates.filter(x => x.hired_at?.startsWith(month)),
-  "created_at", "hired_at"
+  candidates.filter(candidate =>
+    candidate.hired_at?.startsWith(month)
+  ),
+  "created_at",
+  "hired_at"
 );
 
 const timeToFill = averageDays(
-  jobs.filter(x => x.filled_at?.startsWith(month)),
-  "created_at", "filled_at"
+  jobs.filter(job =>
+    job.filled_at?.startsWith(month)
+  ),
+  "created_at",
+  "filled_at"
 );
+
   
 const stageSLA = {
   Applied: 3,
