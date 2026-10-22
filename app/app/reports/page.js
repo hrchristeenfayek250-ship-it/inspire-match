@@ -1452,7 +1452,7 @@ value: monthlyCandidates.length,
 
     {sourceEffectiveness.length === 0 && (
       <p style={{ color: "#82968b" }}>
-<div className="ir-analytics">
+
         No candidate source data available yet.
       </p>
     )}
@@ -1541,7 +1541,7 @@ value: monthlyCandidates.length,
     before tracking was enabled are not included.
   </p>
 </section>
-
+<div className="ir-analytics">
             <section className="ir-panel">
               <div className="ir-panel-heading">
                 <h2>Recruitment Pipeline</h2>
