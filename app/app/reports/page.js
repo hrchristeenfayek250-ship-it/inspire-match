@@ -263,6 +263,38 @@ const sourceEffectiveness = Object.values(
     ? ((item.hired / item.total) * 100).toFixed(1)
     : "0.0",
 }));
+  
+const stageConversion = [
+  ["Applied", "Screening"],
+  ["Screening", "Interview"],
+  ["Interview", "Shortlisted"],
+  ["Shortlisted", "Hired"],
+].map(([from, to]) => {
+  const entered = new Set(
+    stageHistory
+      .filter(h => h.to_stage === from || h.from_stage === from)
+      .map(h => String(h.candidate_id))
+  );
+
+  const progressed = new Set(
+    stageHistory
+      .filter(h => h.from_stage === from && h.to_stage === to)
+      .map(h => String(h.candidate_id))
+  );
+
+  const converted = [...progressed].filter(id => entered.has(id)).length;
+
+  return {
+    from,
+    to,
+    total: entered.size,
+    converted,
+    rate: entered.size
+      ? ((converted / entered.size) * 100).toFixed(1)
+      : null,
+  };
+});
+
 
 
   
