@@ -1034,52 +1034,178 @@ value: monthlyCandidates.length,
             ))}
           </div>
 
-<section className="ir-panel" style={{ marginBottom: 24 }}>
-  <div className="ir-panel-heading">
-    <h2>Stage Aging & SLA</h2>
-    <p>Current pipeline aging across all candidates</p>
+
+<section
+  className="ir-panel"
+  style={{
+    marginBottom: 28,
+    padding: 28,
+    borderRadius: 22,
+    background: "#fff",
+    border: "1px solid #e4eee9",
+    boxShadow: "0 8px 30px rgba(20,65,49,0.05)"
+  }}
+>
+  <div style={{ marginBottom: 24 }}>
+    <div style={{
+      fontSize: 11,
+      fontWeight: 800,
+      letterSpacing: 2,
+      color: "#3c9375",
+      marginBottom: 9
+    }}>
+      PIPELINE INTELLIGENCE
+    </div>
+    <h2 style={{
+      fontSize: 26,
+      fontWeight: 800,
+      color: "#173e32",
+      margin: "0 0 8px"
+    }}>
+      Stage Aging & SLA
+    </h2>
+    <p style={{ color: "#81938b", fontSize: 13, margin: 0 }}>
+      Monitor candidate waiting times and identify SLA breaches.
+    </p>
   </div>
 
-  <div style={{ padding: 20 }}>
-    <h3 style={{ color: "#245c4a" }}>
-      Overdue Candidates: {overdueCandidates.length}
-    </h3>
+  <div style={{
+    display: "grid",
+    gridTemplateColumns: "repeat(auto-fit, minmax(160px, 1fr))",
+    gap: 14,
+    marginBottom: 26
+  }}>
+    {[
+      {
+        label: "TRACKED CANDIDATES",
+        value: stageAging.length,
+        color: "#205e48",
+        bg: "#f5faf7"
+      },
+      {
+        label: "ON TRACK",
+        value: stageAging.length - overdueCandidates.length,
+        color: "#247a57",
+        bg: "#eef8f1"
+      },
+      {
+        label: "OVERDUE",
+        value: overdueCandidates.length,
+        color: "#b45309",
+        bg: "#fff7ed"
+      }
+    ].map(item => (
+      <div key={item.label} style={{
+        padding: "20px 22px",
+        borderRadius: 16,
+        background: item.bg,
+        border: "1px solid #e5eee8"
+      }}>
+        <div style={{
+          fontSize: 10,
+          fontWeight: 800,
+          letterSpacing: 1.1,
+          color: "#71877b",
+          marginBottom: 12
+        }}>
+          {item.label}
+        </div>
+        <strong style={{
+          fontSize: 30,
+          color: item.color
+        }}>
+          {item.value}
+        </strong>
+      </div>
+    ))}
+  </div>
 
-    {stageAging.length === 0 ? (
-      <p>No stage aging data available yet.</p>
-    ) : (
-      <div style={{ overflowX: "auto" }}>
-        <table style={{ width: "100%", textAlign: "left" }}>
-          <thead>
-            <tr>
-              <th>Candidate</th>
-              <th>Stage</th>
-              <th>Days</th>
-              <th>SLA</th>
-              <th>Status</th>
-            </tr>
-          </thead>
-          <tbody>
-            {stageAging.map(c => (
-              <tr key={c.id}>
-                <td>{c.full_name || "Unnamed"}</td>
-                <td>{c.status}</td>
-                <td>{c.daysInStage}</td>
-                <td>{c.slaDays} days</td>
+  {stageAging.length === 0 ? (
+    <div style={{
+      padding: "32px 20px",
+      textAlign: "center",
+      borderRadius: 16,
+      background: "#f7faf8",
+      color: "#82968b"
+    }}>
+      No stage aging data available yet.
+    </div>
+  ) : (
+    <div style={{
+      overflowX: "auto",
+      border: "1px solid #e7eee9",
+      borderRadius: 16
+    }}>
+      <table style={{
+        width: "100%",
+        borderCollapse: "collapse",
+        textAlign: "left",
+        fontSize: 13
+      }}>
+        <thead style={{ background: "#f3f8f5" }}>
+          <tr>
+            {["CANDIDATE", "STAGE", "DAYS IN STAGE", "SLA LIMIT", "STATUS"].map(h => (
+              <th key={h} style={{
+                padding: "17px 18px",
+                color: "#668476",
+                fontSize: 10,
+                letterSpacing: 0.8,
+                fontWeight: 800
+              }}>
+                {h}
+              </th>
+            ))}
+          </tr>
+        </thead>
+        <tbody>
+          {stageAging
+            .slice()
+            .sort((a, b) => Number(b.overdue) - Number(a.overdue))
+            .map(c => (
+              <tr key={c.id} style={{
+                borderTop: "1px solid #edf2ee"
+              }}>
                 <td style={{
-                  color: c.overdue ? "#b91c1c" : "#245c4a",
-                  fontWeight: 700
+                  padding: "17px 18px",
+                  fontWeight: 700,
+                  color: "#234b3b"
                 }}>
-                  {c.overdue ? "Overdue" : "On Track"}
+                  {c.full_name || "Unnamed"}
+                </td>
+                <td style={{ padding: "17px 18px", color: "#627c6f" }}>
+                  {c.status}
+                </td>
+                <td style={{
+                  padding: "17px 18px",
+                  fontWeight: 800,
+                  color: "#234b3b"
+                }}>
+                  {c.daysInStage}
+                </td>
+                <td style={{ padding: "17px 18px", color: "#627c6f" }}>
+                  {c.slaDays} days
+                </td>
+                <td style={{ padding: "17px 18px" }}>
+                  <span style={{
+                    display: "inline-block",
+                    padding: "7px 12px",
+                    borderRadius: 999,
+                    fontSize: 11,
+                    fontWeight: 800,
+                    background: c.overdue ? "#fff1e6" : "#e8f5ed",
+                    color: c.overdue ? "#b45309" : "#247a57"
+                  }}>
+                    {c.overdue ? "Overdue" : "On Track"}
+                  </span>
                 </td>
               </tr>
             ))}
-          </tbody>
-        </table>
-      </div>
-    )}
-  </div>
+        </tbody>
+      </table>
+    </div>
+  )}
 </section>
+
 
 
 <section
