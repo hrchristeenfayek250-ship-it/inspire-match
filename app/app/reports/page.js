@@ -463,6 +463,7 @@ activeCandidates.forEach(candidate => {
   reachedStages.get(id).add(currentStage);
 });
 
+
 const stageConversion = conversionStages
   .slice(0, -1)
   .map((from, index) => {
@@ -476,28 +477,32 @@ const stageConversion = conversionStages
 
       entered.add(id);
 
-      const firstReachedAt = firstReachedByCandidate.get(id);
+      const transitions = transitionsByCandidate.get(id) || [];
 
-      if (!firstReachedAt) return;
+      const fromKey = from.toLowerCase();
 
-      const reachedFromAt = firstReachedAt.get(
-        from.toLowerCase()
+      const laterStages = new Set(
+        conversionStages
+          .slice(index + 1)
+          .map(stage => stage.toLowerCase())
       );
 
-      if (reachedFromAt === undefined) return;
+      const confirmedProgression = transitions.some(
+        transition => {
+          const previousStage = String(
+            transition.from_stage || ""
+          ).trim().toLowerCase();
 
-      const confirmedProgression = conversionStages
-        .slice(index + 1)
-        .some(stage => {
-          const laterReachedAt = firstReachedAt.get(
-            stage.toLowerCase()
-          );
+          const nextStage = String(
+            transition.to_stage || ""
+          ).trim().toLowerCase();
 
           return (
-            laterReachedAt !== undefined &&
-            laterReachedAt > reachedFromAt
+            previousStage === fromKey &&
+            laterStages.has(nextStage)
           );
-        });
+        }
+      );
 
       if (confirmedProgression) {
         progressed.add(id);
