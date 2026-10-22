@@ -431,9 +431,11 @@ async function saveProfile() {
 async function deleteCandidate() {
   if (deletingCandidate || !candidate) return;
 
+  
   const confirmed = window.confirm(
-    `Are you sure you want to permanently delete ${candidate.full_name}? This cannot be undone.`
+    `Move ${candidate.full_name} to Recycle Bin? You can restore this candidate later.`
   );
+
 
   if (!confirmed) return;
 
@@ -462,11 +464,9 @@ async function deleteCandidate() {
 
     if (!response.ok || !result.success) {
       throw new Error(result.error || "Deletion failed.");
-    }
+   
+    alert("Candidate moved to Recycle Bin successfully.");
 
-    alert(
-      result.warning
-        ? `Candidate deleted. ${result.warning}`
         : "Candidate deleted successfully."
     );
 
