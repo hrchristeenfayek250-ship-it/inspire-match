@@ -386,7 +386,15 @@ const stageConversion = conversionStages
 
     const reachedStages = new Map();
 
-    stageHistory.forEach(h => {
+   
+    const activeCandidateIds = new Set(
+      activeCandidates.map(candidate => String(candidate.id))
+    );
+
+    stageHistory
+      .filter(h => activeCandidateIds.has(String(h.candidate_id)))
+      .forEach(h => {
+
       const id = String(h.candidate_id);
 
       if (!reachedStages.has(id)) {
