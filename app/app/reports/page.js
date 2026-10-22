@@ -2389,11 +2389,13 @@ value: monthlyCandidates.length,
                 }}
               >
                 {[
-                  {
-                    label: "CANDIDATES ADDED",
-                    value: candidates.length,
-                    note: "Added during this month",
-                  },
+                  
+{
+  label: "CANDIDATES ADDED",
+  value: monthlyCandidates.length,
+  note: "Added during the selected month",
+},
+
                   {
                     label: "ACTIVE PIPELINE",
                     value: ["Applied", "Screening", "Interview", "Shortlisted"]
