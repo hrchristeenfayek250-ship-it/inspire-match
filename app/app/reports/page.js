@@ -2088,9 +2088,12 @@ value: monthlyCandidates.length,
                   lineHeight: 1.7,
                 }}
               >
-                Based on current candidate stages.
-                Percentages are not stage-to-stage
-                conversion rates.
+               
+                Based on current candidate stages across all months.
+                Each percentage represents a share of all Active
+                Recruitment candidates, including Hired and Rejected.
+                These are distribution percentages, not conversion rates.
+
               </p>
             </section>
 
