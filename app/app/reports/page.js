@@ -23,10 +23,13 @@ export default function ReportsPage() {
   });
 
  
+  
   const [candidates, setCandidates] = useState([]);
   const [jobs, setJobs] = useState([]);
+  const [stageHistory, setStageHistory] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+
 
 
   useEffect(() => {
