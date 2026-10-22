@@ -1850,7 +1850,9 @@ value: monthlyCandidates.length,
           fontSize: 12,
           marginTop: 14
         }}>
-          {item.converted} of {item.total} tracked candidates progressed
+
+{item.converted} of {item.total} candidates have confirmed progression
+
         </p>
       </div>
     ))}
