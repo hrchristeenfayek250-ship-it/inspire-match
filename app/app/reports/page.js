@@ -198,27 +198,32 @@ export default function ReportsPage() {
       );
 
 
+    
       if (!active) return;
 
-      if (historyError) {
-        console.error("Stage history error:", historyError);
-      }
+      if (queryError || jobError || historyError) {
+        console.error("Recruitment analytics loading error:", {
+          candidates: queryError,
+          jobs: jobError,
+          stageHistory: historyError,
+        });
 
-      setStageHistory(historyError ? [] : historyData);
+        setError(
+          "Some recruitment data could not be loaded. Please refresh the page or contact support."
+        );
 
-      if (!active) return;
-
-      if (queryError || jobError) {
-        setError("Could not load recruitment analytics.");
         setCandidates([]);
         setJobs([]);
+        setStageHistory([]);
       } else {
-        setCandidates(data || []);
-        setJobs(jobData || []);
+        setError("");
+        setCandidates(data);
+        setJobs(jobData);
+        setStageHistory(historyData);
       }
 
- 
       setLoading(false);
+
     }
 
 
