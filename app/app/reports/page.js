@@ -2033,10 +2033,13 @@ value: monthlyCandidates.length,
             <section className="ir-panel">
               <div className="ir-panel-heading">
                 <h2>Recruitment Pipeline</h2>
+               
                 <p>
-                  Current stages of Active Recruitment
-                  candidates added in {periodLabel}.
+                  Current recruitment stage distribution across all months,
+                  including candidates marked as Hired or Rejected.
+                  Based on Active Recruitment records.
                 </p>
+
               </div>
 
               {stages.map((stage, index) => {
