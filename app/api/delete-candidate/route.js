@@ -73,84 +73,70 @@ export async function DELETE(request) {
     const { data: candidate, error: candidateError } =
       await db
         .from("candidates")
-        .select("id, user_id, cv_file_url")
+        .select("id, user_id")
         .eq("id", candidateId)
         .eq("company_id", companyId)
+        .is("deleted_at", null)
         .maybeSingle();
 
     if (candidateError) throw candidateError;
 
-    if (
-      !candidate ||
-      (role !== "admin" && candidate.user_id !== user.id)
-    ) {
+    const managerRoles = [
+      "admin",
+      "hr_manager",
+      "senior_recruiter",
+    ];
+
+    const ownerRoles = [
+      "hr",
+      "recruiter",
+      "hr_specialist",
+    ];
+
+    const canDelete =
+      managerRoles.includes(role) ||
+      (
+        ownerRoles.includes(role) &&
+        candidate?.user_id === user.id
+      );
+
+    if (!candidate || !canDelete) {
       return NextResponse.json(
         { error: "Candidate not found or access denied." },
         { status: 403 }
       );
     }
 
-    const cvPath = candidate.cv_file_url;
-
     const { data: deleted, error: deleteError } =
-      await db.rpc("delete_candidate_secure", {
+      await db.rpc("soft_delete_candidate", {
         p_candidate_id: candidateId,
       });
 
-    if (deleteError) throw deleteError;
+    if (deleteError) {
+      console.error("Soft delete RPC failed:", deleteError);
+
+      return NextResponse.json(
+        { error: "Candidate deletion was denied or failed." },
+        { status: 403 }
+      );
+    }
 
     if (deleted !== true) {
       throw new Error("Candidate deletion was not confirmed.");
     }
 
-    let warning = null;
-
-    if (cvPath) {
-      const safePath =
-        typeof cvPath === "string" &&
-        cvPath.startsWith(`${companyId}/`) &&
-        !cvPath.split("/").includes("..");
-
-      if (!safePath) {
-        warning = "CV file requires manual cleanup.";
-      } else if (!process.env.SUPABASE_SECRET_KEY) {
-        warning = "CV cleanup is not configured.";
-      } else {
-        try {
-          const storage = createClient(
-            process.env.NEXT_PUBLIC_SUPABASE_URL,
-            process.env.SUPABASE_SECRET_KEY,
-            {
-              auth: {
-                persistSession: false,
-                autoRefreshToken: false,
-              },
-            }
-          );
-
-          const { error: storageError } = await storage.storage
-            .from("candidate-cvs")
-            .remove([cvPath]);
-
-          if (storageError) throw storageError;
-        } catch (storageError) {
-          console.error("CV cleanup failed:", storageError);
-          warning = "Candidate deleted, but CV cleanup failed.";
-        }
-      }
-    }
-
     return NextResponse.json({
       success: true,
-      message: "Candidate deleted successfully.",
-      warning,
+      message: "Candidate moved to Recycle Bin successfully.",
     });
   } catch (error) {
     console.error("Delete candidate error:", error);
 
     return NextResponse.json(
-      { error: "Candidate deletion failed. No successful deletion was confirmed." },
+      { error: "Candidate deletion failed." },
       { status: 500 }
     );
   }
 }
+
+
