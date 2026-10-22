@@ -2404,15 +2404,22 @@ value: monthlyCandidates.length,
 },
 
                 
+
 {
   label: "HIRED SHARE",
-  value: `${activeCandidates.length
-    ? Math.round(
-        (countStage("Hired") / activeCandidates.length) * 100
-      )
-    : 0}%`,
-  note: "Hired candidates within Active Recruitment",
+  value: `${
+    activeCandidates.length
+      ? Math.round(
+          (recruitmentOutcomes.filter(
+            (candidate) =>
+              String(candidate.status || "").trim() === "Hired"
+          ).length / activeCandidates.length) * 100
+        )
+      : 0
+  }%`,
+  note: "Hired share of all Active Recruitment candidates",
 },
+
 
                 ].map((item) => (
                   <div
