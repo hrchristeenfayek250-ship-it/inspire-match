@@ -400,8 +400,12 @@ transitionsByCandidate.forEach(transitions => {
   );
 });
 
-const stageConversion = conversionStages
 
+const activeCandidateIds = new Set(
+  activeCandidates.map(candidate => String(candidate.id))
+);
+
+const stageConversion = conversionStages
   .slice(0, -1)
   .map((from, index) => {
     const to = conversionStages[index + 1];
@@ -411,11 +415,6 @@ const stageConversion = conversionStages
 
     const reachedStages = new Map();
 
-   
-    
-    const activeCandidateIds = new Set(
-      activeCandidates.map(candidate => String(candidate.id))
-    );
 
     transitionsByCandidate.forEach((transitions, id) => {
       if (!activeCandidateIds.has(id)) return;
