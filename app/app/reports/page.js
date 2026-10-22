@@ -1476,10 +1476,15 @@ value: monthlyCandidates.length,
       Source Effectiveness
     </h2>
 
+    
     <p style={{ color: "#81938b", margin: 0, fontSize: 13 }}>
       Understand where your talent comes from and which
       channels deliver successful hires.
+      Includes candidates from all months.
+      Conversion rates represent the percentage of candidates
+      from each source who are currently marked as Hired.
     </p>
+
   </div>
 
   <div style={{
