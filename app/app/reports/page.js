@@ -109,6 +109,30 @@ export default function ReportsPage() {
           )
           .order("created_at", { ascending: false });
 
+      const candidateIds = (data || []).map(c => c.id);
+
+      let historyData = [];
+      let historyError = null;
+
+      if (!queryError && candidateIds.length > 0) {
+        const result = await supabase
+          .from("candidate_stage_history")
+          .select("candidate_id, from_stage, to_stage, changed_at")
+          .in("candidate_id", candidateIds)
+          .order("changed_at", { ascending: false });
+
+        historyData = result.data || [];
+        historyError = result.error;
+      }
+
+      if (!active) return;
+
+      if (historyError) {
+        console.error("Stage history error:", historyError);
+      }
+
+      setStageHistory(historyError ? [] : historyData);
+
       if (!active) return;
 
       if (queryError || jobError) {
