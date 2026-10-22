@@ -180,6 +180,7 @@ export default function MatchingPage() {
             .order("created_at", { ascending: false }),
           supabase.from("candidates")
             .select("id, full_name, current_title, status, job_id")
+            .is("deleted_at", null)
             .or(companyFilter),
           supabase.from("ai_match_results")
             .select("*")
