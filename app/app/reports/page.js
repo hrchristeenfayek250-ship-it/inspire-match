@@ -342,36 +342,66 @@ const sourceEffectiveness = Object.values(
     : "0.0",
 }));
   
-const stageConversion = [
-  ["Applied", "Screening"],
-  ["Screening", "Interview"],
-  ["Interview", "Shortlisted"],
-  ["Shortlisted", "Hired"],
-].map(([from, to]) => {
-  const entered = new Set(
-    stageHistory
-      .filter(h => h.to_stage === from || h.from_stage === from)
-      .map(h => String(h.candidate_id))
-  );
 
-  const progressed = new Set(
-    stageHistory
-      .filter(h => h.from_stage === from && h.to_stage === to)
-      .map(h => String(h.candidate_id))
-  );
+const conversionStages = [
+  "Applied",
+  "Screening",
+  "Interview",
+  "Shortlisted",
+  "Hired",
+];
 
-  const converted = [...progressed].filter(id => entered.has(id)).length;
+const stageConversion = conversionStages
+  .slice(0, -1)
+  .map((from, index) => {
+    const to = conversionStages[index + 1];
 
-  return {
-    from,
-    to,
-    total: entered.size,
-    converted,
-    rate: entered.size
-      ? ((converted / entered.size) * 100).toFixed(1)
-      : null,
-  };
-});
+    const entered = new Set();
+    const progressed = new Set();
+
+    const reachedStages = new Map();
+
+    stageHistory.forEach(h => {
+      const id = String(h.candidate_id);
+
+      if (!reachedStages.has(id)) {
+        reachedStages.set(id, new Set());
+      }
+
+      if (h.from_stage) {
+        reachedStages.get(id).add(h.from_stage);
+      }
+
+      if (h.to_stage) {
+        reachedStages.get(id).add(h.to_stage);
+      }
+    });
+
+    reachedStages.forEach((reached, id) => {
+      if (!reached.has(from)) return;
+
+      entered.add(id);
+
+      const reachedLaterStage = conversionStages
+        .slice(index + 1)
+        .some(stage => reached.has(stage));
+
+      if (reachedLaterStage) {
+        progressed.add(id);
+      }
+    });
+
+    return {
+      from,
+      to,
+      total: entered.size,
+      converted: progressed.size,
+      rate: entered.size
+        ? ((progressed.size / entered.size) * 100).toFixed(1)
+        : null,
+    };
+  });
+
   
 const bottleneckAnalysis = Object.keys(stageSLA).map(stage => {
   const currentCandidates = stageAging.filter(
