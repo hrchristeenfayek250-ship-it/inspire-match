@@ -462,15 +462,15 @@ async function deleteCandidate() {
 
     const result = await response.json();
 
+    
     if (!response.ok || !result.success) {
       throw new Error(result.error || "Deletion failed.");
-   
+    }
+
     alert("Candidate moved to Recycle Bin successfully.");
 
-        : "Candidate deleted successfully."
-    );
-
     window.location.href = "/app/candidates";
+
   } catch (error) {
     alert(`Delete failed: ${error.message}`);
   } finally {
