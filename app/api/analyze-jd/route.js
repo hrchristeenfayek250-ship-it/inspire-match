@@ -45,9 +45,16 @@ export async function POST(req) {
     const jd = await askClaude({ system: JD_SYSTEM, content, maxTokens: 2500 });
     jd.criteria = normaliseWeights(jd.criteria || []);
     return Response.json(jd);
+ 
   } catch (err) {
-    return Response.json({ error: err.message }, { status: 500 });
+    console.error("JD analysis failed:", err);
+
+    return Response.json(
+      { error: "Could not analyze the job description. Please try again." },
+      { status: 500 }
+    );
   }
+
 }
 
 // Guarantees ids exist and weights add up to 100.
