@@ -114,10 +114,14 @@ Extraction rules:
     }
 
     return Response.json(result);
+  
   } catch (err) {
+    console.error("CV scoring failed:", err);
+
     return Response.json(
-      { error: err.message || "CV scoring failed." },
+      { error: "Could not score the CV. Please try again." },
       { status: 500 }
     );
   }
+
 }
