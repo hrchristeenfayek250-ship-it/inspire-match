@@ -155,15 +155,18 @@ export default function JobDetailsPage() {
         .jd-account small { display:block; font-size:10px; color:#879a8e; font-weight:600; margin-top:3px; }
         .jd-avatar { width:36px; height:36px; border-radius:11px; background:#e6ece2; color:#1e3b32; display:grid; place-items:center; font-weight:900; }
         .jd-page-subtitle { color:#8390a0; font-size:13px; margin:8px 0 0; }
-        .jd-hero { padding:23px 28px; background:linear-gradient(115deg,#1e3b32,#315f50); box-shadow:0 10px 25px rgba(30,59,50,.08); }
-        .jd-hero h2 { font-size:clamp(24px,2.7vw,33px); margin:7px 0 12px; }
-        .jd-pill { padding:6px 11px; }
-        .jd-card { padding:18px 20px; }
+        .jd-hero { padding:21px 26px; background:linear-gradient(115deg,#1e3b32,#315f50); box-shadow:0 7px 20px rgba(30,59,50,.07); }
+        .jd-hero h2 { font-size:clamp(23px,2.5vw,31px); margin:8px 0 10px; letter-spacing:-.5px; }
+        .jd-pill { padding:5px 10px; font-size:11px; }
+        .jd-card { padding:19px 20px; border-color:#dce6df; box-shadow:0 3px 12px rgba(22,54,43,.035); }
         .jd-card-heading { display:flex; align-items:center; gap:10px; margin-bottom:12px; }
         .jd-card-icon { display:grid; place-items:center; width:32px; height:32px; border-radius:9px; background:#edf4ef; color:#315f50; font-size:16px; flex-shrink:0; }
-        .jd-card-label { margin:0; }
-        .jd-description { border-radius:14px; box-shadow:0 4px 16px rgba(22,54,43,.025); }
-        .jd-section-title { margin-top:25px; }
+        .jd-card-label { margin:0; color:#64796f; font-size:11px; }
+        .jd-description { border-radius:14px; border-color:#dce6df; box-shadow:0 4px 16px rgba(22,54,43,.025); }
+        .jd-description h3 { color:#1e3b32; font-size:17px; }
+        .jd-description-text { color:#40594e; font-size:14px; line-height:1.9; }
+        .jd-section-title { margin-top:25px; color:#1e3b32; font-size:17px; letter-spacing:-.2px; }
+        .jd-card-value { color:#183e31; font-size:16px; }
         @media(max-width:600px) { .jd-workspace-topbar { padding:14px; } .jd-account { display:none; } .jd-workspace-actions { gap:12px; } .jd-hero { padding:22px 19px; } }
         @media(max-width:900px) { .jd-shell { grid-template-columns:minmax(0,1fr); } .jd-sidebar { display:none; } .jd-mobile-bar { display:flex; align-items:center; justify-content:space-between; padding:15px 20px; background:#fff; border-bottom:1px solid var(--jd-border); gap:12px; } .jd-menu-button { border:0; border-radius:9px; background:#eaf3ee; color:var(--jd-green); padding:10px 14px; font-weight:800; cursor:pointer; } .jd-mobile-menu { padding:15px; background:#fff; border-bottom:1px solid var(--jd-border); } .jd-mobile-menu .jd-side-inner { min-height:0; } .jd-mobile-menu .jd-side-footer { margin-top:15px; } }
         @media(max-width:520px) { .jd-main { padding:20px 14px 50px; } .jd-hero { border-radius:15px; } .jd-topbar { align-items:flex-start; } }
