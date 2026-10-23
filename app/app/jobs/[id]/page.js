@@ -105,7 +105,7 @@ export default function JobDetailsPage() {
         .jd-root { --jd-green:#284e42; --jd-dark:#173a33; --jd-muted:#697c79; --jd-border:#e2eae6; min-height:100vh; background:#f6f8fb; color:#203a35; font-family:Arial, sans-serif; font-size:14px; }
         .jd-root * { box-sizing:border-box; }
         .jd-root h1,.jd-root h2,.jd-root h3 { font-family:Arial,sans-serif; color:inherit; line-height:1.3; }
-        .jd-shell { display:grid; grid-template-columns:260px minmax(0,1fr); min-height:100vh; width:100%; }
+        .jd-shell { display:grid; grid-template-columns:254px minmax(0,1fr); min-height:100vh; width:100%; max-width:100%; }
         .jd-sidebar { position:sticky; top:0; height:100vh; overflow-y:auto; background:#fff; border-right:1px solid var(--jd-border); padding:24px 15px; }
         .jd-side-inner { min-height:100%; display:flex; flex-direction:column; }
         .jd-brand { display:flex; align-items:center; gap:11px; padding:7px 12px 26px; border-bottom:1px solid #edf0f2; margin-bottom:25px; }
@@ -121,10 +121,10 @@ export default function JobDetailsPage() {
         .jd-side-footer { margin-top:auto; display:grid; gap:8px; padding-top:30px; }
         .jd-side-footer a { color:#657285; text-decoration:none; padding:10px 15px; font-weight:600; }
         .jd-side-footer small { color:#a1acb8; font-size:10px; padding:10px 15px; }
-        .jd-workspace { min-width:0; width:100%; }
+        .jd-workspace { min-width:0; width:100%; max-width:100%; overflow-x:clip; }
         .jd-mobile-bar { display:none; }
-        .jd-main { width:100%; max-width:1440px; margin:0 auto; padding:32px clamp(16px,3vw,44px) 72px; min-width:0; }
-        .jd-topbar { display:flex; justify-content:space-between; align-items:center; gap:16px; flex-wrap:wrap; margin-bottom:24px; }
+        .jd-main { width:100%; max-width:1250px; margin:0 auto; padding:25px clamp(16px,3vw,44px) 60px; min-width:0; }
+        .jd-topbar { display:flex; justify-content:space-between; align-items:center; gap:16px; flex-wrap:wrap; margin-bottom:18px; }
         .jd-eyebrow { color:#7a8e8a; font-size:11px; font-weight:800; letter-spacing:1.3px; text-transform:uppercase; }
         .jd-page-title { font-size:clamp(24px,3vw,32px); font-weight:800; margin:5px 0 0; }
         .jd-back { display:inline-flex; align-items:center; gap:8px; color:var(--jd-green); background:#fff; border:1px solid var(--jd-border); padding:11px 16px; border-radius:11px; text-decoration:none; font-weight:700; }
@@ -155,8 +155,8 @@ export default function JobDetailsPage() {
         .jd-account small { display:block; font-size:10px; color:#879a8e; font-weight:600; margin-top:3px; }
         .jd-avatar { width:36px; height:36px; border-radius:11px; background:#e6ece2; color:#1e3b32; display:grid; place-items:center; font-weight:900; }
         .jd-page-subtitle { color:#8390a0; font-size:13px; margin:8px 0 0; }
-        .jd-hero { padding:26px 30px; background:linear-gradient(115deg,#1e3b32,#315f50); box-shadow:0 10px 25px rgba(30,59,50,.08); }
-        .jd-hero h2 { font-size:clamp(24px,2.7vw,33px); margin:9px 0 14px; }
+        .jd-hero { padding:23px 28px; background:linear-gradient(115deg,#1e3b32,#315f50); box-shadow:0 10px 25px rgba(30,59,50,.08); }
+        .jd-hero h2 { font-size:clamp(24px,2.7vw,33px); margin:7px 0 12px; }
         .jd-pill { padding:6px 11px; }
         .jd-card { padding:18px 20px; }
         .jd-card-heading { display:flex; align-items:center; gap:10px; margin-bottom:12px; }
@@ -178,8 +178,7 @@ export default function JobDetailsPage() {
             </button>
           </div>
           {mobileNav && <div className="jd-mobile-menu">{navigation}</div>}
-          <main className="jd-main">
-            <header className="jd-workspace-topbar">
+          <header className="jd-workspace-topbar">
               <div className="jd-workspace-heading">
                 <span>RECRUITMENT WORKSPACE</span>
                 <strong>Job Details</strong>
@@ -189,12 +188,12 @@ export default function JobDetailsPage() {
                 <Link href="/app/dashboard" className="jd-overview-link">Overview ↗</Link>
                 <div className="jd-account"><span className="jd-avatar">IM</span><span>Inspire Match<small>Talent Intelligence</small></span></div>
               </div>
-            </header>
+          </header>
+          <main className="jd-main">
             <div className="jd-topbar">
               <div>
                 <div className="jd-eyebrow">Workspace / Jobs / Details</div>
-                <h1 className="jd-page-title">Job Overview</h1>
-                <p className="jd-page-subtitle">Review requisition information and hiring requirements.</p>
+                <p className="jd-page-subtitle">Requisition details and hiring requirements</p>
               </div>
               <Link href="/app/jobs" className="jd-back">← Back to Jobs</Link>
             </div>
