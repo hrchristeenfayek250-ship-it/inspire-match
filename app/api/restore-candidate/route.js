@@ -57,7 +57,7 @@ export async function POST(request) {
     const { data: memberships, error: membershipError } =
       await db
         .from("company_members")
-        .select("company_id")
+        .select("company_id, role")
         .eq("user_id", authData.user.id)
         .limit(2);
 
@@ -68,12 +68,22 @@ export async function POST(request) {
       );
     }
 
-    const companyId = memberships[0].company_id;
+    const { company_id: companyId, role } = memberships[0];
+
+    const managerRoles = ["admin", "hr_manager", "senior_recruiter"];
+    const ownerRoles = ["hr", "recruiter", "hr_specialist"];
+
+    if (!managerRoles.includes(role) && !ownerRoles.includes(role)) {
+      return NextResponse.json(
+        { error: "Insufficient role permissions." },
+        { status: 403 }
+      );
+    }
 
     const { data: candidate, error: candidateError } =
       await db
         .from("candidates")
-        .select("id")
+        .select("id, user_id")
         .eq("id", candidateId)
         .eq("company_id", companyId)
         .not("deleted_at", "is", null)
@@ -81,7 +91,11 @@ export async function POST(request) {
 
     if (candidateError) throw candidateError;
 
-    if (!candidate) {
+    const canRestore =
+      managerRoles.includes(role) ||
+      (ownerRoles.includes(role) && candidate?.user_id === authData.user.id);
+
+    if (!candidate || !canRestore) {
       return NextResponse.json(
         { error: "Candidate not found or access denied." },
         { status: 403 }
