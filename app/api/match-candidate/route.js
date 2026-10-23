@@ -71,16 +71,12 @@ export async function POST(request) {
 
     const companyId = memberships[0].company_id;
 
-    const companyFilter =
-      `company_id.eq.${companyId},` +
-      `and(company_id.is.null,user_id.eq.${user.id})`;
-
-    const { data: job, error: jobError } =
+       const { data: job, error: jobError } =
       await db
         .from("jobs")
         .select("*")
         .eq("id", jobId)
-        .or(companyFilter)
+        .eq("company_id", companyId)
         .maybeSingle();
 
     if (jobError) throw jobError;
@@ -90,8 +86,10 @@ export async function POST(request) {
         .from("candidates")
         .select("*")
         .eq("id", candidateId)
-        .or(companyFilter)
+        .eq("company_id", companyId)
         .maybeSingle();
+
+    if (candidateError) throw candidateError;
 
     if (candidateError) throw candidateError;
 
