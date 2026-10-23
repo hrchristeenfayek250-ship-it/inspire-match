@@ -91,7 +91,7 @@ export async function POST(request) {
 
     if (candidateError) throw candidateError;
 
-    if (candidateError) throw candidateError;
+  
 
    
     if (!job || !candidate) {
