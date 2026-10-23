@@ -299,10 +299,15 @@ ${job.description || ""}
         fd.append("text", jdText);
       }
 
+      const { data: authSession } = await supabase.auth.getSession();
+      const accessToken = authSession?.session?.access_token;
+      if (!accessToken) throw new Error("Please sign in first.");
+
       const res = await fetch(
         "/api/analyze-jd",
         {
           method: "POST",
+          headers: { Authorization: `Bearer ${accessToken}` },
           body: fd,
         }
       );
@@ -621,11 +626,16 @@ job_id: selectedJobId ? Number(selectedJobId) : null,
             )
           );
 
+          const { data: authSession } = await supabase.auth.getSession();
+          const accessToken = authSession?.session?.access_token;
+          if (!accessToken) throw new Error("Please sign in first.");
+
           const res =
             await fetch(
               "/api/score-cv",
               {
                 method: "POST",
+                headers: { Authorization: `Bearer ${accessToken}` },
                 body: fd,
               }
             );
