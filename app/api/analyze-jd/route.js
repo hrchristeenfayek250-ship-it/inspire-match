@@ -1,3 +1,21 @@
+import { createClient } from "@supabase/supabase-js";
+
+async function requireCompanyMember(request) {
+  const header = request.headers.get("authorization");
+  if (!header?.startsWith("Bearer ")) return false;
+  const token = header.slice(7);
+  const db = createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL,
+    process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY,
+    { global: { headers: { Authorization: `Bearer ${token}` } }, auth: { persistSession: false, autoRefreshToken: false } }
+  );
+  const { data, error } = await db.auth.getUser(token);
+  if (error || !data?.user) return false;
+  const { data: memberships, error: memberError } = await db
+    .from("company_members").select("company_id").eq("user_id", data.user.id).limit(2);
+  return !memberError && memberships?.length === 1;
+}
+
 import { askClaude } from "@/lib/claude";
 import { fileToBlocks } from "@/lib/files";
 import { JD_SYSTEM } from "@/lib/prompts";
@@ -7,6 +25,10 @@ export const maxDuration = 60;
 
 export async function POST(req) {
   try {
+    if (!(await requireCompanyMember(req))) {
+      return Response.json({ error: "Sign in with a company account to use AI tools." }, { status: 403 });
+    }
+
     const form = await req.formData();
     const file = form.get("file");
     const text = (form.get("text") || "").toString().trim();
