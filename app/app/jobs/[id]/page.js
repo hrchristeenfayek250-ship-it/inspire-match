@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useParams } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 import ATSNavigation from "@/components/ATSNavigation";
+import NotificationBell from "@/components/NotificationBell";
 
 const fields = [
   ["department", "Department"],
@@ -81,7 +82,7 @@ export default function JobDetailsPage() {
   const navigation = (
     <div className="jd-side-inner">
       <div className="jd-brand">
-        <div className="jd-logo">I</div>
+        <div className="jd-logo">✦</div>
         <div><strong>Inspire Match</strong><small>TALENT INTELLIGENCE</small></div>
       </div>
       <div className="jd-side-label">WORKSPACE</div>
@@ -142,6 +143,28 @@ export default function JobDetailsPage() {
         .jd-description h3 { font-size:18px; font-weight:800; margin:0 0 16px; }
         .jd-description-text { white-space:pre-wrap; overflow-wrap:anywhere; line-height:1.85; color:#4a625b; }
         .jd-notice { background:#fff; border:1px solid var(--jd-border); padding:24px; border-radius:16px; margin-top:20px; overflow-wrap:anywhere; }
+
+        /* Unified premium workspace styling based on the existing ATS dashboard and AI Shortlisting */
+        .jd-workspace-topbar { display:flex; justify-content:space-between; align-items:center; gap:20px; flex-wrap:wrap; padding:19px clamp(16px,3vw,44px); background:#fff; border-bottom:1px solid #e3e9e3; }
+        .jd-workspace-heading { display:flex; flex-direction:column; gap:4px; }
+        .jd-workspace-heading span { font-size:10px; font-weight:800; letter-spacing:1.5px; color:#879a8e; }
+        .jd-workspace-heading strong { font-size:19px; font-weight:800; color:#1e3b32; }
+        .jd-workspace-actions { display:flex; align-items:center; gap:17px; flex-wrap:wrap; }
+        .jd-overview-link { text-decoration:none; color:#315f50; font-weight:800; font-size:13px; }
+        .jd-account { display:flex; align-items:center; gap:10px; border-left:1px solid #e3e9e3; padding-left:16px; color:#1e3b32; font-size:12px; font-weight:800; }
+        .jd-account small { display:block; font-size:10px; color:#879a8e; font-weight:600; margin-top:3px; }
+        .jd-avatar { width:36px; height:36px; border-radius:11px; background:#e6ece2; color:#1e3b32; display:grid; place-items:center; font-weight:900; }
+        .jd-page-subtitle { color:#8390a0; font-size:13px; margin:8px 0 0; }
+        .jd-hero { padding:26px 30px; background:linear-gradient(115deg,#1e3b32,#315f50); box-shadow:0 10px 25px rgba(30,59,50,.08); }
+        .jd-hero h2 { font-size:clamp(24px,2.7vw,33px); margin:9px 0 14px; }
+        .jd-pill { padding:6px 11px; }
+        .jd-card { padding:18px 20px; }
+        .jd-card-heading { display:flex; align-items:center; gap:10px; margin-bottom:12px; }
+        .jd-card-icon { display:grid; place-items:center; width:32px; height:32px; border-radius:9px; background:#edf4ef; color:#315f50; font-size:16px; flex-shrink:0; }
+        .jd-card-label { margin:0; }
+        .jd-description { border-radius:14px; box-shadow:0 4px 16px rgba(22,54,43,.025); }
+        .jd-section-title { margin-top:25px; }
+        @media(max-width:600px) { .jd-workspace-topbar { padding:14px; } .jd-account { display:none; } .jd-workspace-actions { gap:12px; } .jd-hero { padding:22px 19px; } }
         @media(max-width:900px) { .jd-shell { grid-template-columns:minmax(0,1fr); } .jd-sidebar { display:none; } .jd-mobile-bar { display:flex; align-items:center; justify-content:space-between; padding:15px 20px; background:#fff; border-bottom:1px solid var(--jd-border); gap:12px; } .jd-menu-button { border:0; border-radius:9px; background:#eaf3ee; color:var(--jd-green); padding:10px 14px; font-weight:800; cursor:pointer; } .jd-mobile-menu { padding:15px; background:#fff; border-bottom:1px solid var(--jd-border); } .jd-mobile-menu .jd-side-inner { min-height:0; } .jd-mobile-menu .jd-side-footer { margin-top:15px; } }
         @media(max-width:520px) { .jd-main { padding:20px 14px 50px; } .jd-hero { border-radius:15px; } .jd-topbar { align-items:flex-start; } }
       `}</style>
@@ -156,10 +179,22 @@ export default function JobDetailsPage() {
           </div>
           {mobileNav && <div className="jd-mobile-menu">{navigation}</div>}
           <main className="jd-main">
+            <header className="jd-workspace-topbar">
+              <div className="jd-workspace-heading">
+                <span>RECRUITMENT WORKSPACE</span>
+                <strong>Job Details</strong>
+              </div>
+              <div className="jd-workspace-actions">
+                <NotificationBell />
+                <Link href="/app/dashboard" className="jd-overview-link">Overview ↗</Link>
+                <div className="jd-account"><span className="jd-avatar">IM</span><span>Inspire Match<small>Talent Intelligence</small></span></div>
+              </div>
+            </header>
             <div className="jd-topbar">
               <div>
                 <div className="jd-eyebrow">Workspace / Jobs / Details</div>
                 <h1 className="jd-page-title">Job Overview</h1>
+                <p className="jd-page-subtitle">Review requisition information and hiring requirements.</p>
               </div>
               <Link href="/app/jobs" className="jd-back">← Back to Jobs</Link>
             </div>
@@ -182,12 +217,12 @@ export default function JobDetailsPage() {
                 <section className="jd-grid" aria-label="Job information">
                   {fields.filter(([key]) => job[key] !== null && job[key] !== undefined && job[key] !== "").map(([key, label]) => (
                     <div className="jd-card" key={key}>
-                      <div className="jd-card-label">{label}</div>
+                      <div className="jd-card-heading"><span className="jd-card-icon" aria-hidden="true">{({department:"▣",location:"⌖",work_type:"◷",employment_type:"▤",years_of_experience:"◈",openings:"♙",priority:"◇",hiring_manager:"♧",salary_proposed:"¤",deadline:"▦"})[key] || "▣"}</span><div className="jd-card-label">{label}</div></div>
                       <div className="jd-card-value">{String(job[key])}</div>
                     </div>
                   ))}
                 </section>
-                <h2 className="jd-section-title">Job Requirements & Description</h2>
+                <h2 className="jd-section-title">Job Requirements &amp; Description</h2>
                 {sections.filter(([key]) => job[key]).map(([key, label]) => (
                   <section className="jd-description" key={key}>
                     <h3>{label}</h3>
