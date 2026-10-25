@@ -1029,6 +1029,49 @@ async function moveInterviewToPipeline(interview) {
     };
   })();
 
+  const interviewDecisionInsights = (() => {
+    const decisions = interviewDecisions.filter(
+      (item) =>
+        ["Proceed", "Hold", "Reject"].includes(item.decision)
+    );
+
+    const total = decisions.length;
+
+    const countDecision = (value) =>
+      decisions.filter((item) => item.decision === value).length;
+
+    const percentage = (count) =>
+      total > 0 ? ((count / total) * 100).toFixed(1) : null;
+
+    const proceed = countDecision("Proceed");
+    const hold = countDecision("Hold");
+    const reject = countDecision("Reject");
+
+    const rejectionReasons = decisions
+      .filter((item) => item.decision === "Reject")
+      .map((item) => ({
+        interviewId: item.interview_id,
+        reason: String(item.decision_reason || "").trim(),
+      }));
+
+    const documentedRejections = rejectionReasons.filter(
+      (item) => item.reason.length > 0
+    );
+
+    return {
+      total,
+      proceed,
+      hold,
+      reject,
+      proceedRate: percentage(proceed),
+      holdRate: percentage(hold),
+      rejectRate: percentage(reject),
+      documentedRejections,
+      missingReasonCount:
+        rejectionReasons.length - documentedRejections.length,
+    };
+  })();
+
   return (
     <div className="interviews-shell">
       <style>{`
