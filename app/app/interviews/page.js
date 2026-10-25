@@ -1337,6 +1337,7 @@ jobTitle: jobs[jobId] || "Unknown Job",
     URL.revokeObjectURL(url);
   }
 
+ 
   function exportInterviewAnalyticsPDF() {
     const escapeHTML = (value) =>
       String(value ?? "").replace(/[&<>"']/g, (char) => ({
@@ -1347,15 +1348,58 @@ jobTitle: jobs[jobId] || "Unknown Job",
         "'": "&#39;",
       })[char]);
 
-    const rows = interviewAnalyticsByJob.map((job) => `
+    const totals = interviewAnalyticsByJob.reduce(
+      (acc, job) => {
+        acc.total += job.total;
+        acc.completed += job.completed;
+        acc.scheduled += job.scheduled;
+        acc.cancelled += job.cancelled;
+        acc.noShow += job.noShow;
+        acc.proceed += job.proceed;
+        acc.hold += job.hold;
+        acc.reject += job.reject;
+        return acc;
+      },
+      {
+        total: 0,
+        completed: 0,
+        scheduled: 0,
+        cancelled: 0,
+        noShow: 0,
+        proceed: 0,
+        hold: 0,
+        reject: 0,
+      }
+    );
+
+    const completionRate = totals.total
+      ? ((totals.completed / totals.total) * 100).toFixed(1)
+      : "0.0";
+
+    const metricCard = (label, value, note = "") => `
+      <div class="metric">
+        <div class="metric-label">${escapeHTML(label)}</div>
+        <div class="metric-value">${escapeHTML(value)}</div>
+        <div class="metric-note">${escapeHTML(note)}</div>
+      </div>
+    `;
+
+    const rows = interviewAnalyticsByJob.map((job, index) => `
       <tr>
-        <td>${escapeHTML(job.jobTitle)}</td>
-        <td>${job.total}</td>
+        <td class="job-name">
+          <span class="job-index">${String(index + 1).padStart(2, "0")}</span>
+          ${escapeHTML(job.jobTitle)}
+        </td>
+        <td><strong>${job.total}</strong></td>
         <td>${job.completed}</td>
         <td>${job.scheduled}</td>
         <td>${job.cancelled}</td>
         <td>${job.noShow}</td>
-        <td>${escapeHTML(job.completionRate === null ? "N/A" : `${job.completionRate}%`)}</td>
+        <td>
+          <span class="rate">
+            ${escapeHTML(job.completionRate === null ? "N/A" : `${job.completionRate}%`)}
+          </span>
+        </td>
         <td>${job.proceed}</td>
         <td>${job.hold}</td>
         <td>${job.reject}</td>
@@ -1367,130 +1411,363 @@ jobTitle: jobs[jobId] || "Unknown Job",
       <html lang="en">
       <head>
         <meta charset="UTF-8" />
-        <title>Inspire Match ATS - Interview Analytics</title>
+        <title>Inspire Match ATS - Executive Interview Report</title>
         <style>
           @page {
             size: A4 landscape;
-            margin: 15mm;
+            margin: 12mm;
+          }
+
+          * {
+            box-sizing: border-box;
           }
 
           body {
-            font-family: Arial, sans-serif;
+            font-family: Arial, Helvetica, sans-serif;
             color: #183e32;
             margin: 0;
+            background: #ffffff;
+            -webkit-print-color-adjust: exact;
+            print-color-adjust: exact;
           }
 
-          .header {
-            border-bottom: 3px solid #315f50;
-            padding-bottom: 20px;
+          .hero {
+            background: #183e32;
+            color: white;
+            padding: 26px 30px;
+            border-radius: 14px;
+            margin-bottom: 24px;
+          }
+
+          .hero-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
             margin-bottom: 25px;
           }
 
           .brand {
-            font-size: 25px;
-            font-weight: bold;
-            letter-spacing: 1px;
-          }
-
-          .subtitle {
-            color: #64748b;
-            margin-top: 8px;
-          }
-
-          .report-title {
             font-size: 21px;
+            font-weight: 800;
+            letter-spacing: 1.2px;
+          }
+
+          .brand span {
+            color: #b8e4c9;
+          }
+
+          .confidential {
+            font-size: 9px;
+            letter-spacing: 1.5px;
+            border: 1px solid #628b77;
+            border-radius: 20px;
+            padding: 7px 12px;
+          }
+
+          .eyebrow {
+            color: #b8e4c9;
+            font-size: 10px;
+            letter-spacing: 2px;
+            font-weight: 700;
             margin-bottom: 8px;
           }
 
-          .date {
-            color: #64748b;
-            font-size: 12px;
-            margin-bottom: 25px;
+          h1 {
+            font-size: 29px;
+            margin: 0 0 8px;
+            letter-spacing: -0.5px;
           }
 
-          table {
+          .hero-description {
+            font-size: 11px;
+            color: #d2e4d9;
+            margin: 0;
+          }
+
+          .meta {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            font-size: 10px;
+            color: #64748b;
+          }
+
+          .section-heading {
+            font-size: 15px;
+            font-weight: 800;
+            color: #183e32;
+            margin: 0 0 13px;
+          }
+
+          .section-subtitle {
+            font-size: 10px;
+            color: #64748b;
+            margin: -6px 0 17px;
+          }
+
+          .metrics {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 12px;
+            margin-bottom: 26px;
+          }
+
+          .metric {
+            background: #f4f8f5;
+            border: 1px solid #dce9e0;
+            border-radius: 12px;
+            padding: 18px;
+            min-height: 105px;
+          }
+
+          .metric-label {
+            color: #64748b;
+            font-size: 10px;
+            font-weight: 700;
+            margin-bottom: 12px;
+          }
+
+          .metric-value {
+            color: #183e32;
+            font-size: 29px;
+            font-weight: 800;
+            line-height: 1;
+          }
+
+          .metric-note {
+            color: #789083;
+            font-size: 9px;
+            margin-top: 10px;
+          }
+
+          .report-table {
             width: 100%;
             border-collapse: collapse;
-            font-size: 10px;
+            font-size: 9px;
+            margin-bottom: 24px;
           }
 
-          th {
-            background: #183e32;
-            color: white;
-            padding: 11px 7px;
-            text-align: left;
-          }
-
-          td {
-            padding: 11px 7px;
-            border-bottom: 1px solid #e0e9e3;
-            overflow-wrap: anywhere;
-          }
-
-          tr:nth-child(even) {
-            background: #f6f9f7;
-          }
-
-          thead {
+          .report-table thead {
             display: table-header-group;
           }
 
-          tr {
+          .report-table th {
+            background: #e8f1eb;
+            color: #315f50;
+            padding: 12px 7px;
+            text-align: center;
+            font-weight: 800;
+            border-bottom: 2px solid #bfd5c7;
+          }
+
+          .report-table th:first-child,
+          .report-table td:first-child {
+            text-align: left;
+            width: 26%;
+          }
+
+          .report-table td {
+            padding: 13px 7px;
+            text-align: center;
+            border-bottom: 1px solid #e5ede8;
+            color: #475569;
+            overflow-wrap: anywhere;
+          }
+
+          .report-table tr:nth-child(even) {
+            background: #f8faf8;
+          }
+
+          .report-table tr {
             break-inside: avoid;
           }
 
-          .footer {
-            margin-top: 35px;
-            padding-top: 15px;
-            border-top: 1px solid #e0e9e3;
+          .job-name {
+            color: #183e32 !important;
+            font-weight: 700;
+          }
+
+          .job-index {
+            color: #90a89a;
+            font-size: 9px;
+            margin-right: 8px;
+          }
+
+          .rate {
+            display: inline-block;
+            background: #e1f0e6;
+            color: #245a3d;
+            border-radius: 20px;
+            padding: 5px 9px;
+            font-weight: 800;
+          }
+
+          .decision-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+            margin-bottom: 23px;
+          }
+
+          .decision {
+            padding: 15px 18px;
+            border: 1px solid #e0e9e3;
+            border-radius: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+          }
+
+          .decision-label {
             font-size: 11px;
             color: #64748b;
           }
+
+          .decision-value {
+            font-size: 22px;
+            font-weight: 800;
+          }
+
+          .proceed { color: #23734c; }
+          .hold { color: #b77935; }
+          .reject { color: #b54e4e; }
+
+          .methodology {
+            background: #f6f9f7;
+            border-left: 3px solid #315f50;
+            padding: 12px 16px;
+            color: #64748b;
+            font-size: 10px;
+            line-height: 1.6;
+            margin-bottom: 20px;
+          }
+
+          .footer {
+            display: flex;
+            justify-content: space-between;
+            border-top: 1px solid #dce9e0;
+            padding-top: 13px;
+            color: #789083;
+            font-size: 9px;
+          }
+
+          @media print {
+            .hero, .metric, .decision, .methodology {
+              break-inside: avoid;
+            }
+          }
         </style>
       </head>
+
       <body>
-        <div class="header">
-          <div class="brand">INSPIRE MATCH ATS</div>
-          <div class="subtitle">
-            AI-Powered Recruitment Intelligence
+        <div class="hero">
+          <div class="hero-top">
+            <div class="brand">
+              INSPIRE <span>MATCH</span> ATS
+            </div>
+            <div class="confidential">
+              CONFIDENTIAL REPORT
+            </div>
           </div>
+
+          <div class="eyebrow">
+            RECRUITMENT INTELLIGENCE
+          </div>
+
+          <h1>Interview Analytics Report</h1>
+
+          <p class="hero-description">
+            Executive overview of interview performance,
+            hiring decisions and recruitment activity.
+          </p>
         </div>
 
-        <h1 class="report-title">
-          Interview Analytics by Job
-        </h1>
-
-        <div class="date">
-          Generated: ${escapeHTML(new Date().toLocaleDateString("en-GB"))}
+        <div class="meta">
+          <span>
+            REPORT TYPE: INTERVIEW ANALYTICS BY JOB
+          </span>
+          <span>
+            GENERATED:
+            ${escapeHTML(new Date().toLocaleDateString("en-GB"))}
+          </span>
         </div>
 
-        <table>
+        <h2 class="section-heading">Performance Overview</h2>
+        <p class="section-subtitle">
+          Key interview performance indicators across all reported jobs
+        </p>
+
+        <div class="metrics">
+          ${metricCard("TOTAL INTERVIEWS", totals.total, "All job-linked interviews")}
+          ${metricCard("COMPLETED", totals.completed, "Completed interviews")}
+          ${metricCard("COMPLETION RATE", `${completionRate}%`, "Completed / total interviews")}
+          ${metricCard("ACTIVE JOBS", interviewAnalyticsByJob.length, "Jobs with interview activity")}
+        </div>
+
+        <h2 class="section-heading">Interview Performance by Job</h2>
+        <p class="section-subtitle">
+          Detailed comparison of interview activity and final hiring decisions
+        </p>
+
+        <table class="report-table">
           <thead>
             <tr>
-              <th>Job Title</th>
-              <th>Total</th>
-              <th>Completed</th>
-              <th>Scheduled</th>
-              <th>Cancelled</th>
-              <th>No-Show</th>
-              <th>Completion %</th>
-              <th>Proceed</th>
-              <th>Hold</th>
-              <th>Reject</th>
+              <th>JOB TITLE</th>
+              <th>TOTAL</th>
+              <th>DONE</th>
+              <th>PLANNED</th>
+              <th>CANCELLED</th>
+              <th>NO-SHOW</th>
+              <th>RATE</th>
+              <th>PROCEED</th>
+              <th>HOLD</th>
+              <th>REJECT</th>
             </tr>
           </thead>
           <tbody>
-            ${rows}
+            ${rows || '<tr><td colspan="10">No interview data available.</td></tr>'}
           </tbody>
         </table>
 
-        <div class="footer">
-          Inspire Match ATS | Confidential Recruitment Report
-          <p>
+        <h2 class="section-heading">Final Hiring Decisions</h2>
+        <p class="section-subtitle">
+          Distribution of saved final interview decisions
+        </p>
+
+        <div class="decision-grid">
+          <div class="decision">
+            <span class="decision-label">Proceed</span>
+            <span class="decision-value proceed">${totals.proceed}</span>
+          </div>
+          <div class="decision">
+            <span class="decision-label">Hold</span>
+            <span class="decision-value hold">${totals.hold}</span>
+          </div>
+          <div class="decision">
+            <span class="decision-label">Reject</span>
+            <span class="decision-value reject">${totals.reject}</span>
+          </div>
+        </div>
+
+        <div class="methodology">
+          <strong>REPORT METHODOLOGY</strong>
+          <div>
             Each interview is counted separately.
-            Completion rate = completed / total interviews.
-            Decisions reflect saved final hiring decisions.
-          </p>
+            Completion rate is calculated as completed interviews
+            divided by total interviews.
+            Final decisions reflect saved hiring decisions.
+            Active jobs refers to jobs with recorded interview activity.
+          </div>
+        </div>
+
+        <div class="footer">
+          <span>
+            INSPIRE MATCH ATS | AI-POWERED RECRUITMENT INTELLIGENCE
+          </span>
+          <span>
+            CONFIDENTIAL - FOR AUTHORIZED USE ONLY
+          </span>
         </div>
       </body>
       </html>
@@ -1507,11 +1784,16 @@ jobTitle: jobs[jobId] || "Unknown Job",
     printWindow.document.write(reportHTML);
     printWindow.document.close();
 
-    printWindow.addEventListener("load", () => {
-      printWindow.focus();
-      printWindow.print();
-    });
+    printWindow.addEventListener(
+      "load",
+      () => {
+        printWindow.focus();
+        printWindow.print();
+      },
+      { once: true }
+    );
   }
+
 
   return (
     <div className="interviews-shell">
