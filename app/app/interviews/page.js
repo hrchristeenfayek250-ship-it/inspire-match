@@ -72,6 +72,10 @@ const [newInterviewDate, setNewInterviewDate] = useState("");
     decision_reason: "",
   });
 
+const [movingApplicationId, setMovingApplicationId] = useState(null);
+const [selectedPipelineStage, setSelectedPipelineStage] = useState("");
+const [savingPipelineStage, setSavingPipelineStage] = useState(false);
+
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
 
