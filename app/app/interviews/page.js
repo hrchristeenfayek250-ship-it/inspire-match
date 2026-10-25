@@ -34,6 +34,9 @@ export default function InterviewsPage() {
   const [form, setForm] = useState(initialForm);
   const [applications, setApplications] = useState([]);
   const [interviews, setInterviews] = useState([]);
+
+  const [interviewEvaluations, setInterviewEvaluations] = useState([]);
+
   const [candidates, setCandidates] = useState({});
   const [jobs, setJobs] = useState({});
   const [companyId, setCompanyId] = useState(null);
