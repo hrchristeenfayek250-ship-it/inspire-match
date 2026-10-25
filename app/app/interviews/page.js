@@ -246,6 +246,49 @@ item.full_name,
   }
 
   function applicationLabel(application) {
+    
+  async function cancelInterview(interview) {
+    if (!companyId || !userId || updatingInterviewId) return;
+
+    if (interview.status === "cancelled") return;
+
+    const confirmed = window.confirm(
+      "Are you sure you want to cancel this interview?"
+    );
+
+    if (!confirmed) return;
+
+    setError("");
+    setSuccess("");
+    setUpdatingInterviewId(interview.id);
+
+    try {
+      const { data, error: updateError } = await supabase
+        .from("interviews")
+        .update({ status: "cancelled" })
+        .eq("id", interview.id)
+        .eq("company_id", companyId)
+        .eq("status", "scheduled")
+        .select("id");
+
+      if (updateError) throw updateError;
+
+      if (!data || data.length !== 1) {
+        throw new Error(
+          "Interview could not be cancelled. Please refresh and try again."
+        );
+      }
+
+      setSuccess("Interview cancelled successfully.");
+      await loadData();
+    } catch (err) {
+      setError(err.message || "Failed to cancel interview.");
+    } finally {
+      setUpdatingInterviewId(null);
+    }
+  }
+
+
     const candidate =
       candidates[application.candidate_id] ||
       `Candidate #${application.candidate_id}`;
