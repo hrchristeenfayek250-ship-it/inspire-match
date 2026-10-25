@@ -989,6 +989,46 @@ async function moveInterviewToPipeline(interview) {
         : null,
   };
 
+  const schedulingEfficiency = (() => {
+    const total = interviews.length;
+
+    const completed = interviews.filter(
+      (item) => item.status === "completed"
+    ).length;
+
+    const cancelled = interviews.filter(
+      (item) => item.status === "cancelled"
+    ).length;
+
+    const noShow = interviews.filter(
+      (item) => item.status === "no_show"
+    ).length;
+
+    const scheduled = interviews.filter(
+      (item) => item.status === "scheduled"
+    ).length;
+
+    const concluded = completed + cancelled + noShow;
+
+    const percentage = (count, denominator) =>
+      denominator > 0
+        ? ((count / denominator) * 100).toFixed(1)
+        : null;
+
+    return {
+      total,
+      completed,
+      cancelled,
+      noShow,
+      scheduled,
+      concluded,
+      completionRate: percentage(completed, concluded),
+      cancellationRate: percentage(cancelled, concluded),
+      noShowRate: percentage(noShow, concluded),
+      scheduledRate: percentage(scheduled, total),
+    };
+  })();
+
   return (
     <div className="interviews-shell">
       <style>{`
