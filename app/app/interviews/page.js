@@ -7,6 +7,7 @@ import { supabase } from "@/lib/supabase";
 import ATSNavigation from "@/components/ATSNavigation";
 
 
+
 const initialForm = {
   application_id: "",
   scheduled_at: "",
@@ -15,7 +16,9 @@ const initialForm = {
   meeting_platform: "Google Meet",
   meeting_link: "",
   interview_location: "",
+  interview_location_link: "",
 };
+
 
 const inputStyle = {
   width: "100%",
