@@ -1646,14 +1646,29 @@ jobTitle: jobs[jobId] || "Unknown Job",
             margin-bottom: 20px;
           }
 
+          
           .footer {
             display: flex;
             justify-content: space-between;
+            align-items: center;
+            gap: 12px;
             border-top: 1px solid #dce9e0;
-            padding-top: 13px;
+            padding-top: 8px;
+            margin-top: 0;
             color: #789083;
-            font-size: 9px;
+            font-size: 8px;
           }
+
+          @media print {
+            .footer {
+              position: fixed;
+              bottom: 0;
+              left: 0;
+              right: 0;
+              background: #ffffff;
+            }
+          }
+
 
           @media print {
             .hero, .metric, .decision, .methodology {
