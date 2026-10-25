@@ -597,20 +597,37 @@ item.full_name,
   </select>
 </label>
 
+
 {form.meeting_platform === "In-Person" ? (
-  <label>
-    Interview Location
-    <input
-      required
-      style={inputStyle}
-      value={form.interview_location}
-      onChange={(e) =>
-        updateField("interview_location", e.target.value)
-      }
-      placeholder="Office address or meeting room"
-    />
-  </label>
+  <>
+    <label>
+      Interview Location
+      <input
+        required
+        style={inputStyle}
+        value={form.interview_location}
+        onChange={(e) =>
+          updateField("interview_location", e.target.value)
+        }
+        placeholder="Office address or meeting room"
+      />
+    </label>
+
+    <label>
+      Location Link (Google Maps)
+      <input
+        type="url"
+        style={inputStyle}
+        value={form.interview_location_link}
+        onChange={(e) =>
+          updateField("interview_location_link", e.target.value)
+        }
+        placeholder="https://maps.google.com/..."
+      />
+    </label>
+  </>
 ) : (
+
   <label>
     Meeting Link
     <input
