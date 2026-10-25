@@ -852,6 +852,29 @@ async function moveInterviewToPipeline(interview) {
     };
   });
 
+  const validSkillInsights = scorecardIntelligence.filter(
+    (skill) => skill.average !== null
+  );
+
+  const sortedSkillInsights = [...validSkillInsights].sort(
+    (a, b) => b.average - a.average
+  );
+
+  const strongestSkill =
+    sortedSkillInsights.length > 0
+      ? sortedSkillInsights[0]
+      : null;
+
+  const improvementSkill =
+    sortedSkillInsights.length > 1
+      ? sortedSkillInsights[sortedSkillInsights.length - 1]
+      : null;
+
+  const skillScoreGap =
+    strongestSkill && improvementSkill
+      ? strongestSkill.average - improvementSkill.average
+      : null;
+
   return (
     <div className="interviews-shell">
       <style>{`
