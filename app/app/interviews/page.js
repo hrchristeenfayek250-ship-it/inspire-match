@@ -245,8 +245,7 @@ item.full_name,
     }
   }
 
-  function applicationLabel(application) {
-    
+  
   async function cancelInterview(interview) {
     if (!companyId || !userId || updatingInterviewId) return;
 
@@ -288,7 +287,7 @@ item.full_name,
     }
   }
 
-
+  function applicationLabel(application) {
     const candidate =
       candidates[application.candidate_id] ||
       `Candidate #${application.candidate_id}`;
@@ -299,6 +298,7 @@ item.full_name,
 
     return `${candidate} — ${job}`;
   }
+
 
   
   return (
