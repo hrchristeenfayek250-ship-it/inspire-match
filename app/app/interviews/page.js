@@ -1014,6 +1014,52 @@ item.full_name,
                       </div>
                     )}
 
+                    {interviewEvaluations
+                      .filter(
+                        (item) => item.interview_id === interview.id
+                      )
+                      .map((evaluation) => {
+                        const scores = [
+                          evaluation.technical_skills,
+                          evaluation.communication_skills,
+                          evaluation.problem_solving,
+                          evaluation.culture_fit,
+                        ].filter(
+                          (score) =>
+                            typeof score === "number" &&
+                            Number.isFinite(score)
+                        );
+
+                        const average = scores.length
+                          ? (
+                              scores.reduce((sum, score) => sum + score, 0) /
+                              scores.length
+                            ).toFixed(2)
+                          : "N/A";
+
+                        return (
+                          <div
+                            key={evaluation.id}
+                            style={{
+                              marginTop: 12,
+                              padding: 12,
+                              border: "1px solid #d8e5de",
+                              borderRadius: 9,
+                            }}
+                          >
+                            <strong>Interview Score: {average} / 5</strong>
+                            <p>
+                              Recommendation: {evaluation.recommendation || "Pending"}
+                            </p>
+                            <small>
+                              {evaluation.evaluator_id === userId
+                                ? "Your Evaluation"
+                                : "Team Evaluation"}
+                            </small>
+                          </div>
+                        );
+                      })}
+
                     {interview.status !== "cancelled" && (
                       <div style={{ marginTop: 16 }}>
                         <button
