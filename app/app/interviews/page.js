@@ -1542,6 +1542,109 @@ async function moveInterviewToPipeline(interview) {
                       </div>
                     )}
 
+{interview.status === "completed" &&
+  interviewDecisions
+    .filter(
+      (item) =>
+        item.interview_id === interview.id &&
+        ["Proceed", "Reject"].includes(item.decision)
+    )
+    .map((decision) => (
+      <div
+        key={`pipeline-${decision.id}`}
+        style={{
+          marginTop: 16,
+          padding: 16,
+          border: "1px solid #d8e5de",
+          borderRadius: 10,
+        }}
+      >
+        <h3>Recruitment Pipeline Action</h3>
+
+        <p>
+          Final Decision: <strong>{decision.decision}</strong>
+        </p>
+
+        <p>
+          Current Stage:{" "}
+          <strong>
+            {applications.find(
+              (item) =>
+                String(item.id) ===
+                String(interview.application_id)
+            )?.stage || "Unassigned"}
+          </strong>
+        </p>
+
+        <button
+          type="button"
+          onClick={() => {
+            setMovingApplicationId(interview.application_id);
+            setSelectedPipelineStage("");
+          }}
+          style={{
+            padding: "10px 16px",
+            background: "#315f50",
+            color: "#fff",
+            border: 0,
+            borderRadius: 9,
+            cursor: "pointer",
+          }}
+        >
+          Move to Pipeline
+        </button>
+
+        {String(movingApplicationId) ===
+          String(interview.application_id) && (
+          <div
+            style={{
+              display: "grid",
+              gap: 12,
+              marginTop: 14,
+            }}
+          >
+            {decision.decision === "Proceed" ? (
+              <select
+                style={inputStyle}
+                value={selectedPipelineStage}
+                onChange={(e) =>
+                  setSelectedPipelineStage(e.target.value)
+                }
+              >
+                <option value="">Select Pipeline Stage</option>
+                <option value="Screening">Screening</option>
+                <option value="Interview">Interview</option>
+                <option value="Shortlisted">Shortlisted</option>
+              </select>
+            ) : (
+              <p>
+                Candidate will be moved to{" "}
+                <strong>Rejected</strong>.
+              </p>
+            )}
+
+            <button
+              type="button"
+              onClick={() => moveInterviewToPipeline(interview)}
+              disabled={savingPipelineStage}
+              style={{
+                padding: "10px 16px",
+                background: "#315f50",
+                color: "#fff",
+                border: 0,
+                borderRadius: 9,
+                cursor: "pointer",
+              }}
+            >
+              {savingPipelineStage
+                ? "Moving..."
+                : "Confirm Pipeline Move"}
+            </button>
+          </div>
+        )}
+      </div>
+    ))}
+
                     {interview.status !== "cancelled" && (
                       <div style={{ marginTop: 16 }}>
                         <button
