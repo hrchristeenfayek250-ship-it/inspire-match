@@ -641,86 +641,75 @@ item.full_name,
     <option value="Zoom">Zoom</option>
     <option value="Webex">Webex</option>
     
-          {loading ? (
-            <p>Loading interviews...</p>
-          ) : interviews.length === 0 ? (
-            <p style={{ color: "#64748b" }}>
-              No interviews scheduled yet.
-            </p>
-          ) : (
-            <div style={{ display: "grid", gap: 12 }}>
-              {interviews.map((interview) => {
-                const application = applications.find(
-                  (item) => item.id === interview.application_id
-                );
+          
+    <option value="Other Platform">Other Platform</option>
+    <option value="In-Person">In-Person</option>
+  </select>
+</label>
 
-                return (
-                  <div
-                    key={interview.id}
-                    style={{
-                      padding: 18,
-                      border: "1px solid #e2e8e5",
-                      borderRadius: 12,
-                    }}
-                  >
-                    <strong>
-                      {application
-                        ? applicationLabel(application)
-                        : `Application #${interview.application_id}`}
-                    </strong>
+{form.meeting_platform === "In-Person" ? (
+  <>
+    <label>
+      Interview Location *
+      <input
+        style={inputStyle}
+        type="text"
+        value={form.interview_location}
+        onChange={(e) =>
+          updateField("interview_location", e.target.value)
+        }
+        placeholder="Office address"
+        required
+      />
+    </label>
 
-                    <p style={{ color: "#64748b" }}>
-                      {interview.type} — {interview.interviewer}
-                    </p>
+    <label>
+      Location Link (Optional)
+      <input
+        style={inputStyle}
+        type="url"
+        value={form.interview_location_link}
+        onChange={(e) =>
+          updateField("interview_location_link", e.target.value)
+        }
+        placeholder="https://maps.google.com/..."
+      />
+    </label>
+  </>
+) : (
+  <label>
+    Meeting Link *
+    <input
+      style={inputStyle}
+      type="url"
+      value={form.meeting_link}
+      onChange={(e) =>
+        updateField("meeting_link", e.target.value)
+      }
+      placeholder="https://..."
+      required
+    />
+  </label>
+)}
 
-                    <p>
-                      {new Date(
-                        interview.scheduled_at
-                      ).toLocaleString()}
-                    </p>
+<button
+  type="submit"
+  disabled={saving || loading || !applications.length}
+  style={{
+    marginTop: 24,
+    padding: "13px 24px",
+    background: "#315f50",
+    color: "#fff",
+    border: 0,
+    borderRadius: 10,
+    fontWeight: 700,
+    cursor: "pointer",
+    opacity: saving || loading || !applications.length ? 0.55 : 1,
+  }}
+>
+  {saving ? "Saving..." : "Schedule Interview"}
+</button>
 
-                    <span
-                      style={{
-                        display: "inline-block",
-                        background:
-                          interview.status === "cancelled"
-                            ? "#feeceb"
-                            : "#e7f3eb",
-                        padding: "6px 12px",
-                        borderRadius: 20,
-                        fontSize: 12,
-                      }}
-                    >
-                      {interview.status}
-                    </span>
-
-                    {interview.status === "scheduled" && (
-                      <div style={{ marginTop: 16 }}>
-                        <button
-                          type="button"
-                          onClick={() => cancelInterview(interview)}
-                          disabled={updatingInterviewId !== null}
-                          style={{
-                            padding: "10px 16px",
-                            background: "#fff",
-                            color: "#b42318",
-                            border: "1px solid #f1c4c0",
-                            borderRadius: 9,
-                            fontWeight: 700,
-                            cursor: "pointer",
-                          }}
-                        >
-                          {updatingInterviewId === interview.id
-                            ? "Cancelling..."
-                            : "Cancel Interview"}
-                        </button>
-                      </div>
-                    )}
-                  </div>
-                );
-              })}
-            </div>
-          )}
 
             {!loading && !applications.length && (
               <p style={{ color: "#64748b" }}>
