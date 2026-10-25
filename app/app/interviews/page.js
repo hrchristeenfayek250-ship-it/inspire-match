@@ -1834,6 +1834,117 @@ async function moveInterviewToPipeline(interview) {
   </p>
 </section>
 
+<section
+  style={{
+    background: "#ffffff",
+    padding: 26,
+    borderRadius: 16,
+    border: "1px solid #e0e9e3",
+    marginBottom: 25,
+  }}
+>
+  <h2 style={{ color: "#183e32", marginTop: 0 }}>
+    Interview-to-Hire Conversion Report
+  </h2>
+
+  <p style={{ color: "#64748b", marginBottom: 24 }}>
+    Track how many job applications with completed interviews
+    have reached the Hired stage.
+  </p>
+
+  <div
+    style={{
+      display: "grid",
+      gridTemplateColumns:
+        "repeat(auto-fit, minmax(min(100%, 200px), 1fr))",
+      gap: 16,
+    }}
+  >
+    {[
+      {
+        label: "Interviewed Applications",
+        value: interviewToHireReport.interviewedCandidates,
+      },
+      {
+        label: "Hired Applications",
+        value: interviewToHireReport.hiredCandidates,
+      },
+      {
+        label: "Interview-to-Hire Rate",
+        value:
+          interviewToHireReport.conversionRate === null
+            ? "N/A"
+            : `${interviewToHireReport.conversionRate}%`,
+      },
+    ].map((item) => (
+      <div
+        key={item.label}
+        style={{
+          padding: 22,
+          borderRadius: 14,
+          background: "#f6f9f7",
+          border: "1px solid #e0e9e3",
+        }}
+      >
+        <p
+          style={{
+            marginTop: 0,
+            fontSize: 13,
+            color: "#64748b",
+          }}
+        >
+          {item.label}
+        </p>
+
+        <strong
+          style={{
+            fontSize: 30,
+            color: "#315f50",
+          }}
+        >
+          {item.value}
+        </strong>
+      </div>
+    ))}
+  </div>
+
+  <div
+    style={{
+      marginTop: 24,
+      background: "#e0e9e3",
+      height: 14,
+      borderRadius: 20,
+      overflow: "hidden",
+    }}
+  >
+    <div
+      style={{
+        width: `${
+          interviewToHireReport.conversionRate === null
+            ? 0
+            : interviewToHireReport.conversionRate
+        }%`,
+        height: "100%",
+        background: "#315f50",
+        borderRadius: 20,
+      }}
+    />
+  </div>
+
+  <p
+    style={{
+      marginTop: 14,
+      marginBottom: 0,
+      fontSize: 12,
+      color: "#64748b",
+    }}
+  >
+    Each job application is counted once. This report
+    uses the current pipeline stage, not historical hiring
+    events.
+  </p>
+</section>
+
         <section
           style={{
             background: "#fff",
