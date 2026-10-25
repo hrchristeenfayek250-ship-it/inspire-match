@@ -3204,6 +3204,93 @@ jobTitle: jobs[jobId] || "Unknown Job",
 
 <div
   style={{
+    display: "grid",
+    gridTemplateColumns: "repeat(auto-fit, minmax(190px, 1fr))",
+    gap: 14,
+    padding: 18,
+    background: "#f6f9f7",
+    border: "1px solid #e0e9e3",
+    borderRadius: 12,
+    marginBottom: 20,
+  }}
+>
+  <label style={{ fontSize: 13, color: "#315f50" }}>
+    <strong>Job</strong>
+    <select
+      value={analyticsJobFilter}
+      onChange={(e) => setAnalyticsJobFilter(e.target.value)}
+      style={{ ...inputStyle, marginTop: 8 }}
+    >
+      <option value="all">All Jobs</option>
+      {Object.entries(jobs)
+        .sort((a, b) => a[1].localeCompare(b[1]))
+        .map(([id, title]) => (
+          <option key={id} value={id}>
+            {title}
+          </option>
+        ))}
+    </select>
+  </label>
+
+  <label style={{ fontSize: 13, color: "#315f50" }}>
+    <strong>Date From</strong>
+    <input
+      type="date"
+      value={analyticsDateFrom}
+      onChange={(e) => setAnalyticsDateFrom(e.target.value)}
+      style={{ ...inputStyle, marginTop: 8 }}
+    />
+  </label>
+
+  <label style={{ fontSize: 13, color: "#315f50" }}>
+    <strong>Date To</strong>
+    <input
+      type="date"
+      value={analyticsDateTo}
+      min={analyticsDateFrom || undefined}
+      onChange={(e) => setAnalyticsDateTo(e.target.value)}
+      style={{ ...inputStyle, marginTop: 8 }}
+    />
+  </label>
+
+  <div style={{ display: "flex", alignItems: "end" }}>
+    <button
+      type="button"
+      onClick={() => {
+        setAnalyticsJobFilter("all");
+        setAnalyticsDateFrom("");
+        setAnalyticsDateTo("");
+      }}
+      style={{
+        width: "100%",
+        padding: "12px 16px",
+        border: "1px solid #cbdcd1",
+        borderRadius: 9,
+        background: "#ffffff",
+        color: "#315f50",
+        fontWeight: 600,
+        cursor: "pointer",
+      }}
+    >
+      Reset Filters
+    </button>
+  </div>
+
+  <p
+    style={{
+      gridColumn: "1 / -1",
+      color: "#64748b",
+      fontSize: 12,
+      margin: 0,
+    }}
+  >
+    Filters apply to Interview Analytics by Job and its PDF/CSV exports.
+    Dates are based on scheduled interview dates in UTC.
+  </p>
+</div>
+
+<div
+  style={{
     display: "flex",
     justifyContent: "flex-end",
     gap: 12,
