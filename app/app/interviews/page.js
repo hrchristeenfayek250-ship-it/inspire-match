@@ -1226,6 +1226,57 @@ jobTitle: jobs[jobId] || "Unknown Job",
       .sort((a, b) => b.total - a.total);
   })();
 
+  const monthlyInterviewTrends = (() => {
+    const monthlyData = new Map();
+    let invalidDates = 0;
+
+    interviews.forEach((interview) => {
+      const date = new Date(interview.scheduled_at);
+
+      if (!Number.isFinite(date.getTime())) {
+        invalidDates += 1;
+        return;
+      }
+
+      const monthKey = [
+        date.getUTCFullYear(),
+        String(date.getUTCMonth() + 1).padStart(2, "0"),
+      ].join("-");
+
+      if (!monthlyData.has(monthKey)) {
+        monthlyData.set(monthKey, {
+          month: monthKey,
+          total: 0,
+          completed: 0,
+          scheduled: 0,
+          cancelled: 0,
+          noShow: 0,
+        });
+      }
+
+      const report = monthlyData.get(monthKey);
+
+      report.total += 1;
+
+      if (interview.status === "completed") {
+        report.completed += 1;
+      } else if (interview.status === "scheduled") {
+        report.scheduled += 1;
+      } else if (interview.status === "cancelled") {
+        report.cancelled += 1;
+      } else if (interview.status === "no_show") {
+        report.noShow += 1;
+      }
+    });
+
+    return {
+      months: [...monthlyData.values()].sort((a, b) =>
+        a.month.localeCompare(b.month)
+      ),
+      invalidDates,
+    };
+  })();
+
   return (
     <div className="interviews-shell">
       <style>{`
