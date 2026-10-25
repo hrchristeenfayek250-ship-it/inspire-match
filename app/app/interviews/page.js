@@ -287,6 +287,58 @@ item.full_name,
     }
   }
 
+  async function rescheduleInterview(interview) {
+    if (!companyId || !userId || updatingInterviewId) return;
+
+    if (interview.status !== "scheduled") {
+      setError("Only scheduled interviews can be rescheduled.");
+      return;
+    }
+
+    const date = new Date(newInterviewDate);
+
+    if (
+      !newInterviewDate ||
+      Number.isNaN(date.getTime()) ||
+      date.getTime() <= Date.now()
+    ) {
+      setError("Please choose a valid future interview date.");
+      return;
+    }
+
+    setError("");
+    setSuccess("");
+    setUpdatingInterviewId(interview.id);
+
+    try {
+      const { data, error: updateError } = await supabase
+        .from("interviews")
+        .update({ scheduled_at: date.toISOString() })
+        .eq("id", interview.id)
+        .eq("company_id", companyId)
+        .eq("status", "scheduled")
+        .select("id");
+
+      if (updateError) throw updateError;
+
+      if (!data || data.length !== 1) {
+        throw new Error(
+          "Interview could not be rescheduled. Please refresh and try again."
+        );
+      }
+
+      setSuccess("Interview rescheduled successfully.");
+      setReschedulingId(null);
+      setNewInterviewDate("");
+      await loadData();
+    } catch (err) {
+      setError(err.message || "Failed to reschedule interview.");
+    } finally {
+      setUpdatingInterviewId(null);
+    }
+  }
+
+
   function applicationLabel(application) {
     const candidate =
       candidates[application.candidate_id] ||
