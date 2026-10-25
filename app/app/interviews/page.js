@@ -2870,10 +2870,13 @@ jobTitle: jobs[jobId] || "Unknown Job",
     Interview Analytics by Job
   </h2>
 
+
 <div
   style={{
     display: "flex",
     justifyContent: "flex-end",
+    gap: 12,
+    flexWrap: "wrap",
     marginBottom: 18,
   }}
 >
@@ -2882,22 +2885,41 @@ jobTitle: jobs[jobId] || "Unknown Job",
     onClick={exportInterviewAnalyticsCSV}
     disabled={interviewAnalyticsByJob.length === 0}
     style={{
-      background:
-        interviewAnalyticsByJob.length === 0
-          ? "#a7b9af"
-          : "#183e32",
+      background: interviewAnalyticsByJob.length === 0
+        ? "#a7b9af"
+        : "#315f50",
       color: "#ffffff",
       border: "none",
       padding: "12px 20px",
       borderRadius: 10,
       fontWeight: 600,
-      cursor:
-        interviewAnalyticsByJob.length === 0
-          ? "not-allowed"
-          : "pointer",
+      cursor: interviewAnalyticsByJob.length === 0
+        ? "not-allowed"
+        : "pointer",
     }}
   >
     Export CSV
+  </button>
+
+  <button
+    type="button"
+    onClick={exportInterviewAnalyticsPDF}
+    disabled={interviewAnalyticsByJob.length === 0}
+    style={{
+      background: interviewAnalyticsByJob.length === 0
+        ? "#a7b9af"
+        : "#183e32",
+      color: "#ffffff",
+      border: "none",
+      padding: "12px 20px",
+      borderRadius: 10,
+      fontWeight: 600,
+      cursor: interviewAnalyticsByJob.length === 0
+        ? "not-allowed"
+        : "pointer",
+    }}
+  >
+    Export PDF
   </button>
 </div>
 
