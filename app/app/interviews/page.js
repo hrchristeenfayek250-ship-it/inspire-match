@@ -1049,7 +1049,15 @@ item.full_name,
                           }}
 
                         >
-                          Evaluate Interview
+                         
+{interviewEvaluations.some(
+  (item) =>
+    item.interview_id === interview.id &&
+    item.evaluator_id === userId
+)
+  ? "Edit Evaluation"
+  : "Evaluate Interview"}
+
                         </button>
 
                         {evaluatingInterviewId === interview.id && (
