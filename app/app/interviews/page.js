@@ -39,6 +39,11 @@ export default function InterviewsPage() {
 
   const [candidates, setCandidates] = useState({});
   const [jobs, setJobs] = useState({});
+  
+  const [analyticsJobFilter, setAnalyticsJobFilter] = useState("all");
+  const [analyticsDateFrom, setAnalyticsDateFrom] = useState("");
+  const [analyticsDateTo, setAnalyticsDateTo] = useState("");
+
   const [companyId, setCompanyId] = useState(null);
   const [userId, setUserId] = useState(null);
   const [loading, setLoading] = useState(true);
