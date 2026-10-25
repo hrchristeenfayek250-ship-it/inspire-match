@@ -1373,6 +1373,21 @@ body: JSON.stringify({ email, role: inviteRole }),
                             />
                           </div>
 
+<div className="tm-invite-field">
+  <label htmlFor="invite-role" className="tm-field">
+    Member Role
+  </label>
+  <select
+    id="invite-role"
+    className="tm-input"
+    value={inviteRole}
+    onChange={(event) => setInviteRole(event.target.value)}
+  >
+    <option value="hr">HR Member</option>
+    <option value="hiring_manager">Hiring Manager</option>
+  </select>
+</div>
+
                           <button
                             type="submit"
                             className="tm-primary"
