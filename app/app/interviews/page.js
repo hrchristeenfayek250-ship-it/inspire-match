@@ -2362,6 +2362,126 @@ async function moveInterviewToPipeline(interview) {
   )}
 </section>
 
+<section
+  style={{
+    background: "#ffffff",
+    padding: 26,
+    borderRadius: 16,
+    border: "1px solid #e0e9e3",
+    marginBottom: 25,
+  }}
+>
+  <h2 style={{ color: "#183e32", marginTop: 0 }}>
+    Interview Decision Time Analytics
+  </h2>
+
+  <p style={{ color: "#64748b", marginBottom: 24 }}>
+    Measure the time between scheduled interviews and
+    recorded final hiring decisions.
+  </p>
+
+  <div
+    style={{
+      display: "grid",
+      gridTemplateColumns:
+        "repeat(auto-fit, minmax(min(100%, 210px), 1fr))",
+      gap: 16,
+    }}
+  >
+    {[
+      {
+        label: "Average Decision Time",
+        value:
+          interviewDecisionTime.averageHours === null
+            ? "N/A"
+            : `${interviewDecisionTime.averageHours.toFixed(1)} hrs`,
+      },
+      {
+        label: "Median Decision Time",
+        value:
+          interviewDecisionTime.medianHours === null
+            ? "N/A"
+            : `${interviewDecisionTime.medianHours.toFixed(1)} hrs`,
+      },
+      {
+        label: "Valid Decisions",
+        value: interviewDecisionTime.validDecisions,
+      },
+      {
+        label: "Total Decisions",
+        value: interviewDecisionTime.totalDecisions,
+      },
+    ].map((metric) => (
+      <div
+        key={metric.label}
+        style={{
+          padding: 20,
+          background: "#f6f9f7",
+          border: "1px solid #e0e9e3",
+          borderRadius: 14,
+        }}
+      >
+        <p style={{ color: "#64748b", marginTop: 0 }}>
+          {metric.label}
+        </p>
+
+        <strong
+          style={{
+            fontSize: 26,
+            color: "#315f50",
+          }}
+        >
+          {metric.value}
+        </strong>
+      </div>
+    ))}
+  </div>
+
+  <h3 style={{ color: "#183e32", marginTop: 28 }}>
+    Data Quality Warnings
+  </h3>
+
+  <div
+    style={{
+      padding: 18,
+      borderRadius: 12,
+      background: "#f6f9f7",
+      border: "1px solid #e0e9e3",
+    }}
+  >
+    <p>
+      Decisions before interview:{" "}
+      <strong>
+        {interviewDecisionTime.decisionsBeforeInterview}
+      </strong>
+    </p>
+
+    <p>
+      Invalid or missing dates:{" "}
+      <strong>{interviewDecisionTime.invalidDates}</strong>
+    </p>
+
+    <p style={{ marginBottom: 0 }}>
+      Missing interview records:{" "}
+      <strong>{interviewDecisionTime.missingInterviews}</strong>
+    </p>
+  </div>
+
+  <p
+    style={{
+      color: "#64748b",
+      fontSize: 12,
+      marginTop: 18,
+      marginBottom: 0,
+    }}
+  >
+    Decision time is calculated from scheduled interview
+    time to the original decision timestamp. Records with
+    invalid dates or decisions made before the scheduled
+    interview are excluded from time calculations.
+  </p>
+</section>
+
         <section
           style={{
             background: "#fff",
