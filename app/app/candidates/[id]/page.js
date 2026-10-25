@@ -176,13 +176,41 @@ const [savingProfile, setSavingProfile] = useState(false);
         throw new Error("This job is not available for your company.");
       }
 
+      
+      const { data: existingApplication, error: lookupError } =
+        await supabase
+          .from("applications")
+          .select("id")
+          .eq("company_id", companyId)
+          .eq("candidate_id", candidateId)
+          .eq("job_id", verifiedJob.id)
+          .maybeSingle();
+
+      if (lookupError) throw lookupError;
+
+      if (!existingApplication) {
+        const { error: applicationError } = await supabase
+          .from("applications")
+          .insert({
+            company_id: companyId,
+            candidate_id: candidateId,
+            job_id: verifiedJob.id,
+            user_id: user.id,
+            stage: "Applied",
+          });
+
+        if (applicationError && applicationError.code !== "23505") {
+          throw applicationError;
+        }
+      }
+
       const { data, error } = await supabase
         .from("candidates")
         .update({ job_id: verifiedJob.id })
         .eq("id", candidateId)
         .or(
-  `company_id.eq.${companyId},and(company_id.is.null,user_id.eq.${user.id})`
-)
+          `company_id.eq.${companyId},and(company_id.is.null,user_id.eq.${user.id})`
+        )
         .select()
         .single();
 
@@ -193,6 +221,7 @@ const [savingProfile, setSavingProfile] = useState(false);
       setSelectedJobId("");
 
       alert("Candidate assigned to job successfully!");
+
     } catch (error) {
       alert(`Could not assign candidate: ${error.message}`);
     } finally {
