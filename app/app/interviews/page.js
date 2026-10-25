@@ -2694,6 +2694,37 @@ jobTitle: jobs[jobId] || "Unknown Job",
     Interview Analytics by Job
   </h2>
 
+<div
+  style={{
+    display: "flex",
+    justifyContent: "flex-end",
+    marginBottom: 18,
+  }}
+>
+  <button
+    type="button"
+    onClick={exportInterviewAnalyticsCSV}
+    disabled={interviewAnalyticsByJob.length === 0}
+    style={{
+      background:
+        interviewAnalyticsByJob.length === 0
+          ? "#a7b9af"
+          : "#183e32",
+      color: "#ffffff",
+      border: "none",
+      padding: "12px 20px",
+      borderRadius: 10,
+      fontWeight: 600,
+      cursor:
+        interviewAnalyticsByJob.length === 0
+          ? "not-allowed"
+          : "pointer",
+    }}
+  >
+    Export CSV
+  </button>
+</div>
+
   <p style={{ color: "#64748b", marginBottom: 24 }}>
     Compare interview activity, completion rates, and
     final hiring decisions across jobs.
