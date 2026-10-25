@@ -608,6 +608,95 @@ item.full_name,
     }
   }
 
+async function moveInterviewToPipeline(interview) {
+  if (!companyId || !userId || savingPipelineStage) return;
+
+  setError("");
+  setSuccess("");
+
+  try {
+    if (interview.status !== "completed") {
+      throw new Error("Only completed interviews can be moved.");
+    }
+
+    const savedDecision = interviewDecisions.find(
+      (item) => item.interview_id === interview.id
+    );
+
+    if (!savedDecision || savedDecision.decision === "Hold") {
+      throw new Error("A Proceed or Reject decision is required.");
+    }
+
+    const targetStage =
+      savedDecision.decision === "Reject"
+        ? "Rejected"
+        : selectedPipelineStage;
+
+    const allowedStages = [
+      "Screening",
+      "Interview",
+      "Shortlisted",
+    ];
+
+    if (
+      savedDecision.decision === "Proceed" &&
+      !allowedStages.includes(targetStage)
+    ) {
+      throw new Error("Please select a valid pipeline stage.");
+    }
+
+    const application = applications.find(
+      (item) =>
+        String(item.id) === String(interview.application_id)
+    );
+
+    if (!application) {
+      throw new Error("Application not found.");
+    }
+
+    if (application.stage === targetStage) {
+      throw new Error("Candidate is already in this stage.");
+    }
+
+    const confirmed = window.confirm(
+      `Move candidate from ${application.stage || "Unassigned"} to ${targetStage}?`
+    );
+
+    if (!confirmed) return;
+
+    setSavingPipelineStage(true);
+
+    const { data, error: updateError } = await supabase
+      .from("applications")
+      .update({ stage: targetStage })
+      .eq("id", application.id)
+      .eq("company_id", companyId)
+      .select("id, stage")
+      .single();
+
+    if (updateError) throw updateError;
+
+    setApplications((previous) =>
+      previous.map((item) =>
+        item.id === data.id
+          ? { ...item, stage: data.stage }
+          : item
+      )
+    );
+
+    setMovingApplicationId(null);
+    setSelectedPipelineStage("");
+
+    setSuccess(
+      `Candidate moved to ${targetStage} successfully.`
+    );
+  } catch (err) {
+    setError(err.message || "Failed to update pipeline.");
+  } finally {
+    setSavingPipelineStage(false);
+  }
+}
+
   function applicationLabel(application) {
     const candidate =
       candidates[application.candidate_id] ||
