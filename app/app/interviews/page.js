@@ -1413,10 +1413,12 @@ jobTitle: jobs[jobId] || "Unknown Job",
         <meta charset="UTF-8" />
         <title>Inspire Match ATS - Executive Interview Report</title>
         <style>
-          
+
 @page {
   size: A4 landscape;
-  margin: 12mm;
+  margin: 8mm 10mm;
+}
+
 }
 
           }
