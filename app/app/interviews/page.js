@@ -1419,9 +1419,15 @@ jobTitle: jobs[jobId] || "Unknown Job",
   margin: 8mm 10mm;
 }
 
+
+@page {
+  size: A4 landscape;
+  margin: 8mm 10mm;
 }
 
-          }
+* {
+  box-sizing: border-box;
+}
 
           * {
             box-sizing: border-box;
