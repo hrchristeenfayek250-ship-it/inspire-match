@@ -1053,7 +1053,110 @@ async function moveInterviewToPipeline(interview) {
       </div>
     ))}
   </div>
-</section>
+
+<div
+  style={{
+    display: "grid",
+    gridTemplateColumns:
+      "repeat(auto-fit, minmax(min(100%, 300px), 1fr))",
+    gap: 20,
+    marginTop: 26,
+  }}
+>
+  {[
+    {
+      title: "Interview Status Distribution",
+      items: [
+        ["Completed", interviewAnalytics.completed],
+        ["Scheduled", interviewAnalytics.scheduled],
+        ["Cancelled", interviewAnalytics.cancelled],
+        ["No Shows", interviewAnalytics.noShow],
+      ],
+    },
+    {
+      title: "Final Hiring Decisions",
+      items: [
+        ["Proceed", interviewAnalytics.proceed],
+        ["Hold", interviewAnalytics.hold],
+        ["Reject", interviewAnalytics.rejected],
+      ],
+    },
+  ].map((chart) => {
+    const total = chart.items.reduce(
+      (sum, [, value]) => sum + value,
+      0
+    );
+
+    return (
+      <div
+        key={chart.title}
+        style={{
+          padding: 22,
+          border: "1px solid #e0e9e3",
+          borderRadius: 14,
+          background: "#ffffff",
+        }}
+      >
+        <h3 style={{ color: "#183e32", marginTop: 0 }}>
+          {chart.title}
+        </h3>
+
+        {total === 0 ? (
+          <p style={{ color: "#64748b" }}>
+            No data available yet.
+          </p>
+        ) : (
+          <div style={{ display: "grid", gap: 18 }}>
+            {chart.items.map(([label, value]) => {
+              const percentage = Math.round(
+                (value / total) * 100
+              );
+
+              return (
+                <div key={label}>
+                  <div
+                    style={{
+                      display: "flex",
+                      justifyContent: "space-between",
+                      gap: 12,
+                      marginBottom: 8,
+                      fontSize: 13,
+                    }}
+                  >
+                    <strong>{label}</strong>
+                    <span>
+                      {value} ({percentage}%)
+                    </span>
+                  </div>
+
+                  <div
+                    style={{
+                      height: 12,
+                      background: "#e8f2ec",
+                      borderRadius: 20,
+                      overflow: "hidden",
+                    }}
+                  >
+                    <div
+                      style={{
+                        height: "100%",
+                        width: `${percentage}%`,
+                        background: "#315f50",
+                        borderRadius: 20,
+                      }}
+                    />
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </div>
+    );
+  })}
+</div>
+
+      </section>
 
         <section
           style={{
