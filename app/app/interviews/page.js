@@ -303,12 +303,18 @@ item.full_name,
         }
 
        
-.interviews-content {
-  min-width: 0;
+
+.interviews-shell > main.interviews-content {
+  display: block;
   width: 100%;
+  min-width: 0;
   max-width: none;
-  padding: 32px 38px;
+  margin: 0;
+  padding: 28px 32px 48px;
   box-sizing: border-box;
+  background: #f6f9f7;
+}
+
 }
 
 .interviews-content > section {
