@@ -1018,19 +1018,36 @@ item.full_name,
                       <div style={{ marginTop: 16 }}>
                         <button
                           type="button"
+                          
                           onClick={() => {
+                            const savedEvaluation = interviewEvaluations.find(
+                              (item) =>
+                                item.interview_id === interview.id &&
+                                item.evaluator_id === userId
+                            );
+
                             setEvaluatingInterviewId(interview.id);
+
                             setEvaluationForm({
-                              technical_skills: "",
-                              communication_skills: "",
-                              problem_solving: "",
-                              culture_fit: "",
-                              strengths: "",
-                              areas_for_improvement: "",
-                              overall_feedback: "",
-                              recommendation: "",
+                              technical_skills:
+                                savedEvaluation?.technical_skills ?? "",
+                              communication_skills:
+                                savedEvaluation?.communication_skills ?? "",
+                              problem_solving:
+                                savedEvaluation?.problem_solving ?? "",
+                              culture_fit:
+                                savedEvaluation?.culture_fit ?? "",
+                              strengths:
+                                savedEvaluation?.strengths ?? "",
+                              areas_for_improvement:
+                                savedEvaluation?.areas_for_improvement ?? "",
+                              overall_feedback:
+                                savedEvaluation?.overall_feedback ?? "",
+                              recommendation:
+                                savedEvaluation?.recommendation ?? "",
                             });
                           }}
+
                         >
                           Evaluate Interview
                         </button>
