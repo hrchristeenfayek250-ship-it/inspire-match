@@ -569,7 +569,55 @@ item.full_name,
                   <option>Final Interview</option>
                 </select>
               </label>
-            </div>
+           
+<label>
+  Meeting Platform
+  <select
+    style={inputStyle}
+    value={form.meeting_platform}
+    onChange={(e) => {
+      updateField("meeting_platform", e.target.value);
+    }}
+  >
+    <option value="Google Meet">Google Meet</option>
+    <option value="Microsoft Teams">Microsoft Teams</option>
+    <option value="Zoom">Zoom</option>
+    <option value="Webex">Webex</option>
+    <option value="Other Platform">Other Platform</option>
+    <option value="In-Person">In-Person</option>
+  </select>
+</label>
+
+{form.meeting_platform === "In-Person" ? (
+  <label>
+    Interview Location
+    <input
+      required
+      style={inputStyle}
+      value={form.interview_location}
+      onChange={(e) =>
+        updateField("interview_location", e.target.value)
+      }
+      placeholder="Office address or meeting room"
+    />
+  </label>
+) : (
+  <label>
+    Meeting Link
+    <input
+      required
+      type="url"
+      style={inputStyle}
+      value={form.meeting_link}
+      onChange={(e) =>
+        updateField("meeting_link", e.target.value)
+      }
+      placeholder="https://..."
+    />
+  </label>
+)}
+
+                    </div>
 
             <button
               type="submit"
