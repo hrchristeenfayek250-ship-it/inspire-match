@@ -1024,6 +1024,76 @@ item.full_name,
                       </div>
                     )}
 
+                    {(() => {
+                      const evaluations = interviewEvaluations.filter(
+                        (item) => item.interview_id === interview.id
+                      );
+
+                      if (!evaluations.length) return null;
+
+                      const scoreFields = [
+                        "technical_skills",
+                        "communication_skills",
+                        "problem_solving",
+                        "culture_fit",
+                      ];
+
+                      const scores = evaluations.flatMap((evaluation) =>
+                        scoreFields
+                          .map((field) => evaluation[field])
+                          .filter(
+                            (value) =>
+                              typeof value === "number" &&
+                              Number.isFinite(value)
+                          )
+                      );
+
+                      const combinedScore = scores.length
+                        ? (
+                            scores.reduce((sum, value) => sum + value, 0) /
+                            scores.length
+                          ).toFixed(2)
+                        : "N/A";
+
+                      const hireCount = evaluations.filter(
+                        (item) => item.recommendation === "Hire"
+                      ).length;
+
+                      const holdCount = evaluations.filter(
+                        (item) => item.recommendation === "Hold"
+                      ).length;
+
+                      const rejectCount = evaluations.filter(
+                        (item) => item.recommendation === "Reject"
+                      ).length;
+
+                      return (
+                        <div
+                          style={{
+                            marginTop: 16,
+                            padding: 16,
+                            border: "1px solid #c9ded3",
+                            borderRadius: 10,
+                          }}
+                        >
+                          <strong>Combined Interview Scorecard</strong>
+
+                          <p>
+                            Overall Team Score: {combinedScore} / 5
+                          </p>
+
+                          <p>
+                            Total Evaluations: {evaluations.length}
+                          </p>
+
+                          <p>
+                            Hire: {hireCount} | Hold: {holdCount} |
+                            Reject: {rejectCount}
+                          </p>
+                        </div>
+                      );
+                    })()}
+
                     {interviewEvaluations
                       .filter(
                         (item) => item.interview_id === interview.id
