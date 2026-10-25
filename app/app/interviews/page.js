@@ -1257,6 +1257,84 @@ jobTitle: jobs[jobId] || "Unknown Job",
       .sort((a, b) => b.total - a.total);
   })();
 
+  const interviewDecisionTimeByJob = (() => {
+    const applicationById = new Map(
+      applications.map((item) => [item.id, item])
+    );
+
+    const interviewById = new Map(
+      interviews.map((item) => [item.id, item])
+    );
+
+    const results = new Map();
+
+    interviewDecisions.forEach((decision) => {
+      const interview = interviewById.get(decision.interview_id);
+      if (!interview) return;
+
+      const application = applicationById.get(
+        interview.application_id
+      );
+      if (!application?.job_id) return;
+
+      const jobId = application.job_id;
+      const start = Date.parse(interview.scheduled_at);
+      const end = Date.parse(decision.decided_at);
+
+      if (!results.has(jobId)) {
+        results.set(jobId, {
+          jobId,
+          jobTitle: jobs[jobId] || "Unknown Job",
+          validHours: [],
+          excluded: 0,
+        });
+      }
+
+      const report = results.get(jobId);
+
+      if (
+        !Number.isFinite(start) ||
+        !Number.isFinite(end) ||
+        end < start
+      ) {
+        report.excluded += 1;
+        return;
+      }
+
+      report.validHours.push(
+        (end - start) / (1000 * 60 * 60)
+      );
+    });
+
+    return [...results.values()]
+      .map((report) => {
+        const sorted = [...report.validHours].sort(
+          (a, b) => a - b
+        );
+        const count = sorted.length;
+        const middle = Math.floor(count / 2);
+
+        return {
+          jobId: report.jobId,
+          jobTitle: report.jobTitle,
+          validDecisions: count,
+          excluded: report.excluded,
+          averageHours: count
+            ? sorted.reduce((sum, value) => sum + value, 0) /
+              count
+            : null,
+          medianHours: count
+            ? count % 2
+              ? sorted[middle]
+              : (sorted[middle - 1] + sorted[middle]) / 2
+            : null,
+        };
+      })
+      .sort((a, b) =>
+        a.jobTitle.localeCompare(b.jobTitle)
+      );
+  })();
+
   const monthlyInterviewTrends = (() => {
     const monthlyData = new Map();
     let invalidDates = 0;
