@@ -244,7 +244,9 @@ export default function TeamManagementPage() {
             Authorization: `Bearer ${token}`,
           },
         
-          body: JSON.stringify({ email, role: inviteRole }),
+     
+body: JSON.stringify({ email, role: inviteRole }),
+
 
         }
       );
