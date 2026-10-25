@@ -163,17 +163,20 @@ const [newInterviewDate, setNewInterviewDate] = useState("");
           .eq("company_id", cid),
       ]);
 
+     
       for (const result of [
         applicationsResult,
         interviewsResult,
         candidatesResult,
         jobsResult,
         evaluationsResult,
+        decisionsResult,
       ]) {
         if (result.error) throw result.error;
       }
 
       setInterviewEvaluations(evaluationsResult.data || []);
+      setInterviewDecisions(decisionsResult.data || []);
 
 
       setApplications(applicationsResult.data || []);
