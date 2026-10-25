@@ -783,6 +783,7 @@ item.full_name,
                       ).toLocaleString()}
                     </p>
 
+                   
                     <span
                       style={{
                         display: "inline-block",
@@ -794,7 +795,31 @@ item.full_name,
                     >
                       {interview.status}
                     </span>
+
+                    {interview.status === "scheduled" && (
+                      <div style={{ marginTop: 16 }}>
+                        <button
+                          type="button"
+                          onClick={() => cancelInterview(interview)}
+                          disabled={updatingInterviewId !== null}
+                          style={{
+                            padding: "10px 16px",
+                            background: "#fff",
+                            color: "#b42318",
+                            border: "1px solid #f1c4c0",
+                            borderRadius: 9,
+                            fontWeight: 700,
+                            cursor: "pointer",
+                          }}
+                        >
+                          {updatingInterviewId === interview.id
+                            ? "Cancelling..."
+                            : "Cancel Interview"}
+                        </button>
+                      </div>
+                    )}
                   </div>
+
                 );
               })}
             </div>
