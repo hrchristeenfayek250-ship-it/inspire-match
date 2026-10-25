@@ -354,6 +354,75 @@ item.full_name,
   }
 
 
+  async function saveInterviewEvaluation(interview) {
+    if (!companyId || !userId || savingEvaluation) return;
+
+    const scoreFields = [
+      "technical_skills",
+      "communication_skills",
+      "problem_solving",
+      "culture_fit",
+    ];
+
+    const scores = {};
+
+    for (const field of scoreFields) {
+      const value = Number(evaluationForm[field]);
+
+      if (
+        evaluationForm[field] === "" ||
+        !Number.isInteger(value) ||
+        value < 1 ||
+        value > 5
+      ) {
+        setError("Please enter scores between 1 and 5.");
+        return;
+      }
+
+      scores[field] = value;
+    }
+
+    if (!["Hire", "Hold", "Reject"].includes(evaluationForm.recommendation)) {
+      setError("Please select a hiring recommendation.");
+      return;
+    }
+
+    setSavingEvaluation(true);
+    setError("");
+    setSuccess("");
+
+    try {
+      const { error: saveError } = await supabase
+        .from("interview_evaluations")
+        .upsert(
+          {
+            interview_id: interview.id,
+            company_id: companyId,
+            evaluator_id: userId,
+            ...scores,
+            strengths: evaluationForm.strengths.trim(),
+            areas_for_improvement:
+              evaluationForm.areas_for_improvement.trim(),
+            overall_feedback: evaluationForm.overall_feedback.trim(),
+            recommendation: evaluationForm.recommendation,
+            updated_at: new Date().toISOString(),
+          },
+          {
+            onConflict: "interview_id,evaluator_id",
+          }
+        );
+
+      if (saveError) throw saveError;
+
+      setSuccess("Interview evaluation saved successfully.");
+      setEvaluatingInterviewId(null);
+    } catch (err) {
+      setError(err.message || "Failed to save interview evaluation.");
+    } finally {
+      setSavingEvaluation(false);
+    }
+  }
+
   function applicationLabel(application) {
     const candidate =
       candidates[application.candidate_id] ||
