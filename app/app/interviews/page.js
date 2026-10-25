@@ -111,11 +111,13 @@ const [newInterviewDate, setNewInterviewDate] = useState("");
       const cid = memberships[0].company_id;
       setCompanyId(cid);
 
+     
       const [
         applicationsResult,
         interviewsResult,
         candidatesResult,
         jobsResult,
+        evaluationsResult,
       ] = await Promise.all([
         supabase
           .from("applications")
@@ -130,14 +132,17 @@ const [newInterviewDate, setNewInterviewDate] = useState("");
 
         supabase
           .from("candidates")
-         
-.select("id, full_name")
-
+          .select("id, full_name")
           .eq("company_id", cid),
 
         supabase
           .from("jobs")
           .select("id, title")
+          .eq("company_id", cid),
+
+        supabase
+          .from("interview_evaluations")
+          .select("*")
           .eq("company_id", cid),
       ]);
 
@@ -146,9 +151,13 @@ const [newInterviewDate, setNewInterviewDate] = useState("");
         interviewsResult,
         candidatesResult,
         jobsResult,
+        evaluationsResult,
       ]) {
         if (result.error) throw result.error;
       }
+
+      setInterviewEvaluations(evaluationsResult.data || []);
+
 
       setApplications(applicationsResult.data || []);
       setInterviews(interviewsResult.data || []);
