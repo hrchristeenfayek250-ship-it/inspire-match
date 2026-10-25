@@ -40,6 +40,11 @@ export default function InterviewsPage() {
   const [userId, setUserId] = useState(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  
+const [updatingInterviewId, setUpdatingInterviewId] = useState(null);
+const [reschedulingId, setReschedulingId] = useState(null);
+const [newInterviewDate, setNewInterviewDate] = useState("");
+
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
 
