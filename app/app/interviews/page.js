@@ -302,10 +302,73 @@ item.full_name,
           color: #315f50;
         }
 
-        .interviews-content {
-          min-width: 0;
-          padding: 35px;
-        }
+       
+.interviews-content {
+  min-width: 0;
+  width: 100%;
+  max-width: none;
+  padding: 32px 38px;
+  box-sizing: border-box;
+}
+
+.interviews-content > section {
+  width: 100%;
+  max-width: none;
+  box-sizing: border-box;
+  box-shadow: 0 8px 28px rgba(25, 70, 50, 0.045);
+}
+
+.interviews-content > section form {
+  width: 100%;
+}
+
+.interviews-content > section form > div {
+  display: grid !important;
+  grid-template-columns:
+    repeat(2, minmax(0, 1fr)) !important;
+  gap: 20px !important;
+}
+
+.interviews-content label {
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+  min-width: 0;
+  font-size: 13px;
+  font-weight: 600;
+  color: #345548;
+}
+
+.interviews-content input,
+.interviews-content select {
+  width: 100%;
+  min-height: 46px;
+  font-size: 14px;
+}
+
+.interviews-content h1 {
+  font-size: 30px;
+  font-weight: 800;
+  letter-spacing: -0.6px;
+  color: #214c3c;
+}
+
+.interviews-content h2 {
+  font-size: 19px;
+  font-weight: 750;
+  color: #214c3c;
+  margin: 0 0 24px;
+}
+
+@media (max-width: 700px) {
+  .interviews-content {
+    padding: 20px 16px;
+  }
+
+  .interviews-content > section form > div {
+    grid-template-columns: 1fr !important;
+  }
+}
 
         @media (max-width: 850px) {
           .interviews-shell {
