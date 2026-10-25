@@ -3276,6 +3276,96 @@ jobTitle: jobs[jobId] || "Unknown Job",
   }}
 >
   <h2 style={{ color: "#183e32", marginTop: 0 }}>
+    Interview Decision Time by Job
+  </h2>
+
+  <p style={{ color: "#64748b", marginBottom: 20 }}>
+    Compare how long each job takes to reach recorded final
+    hiring decisions after scheduled interview times.
+  </p>
+
+  <div style={{ overflowX: "auto" }}>
+    <table
+      style={{
+        width: "100%",
+        borderCollapse: "collapse",
+        fontSize: 13,
+      }}
+    >
+      <thead>
+        <tr style={{ background: "#edf5ef", color: "#183e32" }}>
+          {[
+            "Job Title",
+            "Valid Decisions",
+            "Average Hours",
+            "Median Hours",
+            "Excluded Records",
+          ].map((heading) => (
+            <th
+              key={heading}
+              style={{
+                padding: 13,
+                textAlign: "left",
+                borderBottom: "1px solid #dce9e0",
+              }}
+            >
+              {heading}
+            </th>
+          ))}
+        </tr>
+      </thead>
+
+      <tbody>
+        {interviewDecisionTimeByJob.map((report) => (
+          <tr key={report.jobId}>
+            <td style={{ padding: 13, borderBottom: "1px solid #edf1ee" }}>
+              <strong>{report.jobTitle}</strong>
+            </td>
+            <td style={{ padding: 13, borderBottom: "1px solid #edf1ee" }}>
+              {report.validDecisions}
+            </td>
+            <td style={{ padding: 13, borderBottom: "1px solid #edf1ee" }}>
+              {report.averageHours === null
+                ? "N/A"
+                : report.averageHours.toFixed(1)}
+            </td>
+            <td style={{ padding: 13, borderBottom: "1px solid #edf1ee" }}>
+              {report.medianHours === null
+                ? "N/A"
+                : report.medianHours.toFixed(1)}
+            </td>
+            <td style={{ padding: 13, borderBottom: "1px solid #edf1ee" }}>
+              {report.excluded}
+            </td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+
+    {interviewDecisionTimeByJob.length === 0 && (
+      <p style={{ color: "#64748b", padding: 12 }}>
+        No job-linked interview decisions available yet.
+      </p>
+    )}
+  </div>
+
+  <p style={{ fontSize: 12, color: "#64748b", marginBottom: 0 }}>
+    Hours are measured from the scheduled interview timestamp
+    to the saved decision timestamp. Invalid or negative
+    durations are excluded.
+  </p>
+</section>
+
+<section
+  style={{
+    background: "#ffffff",
+    padding: 26,
+    borderRadius: 16,
+    border: "1px solid #e0e9e3",
+    marginBottom: 25,
+  }}
+>
+  <h2 style={{ color: "#183e32", marginTop: 0 }}>
     Interview Analytics by Job
   </h2>
 
