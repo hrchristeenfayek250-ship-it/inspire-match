@@ -122,12 +122,14 @@ const [newInterviewDate, setNewInterviewDate] = useState("");
       setCompanyId(cid);
 
      
+     
       const [
         applicationsResult,
         interviewsResult,
         candidatesResult,
         jobsResult,
         evaluationsResult,
+        decisionsResult,
       ] = await Promise.all([
         supabase
           .from("applications")
@@ -152,6 +154,11 @@ const [newInterviewDate, setNewInterviewDate] = useState("");
 
         supabase
           .from("interview_evaluations")
+          .select("*")
+          .eq("company_id", cid),
+
+        supabase
+          .from("interview_decisions")
           .select("*")
           .eq("company_id", cid),
       ]);
