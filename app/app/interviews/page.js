@@ -711,6 +711,47 @@ async function moveInterviewToPipeline(interview) {
 
 
   
+  const interviewAnalytics = {
+    total: interviews.length,
+
+    completed: interviews.filter(
+      (item) => item.status === "completed"
+    ).length,
+
+    scheduled: interviews.filter(
+      (item) => item.status === "scheduled"
+    ).length,
+
+    cancelled: interviews.filter(
+      (item) => item.status === "cancelled"
+    ).length,
+
+    noShow: interviews.filter(
+      (item) => item.status === "no_show"
+    ).length,
+
+    proceed: interviewDecisions.filter(
+      (item) => item.decision === "Proceed"
+    ).length,
+
+    hold: interviewDecisions.filter(
+      (item) => item.decision === "Hold"
+    ).length,
+
+    rejected: interviewDecisions.filter(
+      (item) => item.decision === "Reject"
+    ).length,
+  };
+
+  interviewAnalytics.completionRate =
+    interviewAnalytics.total > 0
+      ? Math.round(
+          (interviewAnalytics.completed /
+            interviewAnalytics.total) *
+            100
+        )
+      : 0;
+
   return (
     <div className="interviews-shell">
       <style>{`
