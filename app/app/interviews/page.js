@@ -6,11 +6,15 @@ import Link from "next/link";
 import { supabase } from "@/lib/supabase";
 import ATSNavigation from "@/components/ATSNavigation";
 
+
 const initialForm = {
   application_id: "",
   scheduled_at: "",
   type: "Technical Interview",
   interviewer: "",
+  meeting_platform: "Google Meet",
+  meeting_link: "",
+  interview_location: "",
 };
 
 const inputStyle = {
