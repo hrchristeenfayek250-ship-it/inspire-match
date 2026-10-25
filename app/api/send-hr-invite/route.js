@@ -142,7 +142,9 @@ export async function POST(request) {
         .insert({
           company_id: companyId,
           email,
-          role: "hr",
+        
+          role: inviteRole,
+
           created_by: user.id,
         })
         .select("token")
