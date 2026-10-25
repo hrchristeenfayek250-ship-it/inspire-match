@@ -1277,6 +1277,66 @@ jobTitle: jobs[jobId] || "Unknown Job",
     };
   })();
 
+  function exportInterviewAnalyticsCSV() {
+    const headers = [
+      "Job Title",
+      "Total Interviews",
+      "Completed",
+      "Scheduled",
+      "Cancelled",
+      "No-Show",
+      "Completion Rate",
+      "Proceed",
+      "Hold",
+      "Reject",
+    ];
+
+    const escapeCSV = (value) => {
+      const text = String(value ?? "");
+
+      const safeText = /^[\s]*[=+\-@\t\r]/.test(text)
+        ? `'${text}`
+        : text;
+
+      return `"${safeText.replace(/"/g, '""')}"`;
+    };
+
+    const rows = interviewAnalyticsByJob.map((job) => [
+      job.jobTitle,
+      job.total,
+      job.completed,
+      job.scheduled,
+      job.cancelled,
+      job.noShow,
+      job.completionRate === null
+        ? "N/A"
+        : `${job.completionRate}%`,
+      job.proceed,
+      job.hold,
+      job.reject,
+    ]);
+
+    const csvContent = [headers, ...rows]
+      .map((row) => row.map(escapeCSV).join(","))
+      .join("\r\n");
+
+    const blob = new Blob(["\uFEFF", csvContent], {
+      type: "text/csv;charset=utf-8;",
+    });
+
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+
+    link.href = url;
+    link.download = "inspire-match-interview-analytics.csv";
+
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+
+    URL.revokeObjectURL(url);
+  }
+
   return (
     <div className="interviews-shell">
       <style>{`
