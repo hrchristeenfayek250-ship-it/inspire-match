@@ -956,6 +956,39 @@ async function moveInterviewToPipeline(interview) {
     ).length,
   };
 
+  const completedInterviewApplications = new Set(
+    interviews
+      .filter(
+        (interview) =>
+          interview.status === "completed" &&
+          interview.application_id
+      )
+      .map((interview) => interview.application_id)
+  );
+
+  const interviewedApplications = applications.filter(
+    (application) =>
+      completedInterviewApplications.has(application.id)
+  );
+
+  const hiredAfterInterview = interviewedApplications.filter(
+    (application) =>
+      String(application.stage || "").toLowerCase() === "hired"
+  );
+
+  const interviewToHireReport = {
+    interviewedCandidates: interviewedApplications.length,
+    hiredCandidates: hiredAfterInterview.length,
+    conversionRate:
+      interviewedApplications.length > 0
+        ? (
+            (hiredAfterInterview.length /
+              interviewedApplications.length) *
+            100
+          ).toFixed(1)
+        : null,
+  };
+
   return (
     <div className="interviews-shell">
       <style>{`
