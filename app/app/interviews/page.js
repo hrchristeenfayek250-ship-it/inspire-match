@@ -2153,6 +2153,149 @@ async function moveInterviewToPipeline(interview) {
 
 
 
+<section
+  style={{
+    background: "#ffffff",
+    padding: 26,
+    borderRadius: 16,
+    border: "1px solid #e0e9e3",
+    marginBottom: 25,
+  }}
+>
+  <h2 style={{ color: "#183e32", marginTop: 0 }}>
+    Interview Decision Insights
+  </h2>
+
+  <p style={{ color: "#64748b", marginBottom: 24 }}>
+    Final hiring decision distribution and documented
+    rejection reasons.
+  </p>
+
+  <div
+    style={{
+      display: "grid",
+      gridTemplateColumns:
+        "repeat(auto-fit, minmax(min(100%, 210px), 1fr))",
+      gap: 16,
+    }}
+  >
+    {[
+      {
+        label: "Proceed",
+        count: interviewDecisionInsights.proceed,
+        rate: interviewDecisionInsights.proceedRate,
+      },
+      {
+        label: "Hold",
+        count: interviewDecisionInsights.hold,
+        rate: interviewDecisionInsights.holdRate,
+      },
+      {
+        label: "Reject",
+        count: interviewDecisionInsights.reject,
+        rate: interviewDecisionInsights.rejectRate,
+      },
+    ].map((item) => (
+      <div
+        key={item.label}
+        style={{
+          padding: 20,
+          background: "#f6f9f7",
+          border: "1px solid #e0e9e3",
+          borderRadius: 14,
+        }}
+      >
+        <p style={{ color: "#64748b", marginTop: 0 }}>
+          {item.label}
+        </p>
+
+        <strong
+          style={{
+            fontSize: 28,
+            color: "#315f50",
+          }}
+        >
+          {item.count}
+        </strong>
+
+        <p style={{ color: "#64748b", marginBottom: 0 }}>
+          {item.rate === null ? "N/A" : `${item.rate}%`}
+        </p>
+      </div>
+    ))}
+  </div>
+
+  <h3
+    style={{
+      marginTop: 28,
+      color: "#183e32",
+    }}
+  >
+    Documented Rejection Reasons
+  </h3>
+
+  <p style={{ color: "#64748b", fontSize: 13 }}>
+    {interviewDecisionInsights.documentedRejections.length}
+    {" "}documented rejection reasons
+    {" · "}
+    {interviewDecisionInsights.missingReasonCount}
+    {" "}missing reasons
+  </p>
+
+  {interviewDecisionInsights.documentedRejections.length === 0 ? (
+    <p style={{ color: "#64748b" }}>
+      No documented rejection reasons yet.
+    </p>
+  ) : (
+    <div style={{ overflowX: "auto" }}>
+      <table
+        style={{
+          width: "100%",
+          borderCollapse: "collapse",
+          textAlign: "left",
+        }}
+      >
+        <thead>
+          <tr>
+            <th style={{ padding: 12 }}>Interview</th>
+            <th style={{ padding: 12 }}>Rejection Reason</th>
+          </tr>
+        </thead>
+
+        <tbody>
+          {interviewDecisionInsights.documentedRejections.map(
+            (item, index) => (
+              <tr key={`${item.interviewId}-${index}`}>
+                <td
+                  style={{
+                    padding: 12,
+                    borderTop: "1px solid #e0e9e3",
+                  }}
+                >
+                  {item.interviewId
+                    ? item.interviewId.slice(0, 8)
+                    : "N/A"}
+                </td>
+
+                <td
+                  style={{
+                    padding: 12,
+                    borderTop: "1px solid #e0e9e3",
+                    whiteSpace: "pre-wrap",
+                    overflowWrap: "anywhere",
+                  }}
+                >
+                  {item.reason}
+                </td>
+              </tr>
+            )
+          )}
+        </tbody>
+      </table>
+    </div>
+  )}
+</section>
+
         <section
           style={{
             background: "#fff",
