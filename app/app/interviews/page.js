@@ -2734,6 +2734,139 @@ jobTitle: jobs[jobId] || "Unknown Job",
   </p>
 </section>
 
+<section
+  style={{
+    background: "#ffffff",
+    padding: 26,
+    borderRadius: 16,
+    border: "1px solid #e0e9e3",
+    marginBottom: 25,
+  }}
+>
+  <h2 style={{ color: "#183e32", marginTop: 0 }}>
+    Monthly Interview Trends
+  </h2>
+
+  <p style={{ color: "#64748b", marginBottom: 24 }}>
+    Track interview volume and status distribution by
+    scheduled month.
+  </p>
+
+  {monthlyInterviewTrends.months.length === 0 ? (
+    <p style={{ color: "#64748b" }}>
+      No valid interview dates available yet.
+    </p>
+  ) : (
+    <div style={{ display: "grid", gap: 20 }}>
+      {monthlyInterviewTrends.months.map((month) => (
+        <div
+          key={month.month}
+          style={{
+            padding: 20,
+            background: "#f6f9f7",
+            border: "1px solid #e0e9e3",
+            borderRadius: 14,
+          }}
+        >
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+              gap: 12,
+              flexWrap: "wrap",
+              marginBottom: 16,
+            }}
+          >
+            <strong style={{ color: "#183e32" }}>
+              {month.month}
+            </strong>
+
+            <span style={{ color: "#315f50" }}>
+              {month.total} Interviews
+            </span>
+          </div>
+
+          {[
+            {
+              label: "Completed",
+              count: month.completed,
+              color: "#315f50",
+            },
+            {
+              label: "Scheduled",
+              count: month.scheduled,
+              color: "#6e9f8b",
+            },
+            {
+              label: "Cancelled",
+              count: month.cancelled,
+              color: "#d69a63",
+            },
+            {
+              label: "No-Show",
+              count: month.noShow,
+              color: "#b96c6c",
+            },
+          ].map((status) => (
+            <div key={status.label} style={{ marginBottom: 12 }}>
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  color: "#475569",
+                  fontSize: 13,
+                  marginBottom: 6,
+                }}
+              >
+                <span>{status.label}</span>
+                <span>{status.count}</span>
+              </div>
+
+              <div
+                style={{
+                  height: 10,
+                  background: "#e0e9e3",
+                  borderRadius: 20,
+                  overflow: "hidden",
+                }}
+              >
+                <div
+                  style={{
+                    width: `${
+                      month.total > 0
+                        ? (status.count / month.total) * 100
+                        : 0
+                    }%`,
+                    height: "100%",
+                    background: status.color,
+                    borderRadius: 20,
+                  }}
+                />
+              </div>
+            </div>
+          ))}
+        </div>
+      ))}
+    </div>
+  )}
+
+  <p
+    style={{
+      color: "#64748b",
+      fontSize: 12,
+      marginTop: 18,
+      marginBottom: 0,
+    }}
+  >
+    Months are grouped using UTC scheduled dates.
+    Invalid interview dates excluded:{" "}
+    {monthlyInterviewTrends.invalidDates}.
+    Bars represent each status as a percentage of the
+    month's total interviews.
+  </p>
+</section>
+
         <section
           style={{
             background: "#fff",
