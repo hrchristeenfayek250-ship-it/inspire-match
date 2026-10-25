@@ -1002,6 +1002,110 @@ item.full_name,
                       </div>
                     )}
 
+                    {interview.status !== "cancelled" && (
+                      <div style={{ marginTop: 16 }}>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setEvaluatingInterviewId(interview.id);
+                            setEvaluationForm({
+                              technical_skills: "",
+                              communication_skills: "",
+                              problem_solving: "",
+                              culture_fit: "",
+                              strengths: "",
+                              areas_for_improvement: "",
+                              overall_feedback: "",
+                              recommendation: "",
+                            });
+                          }}
+                        >
+                          Evaluate Interview
+                        </button>
+
+                        {evaluatingInterviewId === interview.id && (
+                          <div style={{ display: "grid", gap: 12, marginTop: 14 }}>
+                            {[
+                              ["technical_skills", "Technical Skills"],
+                              ["communication_skills", "Communication Skills"],
+                              ["problem_solving", "Problem Solving"],
+                              ["culture_fit", "Culture Fit"],
+                            ].map(([field, label]) => (
+                              <label key={field}>
+                                {label} (1–5)
+                                <select
+                                  style={inputStyle}
+                                  value={evaluationForm[field]}
+                                  onChange={(e) =>
+                                    setEvaluationForm((prev) => ({
+                                      ...prev,
+                                      [field]: e.target.value,
+                                    }))
+                                  }
+                                >
+                                  <option value="">Select Score</option>
+                                  {[1, 2, 3, 4, 5].map((score) => (
+                                    <option key={score} value={score}>
+                                      {score}
+                                    </option>
+                                  ))}
+                                </select>
+                              </label>
+                            ))}
+
+                            {[
+                              ["strengths", "Strengths"],
+                              ["areas_for_improvement", "Areas for Improvement"],
+                              ["overall_feedback", "Overall Feedback"],
+                            ].map(([field, label]) => (
+                              <label key={field}>
+                                {label}
+                                <textarea
+                                  style={inputStyle}
+                                  value={evaluationForm[field]}
+                                  onChange={(e) =>
+                                    setEvaluationForm((prev) => ({
+                                      ...prev,
+                                      [field]: e.target.value,
+                                    }))
+                                  }
+                                />
+                              </label>
+                            ))}
+
+                            <label>
+                              Hiring Recommendation
+                              <select
+                                style={inputStyle}
+                                value={evaluationForm.recommendation}
+                                onChange={(e) =>
+                                  setEvaluationForm((prev) => ({
+                                    ...prev,
+                                    recommendation: e.target.value,
+                                  }))
+                                }
+                              >
+                                <option value="">Select Recommendation</option>
+                                <option value="Hire">Hire</option>
+                                <option value="Hold">Hold</option>
+                                <option value="Reject">Reject</option>
+                              </select>
+                            </label>
+
+                            <button
+                              type="button"
+                              disabled={savingEvaluation}
+                              onClick={() => saveInterviewEvaluation(interview)}
+                            >
+                              {savingEvaluation
+                                ? "Saving Evaluation..."
+                                : "Save Evaluation"}
+                            </button>
+                          </div>
+                        )}
+                      </div>
+                    )}
+
                   </div>
 
                 );
