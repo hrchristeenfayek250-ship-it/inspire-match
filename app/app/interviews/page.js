@@ -196,6 +196,7 @@ item.full_name,
     setSaving(true);
 
     try {
+     
       const { error: insertError } = await supabase
         .from("interviews")
         .insert({
@@ -205,8 +206,18 @@ item.full_name,
           scheduled_at: date.toISOString(),
           type: form.type,
           interviewer: form.interviewer.trim(),
+          meeting_platform: form.meeting_platform,
+          meeting_link:
+            form.meeting_platform === "In-Person"
+              ? null
+              : form.meeting_link.trim() || null,
+          interview_location:
+            form.meeting_platform === "In-Person"
+              ? form.interview_location.trim() || null
+              : null,
           status: "scheduled",
         });
+
 
       if (insertError) throw insertError;
 
