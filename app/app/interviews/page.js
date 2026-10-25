@@ -314,6 +314,63 @@ item.full_name,
     }
   }
 
+  async function updateInterviewStatus(interview, newStatus) {
+    if (!companyId || !userId || updatingInterviewId) return;
+
+    if (interview.status !== "scheduled") {
+      setError("Only scheduled interviews can be updated.");
+      return;
+    }
+
+    if (!["completed", "no_show"].includes(newStatus)) {
+      setError("Invalid interview status.");
+      return;
+    }
+
+    const confirmed = window.confirm(
+      newStatus === "completed"
+        ? "Mark this interview as completed?"
+        : "Mark this candidate as No-show?"
+    );
+
+    if (!confirmed) return;
+
+    setError("");
+    setSuccess("");
+    setUpdatingInterviewId(interview.id);
+
+    try {
+      const { data, error: updateError } = await supabase
+        .from("interviews")
+        .update({ status: newStatus })
+        .eq("id", interview.id)
+        .eq("company_id", companyId)
+        .eq("user_id", userId)
+        .eq("status", "scheduled")
+        .select("id");
+
+      if (updateError) throw updateError;
+
+      if (!data || data.length !== 1) {
+        throw new Error(
+          "Interview status could not be updated. Please refresh and try again."
+        );
+      }
+
+      await loadData();
+
+      setSuccess(
+        newStatus === "completed"
+          ? "Interview marked as completed successfully."
+          : "Interview marked as No-show successfully."
+      );
+    } catch (err) {
+      setError(err.message || "Failed to update interview status.");
+    } finally {
+      setUpdatingInterviewId(null);
+    }
+  }
+
   async function rescheduleInterview(interview) {
     if (!companyId || !userId || updatingInterviewId) return;
 
