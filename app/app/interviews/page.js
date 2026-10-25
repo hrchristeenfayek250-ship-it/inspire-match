@@ -817,6 +817,41 @@ async function moveInterviewToPipeline(interview) {
         : "N/A",
   }));
 
+  const scorecardIntelligence = [
+    ["Technical Skills", "technical_skills"],
+    ["Communication", "communication_skills"],
+    ["Problem Solving", "problem_solving"],
+    ["Culture Fit", "culture_fit"],
+  ].map(([label, field]) => {
+    const scores = interviewEvaluations
+      .map((evaluation) => evaluation[field])
+      .filter(
+        (value) => value !== null &&
+          value !== undefined &&
+          value !== ""
+      )
+      .map(Number)
+      .filter(
+        (value) =>
+          Number.isFinite(value) &&
+          value >= 1 &&
+          value <= 5
+      );
+
+    const average = scores.length
+      ? scores.reduce((sum, score) => sum + score, 0) /
+        scores.length
+      : null;
+
+    return {
+      label,
+      count: scores.length,
+      average,
+      percentage:
+        average === null ? 0 : (average / 5) * 100,
+    };
+  });
+
   return (
     <div className="interviews-shell">
       <style>{`
