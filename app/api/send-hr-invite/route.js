@@ -48,6 +48,18 @@ export async function POST(request) {
     const email = String(body.email || "")
       .trim()
       .toLowerCase();
+    
+    const inviteRole = String(body.role || "hr")
+      .trim()
+      .toLowerCase();
+
+    if (!["hr", "hiring_manager"].includes(inviteRole)) {
+      return NextResponse.json(
+        { error: "Invalid invitation role." },
+        { status: 400 }
+      );
+    }
+
 
     if (
       email.length > 254 ||
