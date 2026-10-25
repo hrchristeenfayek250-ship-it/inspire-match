@@ -1223,6 +1223,105 @@ async function moveInterviewToPipeline(interview) {
 
       </section>
 
+<section
+  style={{
+    background: "#ffffff",
+    padding: 26,
+    borderRadius: 16,
+    border: "1px solid #e0e9e3",
+    marginBottom: 25,
+  }}
+>
+  <h2 style={{ color: "#183e32", marginTop: 0 }}>
+    Interviewer Performance Analytics
+  </h2>
+
+  <p style={{ color: "#64748b", marginBottom: 24 }}>
+    Evaluation activity, candidate scoring, and hiring
+    recommendations by interviewer.
+  </p>
+
+  {interviewerPerformance.length === 0 ? (
+    <p style={{ color: "#64748b" }}>
+      No interviewer evaluations available yet.
+    </p>
+  ) : (
+    <div style={{ overflowX: "auto" }}>
+      <table
+        style={{
+          width: "100%",
+          borderCollapse: "collapse",
+          textAlign: "left",
+          fontSize: 13,
+        }}
+      >
+        <thead>
+          <tr style={{ background: "#e8f2ec" }}>
+            {[
+              "Interviewer",
+              "Evaluations",
+              "Avg. Candidate Score",
+              "Hire",
+              "Hold",
+              "Reject",
+            ].map((heading) => (
+              <th
+                key={heading}
+                style={{
+                  padding: 14,
+                  color: "#315f50",
+                  whiteSpace: "nowrap",
+                }}
+              >
+                {heading}
+              </th>
+            ))}
+          </tr>
+        </thead>
+
+        <tbody>
+          {interviewerPerformance.map((item) => (
+            <tr
+              key={item.evaluatorId}
+              style={{
+                borderBottom: "1px solid #e0e9e3",
+              }}
+            >
+              <td style={{ padding: 14 }}>
+                {item.evaluatorId === userId
+                  ? "You"
+                  : `Interviewer ${item.evaluatorId.slice(0, 8)}`}
+              </td>
+
+              <td style={{ padding: 14 }}>
+                {item.totalEvaluations}
+              </td>
+
+              <td style={{ padding: 14, fontWeight: 700 }}>
+                {item.averageScore === "N/A"
+                  ? "N/A"
+                  : `${item.averageScore} / 5`}
+              </td>
+
+              <td style={{ padding: 14 }}>
+                {item.recommendations.hire}
+              </td>
+
+              <td style={{ padding: 14 }}>
+                {item.recommendations.hold}
+              </td>
+
+              <td style={{ padding: 14 }}>
+                {item.recommendations.reject}
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  )}
+</section>
+
         <section
           style={{
             background: "#fff",
