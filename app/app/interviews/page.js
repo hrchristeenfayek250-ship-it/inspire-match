@@ -1138,6 +1138,92 @@ async function moveInterviewToPipeline(interview) {
     };
   })();
 
+  const interviewAnalyticsByJob = (() => {
+    const applicationById = new Map(
+      applications.map((item) => [item.id, item])
+    );
+
+    const decisionsByInterviewId = new Map(
+      interviewDecisions.map((item) => [
+        item.interview_id,
+        item,
+      ])
+    );
+
+    const reportByJob = new Map();
+
+    interviews.forEach((interview) => {
+      const application = applicationById.get(
+        interview.application_id
+      );
+
+      if (!application?.job_id) return;
+
+      const jobId = application.job_id;
+
+      if (!reportByJob.has(jobId)) {
+        reportByJob.set(jobId, {
+          jobId,
+          jobTitle: jobs[jobId]?.title || "Unknown Job",
+          total: 0,
+          completed: 0,
+          scheduled: 0,
+          cancelled: 0,
+          noShow: 0,
+          proceed: 0,
+          hold: 0,
+          reject: 0,
+        });
+      }
+
+      const report = reportByJob.get(jobId);
+
+      report.total += 1;
+
+      if (interview.status === "completed") {
+        report.completed += 1;
+      }
+
+      if (interview.status === "scheduled") {
+        report.scheduled += 1;
+      }
+
+      if (interview.status === "cancelled") {
+        report.cancelled += 1;
+      }
+
+      if (interview.status === "no_show") {
+        report.noShow += 1;
+      }
+
+      const decision = decisionsByInterviewId.get(
+        interview.id
+      );
+
+      if (decision?.decision === "Proceed") {
+        report.proceed += 1;
+      }
+
+      if (decision?.decision === "Hold") {
+        report.hold += 1;
+      }
+
+      if (decision?.decision === "Reject") {
+        report.reject += 1;
+      }
+    });
+
+    return [...reportByJob.values()]
+      .map((report) => ({
+        ...report,
+        completionRate:
+          report.total > 0
+            ? ((report.completed / report.total) * 100).toFixed(1)
+            : null,
+      }))
+      .sort((a, b) => b.total - a.total);
+  })();
+
   return (
     <div className="interviews-shell">
       <style>{`
