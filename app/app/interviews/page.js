@@ -2570,6 +2570,119 @@ jobTitle: jobs[jobId] || "Unknown Job",
   </p>
 </section>
 
+<section
+  style={{
+    background: "#ffffff",
+    padding: 26,
+    borderRadius: 16,
+    border: "1px solid #e0e9e3",
+    marginBottom: 25,
+  }}
+>
+  <h2 style={{ color: "#183e32", marginTop: 0 }}>
+    Interview Analytics by Job
+  </h2>
+
+  <p style={{ color: "#64748b", marginBottom: 24 }}>
+    Compare interview activity, completion rates, and
+    final hiring decisions across jobs.
+  </p>
+
+  {interviewAnalyticsByJob.length === 0 ? (
+    <p style={{ color: "#64748b" }}>
+      No job-linked interviews available yet.
+    </p>
+  ) : (
+    <div style={{ overflowX: "auto" }}>
+      <table
+        style={{
+          width: "100%",
+          borderCollapse: "collapse",
+          textAlign: "left",
+          fontSize: 13,
+        }}
+      >
+        <thead>
+          <tr style={{ background: "#f6f9f7" }}>
+            {[
+              "Job Title",
+              "Total",
+              "Completed",
+              "Scheduled",
+              "Cancelled",
+              "No-Show",
+              "Completion %",
+              "Proceed",
+              "Hold",
+              "Reject",
+            ].map((heading) => (
+              <th
+                key={heading}
+                style={{
+                  padding: 12,
+                  color: "#315f50",
+                  whiteSpace: "nowrap",
+                  borderBottom: "1px solid #e0e9e3",
+                }}
+              >
+                {heading}
+              </th>
+            ))}
+          </tr>
+        </thead>
+
+        <tbody>
+          {interviewAnalyticsByJob.map((job) => (
+            <tr key={job.jobId}>
+              {[
+                job.jobTitle,
+                job.total,
+                job.completed,
+                job.scheduled,
+                job.cancelled,
+                job.noShow,
+                job.completionRate === null
+                  ? "N/A"
+                  : `${job.completionRate}%`,
+                job.proceed,
+                job.hold,
+                job.reject,
+              ].map((value, index) => (
+                <td
+                  key={index}
+                  style={{
+                    padding: 12,
+                    borderBottom: "1px solid #e0e9e3",
+                    color: index === 0 ? "#183e32" : "#475569",
+                    fontWeight: index === 0 ? 600 : 400,
+                    whiteSpace: index === 0 ? "normal" : "nowrap",
+                  }}
+                >
+                  {value}
+                </td>
+              ))}
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  )}
+
+  <p
+    style={{
+      color: "#64748b",
+      fontSize: 12,
+      marginTop: 18,
+      marginBottom: 0,
+    }}
+  >
+    Each interview is counted separately. Completion rate
+    is completed interviews divided by total interviews
+    for the job. Final decisions are counted from saved
+    interview decisions.
+  </p>
+</section>
+
         <section
           style={{
             background: "#fff",
