@@ -1337,6 +1337,182 @@ jobTitle: jobs[jobId] || "Unknown Job",
     URL.revokeObjectURL(url);
   }
 
+  function exportInterviewAnalyticsPDF() {
+    const escapeHTML = (value) =>
+      String(value ?? "").replace(/[&<>"']/g, (char) => ({
+        "&": "&amp;",
+        "<": "&lt;",
+        ">": "&gt;",
+        '"': "&quot;",
+        "'": "&#39;",
+      })[char]);
+
+    const rows = interviewAnalyticsByJob.map((job) => `
+      <tr>
+        <td>${escapeHTML(job.jobTitle)}</td>
+        <td>${job.total}</td>
+        <td>${job.completed}</td>
+        <td>${job.scheduled}</td>
+        <td>${job.cancelled}</td>
+        <td>${job.noShow}</td>
+        <td>${escapeHTML(job.completionRate === null ? "N/A" : `${job.completionRate}%`)}</td>
+        <td>${job.proceed}</td>
+        <td>${job.hold}</td>
+        <td>${job.reject}</td>
+      </tr>
+    `).join("");
+
+    const reportHTML = `
+      <!DOCTYPE html>
+      <html lang="en">
+      <head>
+        <meta charset="UTF-8" />
+        <title>Inspire Match ATS - Interview Analytics</title>
+        <style>
+          @page {
+            size: A4 landscape;
+            margin: 15mm;
+          }
+
+          body {
+            font-family: Arial, sans-serif;
+            color: #183e32;
+            margin: 0;
+          }
+
+          .header {
+            border-bottom: 3px solid #315f50;
+            padding-bottom: 20px;
+            margin-bottom: 25px;
+          }
+
+          .brand {
+            font-size: 25px;
+            font-weight: bold;
+            letter-spacing: 1px;
+          }
+
+          .subtitle {
+            color: #64748b;
+            margin-top: 8px;
+          }
+
+          .report-title {
+            font-size: 21px;
+            margin-bottom: 8px;
+          }
+
+          .date {
+            color: #64748b;
+            font-size: 12px;
+            margin-bottom: 25px;
+          }
+
+          table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 10px;
+          }
+
+          th {
+            background: #183e32;
+            color: white;
+            padding: 11px 7px;
+            text-align: left;
+          }
+
+          td {
+            padding: 11px 7px;
+            border-bottom: 1px solid #e0e9e3;
+            overflow-wrap: anywhere;
+          }
+
+          tr:nth-child(even) {
+            background: #f6f9f7;
+          }
+
+          thead {
+            display: table-header-group;
+          }
+
+          tr {
+            break-inside: avoid;
+          }
+
+          .footer {
+            margin-top: 35px;
+            padding-top: 15px;
+            border-top: 1px solid #e0e9e3;
+            font-size: 11px;
+            color: #64748b;
+          }
+        </style>
+      </head>
+      <body>
+        <div class="header">
+          <div class="brand">INSPIRE MATCH ATS</div>
+          <div class="subtitle">
+            AI-Powered Recruitment Intelligence
+          </div>
+        </div>
+
+        <h1 class="report-title">
+          Interview Analytics by Job
+        </h1>
+
+        <div class="date">
+          Generated: ${escapeHTML(new Date().toLocaleDateString("en-GB"))}
+        </div>
+
+        <table>
+          <thead>
+            <tr>
+              <th>Job Title</th>
+              <th>Total</th>
+              <th>Completed</th>
+              <th>Scheduled</th>
+              <th>Cancelled</th>
+              <th>No-Show</th>
+              <th>Completion %</th>
+              <th>Proceed</th>
+              <th>Hold</th>
+              <th>Reject</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${rows}
+          </tbody>
+        </table>
+
+        <div class="footer">
+          Inspire Match ATS | Confidential Recruitment Report
+          <p>
+            Each interview is counted separately.
+            Completion rate = completed / total interviews.
+            Decisions reflect saved final hiring decisions.
+          </p>
+        </div>
+      </body>
+      </html>
+    `;
+
+    const printWindow = window.open("", "_blank");
+
+    if (!printWindow) {
+      alert("Please allow pop-ups to export the PDF.");
+      return;
+    }
+
+    printWindow.document.open();
+    printWindow.document.write(reportHTML);
+    printWindow.document.close();
+
+    printWindow.addEventListener("load", () => {
+      printWindow.focus();
+      printWindow.print();
+    });
+  }
+
   return (
     <div className="interviews-shell">
       <style>{`
