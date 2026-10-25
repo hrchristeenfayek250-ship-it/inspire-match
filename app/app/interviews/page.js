@@ -522,6 +522,88 @@ item.full_name,
     }
   }
 
+  async function saveInterviewDecision(interview) {
+    if (!companyId || !userId || savingDecision) return;
+
+    if (interview.status !== "completed") {
+      setError("Only completed interviews can have a final decision.");
+      return;
+    }
+
+    if (!["Proceed", "Hold", "Reject"].includes(decisionForm.decision)) {
+      setError("Please select a valid final decision.");
+      return;
+    }
+
+    const reason = decisionForm.decision_reason.trim();
+
+    if (!reason) {
+      setError("Please enter the reason for your decision.");
+      return;
+    }
+
+    setSavingDecision(true);
+    setError("");
+    setSuccess("");
+
+    try {
+      const existingDecision = interviewDecisions.find(
+        (item) => item.interview_id === interview.id
+      );
+
+      const payload = {
+        decision: decisionForm.decision,
+        decision_reason: reason,
+        updated_at: new Date().toISOString(),
+      };
+
+      let saveError;
+
+      if (existingDecision) {
+        const result = await supabase
+          .from("interview_decisions")
+          .update(payload)
+          .eq("id", existingDecision.id)
+          .eq("company_id", companyId)
+          .eq("decided_by", userId)
+          .select("id")
+          .single();
+
+        saveError = result.error;
+      } else {
+        const result = await supabase
+          .from("interview_decisions")
+          .insert({
+            interview_id: interview.id,
+            company_id: companyId,
+            decided_by: userId,
+            ...payload,
+          })
+          .select("id")
+          .single();
+
+        saveError = result.error;
+      }
+
+      if (saveError) throw saveError;
+
+      const { data, error: refreshError } = await supabase
+        .from("interview_decisions")
+        .select("*")
+        .eq("company_id", companyId);
+
+      if (refreshError) throw refreshError;
+
+      setInterviewDecisions(data || []);
+      setDecidingInterviewId(null);
+      setSuccess("Final hiring decision saved successfully.");
+    } catch (err) {
+      setError(err.message || "Failed to save final hiring decision.");
+    } finally {
+      setSavingDecision(false);
+    }
+  }
+
   function applicationLabel(application) {
     const candidate =
       candidates[application.candidate_id] ||
