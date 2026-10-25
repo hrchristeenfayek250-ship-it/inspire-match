@@ -1357,6 +1357,99 @@ async function moveInterviewToPipeline(interview) {
   )}
 </section>
 
+<section
+  style={{
+    background: "#ffffff",
+    padding: 26,
+    borderRadius: 16,
+    border: "1px solid #e0e9e3",
+    marginBottom: 25,
+  }}
+>
+  <h2 style={{ color: "#183e32", marginTop: 0 }}>
+    Interview Scorecard Intelligence
+  </h2>
+
+  <p style={{ color: "#64748b", marginBottom: 24 }}>
+    Average candidate scores across four evaluation dimensions.
+  </p>
+
+  <div
+    style={{
+      display: "grid",
+      gridTemplateColumns:
+        "repeat(auto-fit, minmax(min(100%, 260px), 1fr))",
+      gap: 18,
+    }}
+  >
+    {scorecardIntelligence.map((skill) => (
+      <div
+        key={skill.label}
+        style={{
+          padding: 20,
+          background: "#f6f9f7",
+          border: "1px solid #e0e9e3",
+          borderRadius: 14,
+        }}
+      >
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+            gap: 12,
+          }}
+        >
+          <strong style={{ color: "#183e32" }}>
+            {skill.label}
+          </strong>
+
+          <span
+            style={{
+              fontSize: 20,
+              fontWeight: 800,
+              color: "#315f50",
+            }}
+          >
+            {skill.average === null
+              ? "N/A"
+              : `${skill.average.toFixed(2)} / 5`}
+          </span>
+        </div>
+
+        <div
+          style={{
+            marginTop: 16,
+            height: 12,
+            background: "#e0e9e3",
+            borderRadius: 20,
+            overflow: "hidden",
+          }}
+        >
+          <div
+            style={{
+              width: `${skill.percentage}%`,
+              height: "100%",
+              background: "#315f50",
+              borderRadius: 20,
+            }}
+          />
+        </div>
+
+        <p
+          style={{
+            marginBottom: 0,
+            fontSize: 12,
+            color: "#64748b",
+          }}
+        >
+          Based on {skill.count} valid evaluations
+        </p>
+      </div>
+    ))}
+  </div>
+</section>
+
         <section
           style={{
             background: "#fff",
