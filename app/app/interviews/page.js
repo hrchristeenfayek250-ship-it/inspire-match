@@ -1157,6 +1157,7 @@ async function moveInterviewToPipeline(interview) {
 
     const reportByJob = new Map();
 
+  
     interviews.forEach((interview) => {
       const application = applicationById.get(
         interview.application_id
@@ -1165,6 +1166,31 @@ async function moveInterviewToPipeline(interview) {
       if (!application?.job_id) return;
 
       const jobId = application.job_id;
+
+      if (
+        analyticsJobFilter !== "all" &&
+        String(jobId) !== String(analyticsJobFilter)
+      ) {
+        return;
+      }
+
+      if (analyticsDateFrom || analyticsDateTo) {
+        if (!interview.scheduled_at) return;
+
+        const interviewDate = new Date(interview.scheduled_at);
+
+        if (!Number.isFinite(interviewDate.getTime())) return;
+
+        const dateKey = interviewDate.toISOString().slice(0, 10);
+
+        if (analyticsDateFrom && dateKey < analyticsDateFrom) {
+          return;
+        }
+
+        if (analyticsDateTo && dateKey > analyticsDateTo) {
+          return;
+        }
+      }
 
       if (!reportByJob.has(jobId)) {
         reportByJob.set(jobId, {
