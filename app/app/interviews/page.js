@@ -752,6 +752,71 @@ async function moveInterviewToPipeline(interview) {
         )
       : 0;
 
+  const interviewerPerformance = Object.values(
+    interviewEvaluations.reduce((acc, evaluation) => {
+      const evaluatorId = evaluation.evaluator_id;
+
+      if (!evaluatorId) return acc;
+
+      if (!acc[evaluatorId]) {
+        acc[evaluatorId] = {
+          evaluatorId,
+          totalEvaluations: 0,
+          totalScore: 0,
+          scoredEvaluations: 0,
+          recommendations: {
+            hire: 0,
+            hold: 0,
+            reject: 0,
+          },
+        };
+      }
+
+      const record = acc[evaluatorId];
+      record.totalEvaluations += 1;
+
+      const scores = [
+        evaluation.technical_skills,
+        evaluation.communication_skills,
+        evaluation.problem_solving,
+        evaluation.culture_fit,
+      ].map(Number);
+
+      if (
+        scores.every(
+          (score) =>
+            Number.isFinite(score) &&
+            score >= 1 &&
+            score <= 5
+        )
+      ) {
+        record.totalScore +=
+          scores.reduce((sum, score) => sum + score, 0) /
+          scores.length;
+
+        record.scoredEvaluations += 1;
+      }
+
+      const recommendation = String(
+        evaluation.recommendation || ""
+      ).toLowerCase();
+
+      if (recommendation in record.recommendations) {
+        record.recommendations[recommendation] += 1;
+      }
+
+      return acc;
+    }, {})
+  ).map((record) => ({
+    ...record,
+    averageScore:
+      record.scoredEvaluations > 0
+        ? (
+            record.totalScore / record.scoredEvaluations
+          ).toFixed(2)
+        : "N/A",
+  }));
+
   return (
     <div className="interviews-shell">
       <style>{`
