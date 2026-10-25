@@ -1072,6 +1072,72 @@ async function moveInterviewToPipeline(interview) {
     };
   })();
 
+  const interviewDecisionTime = (() => {
+    const interviewById = new Map(
+      interviews.map((item) => [item.id, item])
+    );
+
+    const validDurations = [];
+    let invalidDates = 0;
+    let decisionsBeforeInterview = 0;
+    let missingInterviews = 0;
+
+    interviewDecisions.forEach((decision) => {
+      const interview = interviewById.get(decision.interview_id);
+
+      if (!interview) {
+        missingInterviews += 1;
+        return;
+      }
+
+      const interviewTime = Date.parse(interview.scheduled_at);
+      const decisionTime = Date.parse(decision.decided_at);
+
+      if (
+        !Number.isFinite(interviewTime) ||
+        !Number.isFinite(decisionTime)
+      ) {
+        invalidDates += 1;
+        return;
+      }
+
+      const durationHours =
+        (decisionTime - interviewTime) / (1000 * 60 * 60);
+
+      if (durationHours < 0) {
+        decisionsBeforeInterview += 1;
+        return;
+      }
+
+      validDurations.push(durationHours);
+    });
+
+    const sorted = [...validDurations].sort((a, b) => a - b);
+
+    const averageHours = validDurations.length
+      ? validDurations.reduce((sum, value) => sum + value, 0) /
+        validDurations.length
+      : null;
+
+    const middle = Math.floor(sorted.length / 2);
+
+    const medianHours = sorted.length
+      ? sorted.length % 2 === 0
+        ? (sorted[middle - 1] + sorted[middle]) / 2
+        : sorted[middle]
+      : null;
+
+    return {
+      totalDecisions: interviewDecisions.length,
+      validDecisions: validDurations.length,
+      averageHours,
+      medianHours,
+      decisionsBeforeInterview,
+      invalidDates,
+      missingInterviews,
+    };
+  })();
+
   return (
     <div className="interviews-shell">
       <style>{`
