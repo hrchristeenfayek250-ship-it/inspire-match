@@ -1047,7 +1047,45 @@ item.full_name,
                               ? "Updating..."
                               : "Cancel Interview"}
                           </button>
-                        </div>
+                   
+                          <button
+                            type="button"
+                            onClick={() =>
+                              updateInterviewStatus(interview, "completed")
+                            }
+                            disabled={updatingInterviewId !== null}
+                            style={{
+                              padding: "10px 16px",
+                              background: "#e7f3eb",
+                              color: "#17643d",
+                              border: "1px solid #b8dcc7",
+                              borderRadius: 9,
+                              cursor: "pointer",
+                            }}
+                          >
+                            Mark Completed
+                          </button>
+
+                          <button
+                            type="button"
+                            onClick={() =>
+                              updateInterviewStatus(interview, "no_show")
+                            }
+                            disabled={updatingInterviewId !== null}
+                            style={{
+                              padding: "10px 16px",
+                              background: "#fff",
+                              color: "#92400e",
+                              border: "1px solid #f1d5a5",
+                              borderRadius: 9,
+                              cursor: "pointer",
+                            }}
+                          >
+                            No-show
+                          </button>
+     
+                            
+                    </div>
 
                         {reschedulingId === interview.id && (
                           <div style={{ marginTop: 14 }}>
