@@ -44,6 +44,21 @@ export default function InterviewsPage() {
 const [updatingInterviewId, setUpdatingInterviewId] = useState(null);
 const [reschedulingId, setReschedulingId] = useState(null);
 const [newInterviewDate, setNewInterviewDate] = useState("");
+  
+  const [evaluatingInterviewId, setEvaluatingInterviewId] = useState(null);
+  const [savingEvaluation, setSavingEvaluation] = useState(false);
+
+  const [evaluationForm, setEvaluationForm] = useState({
+    technical_skills: "",
+    communication_skills: "",
+    problem_solving: "",
+    culture_fit: "",
+    strengths: "",
+    areas_for_improvement: "",
+    overall_feedback: "",
+    recommendation: "",
+  });
+
 
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
