@@ -426,6 +426,16 @@ item.full_name,
 
       if (saveError) throw saveError;
 
+      const { data: refreshedEvaluations, error: refreshError } =
+        await supabase
+          .from("interview_evaluations")
+          .select("*")
+          .eq("company_id", companyId);
+
+      if (refreshError) throw refreshError;
+
+      setInterviewEvaluations(refreshedEvaluations || []);
+
       setSuccess("Interview evaluation saved successfully.");
       setEvaluatingInterviewId(null);
     } catch (err) {
