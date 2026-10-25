@@ -1471,7 +1471,89 @@ async function moveInterviewToPipeline(interview) {
       </div>
     ))}
   </div>
-</section>
+
+<div
+  style={{
+    display: "grid",
+    gridTemplateColumns:
+      "repeat(auto-fit, minmax(min(100%, 240px), 1fr))",
+    gap: 16,
+    marginTop: 24,
+  }}
+>
+  {[
+    {
+      title: "Highest-Rated Skill",
+      skill: strongestSkill,
+      description: "Highest average candidate evaluation",
+    },
+    {
+      title: "Lowest-Rated Skill",
+      skill: improvementSkill,
+      description: "Lowest average candidate evaluation",
+    },
+  ].map((insight) => (
+    <div
+      key={insight.title}
+      style={{
+        padding: 22,
+        background: "#f6f9f7",
+        border: "1px solid #e0e9e3",
+        borderRadius: 14,
+      }}
+    >
+      <p style={{ color: "#64748b", marginTop: 0 }}>
+        {insight.title}
+      </p>
+
+      <h3 style={{ color: "#315f50", marginBottom: 8 }}>
+        {insight.skill?.label || "Not enough data"}
+      </h3>
+
+      <strong style={{ fontSize: 24, color: "#183e32" }}>
+        {insight.skill
+          ? `${insight.skill.average.toFixed(2)} / 5`
+          : "N/A"}
+      </strong>
+
+      <p style={{ fontSize: 12, color: "#64748b" }}>
+        {insight.description}
+      </p>
+
+      {insight.skill && (
+        <p style={{ fontSize: 12, color: "#64748b" }}>
+          Based on {insight.skill.count} evaluations
+        </p>
+      )}
+    </div>
+  ))}
+
+  <div
+    style={{
+      padding: 22,
+      background: "#e8f2ec",
+      border: "1px solid #d5e5da",
+      borderRadius: 14,
+    }}
+  >
+    <p style={{ color: "#64748b", marginTop: 0 }}>
+      Skill Score Gap
+    </p>
+
+    <h3 style={{ color: "#315f50", fontSize: 26 }}>
+      {skillScoreGap === null
+        ? "N/A"
+        : `${skillScoreGap.toFixed(2)} pts`}
+    </h3>
+
+    <p style={{ fontSize: 12, color: "#64748b" }}>
+      Difference between highest and lowest average
+      candidate skill scores.
+    </p>
+  </div>
+</div>
+
+      </section>
 
         <section
           style={{
