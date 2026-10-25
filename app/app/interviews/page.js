@@ -233,17 +233,45 @@ export default function InterviewsPage() {
         fontFamily: "Arial, sans-serif",
       }}
     >
-     
+    
       <div
         style={{
-          padding: "14px 22px",
           background: "#ffffff",
           borderBottom: "1px solid #e4ebe7",
+          padding: "16px 24px",
         }}
       >
+        <style>{`
+          .interviews-navigation {
+            display: flex;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
+          }
+
+          .interviews-nav-item {
+            display: inline-flex;
+            align-items: center;
+            gap: 7px;
+            padding: 10px 13px;
+            border-radius: 9px;
+            color: #315f50;
+            text-decoration: none;
+            font-size: 13px;
+            font-weight: 600;
+            white-space: nowrap;
+          }
+
+          .interviews-nav-item:hover,
+          .interviews-nav-item.active {
+            background: #e7f1eb;
+            color: #204b3b;
+          }
+        `}</style>
+
         <ATSNavigation
-          className="jm-navigation"
-          linkClassName="jm-nav-item"
+          className="interviews-navigation"
+          linkClassName="interviews-nav-item"
         />
       </div>
 
