@@ -233,15 +233,20 @@ export default function InterviewsPage() {
         fontFamily: "Arial, sans-serif",
       }}
     >
+     
       <div
         style={{
           padding: "14px 22px",
-          background: "#fff",
+          background: "#ffffff",
           borderBottom: "1px solid #e4ebe7",
         }}
       >
-        <ATSNavigation />
+        <ATSNavigation
+          className="jm-navigation"
+          linkClassName="jm-nav-item"
+        />
       </div>
+
 
       <main
         style={{
