@@ -228,65 +228,123 @@ item.full_name,
     return `${candidate} — ${job}`;
   }
 
+  
   return (
-    <div
-      style={{
-        minHeight: "100vh",
-        background: "#f6f9f7",
-        color: "#183e32",
-        fontFamily: "Arial, sans-serif",
-      }}
-    >
-    
-      <div
-        style={{
-          background: "#ffffff",
-          borderBottom: "1px solid #e4ebe7",
-          padding: "16px 24px",
-        }}
-      >
-        <style>{`
+    <div className="interviews-shell">
+      <style>{`
+        .interviews-shell {
+          display: grid;
+          grid-template-columns: 245px minmax(0, 1fr);
+          min-height: 100vh;
+          background: #f6f9f7;
+          color: #183e32;
+          font-family: Arial, sans-serif;
+        }
+
+        .interviews-sidebar {
+          background: #ffffff;
+          border-right: 1px solid #e3ebe6;
+          padding: 26px 16px;
+        }
+
+        .interviews-brand {
+          display: flex;
+          align-items: center;
+          gap: 12px;
+          margin-bottom: 35px;
+          padding: 0 10px;
+        }
+
+        .interviews-logo {
+          background: #315f50;
+          color: white;
+          border-radius: 12px;
+          width: 42px;
+          height: 42px;
+          display: grid;
+          place-items: center;
+          font-weight: 800;
+          font-size: 23px;
+        }
+
+        .interviews-brand strong {
+          display: block;
+          font-size: 17px;
+        }
+
+        .interviews-brand small {
+          color: #82948a;
+          font-size: 10px;
+          letter-spacing: 1px;
+        }
+
+        .interviews-navigation {
+          display: flex;
+          flex-direction: column;
+          gap: 6px;
+        }
+
+        .interviews-nav-item {
+          display: flex;
+          align-items: center;
+          gap: 12px;
+          padding: 13px 14px;
+          border-radius: 10px;
+          text-decoration: none;
+          color: #64748b;
+          font-size: 13px;
+          font-weight: 600;
+        }
+
+        .interviews-nav-item:hover,
+        .interviews-nav-item.active {
+          background: #e8f2ec;
+          color: #315f50;
+        }
+
+        .interviews-content {
+          min-width: 0;
+          padding: 35px;
+        }
+
+        @media (max-width: 850px) {
+          .interviews-shell {
+            grid-template-columns: 1fr;
+          }
+
+          .interviews-sidebar {
+            border-right: 0;
+            border-bottom: 1px solid #e3ebe6;
+          }
+
           .interviews-navigation {
-            display: flex;
-            align-items: center;
+            flex-direction: row;
             flex-wrap: wrap;
-            gap: 10px;
           }
 
-          .interviews-nav-item {
-            display: inline-flex;
-            align-items: center;
-            gap: 7px;
-            padding: 10px 13px;
-            border-radius: 9px;
-            color: #315f50;
-            text-decoration: none;
-            font-size: 13px;
-            font-weight: 600;
-            white-space: nowrap;
+          .interviews-content {
+            padding: 20px;
           }
+        }
+      `}</style>
 
-          .interviews-nav-item:hover,
-          .interviews-nav-item.active {
-            background: #e7f1eb;
-            color: #204b3b;
-          }
-        `}</style>
+      <aside className="interviews-sidebar">
+        <div className="interviews-brand">
+          <div className="interviews-logo">I</div>
+          <div>
+            <strong>Inspire Match</strong>
+            <small>TALENT INTELLIGENCE</small>
+          </div>
+        </div>
 
         <ATSNavigation
           className="interviews-navigation"
           linkClassName="interviews-nav-item"
         />
-      </div>
+      </aside>
 
+      <main className="interviews-content">
 
-      <main
-        style={{
-          maxWidth: 1150,
-          margin: "0 auto",
-          padding: "32px 20px",
-        }}
-      >
         <Link
           href="/app/dashboard"
           style={{ color: "#315f50" }}
