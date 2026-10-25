@@ -218,6 +218,12 @@ item.full_name,
             form.meeting_platform === "In-Person"
               ? form.interview_location.trim() || null
               : null,
+         
+          interview_location_link:
+            form.meeting_platform === "In-Person"
+              ? form.interview_location_link.trim() || null
+              : null,
+
           status: "scheduled",
         });
 
