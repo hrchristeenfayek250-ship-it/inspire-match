@@ -837,28 +837,87 @@ item.full_name,
                       {interview.status}
                     </span>
 
+                   
                     {interview.status === "scheduled" && (
                       <div style={{ marginTop: 16 }}>
-                        <button
-                          type="button"
-                          onClick={() => cancelInterview(interview)}
-                          disabled={updatingInterviewId !== null}
+                        <div
                           style={{
-                            padding: "10px 16px",
-                            background: "#fff",
-                            color: "#b42318",
-                            border: "1px solid #f1c4c0",
-                            borderRadius: 9,
-                            fontWeight: 700,
-                            cursor: "pointer",
+                            display: "flex",
+                            gap: 10,
+                            flexWrap: "wrap",
                           }}
                         >
-                          {updatingInterviewId === interview.id
-                            ? "Cancelling..."
-                            : "Cancel Interview"}
-                        </button>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setError("");
+                              setReschedulingId(interview.id);
+                              setNewInterviewDate("");
+                            }}
+                            disabled={updatingInterviewId !== null}
+                            style={{
+                              padding: "10px 16px",
+                              background: "#315f50",
+                              color: "#fff",
+                              border: 0,
+                              borderRadius: 9,
+                              cursor: "pointer",
+                            }}
+                          >
+                            Reschedule
+                          </button>
+
+                          <button
+                            type="button"
+                            onClick={() => cancelInterview(interview)}
+                            disabled={updatingInterviewId !== null}
+                            style={{
+                              padding: "10px 16px",
+                              background: "#fff",
+                              color: "#b42318",
+                              border: "1px solid #f1c4c0",
+                              borderRadius: 9,
+                              cursor: "pointer",
+                            }}
+                          >
+                            {updatingInterviewId === interview.id
+                              ? "Updating..."
+                              : "Cancel Interview"}
+                          </button>
+                        </div>
+
+                        {reschedulingId === interview.id && (
+                          <div style={{ marginTop: 14 }}>
+                            <input
+                              type="datetime-local"
+                              style={inputStyle}
+                              value={newInterviewDate}
+                              onChange={(e) =>
+                                setNewInterviewDate(e.target.value)
+                              }
+                            />
+
+                            <button
+                              type="button"
+                              onClick={() => rescheduleInterview(interview)}
+                              disabled={updatingInterviewId !== null}
+                              style={{
+                                marginTop: 10,
+                                padding: "10px 16px",
+                                background: "#315f50",
+                                color: "#fff",
+                                border: 0,
+                                borderRadius: 9,
+                                cursor: "pointer",
+                              }}
+                            >
+                              Save New Date
+                            </button>
+                          </div>
+                        )}
                       </div>
                     )}
+
                   </div>
 
                 );
