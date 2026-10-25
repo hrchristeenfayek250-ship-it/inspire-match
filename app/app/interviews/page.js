@@ -875,6 +875,87 @@ async function moveInterviewToPipeline(interview) {
       ? strongestSkill.average - improvementSkill.average
       : null;
 
+  const interviewerAlignment = Object.values(
+    interviewEvaluations.reduce((groups, evaluation) => {
+      const interviewId = evaluation.interview_id;
+      const evaluatorId = evaluation.evaluator_id;
+
+      if (!interviewId || !evaluatorId) return groups;
+
+      const fields = [
+        "technical_skills",
+        "communication_skills",
+        "problem_solving",
+        "culture_fit",
+      ];
+
+      const scores = fields.map((field) =>
+        Number(evaluation[field])
+      );
+
+      const valid = fields.every(
+        (field, index) =>
+          evaluation[field] !== null &&
+          evaluation[field] !== undefined &&
+          evaluation[field] !== "" &&
+          Number.isFinite(scores[index]) &&
+          scores[index] >= 1 &&
+          scores[index] <= 5
+      );
+
+      if (!valid) return groups;
+
+      if (!groups[interviewId]) {
+        groups[interviewId] = {
+          interviewId,
+          evaluators: new Map(),
+        };
+      }
+
+      groups[interviewId].evaluators.set(
+        evaluatorId,
+        scores.reduce((sum, score) => sum + score, 0) /
+          scores.length
+      );
+
+      return groups;
+    }, {})
+  )
+    .map((group) => {
+      const scores = [...group.evaluators.values()];
+
+      if (scores.length < 2) return null;
+
+      const scoreGap =
+        Math.max(...scores) - Math.min(...scores);
+
+      return {
+        interviewId: group.interviewId,
+        evaluatorCount: scores.length,
+        scoreGap,
+        alignment:
+          scoreGap <= 0.5
+            ? "High"
+            : scoreGap <= 1
+              ? "Moderate"
+              : "Low",
+      };
+    })
+    .filter(Boolean);
+
+  const alignmentSummary = {
+    total: interviewerAlignment.length,
+    high: interviewerAlignment.filter(
+      (item) => item.alignment === "High"
+    ).length,
+    moderate: interviewerAlignment.filter(
+      (item) => item.alignment === "Moderate"
+    ).length,
+    low: interviewerAlignment.filter(
+      (item) => item.alignment === "Low"
+    ).length,
+  };
+
   return (
     <div className="interviews-shell">
       <style>{`
