@@ -710,7 +710,7 @@ item.full_name,
   {saving ? "Saving..." : "Schedule Interview"}
 </button>
 
-
+            </div>
             {!loading && !applications.length && (
               <p style={{ color: "#64748b" }}>
                 No applications available for scheduling.
