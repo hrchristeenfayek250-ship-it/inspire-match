@@ -51,6 +51,7 @@ const [newInterviewDate, setNewInterviewDate] = useState("");
   const [evaluatingInterviewId, setEvaluatingInterviewId] = useState(null);
   const [savingEvaluation, setSavingEvaluation] = useState(false);
 
+ 
   const [evaluationForm, setEvaluationForm] = useState({
     technical_skills: "",
     communication_skills: "",
@@ -62,9 +63,18 @@ const [newInterviewDate, setNewInterviewDate] = useState("");
     recommendation: "",
   });
 
+  const [interviewDecisions, setInterviewDecisions] = useState([]);
+  const [decidingInterviewId, setDecidingInterviewId] = useState(null);
+  const [savingDecision, setSavingDecision] = useState(false);
+
+  const [decisionForm, setDecisionForm] = useState({
+    decision: "",
+    decision_reason: "",
+  });
 
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
+
 
   useEffect(() => {
     loadData();
