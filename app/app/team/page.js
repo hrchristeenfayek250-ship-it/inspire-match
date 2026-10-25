@@ -54,6 +54,9 @@ export default function TeamManagementPage() {
   const [invitations, setInvitations] = useState([]);
 
   const [inviteEmail, setInviteEmail] = useState("");
+  
+  const [inviteRole, setInviteRole] = useState("hr");
+
   const [inviting, setInviting] = useState(false);
   const [inviteLink, setInviteLink] = useState("");
 
