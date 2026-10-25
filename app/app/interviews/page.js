@@ -1164,7 +1164,9 @@ async function moveInterviewToPipeline(interview) {
       if (!reportByJob.has(jobId)) {
         reportByJob.set(jobId, {
           jobId,
-          jobTitle: jobs[jobId]?.title || "Unknown Job",
+        
+jobTitle: jobs[jobId] || "Unknown Job",
+
           total: 0,
           completed: 0,
           scheduled: 0,
