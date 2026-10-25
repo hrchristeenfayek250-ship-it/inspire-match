@@ -1636,6 +1636,171 @@ async function moveInterviewToPipeline(interview) {
 
       </section>
 
+<section
+  style={{
+    background: "#ffffff",
+    padding: 26,
+    borderRadius: 16,
+    border: "1px solid #e0e9e3",
+    marginBottom: 25,
+  }}
+>
+  <h2 style={{ color: "#183e32", marginTop: 0 }}>
+    Interviewer Alignment Analytics
+  </h2>
+
+  <p style={{ color: "#64748b", marginBottom: 24 }}>
+    Compare scoring consistency between different interviewers
+    evaluating the same interview.
+  </p>
+
+  <div
+    style={{
+      display: "grid",
+      gridTemplateColumns:
+        "repeat(auto-fit, minmax(min(100%, 190px), 1fr))",
+      gap: 16,
+    }}
+  >
+    {[
+      {
+        label: "Multi-Evaluator Interviews",
+        value: alignmentSummary.total,
+      },
+      {
+        label: "High Alignment",
+        value: alignmentSummary.high,
+      },
+      {
+        label: "Moderate Alignment",
+        value: alignmentSummary.moderate,
+      },
+      {
+        label: "Low Alignment",
+        value: alignmentSummary.low,
+      },
+    ].map((item) => (
+      <div
+        key={item.label}
+        style={{
+          padding: 20,
+          borderRadius: 14,
+          background: "#f6f9f7",
+          border: "1px solid #e0e9e3",
+        }}
+      >
+        <p
+          style={{
+            marginTop: 0,
+            color: "#64748b",
+            fontSize: 13,
+          }}
+        >
+          {item.label}
+        </p>
+
+        <strong
+          style={{
+            fontSize: 30,
+            color: "#315f50",
+          }}
+        >
+          {item.value}
+        </strong>
+      </div>
+    ))}
+  </div>
+
+  {interviewerAlignment.length === 0 ? (
+    <p
+      style={{
+        marginTop: 22,
+        color: "#64748b",
+      }}
+    >
+      No interviews with two or more valid evaluator scorecards yet.
+    </p>
+  ) : (
+    <div style={{ overflowX: "auto", marginTop: 24 }}>
+      <table
+        style={{
+          width: "100%",
+          borderCollapse: "collapse",
+          textAlign: "left",
+        }}
+      >
+        <thead>
+          <tr>
+            {[
+              "Interview",
+              "Evaluators",
+              "Score Gap",
+              "Alignment",
+            ].map((heading) => (
+              <th
+                key={heading}
+                style={{
+                  padding: 14,
+                  borderBottom: "1px solid #e0e9e3",
+                  color: "#315f50",
+                }}
+              >
+                {heading}
+              </th>
+            ))}
+          </tr>
+        </thead>
+
+        <tbody>
+          {interviewerAlignment.map((item) => (
+            <tr key={item.interviewId}>
+              <td style={{ padding: 14 }}>
+                {item.interviewId.slice(0, 8)}
+              </td>
+
+              <td style={{ padding: 14 }}>
+                {item.evaluatorCount}
+              </td>
+
+              <td style={{ padding: 14 }}>
+                {item.scoreGap.toFixed(2)} / 5
+              </td>
+
+              <td style={{ padding: 14 }}>
+                <strong
+                  style={{
+                    color:
+                      item.alignment === "High"
+                        ? "#26734d"
+                        : item.alignment === "Moderate"
+                          ? "#a06a17"
+                          : "#b54747",
+                  }}
+                >
+                  {item.alignment}
+                </strong>
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  )}
+
+  <p
+    style={{
+      marginTop: 18,
+      marginBottom: 0,
+      color: "#64748b",
+      fontSize: 12,
+    }}
+  >
+    Alignment is based on the difference between the highest
+    and lowest evaluator average scores. High: 0–0.5,
+    Moderate: above 0.5–1, Low: above 1 point.
+  </p>
+</section>
+
         <section
           style={{
             background: "#fff",
