@@ -100,7 +100,9 @@ export default function InterviewsPage() {
 
         supabase
           .from("candidates")
-          .select("id, name")
+         
+.select("id, full_name")
+
           .eq("company_id", cid),
 
         supabase
@@ -125,7 +127,9 @@ export default function InterviewsPage() {
         Object.fromEntries(
           (candidatesResult.data || []).map((item) => [
             item.id,
-            item.name,
+    
+item.full_name,
+
           ])
         )
       );
