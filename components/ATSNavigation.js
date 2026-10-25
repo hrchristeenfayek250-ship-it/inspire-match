@@ -10,6 +10,9 @@ export const ATS_NAVIGATION = [
   ["Candidates", "/app/candidates", "♙"],
   ["Recycle Bin", "/app/recycle-bin", "♻"],
   ["Pipeline", "/app/pipeline", "⇄"],
+  
+  ["Interviews", "/app/interviews", "▤"],
+
   ["AI Matching", "/app/matching", "✧"],
   ["Reports", "/app/reports", "▥"],
   ["Ask Inspire AI", "/app/ask-inspire", "✦"],
