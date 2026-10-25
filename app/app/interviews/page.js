@@ -983,6 +983,78 @@ async function moveInterviewToPipeline(interview) {
           </div>
         )}
 
+<section
+  style={{
+    background: "#ffffff",
+    padding: 26,
+    borderRadius: 16,
+    border: "1px solid #e0e9e3",
+    marginBottom: 25,
+  }}
+>
+  <div style={{ marginBottom: 22 }}>
+    <h2 style={{ margin: 0, color: "#183e32" }}>
+      Interview Analytics
+    </h2>
+    <p style={{ color: "#64748b", marginTop: 8 }}>
+      Real-time interview performance and hiring insights.
+    </p>
+  </div>
+
+  <div
+    style={{
+      display: "grid",
+      gridTemplateColumns:
+        "repeat(auto-fit, minmax(170px, 1fr))",
+      gap: 16,
+    }}
+  >
+    {[
+      ["Total Interviews", interviewAnalytics.total],
+      ["Completed", interviewAnalytics.completed],
+      ["Scheduled", interviewAnalytics.scheduled],
+      ["Cancelled", interviewAnalytics.cancelled],
+      ["No Shows", interviewAnalytics.noShow],
+      ["Completion Rate", `${interviewAnalytics.completionRate}%`],
+      ["Proceed Decisions", interviewAnalytics.proceed],
+      ["Hold Decisions", interviewAnalytics.hold],
+      ["Reject Decisions", interviewAnalytics.rejected],
+    ].map(([label, value]) => (
+      <div
+        key={label}
+        style={{
+          padding: 20,
+          borderRadius: 14,
+          background: "#f6f9f7",
+          border: "1px solid #e0e9e3",
+        }}
+      >
+        <p
+          style={{
+            margin: 0,
+            fontSize: 12,
+            color: "#64748b",
+            fontWeight: 600,
+          }}
+        >
+          {label}
+        </p>
+
+        <div
+          style={{
+            marginTop: 12,
+            fontSize: 29,
+            fontWeight: 800,
+            color: "#315f50",
+          }}
+        >
+          {value}
+        </div>
+      </div>
+    ))}
+  </div>
+</section>
+
         <section
           style={{
             background: "#fff",
