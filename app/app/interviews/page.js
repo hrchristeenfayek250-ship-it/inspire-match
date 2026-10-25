@@ -1337,6 +1337,118 @@ item.full_name,
                         );
                       })}
 
+                    {interview.status === "completed" && (
+                      <div
+                        style={{
+                          marginTop: 16,
+                          padding: 16,
+                          border: "1px solid #d8e5de",
+                          borderRadius: 10,
+                        }}
+                      >
+                        <h3>Final Hiring Decision</h3>
+
+                        {interviewDecisions
+                          .filter((item) => item.interview_id === interview.id)
+                          .map((item) => (
+                            <div key={item.id}>
+                              <p>
+                                <strong>Decision:</strong> {item.decision}
+                              </p>
+                              <p>
+                                <strong>Reason:</strong> {item.decision_reason}
+                              </p>
+                            </div>
+                          ))}
+
+                        <button
+                          type="button"
+                          onClick={() => {
+                            const saved = interviewDecisions.find(
+                              (item) => item.interview_id === interview.id
+                            );
+
+                            setDecidingInterviewId(interview.id);
+                            setDecisionForm({
+                              decision: saved?.decision ?? "",
+                              decision_reason: saved?.decision_reason ?? "",
+                            });
+                          }}
+                          style={{
+                            padding: "10px 16px",
+                            background: "#315f50",
+                            color: "#fff",
+                            border: 0,
+                            borderRadius: 9,
+                            cursor: "pointer",
+                          }}
+                        >
+                          {interviewDecisions.some(
+                            (item) => item.interview_id === interview.id
+                          )
+                            ? "Edit Final Decision"
+                            : "Add Final Decision"}
+                        </button>
+
+                        {decidingInterviewId === interview.id && (
+                          <div
+                            style={{
+                              display: "grid",
+                              gap: 12,
+                              marginTop: 14,
+                            }}
+                          >
+                            <select
+                              style={inputStyle}
+                              value={decisionForm.decision}
+                              onChange={(e) =>
+                                setDecisionForm((prev) => ({
+                                  ...prev,
+                                  decision: e.target.value,
+                                }))
+                              }
+                            >
+                              <option value="">Select Decision</option>
+                              <option value="Proceed">Proceed</option>
+                              <option value="Hold">Hold</option>
+                              <option value="Reject">Reject</option>
+                            </select>
+
+                            <textarea
+                              style={inputStyle}
+                              rows={4}
+                              placeholder="Reason for final decision"
+                              value={decisionForm.decision_reason}
+                              onChange={(e) =>
+                                setDecisionForm((prev) => ({
+                                  ...prev,
+                                  decision_reason: e.target.value,
+                                }))
+                              }
+                            />
+
+                            <button
+                              type="button"
+                              onClick={() => saveInterviewDecision(interview)}
+                              disabled={savingDecision}
+                              style={{
+                                padding: "10px 16px",
+                                background: "#315f50",
+                                color: "#fff",
+                                border: 0,
+                                borderRadius: 9,
+                                cursor: "pointer",
+                              }}
+                            >
+                              {savingDecision
+                                ? "Saving..."
+                                : "Save Final Decision"}
+                            </button>
+                          </div>
+                        )}
+                      </div>
+                    )}
+
                     {interview.status !== "cancelled" && (
                       <div style={{ marginTop: 16 }}>
                         <button
