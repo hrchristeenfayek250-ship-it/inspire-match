@@ -160,6 +160,7 @@ export async function POST(request) {
     }
 
    
+   
     const profile = {
       fullName: candidate.full_name || null,
       currentTitle: candidate.current_title || null,
@@ -168,7 +169,28 @@ export async function POST(request) {
       skills: candidate.skills || null,
       professionalSummary:
         candidate.professional_summary || null,
+
+      workExperience: Array.isArray(candidate.work_experience)
+        ? candidate.work_experience
+        : [],
+
+      education: Array.isArray(candidate.education)
+        ? candidate.education
+        : [],
+
+      certifications: Array.isArray(candidate.certifications)
+        ? candidate.certifications
+        : [],
+
+      projects: Array.isArray(candidate.projects)
+        ? candidate.projects
+        : [],
+
+      achievements: Array.isArray(candidate.achievements)
+        ? candidate.achievements
+        : [],
     };
+
 
 
     if (
