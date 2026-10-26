@@ -314,9 +314,18 @@ if (uploadError) {
           linkedin_url:
             form.linkedinUrl.trim() || null,
           skills: form.skills.trim() || null,
+          
           professional_summary:
             form.summary.trim() || null,
+
+          work_experience: parsedDetails.workExperience,
+          education: parsedDetails.education,
+          certifications: parsedDetails.certifications,
+          projects: parsedDetails.projects,
+          achievements: parsedDetails.achievements,
+
           cv_file_name: file.name,
+
           
 cv_file_url: filePath,
 
