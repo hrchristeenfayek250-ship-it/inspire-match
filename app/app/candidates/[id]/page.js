@@ -49,15 +49,27 @@ export default function CandidateProfilePage() {
   const params = useParams();
   const candidateId = params?.id;
 
+ 
   const [candidate, setCandidate] = useState(null);
   const [openingCV, setOpeningCV] = useState(false);
-  
-const [isEditing, setIsEditing] = useState(false);
-  
-const [editForm, setEditForm] = useState({});
-  
-const [savingProfile, setSavingProfile] = useState(false);
+
+  const [isEditing, setIsEditing] = useState(false);
+  const [editForm, setEditForm] = useState({});
+  const [savingProfile, setSavingProfile] = useState(false);
   const [deletingCandidate, setDeletingCandidate] = useState(false);
+
+  // AI CANDIDATE INTELLIGENCE
+  const [candidateIntelligence, setCandidateIntelligence] =
+    useState(null);
+
+  const [intelligenceLoading, setIntelligenceLoading] =
+    useState(false);
+
+  const [intelligenceError, setIntelligenceError] =
+    useState("");
+
+  const [intelligenceGeneratedAt, setIntelligenceGeneratedAt] =
+    useState(null);
 
 
 
