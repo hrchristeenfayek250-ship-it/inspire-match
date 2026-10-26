@@ -3017,9 +3017,207 @@ value: monthlyCandidates.length,
     of zero hires. Estimates have not yet been calibrated or
     validated against actual hiring outcomes.
   </p>
+
+  <div style={{
+    marginTop: 30,
+    paddingTop: 26,
+    borderTop: "1px solid #e4eee9",
+  }}>
+    <div style={{ marginBottom: 22 }}>
+      <div style={{
+        fontSize: 11,
+        fontWeight: 800,
+        letterSpacing: 2,
+        color: "#3b9470",
+        marginBottom: 8,
+      }}>
+        PREDICTIVE OPERATIONS INTELLIGENCE
+      </div>
+
+      <h3 style={{
+        fontSize: 22,
+        color: "#173e32",
+        margin: "0 0 8px",
+      }}>
+        Hiring Delay Risk & Forecast Confidence
+      </h3>
+
+      <p style={{
+        fontSize: 12,
+        lineHeight: 1.8,
+        color: "#71877b",
+        margin: 0,
+      }}>
+        Identify recruitment bottlenecks, prioritize hiring
+        actions, and assess the historical data supporting
+        each statistical forecast.
+      </p>
+    </div>
+
+    <div style={{
+      display: "grid",
+      gridTemplateColumns: "repeat(auto-fit, minmax(150px, 1fr))",
+      gap: 12,
+      marginBottom: 22,
+    }}>
+      {[
+        ["Critical Risk", hiringDelayRiskAnalytics.critical, "#a63d32", "#fff0ed"],
+        ["High Risk", hiringDelayRiskAnalytics.high, "#a56820", "#fff4e6"],
+        ["Moderate Risk", hiringDelayRiskAnalytics.moderate, "#927224", "#fff9e7"],
+        ["Low Risk", hiringDelayRiskAnalytics.low, "#267453", "#eaf5ee"],
+        ["High Data Support", hiringForecastConfidence.high, "#267453", "#eaf5ee"],
+        ["Insufficient Data", hiringForecastConfidence.insufficient, "#a56820", "#fff4e6"],
+      ].map(([label, value, color, background]) => (
+        <div key={label} style={{
+          padding: 17,
+          borderRadius: 15,
+          background,
+        }}>
+          <div style={{
+            fontSize: 12,
+            fontWeight: 700,
+            color,
+            marginBottom: 9,
+          }}>
+            {label}
+          </div>
+
+          <strong style={{
+            fontSize: 27,
+            fontWeight: 800,
+            color,
+          }}>
+            {loading ? "—" : value}
+          </strong>
+        </div>
+      ))}
+    </div>
+
+    <div style={{ overflowX: "auto" }}>
+      <table style={{
+        width: "100%",
+        minWidth: 1050,
+        borderCollapse: "collapse",
+        textAlign: "left",
+        fontSize: 12,
+      }}>
+        <thead>
+          <tr style={{
+            background: "#edf5f0",
+            color: "#245a43",
+          }}>
+            {[
+              "Job",
+              "Age (Days)",
+              "Pipeline",
+              "Risk Score",
+              "Risk Level",
+              "Data Support",
+              "Recommended Action",
+            ].map((heading) => (
+              <th key={heading} style={{
+                padding: 13,
+                fontWeight: 800,
+              }}>
+                {heading}
+              </th>
+            ))}
+          </tr>
+        </thead>
+
+        <tbody>
+          {!loading && hiringDelayRiskAnalytics.jobs.length === 0 ? (
+            <tr>
+              <td colSpan={7} style={{
+                padding: 25,
+                textAlign: "center",
+                color: "#71877b",
+              }}>
+                No open jobs available.
+              </td>
+            </tr>
+          ) : (
+            hiringDelayRiskAnalytics.jobs.map((job) => {
+              const confidence = hiringForecastConfidence.jobs.find(
+                (item) => String(item.jobId) === String(job.jobId)
+              );
+
+              const riskColor =
+                job.riskLevel === "Critical" ? "#a63d32" :
+                job.riskLevel === "High" ? "#a56820" :
+                job.riskLevel === "Moderate" ? "#927224" :
+                "#267453";
+
+              return (
+                <tr key={job.jobId} style={{
+                  borderBottom: "1px solid #e7efe9",
+                }}>
+                  <td style={{
+                    padding: 13,
+                    fontWeight: 800,
+                    color: "#245a43",
+                  }}>
+                    {job.jobTitle}
+                  </td>
+
+                  <td style={{ padding: 13 }}>
+                    {job.ageDays ?? "N/A"}
+                  </td>
+
+                  <td style={{ padding: 13 }}>
+                    {job.openPipeline}
+                  </td>
+
+                  <td style={{
+                    padding: 13,
+                    fontWeight: 800,
+                  }}>
+                    {job.riskScore}/100
+                  </td>
+
+                  <td style={{
+                    padding: 13,
+                    fontWeight: 800,
+                    color: riskColor,
+                  }}>
+                    {job.riskLevel}
+                  </td>
+
+                  <td style={{ padding: 13 }}>
+                    {confidence?.confidenceLevel || "N/A"}
+                  </td>
+
+                  <td style={{
+                    padding: 13,
+                    color: "#627c6f",
+                  }}>
+                    {job.recommendedAction}
+                  </td>
+                </tr>
+              );
+            })
+          )}
+        </tbody>
+      </table>
+    </div>
+
+    <p style={{
+      marginTop: 16,
+      fontSize: 11,
+      lineHeight: 1.8,
+      color: "#819388",
+    }}>
+      Risk scores are rule-based operational indicators, not
+      probabilities of delay. Data support levels reflect
+      historical sample sizes, not validated prediction
+      accuracy. Paused jobs may receive risk scores even
+      when recruitment is intentionally on hold.
+    </p>
+  </div>
 </section>
 
 <section
+
 
 
   className="ir-panel"
