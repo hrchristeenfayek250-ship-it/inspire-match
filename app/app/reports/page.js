@@ -324,6 +324,7 @@ const timeToHire = averageDays(
   "hired_at"
 );
 
+
 const timeToFill = averageDays(
   jobs.filter(job =>
     job.filled_at?.startsWith(month)
@@ -332,13 +333,86 @@ const timeToFill = averageDays(
   "filled_at"
 );
 
-  
+// OPEN REQUISITIONS & AGING ANALYTICS
+const openRequisitionsAnalytics = (() => {
+  const now = Date.now();
+
+  const openJobs = jobs
+    .filter((job) => {
+      const status = String(job.status || "Active")
+        .trim()
+        .toLowerCase();
+
+      return status === "active" || status === "paused";
+    })
+    .map((job) => {
+      const createdTime = new Date(job.created_at).getTime();
+
+      const validDate =
+        Boolean(job.created_at) &&
+        Number.isFinite(createdTime) &&
+        createdTime <= now;
+
+      const agingDays = validDate
+        ? Math.floor((now - createdTime) / 86400000)
+        : null;
+
+      return {
+        id: job.id,
+        title: job.title || "Untitled Job",
+        status: job.status || "Active",
+        createdAt: job.created_at,
+        agingDays,
+        agingBand:
+          agingDays === null
+            ? "Unknown"
+            : agingDays <= 15
+            ? "0–15 Days"
+            : agingDays <= 30
+            ? "16–30 Days"
+            : agingDays <= 60
+            ? "31–60 Days"
+            : "60+ Days",
+      };
+    })
+    .sort(
+      (a, b) =>
+        (b.agingDays ?? -1) - (a.agingDays ?? -1)
+    );
+
+  const validAges = openJobs
+    .map((job) => job.agingDays)
+    .filter((days) => days !== null);
+
+  return {
+    jobs: openJobs,
+    totalOpen: openJobs.length,
+    active: openJobs.filter(
+      (job) => String(job.status).toLowerCase() === "active"
+    ).length,
+    paused: openJobs.filter(
+      (job) => String(job.status).toLowerCase() === "paused"
+    ).length,
+    over30Days: validAges.filter((days) => days > 30).length,
+    over60Days: validAges.filter((days) => days > 60).length,
+    unknownAge: openJobs.length - validAges.length,
+    averageAge:
+      validAges.length > 0
+        ? (
+            validAges.reduce((sum, days) => sum + days, 0) /
+            validAges.length
+          ).toFixed(1)
+        : "N/A",
+  };
+})();
+
 const stageSLA = {
   Applied: 3,
   Screening: 5,
   Interview: 7,
   Shortlisted: 5,
 };
+
 
 
 
