@@ -1037,9 +1037,7 @@ const hiringForecastStatistics = (() => {
       return [
         item.from,
         {
-          rate: sufficientData
-            ? Number(item.rate) / 100
-            : null,
+          
           sampleSize: item.total,
           sufficientData,
         },
