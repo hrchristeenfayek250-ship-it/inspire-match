@@ -58,6 +58,15 @@ export default function UploadCandidatePage() {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   const [consent, setConsent] = useState(false);
+  
+  const [parsedDetails, setParsedDetails] = useState({
+    workExperience: [],
+    education: [],
+    certifications: [],
+    projects: [],
+    achievements: [],
+  });
+
 
   
   /* AI CANDIDATE PROFILE COMPLETENESS */
@@ -167,6 +176,25 @@ export default function UploadCandidatePage() {
       }
 
       const candidate = result.candidate || {};
+      
+      setParsedDetails({
+        workExperience: Array.isArray(candidate.workExperience)
+          ? candidate.workExperience
+          : [],
+        education: Array.isArray(candidate.education)
+          ? candidate.education
+          : [],
+        certifications: Array.isArray(candidate.certifications)
+          ? candidate.certifications
+          : [],
+        projects: Array.isArray(candidate.projects)
+          ? candidate.projects
+          : [],
+        achievements: Array.isArray(candidate.achievements)
+          ? candidate.achievements
+          : [],
+      });
+
 
       setForm({
         name: candidate.name || "",
