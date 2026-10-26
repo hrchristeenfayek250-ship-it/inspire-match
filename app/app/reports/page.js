@@ -1124,6 +1124,85 @@ const hiringForecastStatistics = (() => {
   };
 })();
 
+/* FORECAST CONFIDENCE — DATA SUFFICIENCY */
+
+const hiringForecastConfidence = (() => {
+  const stageSamples = Object.fromEntries(
+    stageConversion.map((item) => [
+      item.from,
+      {
+        sampleSize: item.total,
+        rateAvailable: item.rate !== null,
+      },
+    ])
+  );
+
+  const stageNames = [
+    "Applied",
+    "Screening",
+    "Interview",
+    "Shortlisted",
+  ];
+
+  const jobs = hiringForecastStatistics.jobs.map((job) => {
+    const pipelineJob = pipelineCoverageAnalytics.jobs.find(
+      (item) => String(item.id) === String(job.jobId)
+    );
+
+    const requiredStages = stageNames.filter(
+      (stage) => (pipelineJob?.stageCounts?.[stage] || 0) > 0
+    );
+
+    const requiredSamples = requiredStages.flatMap((stage) => {
+      const startIndex = stageNames.indexOf(stage);
+      return stageNames.slice(startIndex).map(
+        (requiredStage) =>
+          stageSamples[requiredStage]?.sampleSize || 0
+      );
+    });
+
+    const minimumObservedSample = requiredSamples.length
+      ? Math.min(...requiredSamples)
+      : null;
+
+    const confidenceLevel =
+      job.expectedHires === null
+        ? "Insufficient Data"
+        : minimumObservedSample === null
+        ? "Not Applicable"
+        : minimumObservedSample >= 100
+        ? "High Data Support"
+        : minimumObservedSample >= 30
+        ? "Moderate Data Support"
+        : "Limited Data Support";
+
+    return {
+      ...job,
+      minimumObservedSample,
+      confidenceLevel,
+    };
+  });
+
+  return {
+    jobs,
+    high: jobs.filter(
+      (job) => job.confidenceLevel === "High Data Support"
+    ).length,
+    moderate: jobs.filter(
+      (job) => job.confidenceLevel === "Moderate Data Support"
+    ).length,
+    limited: jobs.filter(
+      (job) => job.confidenceLevel === "Limited Data Support"
+    ).length,
+    insufficient: jobs.filter(
+      (job) => job.confidenceLevel === "Insufficient Data"
+    ).length,
+    notApplicable: jobs.filter(
+      (job) => job.confidenceLevel === "Not Applicable"
+    ).length,
+  };
+})();
+
 
   
 const bottleneckAnalysis = Object.keys(stageSLA).map(stage => {
