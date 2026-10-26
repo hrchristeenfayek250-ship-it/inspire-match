@@ -157,12 +157,17 @@ export async function POST(request) {
       });
     }
 
+   
     const profile = {
-      currentTitle: candidate.current_title,
-      yearsExperience: candidate.years_experience,
-      skills: candidate.skills,
-      professionalSummary: candidate.professional_summary,
+      fullName: candidate.full_name || null,
+      currentTitle: candidate.current_title || null,
+      yearsExperience: candidate.years_experience ?? null,
+      location: candidate.location || null,
+      skills: candidate.skills || null,
+      professionalSummary:
+        candidate.professional_summary || null,
     };
+
 
     if (
       !profile.currentTitle &&
