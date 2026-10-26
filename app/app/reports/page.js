@@ -147,7 +147,30 @@ const [error, setError] = useState("");
       }
 
 
-    
+      const applicationData = [];
+      let applicationError = null;
+      let applicationOffset = 0;
+
+      while (true) {
+        const { data: batch, error: batchError } = await supabase
+          .from("applications")
+          .select("id, candidate_id, job_id, stage")
+          .eq("company_id", companyId)
+          .order("id", { ascending: true })
+          .range(applicationOffset, applicationOffset + pageSize - 1);
+
+        if (batchError) {
+          applicationError = batchError;
+          break;
+        }
+
+        applicationData.push(...(batch || []));
+
+        if (!batch || batch.length < pageSize) break;
+
+        applicationOffset += pageSize;
+      }
+
       const candidateIds = data.map(c => c.id);
 
       const historyData = [];
