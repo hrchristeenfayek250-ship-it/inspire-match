@@ -240,6 +240,20 @@ Rules:
 - Identify missing employment dates, achievements, tools,
   qualifications, or project details only when relevant.
 - Ask practical, role-relevant verification questions.
+
+- Analyze workExperience to identify documented career progression,
+  responsibilities, domain exposure, and employment history.
+- Use education and certifications to describe documented
+  qualifications without assuming proficiency.
+- Analyze projects to identify explicitly stated technologies,
+  responsibilities, and outcomes.
+- Use achievements only when supported by specific CV evidence.
+- Distinguish documented experience from self-reported skills.
+- Highlight career patterns without inventing performance claims.
+- When dates or responsibilities are missing, identify the
+  information gap rather than guessing.
+- Keep the analysis professional, factual, and evidence-based.
+
 - Do not infer protected personal characteristics.
 - Do not assign hiring scores or suitability verdicts.
 - Do not make hiring decisions.
