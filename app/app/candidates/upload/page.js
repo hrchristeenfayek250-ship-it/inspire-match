@@ -424,6 +424,7 @@ if (saveError) {
             border: "1px solid #dce6df",
             marginTop: 22,
           }}>
+            
             <h2>2. Review AI-Extracted Profile</h2>
 
             <p style={{ color: "#68766e" }}>
@@ -431,7 +432,148 @@ if (saveError) {
               information before saving.
             </p>
 
+            {/* CANDIDATE PROFILE COMPLETENESS DASHBOARD */}
             <div style={{
+              padding: 22,
+              marginTop: 22,
+              marginBottom: 24,
+              background: "#f3f9f5",
+              border: "1px solid #d8e9df",
+              borderRadius: 16,
+            }}>
+              <div style={{
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+                flexWrap: "wrap",
+                gap: 12,
+              }}>
+                <div>
+                  <div style={{
+                    fontSize: 11,
+                    fontWeight: 800,
+                    letterSpacing: 1.5,
+                    color: "#3b9470",
+                  }}>
+                    AI CANDIDATE INTELLIGENCE
+                  </div>
+
+                  <h3 style={{
+                    margin: "8px 0 5px",
+                    fontSize: 19,
+                    color: "#173e32",
+                  }}>
+                    Profile Completeness
+                  </h3>
+
+                  <span style={{
+                    fontSize: 12,
+                    color: "#71877b",
+                  }}>
+                    {profileCompleteness.completedFields} of{" "}
+                    {profileCompleteness.totalFields} fields completed
+                  </span>
+                </div>
+
+                <div style={{ textAlign: "right" }}>
+                  <strong style={{
+                    fontSize: 36,
+                    color:
+                      profileCompleteness.score >= 90
+                        ? "#267453"
+                        : profileCompleteness.score >= 70
+                        ? "#3b9470"
+                        : "#b77928",
+                  }}>
+                    {profileCompleteness.score}%
+                  </strong>
+
+                  <div style={{
+                    fontSize: 12,
+                    fontWeight: 800,
+                    color: "#627c6f",
+                  }}>
+                    {profileCompleteness.status}
+                  </div>
+                </div>
+              </div>
+
+              <div style={{
+                height: 11,
+                background: "#dceae1",
+                borderRadius: 20,
+                overflow: "hidden",
+                marginTop: 20,
+              }}>
+                <div style={{
+                  width: `${profileCompleteness.score}%`,
+                  height: "100%",
+                  borderRadius: 20,
+                  background:
+                    profileCompleteness.score >= 70
+                      ? "#2c9368"
+                      : "#d6a14d",
+                  transition: "width 0.25s ease",
+                }} />
+              </div>
+
+              {profileCompleteness.missingFields.length > 0 ? (
+                <div style={{ marginTop: 20 }}>
+                  <div style={{
+                    fontSize: 12,
+                    fontWeight: 800,
+                    color: "#9a6728",
+                    marginBottom: 10,
+                  }}>
+                    Missing Information
+                  </div>
+
+                  <div style={{
+                    display: "flex",
+                    gap: 8,
+                    flexWrap: "wrap",
+                  }}>
+                    {profileCompleteness.missingFields.map(
+                      (field) => (
+                        <span key={field.key} style={{
+                          padding: "7px 11px",
+                          borderRadius: 20,
+                          background: "#fff3df",
+                          color: "#94611f",
+                          fontSize: 11,
+                          fontWeight: 700,
+                        }}>
+                          {field.label}
+                        </span>
+                      )
+                    )}
+                  </div>
+                </div>
+              ) : (
+                <p style={{
+                  marginTop: 16,
+                  color: "#267453",
+                  fontWeight: 700,
+                  fontSize: 13,
+                }}>
+                  All profile fields are completed.
+                </p>
+              )}
+
+              <p style={{
+                margin: "18px 0 0",
+                fontSize: 11,
+                color: "#819388",
+                lineHeight: 1.7,
+              }}>
+                Completeness measures filled profile fields,
+                not candidate quality or job suitability.
+                Verify AI-extracted information before saving.
+              </p>
+            </div>
+
+            <div style={{
+
               display: "grid",
               gridTemplateColumns:
                 "repeat(auto-fit, minmax(230px, 1fr))",
