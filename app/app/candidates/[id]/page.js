@@ -1588,20 +1588,7 @@ company_id: candidate.company_id,
                 </div>
               ))}
 
-              <button
-                type="button"
-                disabled={intelligenceLoading}
-                onClick={() => generateCandidateIntelligence(true)}
-                style={{
-                  ...buttonStyle,
-                  marginTop: 12,
-                  border: "1px solid #245C4A",
-                  color: "#245C4A",
-                  fontWeight: 700,
-                }}
-              >
-                ↻ Regenerate Analysis
-              </button>
+            
 
               <p
                 style={{
