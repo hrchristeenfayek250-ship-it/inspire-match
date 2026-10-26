@@ -1,5 +1,8 @@
 
 import { createClient } from "@supabase/supabase-js";
+
+import { createHash } from "node:crypto";
+
 import { askClaude } from "@/lib/claude";
 
 export const runtime = "nodejs";
@@ -187,6 +190,11 @@ export async function POST(request) {
         : [],
 
       achievements: Array.isArray(candidate.achievements)
+        
+    const profileHash = createHash("sha256")
+      .update(JSON.stringify(profile))
+      .digest("hex");
+
         ? candidate.achievements
         : [],
     };
