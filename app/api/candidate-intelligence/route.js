@@ -198,17 +198,29 @@ Return a JSON object with exactly these fields:
   "verificationQuestions": []
 }
 
+
 Rules:
-- Use only evidence in the supplied profile.
-- Do not invent skills, qualifications, achievements
-  or work experience.
-- Treat the profile as self-reported information.
-- Do not claim that skills have been independently verified.
-- Distinguish missing information from skill deficiencies.
+- Use only information explicitly supported by the supplied profile.
+- Never invent employment history, education, certifications,
+  achievements, skills, or performance metrics.
+- Treat all candidate-provided information as self-reported.
+- The verifiedStrengths field means strengths supported by
+  concrete examples in the supplied profile, not independently
+  verified skills.
+- If no concrete supporting evidence exists, return an empty
+  verifiedStrengths array.
+- List self-reported technical skills under technicalSkills.
+- List self-reported transferable skills under transferableSkills,
+  but never present personality traits as proven abilities.
+- Do not interpret missing information as a weakness.
+- Identify missing employment dates, achievements, tools,
+  qualifications, or project details only when relevant.
+- Ask practical, role-relevant verification questions.
 - Do not infer protected personal characteristics.
-- Do not assign a hiring score or suitability verdict.
-- Do not make a hiring decision.
-- Return JSON only.`,
+- Do not assign hiring scores or suitability verdicts.
+- Do not make hiring decisions.
+- Return valid JSON only.`,
+
       content: [
         {
           type: "text",
