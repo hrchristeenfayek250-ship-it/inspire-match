@@ -526,6 +526,7 @@ const openRequisitionsAnalytics = (() => {
   };
 })();
 
+
 const stageSLA = {
   Applied: 3,
   Screening: 5,
@@ -533,14 +534,40 @@ const stageSLA = {
   Shortlisted: 5,
 };
 
+function classifySLARisk(daysInStage, slaDays) {
+  const delay = daysInStage - slaDays;
 
+  if (delay > 7) {
+    return {
+      level: "Critical",
+      priority: 1,
+      action: "Immediate review and escalation required",
+    };
+  }
 
+  if (delay > 0) {
+    return {
+      level: "High",
+      priority: 2,
+      action: "Prioritize candidate follow-up",
+    };
+  }
 
-const latestStageEntryByCandidate = new Map();
+  if (slaDays - daysInStage <= 1) {
+    return {
+      level: "At Risk",
+      priority: 3,
+      action: "Review before the SLA deadline",
+    };
+  }
 
-stageHistory.forEach(transition => {
-  const id = String(transition.candidate_id || "");
-  const stage = String(transition.to_stage || "")
+  return {
+    level: "On Track",
+    priority: 4,
+    action: "Continue regular monitoring",
+  };
+}
+
     .trim()
     .toLowerCase();
 
