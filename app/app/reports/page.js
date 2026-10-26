@@ -1748,9 +1748,11 @@ value: monthlyCandidates.length,
   )}
 </section>
 
+</section>
 
+<section
   className="ir-panel"
-  style={{
+
     marginBottom: 28,
     padding: 28,
     borderRadius: 22,
