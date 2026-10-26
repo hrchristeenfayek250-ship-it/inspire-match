@@ -1519,17 +1519,104 @@ company_id: candidate.company_id,
             </p>
           )}
 
+         
           {candidateIntelligence && (
-            <p
-              style={{
-                color: "#245C4A",
-                marginTop: 15,
-                fontWeight: 700,
-              }}
-            >
-              AI Intelligence generated successfully.
-            </p>
+            <div style={{ marginTop: 24 }}>
+              <div
+                style={{
+                  padding: 16,
+                  background: "#E8F5EC",
+                  borderRadius: 12,
+                  color: "#245C4A",
+                  marginBottom: 18,
+                }}
+              >
+                <strong>✦ AI Intelligence Report</strong>
+                <p style={{ margin: "8px 0 0", fontSize: 12 }}>
+                  {intelligenceGeneratedAt
+                    ? `Generated: ${new Date(
+                        intelligenceGeneratedAt
+                      ).toLocaleString()}`
+                    : "Analysis completed"}
+                </p>
+              </div>
+
+              {[
+                ["Professional Overview", candidateIntelligence.professionalOverview],
+                ["Evidence-Based Strengths", candidateIntelligence.verifiedStrengths],
+                ["Technical Skills", candidateIntelligence.technicalSkills],
+                ["Transferable Skills", candidateIntelligence.transferableSkills],
+                ["Experience Insights", candidateIntelligence.experienceInsights],
+                ["Information Gaps", candidateIntelligence.informationGaps],
+                ["Verification Questions", candidateIntelligence.verificationQuestions],
+              ].map(([title, content]) => (
+                <div
+                  key={title}
+                  style={{
+                    background: "#FFFFFF",
+                    border: "1px solid #DCE9DF",
+                    borderRadius: 12,
+                    padding: 18,
+                    marginBottom: 12,
+                  }}
+                >
+                  <h3
+                    style={{
+                      color: "#173F3A",
+                      fontSize: 16,
+                      margin: "0 0 12px",
+                    }}
+                  >
+                    {title}
+                  </h3>
+
+                  {Array.isArray(content) ? (
+                    content.length ? (
+                      <ul style={{ paddingLeft: 22, lineHeight: 1.8 }}>
+                        {content.map((item, index) => (
+                          <li key={index}>{item}</li>
+                        ))}
+                      </ul>
+                    ) : (
+                      <p>No information available.</p>
+                    )
+                  ) : (
+                    <p style={{ lineHeight: 1.8 }}>
+                      {content || "No information available."}
+                    </p>
+                  )}
+                </div>
+              ))}
+
+              <button
+                type="button"
+                disabled={intelligenceLoading}
+                onClick={() => generateCandidateIntelligence(true)}
+                style={{
+                  ...buttonStyle,
+                  marginTop: 12,
+                  border: "1px solid #245C4A",
+                  color: "#245C4A",
+                  fontWeight: 700,
+                }}
+              >
+                ↻ Regenerate Analysis
+              </button>
+
+              <p
+                style={{
+                  fontSize: 11,
+                  color: "#71847A",
+                  marginTop: 15,
+                  lineHeight: 1.7,
+                }}
+              >
+                AI-generated insights are based on available
+                candidate information and require human verification.
+              </p>
+            </div>
           )}
+
         </section>
 
 
