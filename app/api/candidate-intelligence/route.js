@@ -83,7 +83,9 @@ export async function POST(request) {
       await supabase
         .from("candidates")
         .select(
-          "id, full_name, current_title, years_experience, skills, professional_summary, location, company_id, user_id"
+     
+          "id, full_name, current_title, years_experience, skills, professional_summary, location, company_id, user_id, work_experience, education, certifications, projects, achievements"
+
         )
         .eq("id", candidateId)
         .or(
