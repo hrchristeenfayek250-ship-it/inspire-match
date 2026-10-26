@@ -2601,9 +2601,261 @@ value: monthlyCandidates.length,
     not AI predictions. Candidates without a valid stage-entry
     date are excluded.
   </p>
+
+</section>
+
+{/* HIRING FORECAST & PREDICTIVE RECRUITMENT ANALYTICS */}
+<section
+  className="ir-panel"
+  style={{
+    marginBottom: 28,
+    padding: 28,
+    borderRadius: 22,
+    background: "#ffffff",
+    border: "1px solid #dce9e2",
+    boxShadow: "0 8px 30px rgba(20,65,49,0.06)",
+  }}
+>
+  <div style={{ marginBottom: 24 }}>
+    <div style={{
+      fontSize: 11,
+      fontWeight: 800,
+      letterSpacing: 2,
+      color: "#3b9470",
+      marginBottom: 9,
+    }}>
+      WORKFORCE PLANNING INTELLIGENCE
+    </div>
+
+    <h2 style={{
+      fontSize: 26,
+      fontWeight: 800,
+      color: "#173e32",
+      margin: "0 0 9px",
+    }}>
+      Hiring Forecast & Recruitment Intelligence
+    </h2>
+
+    <p style={{
+      fontSize: 13,
+      lineHeight: 1.8,
+      color: "#71877b",
+      margin: 0,
+    }}>
+      Estimate hiring outcomes using historical stage conversion
+      rates and current recruitment pipelines. Identify jobs
+      requiring additional candidate sourcing.
+    </p>
+  </div>
+
+  <div style={{
+    display: "grid",
+    gridTemplateColumns: "repeat(auto-fit, minmax(160px, 1fr))",
+    gap: 14,
+    marginBottom: 28,
+  }}>
+    {[
+      {
+        label: "Open Jobs",
+        value: hiringForecastBaseline.totalOpenJobs,
+        color: "#174b38",
+        bg: "#eaf5ee",
+      },
+      {
+        label: "Forecastable Jobs",
+        value: hiringForecastStatistics.forecastableJobs,
+        color: "#267453",
+        bg: "#eaf7ef",
+      },
+      {
+        label: "Insufficient Data",
+        value: hiringForecastStatistics.insufficientDataJobs,
+        color: "#a56820",
+        bg: "#fff4e6",
+      },
+      {
+        label: "Expected Hires",
+        value: hiringForecastStatistics.jobs
+          .filter((job) => job.expectedHires !== null)
+          .reduce((sum, job) => sum + job.expectedHires, 0)
+          .toFixed(2),
+        color: "#235c8b",
+        bg: "#edf5ff",
+      },
+    ].map((metric) => (
+      <div key={metric.label} style={{
+        padding: 19,
+        borderRadius: 16,
+        background: metric.bg,
+      }}>
+        <div style={{
+          fontSize: 12,
+          fontWeight: 700,
+          color: metric.color,
+          marginBottom: 11,
+        }}>
+          {metric.label}
+        </div>
+
+        <strong style={{
+          fontSize: 28,
+          fontWeight: 800,
+          color: metric.color,
+        }}>
+          {loading ? "—" : metric.value}
+        </strong>
+      </div>
+    ))}
+  </div>
+
+  <div style={{
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "space-between",
+    gap: 12,
+    flexWrap: "wrap",
+    marginBottom: 16,
+  }}>
+    <h3 style={{
+      margin: 0,
+      fontSize: 17,
+      color: "#174b38",
+    }}>
+      Hiring Outlook by Job
+    </h3>
+
+    <span style={{
+      fontSize: 11,
+      fontWeight: 700,
+      color: "#71877b",
+    }}>
+      Statistical Model · Historical Conversion
+    </span>
+  </div>
+
+  <div style={{ overflowX: "auto" }}>
+    <table style={{
+      width: "100%",
+      minWidth: 900,
+      borderCollapse: "collapse",
+      textAlign: "left",
+      fontSize: 12,
+    }}>
+      <thead>
+        <tr style={{
+          background: "#edf5f0",
+          color: "#245a43",
+        }}>
+          {[
+            "Job",
+            "Open Pipeline",
+            "Advanced Candidates",
+            "Expected Hires",
+            "Forecast Status",
+            "Operational Risk",
+          ].map((heading) => (
+            <th key={heading} style={{
+              padding: "15px 13px",
+              fontWeight: 800,
+            }}>
+              {heading}
+            </th>
+          ))}
+        </tr>
+      </thead>
+
+      <tbody>
+        {!loading && hiringForecastStatistics.jobs.length === 0 ? (
+          <tr>
+            <td colSpan={6} style={{
+              padding: 26,
+              textAlign: "center",
+              color: "#819388",
+            }}>
+              No open jobs available for forecasting.
+            </td>
+          </tr>
+        ) : (
+          hiringForecastStatistics.jobs.map((job) => {
+            const baseline = hiringForecastBaseline.jobs.find(
+              (item) => String(item.jobId) === String(job.jobId)
+            );
+
+            const risk = baseline?.operationalRisk || "Monitor";
+
+            const riskColor =
+              risk === "Critical" ? "#a63d32" :
+              risk === "High" ? "#a56820" :
+              "#267453";
+
+            return (
+              <tr key={job.jobId} style={{
+                borderBottom: "1px solid #e7efe9",
+              }}>
+                <td style={{
+                  padding: 14,
+                  fontWeight: 800,
+                  color: "#245a43",
+                }}>
+                  {job.jobTitle}
+                </td>
+
+                <td style={{ padding: 14 }}>
+                  {job.activePipeline}
+                </td>
+
+                <td style={{ padding: 14 }}>
+                  {baseline?.advancedPipeline ?? 0}
+                </td>
+
+                <td style={{
+                  padding: 14,
+                  fontWeight: 800,
+                  color: "#235c8b",
+                }}>
+                  {job.expectedHires === null
+                    ? "N/A"
+                    : job.expectedHires.toFixed(2)}
+                </td>
+
+                <td style={{
+                  padding: 14,
+                  color: "#627c6f",
+                }}>
+                  {job.forecastStatus}
+                </td>
+
+                <td style={{ padding: 14 }}>
+                  <strong style={{ color: riskColor }}>
+                    {risk}
+                  </strong>
+                </td>
+              </tr>
+            );
+          })
+        )}
+      </tbody>
+    </table>
+  </div>
+
+  <p style={{
+    marginTop: 18,
+    fontSize: 12,
+    lineHeight: 1.8,
+    color: "#71877b",
+  }}>
+    Expected hires are statistical estimates based on observed
+    historical stage transitions, not AI-generated predictions.
+    The minimum historical sample is 10 candidates per required
+    stage. Jobs with insufficient data are excluded from the
+    expected-hires total. A displayed zero is not a guarantee
+    of zero hires. Estimates have not yet been calibrated or
+    validated against actual hiring outcomes.
+  </p>
 </section>
 
 <section
+
 
   className="ir-panel"
   style={{
