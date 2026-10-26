@@ -189,15 +189,15 @@ export async function POST(request) {
         ? candidate.projects
         : [],
 
+    
       achievements: Array.isArray(candidate.achievements)
-        
-    const profileHash = createHash("sha256")
-      .update(JSON.stringify(profile))
-      .digest("hex");
-
         ? candidate.achievements
         : [],
     };
+
+    const profileHash = createHash("sha256")
+      .update(JSON.stringify(profile))
+      .digest("hex");
 
 
 
