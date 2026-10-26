@@ -156,12 +156,103 @@ Rules:
       maxTokens: 2200,
     });
 
+   
+    if (!candidate.company_id) {
+      return Response.json(
+        {
+          error:
+            "Candidate must belong to a company before intelligence can be saved.",
+        },
+        { status: 422 }
+      );
+    }
+
+    const asArray = (value) =>
+      Array.isArray(value)
+        ? value.filter(
+            (item) => typeof item === "string"
+          )
+        : [];
+
+    const generatedAt = new Date().toISOString();
+
+    const intelligenceRecord = {
+      company_id: companyId,
+      candidate_id: candidate.id,
+      generated_by: authData.user.id,
+      professional_overview:
+        typeof intelligence.professionalOverview === "string"
+          ? intelligence.professionalOverview
+          : null,
+      verified_strengths: asArray(
+        intelligence.verifiedStrengths
+      ),
+      technical_skills: asArray(
+        intelligence.technicalSkills
+      ),
+      transferable_skills: asArray(
+        intelligence.transferableSkills
+      ),
+      experience_insights: asArray(
+        intelligence.experienceInsights
+      ),
+      information_gaps: asArray(
+        intelligence.informationGaps
+      ),
+      verification_questions: asArray(
+        intelligence.verificationQuestions
+      ),
+      generated_at: generatedAt,
+      updated_at: generatedAt,
+    };
+
+    const { data: savedResult, error: saveError } =
+      await supabase
+        .from("candidate_intelligence_results")
+        .upsert(intelligenceRecord, {
+          onConflict: "company_id,candidate_id",
+        })
+        .select("*")
+        .single();
+
+    if (saveError) {
+      console.error(
+        "Candidate intelligence save failed:",
+        saveError.message
+      );
+
+      return Response.json(
+        {
+          error:
+            "AI analysis completed, but saving the result failed.",
+        },
+        { status: 500 }
+      );
+    }
+
     return Response.json({
       success: true,
       candidateId: candidate.id,
-      intelligence,
-      generatedAt: new Date().toISOString(),
+      intelligence: {
+        professionalOverview:
+          savedResult.professional_overview,
+        verifiedStrengths:
+          savedResult.verified_strengths,
+        technicalSkills:
+          savedResult.technical_skills,
+        transferableSkills:
+          savedResult.transferable_skills,
+        experienceInsights:
+          savedResult.experience_insights,
+        informationGaps:
+          savedResult.information_gaps,
+        verificationQuestions:
+          savedResult.verification_questions,
+      },
+      generatedAt: savedResult.generated_at,
+      saved: true,
     });
+
   } catch (error) {
     console.error(
       "Candidate intelligence failed:",
