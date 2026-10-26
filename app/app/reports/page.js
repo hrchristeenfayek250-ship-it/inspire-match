@@ -2284,11 +2284,162 @@ value: monthlyCandidates.length,
       </table>
     </div>
   )}
+
 </section>
 
+{/* SLA RISK INTELLIGENCE DASHBOARD */}
+<section
+  className="ir-panel"
+  style={{
+    marginBottom: 28,
+    padding: 28,
+    borderRadius: 22,
+    background: "#ffffff",
+    border: "1px solid #dce9df",
+    boxShadow: "0 8px 30px rgba(20,65,49,0.05)",
+  }}
+>
+  <div style={{ marginBottom: 24 }}>
+    <div style={{
+      fontSize: 11,
+      fontWeight: 800,
+      letterSpacing: 2,
+      color: "#43836a",
+      marginBottom: 8,
+    }}>
+      RECRUITMENT RISK INTELLIGENCE
+    </div>
 
+    <h2 style={{ fontSize: 25, color: "#174b38", margin: "0 0 8px" }}>
+      SLA Risk & Priority Actions
+    </h2>
+
+    <p style={{ fontSize: 13, color: "#71877b", margin: 0 }}>
+      Prioritize candidate follow-ups based on stage waiting time
+      and predefined SLA thresholds.
+    </p>
+  </div>
+
+  <div style={{
+    display: "grid",
+    gridTemplateColumns: "repeat(auto-fit, minmax(145px, 1fr))",
+    gap: 12,
+    marginBottom: 24,
+  }}>
+    {[
+      ["Critical", slaRiskAnalytics.critical, "#a63d32", "#fff0ed"],
+      ["High", slaRiskAnalytics.high, "#a56820", "#fff4e6"],
+      ["At Risk", slaRiskAnalytics.atRisk, "#9b7a26", "#fff9e7"],
+      ["On Track", slaRiskAnalytics.onTrack, "#267453", "#eaf5ee"],
+    ].map(([label, value, color, background]) => (
+      <div key={label} style={{
+        background,
+        borderRadius: 15,
+        padding: 18,
+      }}>
+        <div style={{
+          fontSize: 12,
+          fontWeight: 700,
+          color,
+          marginBottom: 10,
+        }}>
+          {label}
+        </div>
+        <strong style={{ fontSize: 29, color }}>
+          {loading ? "—" : value}
+        </strong>
+      </div>
+    ))}
+  </div>
+
+  <div style={{ overflowX: "auto" }}>
+    <table style={{
+      width: "100%",
+      minWidth: 850,
+      borderCollapse: "collapse",
+      textAlign: "left",
+      fontSize: 12,
+    }}>
+      <thead>
+        <tr style={{ background: "#edf5f0", color: "#245a43" }}>
+          {[
+            "Candidate",
+            "Stage",
+            "Days in Stage",
+            "SLA",
+            "Overdue Days",
+            "Risk Level",
+            "Recommended Action",
+          ].map((heading) => (
+            <th key={heading} style={{ padding: 13 }}>
+              {heading}
+            </th>
+          ))}
+        </tr>
+      </thead>
+      <tbody>
+        {!loading && slaRiskAnalytics.candidates.length === 0 ? (
+          <tr>
+            <td colSpan={7} style={{
+              padding: 24,
+              textAlign: "center",
+              color: "#71877b",
+            }}>
+              No candidate stage-aging data available.
+            </td>
+          </tr>
+        ) : (
+          slaRiskAnalytics.candidates.map((candidate) => {
+            const riskColor =
+              candidate.riskLevel === "Critical" ? "#a63d32" :
+              candidate.riskLevel === "High" ? "#a56820" :
+              candidate.riskLevel === "At Risk" ? "#9b7a26" :
+              "#267453";
+
+            return (
+              <tr key={candidate.id} style={{
+                borderBottom: "1px solid #e7efe9",
+              }}>
+                <td style={{
+                  padding: 13,
+                  fontWeight: 700,
+                  color: "#245a43",
+                }}>
+                  {candidate.full_name || "Unnamed Candidate"}
+                </td>
+                <td style={{ padding: 13 }}>{candidate.status}</td>
+                <td style={{ padding: 13 }}>{candidate.daysInStage}</td>
+                <td style={{ padding: 13 }}>{candidate.slaDays}</td>
+                <td style={{ padding: 13 }}>{candidate.overdueDays}</td>
+                <td style={{ padding: 13 }}>
+                  <strong style={{ color: riskColor }}>
+                    {candidate.riskLevel}
+                  </strong>
+                </td>
+                <td style={{ padding: 13, color: "#607a6a" }}>
+                  {candidate.recommendedAction}
+                </td>
+              </tr>
+            );
+          })
+        )}
+      </tbody>
+    </table>
+  </div>
+
+  <p style={{
+    marginTop: 18,
+    fontSize: 11,
+    color: "#819388",
+  }}>
+    Risk classifications are rule-based operational indicators,
+    not AI predictions. Candidates without a valid stage-entry
+    date are excluded.
+  </p>
+</section>
 
 <section
+
   className="ir-panel"
   style={{
     marginBottom: 28,
