@@ -266,9 +266,100 @@ const [error, setError] = useState("");
 
   
 
+
 const monthlyCandidates = candidates.filter((candidate) =>
   candidate.created_at?.startsWith(month)
 );
+
+// PIPELINE COVERAGE & HIRING READINESS
+const pipelineCoverageAnalytics = (() => {
+  const stages = [
+    "Applied",
+    "Screening",
+    "Interview",
+    "Shortlisted",
+    "Hired",
+    "Rejected",
+  ];
+
+  const validCandidateIds = new Set(
+    candidates.map((candidate) => String(candidate.id))
+  );
+
+  const jobRows = jobs
+    .filter((job) =>
+      ["active", "paused"].includes(
+        String(job.status || "Active").trim().toLowerCase()
+      )
+    )
+    .map((job) => {
+      const uniqueCandidates = new Map();
+
+      applications.forEach((application) => {
+        if (String(application.job_id) !== String(job.id)) return;
+
+        const candidateId = String(application.candidate_id || "");
+        if (!validCandidateIds.has(candidateId)) return;
+
+        const stage = String(application.stage || "Applied").trim();
+        const normalizedStage = stages.find(
+          (item) => item.toLowerCase() === stage.toLowerCase()
+        );
+
+        if (!normalizedStage) return;
+
+        uniqueCandidates.set(candidateId, normalizedStage);
+      });
+
+      const stageCounts = Object.fromEntries(
+        stages.map((stage) => [stage, 0])
+      );
+
+      uniqueCandidates.forEach((stage) => {
+        stageCounts[stage] += 1;
+      });
+
+      const activePipeline =
+        stageCounts.Applied +
+        stageCounts.Screening +
+        stageCounts.Interview +
+        stageCounts.Shortlisted;
+
+      const advancedPipeline =
+        stageCounts.Interview + stageCounts.Shortlisted;
+
+      return {
+        id: job.id,
+        title: job.title || "Untitled Job",
+        status: job.status || "Active",
+        totalApplications: uniqueCandidates.size,
+        stageCounts,
+        activePipeline,
+        advancedPipeline,
+        readiness:
+          activePipeline === 0
+            ? "No Active Pipeline"
+            : advancedPipeline === 0
+            ? "Early Stage Only"
+            : "Advanced Candidates Available",
+      };
+    });
+
+  return {
+    jobs: jobRows,
+    totalJobs: jobRows.length,
+    noPipeline: jobRows.filter(
+      (job) => job.activePipeline === 0
+    ).length,
+    earlyStageOnly: jobRows.filter(
+      (job) => job.readiness === "Early Stage Only"
+    ).length,
+    advancedAvailable: jobRows.filter(
+      (job) => job.advancedPipeline > 0
+    ).length,
+  };
+})();
+
 
 
 
