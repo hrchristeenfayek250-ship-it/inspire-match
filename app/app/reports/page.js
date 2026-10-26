@@ -935,6 +935,109 @@ const stageConversion = conversionStages
   });
 
 
+/* STATISTICAL HIRING FORECAST — HISTORICAL CONVERSION */
+
+const hiringForecastStatistics = (() => {
+  const minimumSample = 10;
+
+  const conversionByStage = Object.fromEntries(
+    stageConversion.map((item) => {
+      const sufficientData =
+        item.total >= minimumSample &&
+        item.rate !== null;
+
+      return [
+        item.from,
+        {
+          rate: sufficientData
+            ? Number(item.rate) / 100
+            : null,
+          sampleSize: item.total,
+          sufficientData,
+        },
+      ];
+    })
+  );
+
+  const forecastFromStage = (stage) => {
+    const stageIndex = conversionStages.indexOf(stage);
+
+    if (stageIndex < 0) return null;
+
+    let probability = 1;
+
+    for (
+      let index = stageIndex;
+      index < conversionStages.length - 1;
+      index++
+    ) {
+      const currentStage = conversionStages[index];
+      const conversion = conversionByStage[currentStage];
+
+      if (
+        !conversion ||
+        !conversion.sufficientData
+      ) {
+        return null;
+      }
+
+      probability *= conversion.rate;
+    }
+
+    return probability;
+  };
+
+  const stageProbabilities = {
+    Applied: forecastFromStage("Applied"),
+    Screening: forecastFromStage("Screening"),
+    Interview: forecastFromStage("Interview"),
+    Shortlisted: forecastFromStage("Shortlisted"),
+  };
+
+  const jobs = pipelineCoverageAnalytics.jobs.map((job) => {
+    let expectedHires = 0;
+    let missingData = false;
+
+    for (const stage of Object.keys(stageProbabilities)) {
+      const count = job.stageCounts[stage] || 0;
+      if (count === 0) continue;
+
+      const probability = stageProbabilities[stage];
+
+      if (probability === null) {
+        missingData = true;
+        continue;
+      }
+
+      expectedHires += count * probability;
+    }
+
+    return {
+      jobId: job.id,
+      jobTitle: job.title,
+      expectedHires: missingData
+        ? null
+        : Number(expectedHires.toFixed(2)),
+      forecastStatus: missingData
+        ? "Insufficient Historical Data"
+        : "Statistical Estimate",
+      activePipeline: job.activePipeline,
+    };
+  });
+
+  return {
+    jobs,
+    minimumSample,
+    stageProbabilities,
+    forecastableJobs: jobs.filter(
+      (job) => job.expectedHires !== null
+    ).length,
+    insufficientDataJobs: jobs.filter(
+      (job) => job.expectedHires === null
+    ).length,
+  };
+})();
+
 
   
 const bottleneckAnalysis = Object.keys(stageSLA).map(stage => {
