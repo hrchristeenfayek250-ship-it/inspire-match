@@ -423,6 +423,94 @@ const hiringForecastBaseline = (() => {
 })();
 
 
+/* HIRING DELAY RISK — RULE-BASED ENGINE */
+
+const hiringDelayRiskAnalytics = (() => {
+  const now = Date.now();
+
+  const jobRows = hiringForecastBaseline.jobs.map((job) => {
+    const originalJob = jobs.find(
+      (item) => String(item.id) === String(job.jobId)
+    );
+
+    const createdTime = originalJob?.created_at
+      ? new Date(originalJob.created_at).getTime()
+      : NaN;
+
+    const ageDays =
+      Number.isFinite(createdTime) && createdTime <= now
+        ? Math.floor((now - createdTime) / 86400000)
+        : null;
+
+    let riskScore = 0;
+
+    if (job.openPipeline === 0) {
+      riskScore += 50;
+    } else if (job.advancedPipeline === 0) {
+      riskScore += 30;
+    } else if (job.advancedPipeline === 1) {
+      riskScore += 15;
+    }
+
+    if (ageDays !== null) {
+      if (ageDays > 60) {
+        riskScore += 35;
+      } else if (ageDays > 30) {
+        riskScore += 25;
+      } else if (ageDays > 15) {
+        riskScore += 10;
+      }
+    }
+
+    const isPaused =
+      String(job.jobStatus || "").trim().toLowerCase() === "paused";
+
+    if (isPaused) {
+      riskScore += 15;
+    }
+
+    riskScore = Math.min(100, riskScore);
+
+    const riskLevel =
+      riskScore >= 70
+        ? "Critical"
+        : riskScore >= 40
+        ? "High"
+        : riskScore >= 20
+        ? "Moderate"
+        : "Low";
+
+    const recommendedAction =
+      isPaused
+        ? "Review requisition status and confirm hiring priority"
+        : job.openPipeline === 0
+        ? "Launch candidate sourcing and review job visibility"
+        : job.advancedPipeline === 0
+        ? "Accelerate screening and interview progression"
+        : ageDays !== null && ageDays > 30
+        ? "Review hiring bottlenecks and decision timelines"
+        : "Maintain pipeline monitoring";
+
+    return {
+      ...job,
+      ageDays,
+      riskScore,
+      riskLevel,
+      recommendedAction,
+      ageDataAvailable: ageDays !== null,
+    };
+  });
+
+  return {
+    jobs: jobRows.sort((a, b) => b.riskScore - a.riskScore),
+    critical: jobRows.filter((job) => job.riskLevel === "Critical").length,
+    high: jobRows.filter((job) => job.riskLevel === "High").length,
+    moderate: jobRows.filter((job) => job.riskLevel === "Moderate").length,
+    low: jobRows.filter((job) => job.riskLevel === "Low").length,
+    missingAgeData: jobRows.filter((job) => !job.ageDataAvailable).length,
+  };
+})();
+
 
 
 
