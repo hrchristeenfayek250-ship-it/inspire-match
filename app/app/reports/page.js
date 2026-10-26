@@ -360,6 +360,68 @@ const pipelineCoverageAnalytics = (() => {
   };
 })();
 
+/* HIRING FORECAST — BASELINE ANALYTICS */
+
+const hiringForecastBaseline = (() => {
+  const forecastJobs = pipelineCoverageAnalytics.jobs.map((job) => {
+    const counts = job.stageCounts;
+
+    const earlyPipeline =
+      counts.Applied + counts.Screening;
+
+    const advancedPipeline =
+      counts.Interview + counts.Shortlisted;
+
+    const openPipeline =
+      earlyPipeline + advancedPipeline;
+
+    const pipelineStatus =
+      openPipeline === 0
+        ? "No Pipeline"
+        : advancedPipeline === 0
+        ? "Early Pipeline"
+        : "Advanced Pipeline";
+
+    const operationalRisk =
+      openPipeline === 0
+        ? "Critical"
+        : advancedPipeline === 0
+        ? "High"
+        : "Monitor";
+
+    return {
+      jobId: job.id,
+      jobTitle: job.title,
+      jobStatus: job.status,
+      openPipeline,
+      earlyPipeline,
+      advancedPipeline,
+      pipelineStatus,
+      operationalRisk,
+    };
+  });
+
+  return {
+    jobs: forecastJobs,
+    totalOpenJobs: forecastJobs.length,
+    jobsWithoutPipeline: forecastJobs.filter(
+      (job) => job.openPipeline === 0
+    ).length,
+    jobsWithEarlyPipelineOnly: forecastJobs.filter(
+      (job) =>
+        job.openPipeline > 0 &&
+        job.advancedPipeline === 0
+    ).length,
+    jobsWithAdvancedPipeline: forecastJobs.filter(
+      (job) => job.advancedPipeline > 0
+    ).length,
+    totalActiveCandidates: forecastJobs.reduce(
+      (sum, job) => sum + job.openPipeline,
+      0
+    ),
+  };
+})();
+
 
 
 
