@@ -227,10 +227,12 @@ const [error, setError] = useState("");
     
       if (!active) return;
 
-      if (queryError || jobError || historyError) {
+      
+      if (queryError || jobError || applicationError || historyError) {
         console.error("Recruitment analytics loading error:", {
           candidates: queryError,
           jobs: jobError,
+          applications: applicationError,
           stageHistory: historyError,
         });
 
@@ -240,11 +242,13 @@ const [error, setError] = useState("");
 
         setCandidates([]);
         setJobs([]);
+        setApplications([]);
         setStageHistory([]);
       } else {
         setError("");
         setCandidates(data);
         setJobs(jobData);
+        setApplications(applicationData);
         setStageHistory(historyData);
       }
 
