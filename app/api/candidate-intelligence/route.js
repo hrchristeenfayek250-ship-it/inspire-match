@@ -100,6 +100,63 @@ export async function POST(request) {
       );
     }
 
+   
+    if (!candidate.company_id) {
+      return Response.json(
+        {
+          error:
+            "Candidate must belong to a company before intelligence can be saved.",
+        },
+        { status: 422 }
+      );
+    }
+
+    const { data: existingResult, error: lookupError } =
+      await supabase
+        .from("candidate_intelligence_results")
+        .select("*")
+        .eq("company_id", companyId)
+        .eq("candidate_id", candidate.id)
+        .maybeSingle();
+
+    if (lookupError) {
+      console.error(
+        "Candidate intelligence lookup failed:",
+        lookupError.message
+      );
+
+      return Response.json(
+        { error: "Could not check saved intelligence." },
+        { status: 500 }
+      );
+    }
+
+    if (existingResult && body?.regenerate !== true) {
+      return Response.json({
+        success: true,
+        candidateId: candidate.id,
+        intelligence: {
+          professionalOverview:
+            existingResult.professional_overview,
+          verifiedStrengths:
+            existingResult.verified_strengths,
+          technicalSkills:
+            existingResult.technical_skills,
+          transferableSkills:
+            existingResult.transferable_skills,
+          experienceInsights:
+            existingResult.experience_insights,
+          informationGaps:
+            existingResult.information_gaps,
+          verificationQuestions:
+            existingResult.verification_questions,
+        },
+        generatedAt: existingResult.generated_at,
+        saved: true,
+        cached: true,
+      });
+    }
+
     const profile = {
       currentTitle: candidate.current_title,
       yearsExperience: candidate.years_experience,
