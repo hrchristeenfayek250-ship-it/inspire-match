@@ -1698,8 +1698,174 @@ value: monthlyCandidates.length,
             ))}
           </div>
 
+{/* PIPELINE COVERAGE & HIRING READINESS */}
+<section
+  className="ir-panel"
+  style={{
+    marginBottom: 28,
+    padding: 28,
+    borderRadius: 22,
+    background: "#fff",
+    border: "1px solid #dce9df",
+    boxShadow: "0 8px 30px rgba(20,65,49,0.05)",
+  }}
+>
+  <div style={{ marginBottom: 24 }}>
+    <div style={{
+      color: "#43836a",
+      fontSize: 11,
+      fontWeight: 800,
+      letterSpacing: 2,
+      marginBottom: 8,
+    }}>
+      RECRUITMENT PIPELINE INTELLIGENCE
+    </div>
+
+    <h2 style={{ color: "#174b38", fontSize: 24, margin: "0 0 8px" }}>
+      Pipeline Coverage & Hiring Readiness
+    </h2>
+
+    <p style={{ color: "#71877b", fontSize: 13, margin: 0 }}>
+      Current application coverage across active and paused jobs.
+      Readiness is a stage-based indicator, not an AI prediction.
+    </p>
+  </div>
+
+  <div style={{
+    display: "grid",
+    gridTemplateColumns: "repeat(auto-fit, minmax(150px, 1fr))",
+    gap: 12,
+    marginBottom: 24,
+  }}>
+    {[
+      ["Open Jobs", pipelineCoverageAnalytics.totalJobs],
+      ["No Active Pipeline", pipelineCoverageAnalytics.noPipeline],
+      ["Early Stage Only", pipelineCoverageAnalytics.earlyStageOnly],
+      ["Advanced Candidates", pipelineCoverageAnalytics.advancedAvailable],
+    ].map(([label, value]) => (
+      <div key={label} style={{
+        background: "#f5faf7",
+        border: "1px solid #e1eee6",
+        borderRadius: 15,
+        padding: 18,
+      }}>
+        <div style={{
+          fontSize: 12,
+          color: "#698374",
+          fontWeight: 600,
+          marginBottom: 10,
+        }}>
+          {label}
+        </div>
+        <strong style={{
+          color: "#174b38",
+          fontSize: 26,
+          fontWeight: 800,
+        }}>
+          {loading ? "—" : value}
+        </strong>
+      </div>
+    ))}
+  </div>
+
+  <div style={{ overflowX: "auto" }}>
+    <table style={{
+      width: "100%",
+      minWidth: 850,
+      borderCollapse: "collapse",
+      textAlign: "left",
+      fontSize: 12,
+    }}>
+      <thead>
+        <tr style={{ background: "#edf5f0", color: "#245a43" }}>
+          {[
+            "Job Title", "Status", "Applications", "Applied",
+            "Screening", "Interview", "Shortlisted",
+            "Active Pipeline", "Readiness",
+          ].map((heading) => (
+            <th key={heading} style={{ padding: 12, fontWeight: 700 }}>
+              {heading}
+            </th>
+          ))}
+        </tr>
+      </thead>
+      <tbody>
+        {!loading && pipelineCoverageAnalytics.jobs.length === 0 ? (
+          <tr>
+            <td colSpan={9} style={{
+              padding: 24,
+              textAlign: "center",
+              color: "#71877b",
+            }}>
+              No open jobs found.
+            </td>
+          </tr>
+        ) : (
+          pipelineCoverageAnalytics.jobs.map((job) => (
+            <tr key={job.id} style={{
+              borderBottom: "1px solid #e7efe9",
+            }}>
+              <td style={{
+                padding: 12,
+                fontWeight: 700,
+                color: "#245a43",
+              }}>
+                {job.title}
+              </td>
+              <td style={{ padding: 12 }}>{job.status}</td>
+              <td style={{ padding: 12 }}>{job.totalApplications}</td>
+              <td style={{ padding: 12 }}>{job.stageCounts.Applied}</td>
+              <td style={{ padding: 12 }}>{job.stageCounts.Screening}</td>
+              <td style={{ padding: 12 }}>{job.stageCounts.Interview}</td>
+              <td style={{ padding: 12 }}>{job.stageCounts.Shortlisted}</td>
+              <td style={{ padding: 12, fontWeight: 800 }}>
+                {job.activePipeline}
+              </td>
+              <td style={{ padding: 12 }}>
+                <span style={{
+                  display: "inline-block",
+                  padding: "7px 10px",
+                  borderRadius: 20,
+                  fontSize: 11,
+                  fontWeight: 700,
+                  whiteSpace: "nowrap",
+                  background:
+                    job.readiness === "No Active Pipeline"
+                      ? "#fff0ed"
+                      : job.readiness === "Early Stage Only"
+                      ? "#fff7e7"
+                      : "#eaf5ee",
+                  color:
+                    job.readiness === "No Active Pipeline"
+                      ? "#ad493c"
+                      : job.readiness === "Early Stage Only"
+                      ? "#986819"
+                      : "#2e7551",
+                }}>
+                  {job.readiness}
+                </span>
+              </td>
+            </tr>
+          ))
+        )}
+      </tbody>
+    </table>
+  </div>
+
+  <p style={{
+    color: "#819388",
+    fontSize: 11,
+    marginTop: 18,
+    marginBottom: 0,
+  }}>
+    Coverage uses unique candidates per job from saved applications.
+    Advanced candidates are those in Interview or Shortlisted.
+    Hired and Rejected are excluded from the active pipeline.
+  </p>
+</section>
 
 {/* OPEN REQUISITIONS & AGING REPORT */}
+
 <section
   className="ir-panel"
   style={{
