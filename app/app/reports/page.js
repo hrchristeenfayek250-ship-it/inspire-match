@@ -1746,13 +1746,12 @@ value: monthlyCandidates.length,
       creation dates and are excluded from aging calculations.
     </p>
   )}
-</section>
 
 </section>
 
 <section
   className="ir-panel"
-
+  style={{
     marginBottom: 28,
     padding: 28,
     borderRadius: 22,
@@ -1761,6 +1760,7 @@ value: monthlyCandidates.length,
     boxShadow: "0 8px 30px rgba(20,65,49,0.05)"
   }}
 >
+
   <div style={{ marginBottom: 24 }}>
     <div style={{
       fontSize: 11,
