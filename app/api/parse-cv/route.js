@@ -70,9 +70,10 @@ export async function POST(request) {
     }
 
     const candidate = await askClaude({
-      system: `Extract a professional candidate profile from the CV.
+     
+      system: `Extract a structured professional candidate profile from the uploaded CV.
 
-Return JSON only:
+Return ONLY a valid JSON object with this exact structure:
 {
   "name": null,
   "email": null,
@@ -83,13 +84,73 @@ Return JSON only:
   "linkedinUrl": null,
   "skills": [],
   "education": [],
+  "workExperience": [],
+  "certifications": [],
+  "projects": [],
+  "achievements": [],
   "summary": null
 }
 
-Extract only information supported by the CV.
-Never invent missing information.
-Keep yearsExperience numeric or null.
-Do not extract protected personal characteristics.`,
+FIELD REQUIREMENTS:
+
+education:
+Array of objects:
+{
+  "degree": null,
+  "fieldOfStudy": null,
+  "institution": null,
+  "startDate": null,
+  "endDate": null
+}
+
+workExperience:
+Array of objects:
+{
+  "jobTitle": null,
+  "company": null,
+  "startDate": null,
+  "endDate": null,
+  "isCurrent": false,
+  "responsibilities": [],
+  "achievements": []
+}
+
+certifications:
+Array of objects:
+{
+  "name": null,
+  "issuer": null,
+  "date": null,
+  "credentialId": null
+}
+
+projects:
+Array of objects:
+{
+  "name": null,
+  "role": null,
+  "description": null,
+  "technologies": [],
+  "outcomes": []
+}
+
+achievements:
+Array of strings describing explicitly documented
+professional achievements.
+
+EXTRACTION RULES:
+- Extract only information explicitly supported by the CV.
+- Never invent employers, dates, qualifications, skills,
+  achievements, metrics, or project outcomes.
+- Use null for missing scalar values.
+- Use empty arrays for missing collections.
+- Keep yearsExperience numeric or null.
+- Preserve original company and institution names.
+- Do not infer that a role is current unless supported.
+- Distinguish job responsibilities from achievements.
+- Do not extract protected personal characteristics.
+- Return valid JSON only, without markdown fences.`,
+
       content: await fileToBlocks(cv),
       maxTokens: 2000,
     });
