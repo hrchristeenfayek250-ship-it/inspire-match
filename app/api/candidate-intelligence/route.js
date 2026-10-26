@@ -58,12 +58,17 @@ export async function POST(request) {
       );
     }
 
-    const { candidateId } = await request.json();
+    
+    const body = await request.json().catch(() => null);
+    const candidateId = body?.candidateId;
 
     if (
-      typeof candidateId !== "string" ||
-      !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(
-        candidateId
+      !(
+        (typeof candidateId === "string" &&
+          /^[1-9]\d*$/.test(candidateId)) ||
+        (typeof candidateId === "number" &&
+          Number.isSafeInteger(candidateId) &&
+          candidateId > 0)
       )
     ) {
       return Response.json(
