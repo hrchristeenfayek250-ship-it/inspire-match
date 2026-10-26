@@ -1440,6 +1440,99 @@ company_id: candidate.company_id,
           </p>
         </section>
 
+        {/* AI CANDIDATE INTELLIGENCE */}
+        <section
+          style={{
+            ...cardStyle,
+            background: "#F5FAF7",
+            border: "1px solid #CFE4D6",
+          }}
+        >
+          <div
+            style={{
+              fontSize: 12,
+              fontWeight: 800,
+              color: "#348368",
+              letterSpacing: 1.5,
+              marginBottom: 10,
+            }}
+          >
+            AI CANDIDATE INTELLIGENCE
+          </div>
+
+          <h2
+            style={{
+              fontSize: 25,
+              color: "#173F3A",
+              marginBottom: 10,
+            }}
+          >
+            Understand the Candidate Beyond the CV
+          </h2>
+
+          <p
+            style={{
+              color: "#65796D",
+              fontSize: 14,
+              lineHeight: 1.7,
+              marginBottom: 20,
+            }}
+          >
+            Generate an evidence-based professional profile,
+            including skills, strengths, experience insights,
+            information gaps, and verification questions.
+            Independent of any specific job.
+          </p>
+
+          <button
+            type="button"
+            disabled={intelligenceLoading}
+            onClick={() =>
+              generateCandidateIntelligence(false)
+            }
+            style={{
+              ...buttonStyle,
+              background: "#245C4A",
+              color: "#FFFFFF",
+              border: "none",
+              fontWeight: 700,
+              cursor: intelligenceLoading
+                ? "not-allowed"
+                : "pointer",
+              opacity: intelligenceLoading ? 0.6 : 1,
+            }}
+          >
+            {intelligenceLoading
+              ? "Analyzing Candidate..."
+              : "✦ Generate AI Intelligence"}
+          </button>
+
+          {intelligenceError && (
+            <p
+              role="alert"
+              style={{
+                color: "#B42318",
+                marginTop: 15,
+              }}
+            >
+              {intelligenceError}
+            </p>
+          )}
+
+          {candidateIntelligence && (
+            <p
+              style={{
+                color: "#245C4A",
+                marginTop: 15,
+                fontWeight: 700,
+              }}
+            >
+              AI Intelligence generated successfully.
+            </p>
+          )}
+        </section>
+
+
         {/* SAVED JOB-SPECIFIC AI MATCH */}
 
         <section
