@@ -1579,7 +1579,176 @@ value: monthlyCandidates.length,
           </div>
 
 
+{/* OPEN REQUISITIONS & AGING REPORT */}
 <section
+  className="ir-panel"
+  style={{
+    marginBottom: 28,
+    padding: 28,
+    borderRadius: 22,
+    background: "#ffffff",
+    border: "1px solid #dce9df",
+    boxShadow: "0 8px 30px rgba(20,65,49,0.05)",
+  }}
+>
+  <div style={{ marginBottom: 24 }}>
+    <div style={{
+      color: "#43836a",
+      fontSize: 11,
+      fontWeight: 800,
+      letterSpacing: 2,
+      marginBottom: 8,
+    }}>
+      RECRUITMENT OPERATIONS INTELLIGENCE
+    </div>
+
+    <h2 style={{
+      color: "#174b38",
+      fontSize: 24,
+      margin: "0 0 8px",
+    }}>
+      Open Requisitions & Aging
+    </h2>
+
+    <p style={{ color: "#71877b", margin: 0, fontSize: 13 }}>
+      Current snapshot of active and paused vacancies.
+      Aging is measured from job creation, across all months.
+    </p>
+  </div>
+
+  <div style={{
+    display: "grid",
+    gridTemplateColumns: "repeat(auto-fit, minmax(145px, 1fr))",
+    gap: 12,
+    marginBottom: 26,
+  }}>
+    {[
+      ["Open Jobs", openRequisitionsAnalytics.totalOpen],
+      ["Active", openRequisitionsAnalytics.active],
+      ["Paused", openRequisitionsAnalytics.paused],
+      ["Average Age", `${openRequisitionsAnalytics.averageAge} days`],
+      ["Over 30 Days", openRequisitionsAnalytics.over30Days],
+      ["Over 60 Days", openRequisitionsAnalytics.over60Days],
+    ].map(([label, value]) => (
+      <div key={label} style={{
+        background: "#f5faf7",
+        border: "1px solid #e1eee6",
+        borderRadius: 15,
+        padding: 18,
+      }}>
+        <div style={{
+          fontSize: 12,
+          color: "#698374",
+          fontWeight: 600,
+          marginBottom: 10,
+        }}>
+          {label}
+        </div>
+
+        <strong style={{
+          color: "#174b38",
+          fontSize: 26,
+          fontWeight: 800,
+        }}>
+          {loading ? "—" : value}
+        </strong>
+      </div>
+    ))}
+  </div>
+
+  <div style={{ overflowX: "auto" }}>
+    <table style={{
+      width: "100%",
+      borderCollapse: "collapse",
+      minWidth: 620,
+      textAlign: "left",
+      fontSize: 13,
+    }}>
+      <thead>
+        <tr style={{
+          background: "#edf5f0",
+          color: "#245a43",
+        }}>
+          {["Job Title", "Status", "Created", "Age", "Aging Category"].map(
+            (heading) => (
+              <th key={heading} style={{
+                padding: 14,
+                fontWeight: 700,
+              }}>
+                {heading}
+              </th>
+            )
+          )}
+        </tr>
+      </thead>
+
+      <tbody>
+        {!loading && openRequisitionsAnalytics.jobs.length === 0 ? (
+          <tr>
+            <td colSpan={5} style={{
+              padding: 24,
+              textAlign: "center",
+              color: "#71877b",
+            }}>
+              No open requisitions found.
+            </td>
+          </tr>
+        ) : (
+          openRequisitionsAnalytics.jobs.map((job) => (
+            <tr key={job.id} style={{
+              borderBottom: "1px solid #e7efe9",
+            }}>
+              <td style={{ padding: 14, fontWeight: 700, color: "#245a43" }}>
+                {job.title}
+              </td>
+              <td style={{ padding: 14 }}>{job.status}</td>
+              <td style={{ padding: 14 }}>
+                {job.createdAt
+                  ? new Date(job.createdAt).toLocaleDateString("en-GB")
+                  : "N/A"}
+              </td>
+              <td style={{ padding: 14 }}>
+                {job.agingDays === null ? "N/A" : `${job.agingDays} days`}
+              </td>
+              <td style={{ padding: 14 }}>
+                <span style={{
+                  display: "inline-block",
+                  padding: "6px 10px",
+                  borderRadius: 20,
+                  background:
+                    job.agingDays !== null && job.agingDays > 60
+                      ? "#fff0ed"
+                      : job.agingDays !== null && job.agingDays > 30
+                      ? "#fff7e7"
+                      : "#eaf5ee",
+                  color:
+                    job.agingDays !== null && job.agingDays > 60
+                      ? "#ad493c"
+                      : job.agingDays !== null && job.agingDays > 30
+                      ? "#986819"
+                      : "#2e7551",
+                  fontWeight: 700,
+                  fontSize: 11,
+                }}>
+                  {job.agingBand}
+                </span>
+              </td>
+            </tr>
+          ))
+        )}
+      </tbody>
+    </table>
+  </div>
+
+  {!loading && openRequisitionsAnalytics.unknownAge > 0 && (
+    <p style={{ fontSize: 12, color: "#986819", marginTop: 16 }}>
+      {openRequisitionsAnalytics.unknownAge} job(s) have missing or invalid
+      creation dates and are excluded from aging calculations.
+    </p>
+  )}
+</section>
+
+
   className="ir-panel"
   style={{
     marginBottom: 28,
