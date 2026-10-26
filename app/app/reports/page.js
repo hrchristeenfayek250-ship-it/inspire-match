@@ -568,6 +568,11 @@ function classifySLARisk(daysInStage, slaDays) {
   };
 }
 
+const latestStageEntryByCandidate = new Map();
+
+stageHistory.forEach((transition) => {
+  const id = String(transition.candidate_id || "");
+  const stage = String(transition.to_stage || "")
     .trim()
     .toLowerCase();
 
@@ -587,6 +592,7 @@ function classifySLARisk(daysInStage, slaDays) {
     });
   }
 });
+
 
 const stageAging = candidates
   .filter(candidate =>
