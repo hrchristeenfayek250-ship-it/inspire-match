@@ -59,12 +59,67 @@ export default function UploadCandidatePage() {
   const [error, setError] = useState("");
   const [consent, setConsent] = useState(false);
 
+  
+  /* AI CANDIDATE PROFILE COMPLETENESS */
+
+  const profileCompleteness = (() => {
+    const profileFields = [
+      { key: "name", label: "Full Name", weight: 15 },
+      { key: "email", label: "Email Address", weight: 15 },
+      { key: "phone", label: "Phone Number", weight: 10 },
+      { key: "currentTitle", label: "Current Job Title", weight: 10 },
+      { key: "yearsExperience", label: "Years of Experience", weight: 10 },
+      { key: "location", label: "Location", weight: 10 },
+      { key: "linkedinUrl", label: "LinkedIn Profile", weight: 5 },
+      { key: "skills", label: "Professional Skills", weight: 15 },
+      { key: "summary", label: "Professional Summary", weight: 10 },
+    ];
+
+    const missingFields = profileFields.filter((field) => {
+      const value = form[field.key];
+
+      if (value === null || value === undefined) {
+        return true;
+      }
+
+      return String(value).trim() === "";
+    });
+
+    const score = profileFields
+      .filter(
+        (field) =>
+          !missingFields.some(
+            (missing) => missing.key === field.key
+          )
+      )
+      .reduce((total, field) => total + field.weight, 0);
+
+    const status =
+      score >= 90
+        ? "Excellent"
+        : score >= 70
+        ? "Good"
+        : score >= 50
+        ? "Needs Improvement"
+        : "Incomplete";
+
+    return {
+      score,
+      status,
+      missingFields,
+      completedFields:
+        profileFields.length - missingFields.length,
+      totalFields: profileFields.length,
+    };
+  })();
+
   function updateField(key, value) {
     setForm((current) => ({
       ...current,
       [key]: value,
     }));
   }
+
 
   async function parseCV() {
     if (!file || busy) return;
