@@ -136,7 +136,31 @@ export async function POST(request) {
       );
     }
 
-    if (existingResult && body?.regenerate !== true) {
+
+    const currentProfileHash = createHash("sha256")
+      .update(
+        JSON.stringify({
+          fullName: candidate.full_name || null,
+          currentTitle: candidate.current_title || null,
+          yearsExperience: candidate.years_experience ?? null,
+          location: candidate.location || null,
+          skills: candidate.skills || null,
+          professionalSummary: candidate.professional_summary || null,
+          workExperience: Array.isArray(candidate.work_experience) ? candidate.work_experience : [],
+          education: Array.isArray(candidate.education) ? candidate.education : [],
+          certifications: Array.isArray(candidate.certifications) ? candidate.certifications : [],
+          projects: Array.isArray(candidate.projects) ? candidate.projects : [],
+          achievements: Array.isArray(candidate.achievements) ? candidate.achievements : [],
+        })
+      )
+      .digest("hex");
+
+    if (
+      existingResult &&
+      existingResult.profile_hash === currentProfileHash &&
+      body?.regenerate !== true
+    ) {
+
       return Response.json({
         success: true,
         candidateId: candidate.id,
