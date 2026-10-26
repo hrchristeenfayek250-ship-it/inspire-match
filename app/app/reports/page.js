@@ -635,11 +635,52 @@ const stageAging = candidates
   })
   .filter(Boolean);
 
-    
 
+const slaRiskAnalytics = (() => {
+  const candidatesWithRisk = stageAging
+    .map((candidate) => {
+      const risk = classifySLARisk(
+        candidate.daysInStage,
+        candidate.slaDays
+      );
 
+      return {
+        ...candidate,
+        riskLevel: risk.level,
+        riskPriority: risk.priority,
+        recommendedAction: risk.action,
+        overdueDays: Math.max(
+          0,
+          candidate.daysInStage - candidate.slaDays
+        ),
+      };
+    })
+    .sort(
+      (a, b) =>
+        a.riskPriority - b.riskPriority ||
+        b.overdueDays - a.overdueDays
+    );
+
+  return {
+    candidates: candidatesWithRisk,
+    total: candidatesWithRisk.length,
+    critical: candidatesWithRisk.filter(
+      (c) => c.riskLevel === "Critical"
+    ).length,
+    high: candidatesWithRisk.filter(
+      (c) => c.riskLevel === "High"
+    ).length,
+    atRisk: candidatesWithRisk.filter(
+      (c) => c.riskLevel === "At Risk"
+    ).length,
+    onTrack: candidatesWithRisk.filter(
+      (c) => c.riskLevel === "On Track"
+    ).length,
+  };
+})();
 
 const overdueCandidates = stageAging.filter(c => c.overdue);
+
   
 
 const sourceGroups = new Map();
