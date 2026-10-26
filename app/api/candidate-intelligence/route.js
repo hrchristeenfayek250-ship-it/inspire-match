@@ -214,15 +214,7 @@ Rules:
     });
 
    
-    if (!candidate.company_id) {
-      return Response.json(
-        {
-          error:
-            "Candidate must belong to a company before intelligence can be saved.",
-        },
-        { status: 422 }
-      );
-    }
+
 
     const asArray = (value) =>
       Array.isArray(value)
