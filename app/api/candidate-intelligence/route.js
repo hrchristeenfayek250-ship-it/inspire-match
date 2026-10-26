@@ -314,9 +314,12 @@ Rules:
       verification_questions: asArray(
         intelligence.verificationQuestions
       ),
+      
       generated_at: generatedAt,
       updated_at: generatedAt,
+      profile_hash: profileHash,
     };
+
 
     const { data: savedResult, error: saveError } =
       await supabase
