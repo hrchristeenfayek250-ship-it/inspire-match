@@ -162,13 +162,8 @@ export default function OffersPage() {
           </div>
         </aside>
         <main className="offers-content">
-          <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", gap:16, flexWrap:"wrap", paddingBottom:24, borderBottom:"1px solid #e6eaf0" }}>
-            <div>
-              <div style={{ fontSize:12, color:"#8390a0", marginBottom:8 }}>Workspace / Recruitment Operations</div>
-              <strong style={{ fontSize:20, color:"#284e42" }}>Offer Management</strong>
-            </div>
-            <span style={{ background:"#eaf3ee", color:"#245340", padding:"9px 14px", borderRadius:10, fontSize:12, fontWeight:700 }}>Inspire Match ATS</span>
-          </div>
+         
+      
         <div style={{ margin: "32px 0" }}>
           <div
             style={{
