@@ -157,7 +157,10 @@ export default function OffersPage() {
           padding: "28px 5%",
         }}
       >
-        <ATSNavigation />
+  <ATSNavigation
+  className="im-links"
+  linkClassName="im-nav-link"
+/>
 
         <div style={{ margin: "32px 0" }}>
           <div
