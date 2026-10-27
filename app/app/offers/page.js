@@ -124,37 +124,72 @@ export default function OffersPage() {
   return (
     <>
   <style jsx global>{`
+  
     .im-links {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 8px;
-      margin-bottom: 20px;
+      display: grid;
+      gap: 4px;
     }
 
     .im-nav-link {
       display: flex;
       align-items: center;
-      gap: 8px;
-      padding: 11px 14px;
+      gap: 12px;
+      padding: 13px 15px;
       border-radius: 10px;
-      color: #526b60;
-      background: #ffffff;
-      border: 1px solid #dce9e1;
       text-decoration: none;
+      color: #657285;
       font-size: 13px;
       font-weight: 600;
+      border-left: 3px solid transparent;
+      white-space: nowrap;
+    }
+
+    .im-nav-link span {
+      width: 23px;
+      text-align: center;
+      font-size: 19px;
     }
 
     .im-nav-link.active {
-      background: #eaf3ee;
       color: #245340;
-      border-color: #83b59b;
+      background: #eaf3ee;
+      border-left-color: #315f50;
       font-weight: 800;
     }
 
     .im-nav-link:hover {
       background: #f4f7f6;
     }
+
+    .im-offers-shell {
+      display: grid;
+      grid-template-columns: 254px minmax(0, 1fr);
+      min-height: 100vh;
+    }
+
+    .im-offers-sidebar {
+      background: #ffffff;
+      border-right: 1px solid #e6eaf0;
+      padding: 24px 15px;
+      min-width: 0;
+    }
+
+    .im-offers-main {
+      min-width: 0;
+      padding: 28px clamp(17px, 3vw, 46px) 60px;
+    }
+
+    @media (max-width: 800px) {
+      .im-offers-shell {
+        grid-template-columns: 1fr;
+      }
+
+      .im-offers-sidebar {
+        border-right: 0;
+        border-bottom: 1px solid #e6eaf0;
+      }
+    }
+
   `}</style>
     <div
       style={{
