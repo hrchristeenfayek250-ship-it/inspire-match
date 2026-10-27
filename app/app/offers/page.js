@@ -122,6 +122,40 @@ export default function OffersPage() {
   };
 
   return (
+    <>
+  <style jsx global>{`
+    .im-links {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 20px;
+    }
+
+    .im-nav-link {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 11px 14px;
+      border-radius: 10px;
+      color: #526b60;
+      background: #ffffff;
+      border: 1px solid #dce9e1;
+      text-decoration: none;
+      font-size: 13px;
+      font-weight: 600;
+    }
+
+    .im-nav-link.active {
+      background: #eaf3ee;
+      color: #245340;
+      border-color: #83b59b;
+      font-weight: 800;
+    }
+
+    .im-nav-link:hover {
+      background: #f4f7f6;
+    }
+  `}</style>
     <div
       style={{
         minHeight: "100vh",
