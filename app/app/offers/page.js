@@ -191,6 +191,7 @@ export default function OffersPage() {
     }
 
   `}</style>
+   
     <div
       style={{
         minHeight: "100vh",
@@ -199,37 +200,70 @@ export default function OffersPage() {
         fontFamily: "inherit",
       }}
     >
-      <header
-        style={{
-          background: "#ffffff",
-          borderBottom: "1px solid #e0ebe4",
-          padding: "18px 5%",
-        }}
-      >
-        <Link
-          href="/app/dashboard"
-          style={{
-            color: green,
-            fontWeight: 800,
-            fontSize: 22,
-            textDecoration: "none",
-          }}
-        >
-          Inspire Match ATS
-        </Link>
-      </header>
+      <div className="im-offers-shell">
+        <aside className="im-offers-sidebar">
+          <div className="im-brand" style={{
+            display: "flex",
+            alignItems: "center",
+            gap: 12,
+            padding: "10px 12px 24px",
+            marginBottom: 24,
+            borderBottom: "1px solid #edf0f2",
+          }}>
+            <div style={{
+              width: 42,
+              height: 42,
+              borderRadius: 12,
+              background: "#284e42",
+              color: "#fff",
+              display: "grid",
+              placeItems: "center",
+              fontSize: 23,
+              fontWeight: 800,
+            }}>
+              I
+            </div>
+            <div>
+              <strong style={{ display: "block", fontSize: 17 }}>
+                Inspire Match
+              </strong>
+              <small style={{ color: "#8795a4", fontSize: 9 }}>
+                TALENT INTELLIGENCE
+              </small>
+            </div>
+          </div>
 
-      <div
-        style={{
-          maxWidth: 1400,
-          margin: "auto",
-          padding: "28px 5%",
-        }}
-      >
-  <ATSNavigation
-  className="im-links"
-  linkClassName="im-nav-link"
-/>
+          <div style={{
+            padding: "0 14px",
+            color: "#9ba6b2",
+            fontSize: 10,
+            fontWeight: 800,
+            letterSpacing: 1.5,
+            marginBottom: 10,
+          }}>
+            WORKSPACE
+          </div>
+
+          <ATSNavigation
+            className="im-links"
+            linkClassName="im-nav-link"
+          />
+
+          <div style={{
+            borderTop: "1px solid #edf0f2",
+            marginTop: 28,
+            padding: "20px 14px",
+          }}>
+            <Link
+              href="/"
+              style={{ color: "#657285", textDecoration: "none" }}
+            >
+              ↗ ATS Home
+            </Link>
+          </div>
+        </aside>
+
+        <main className="im-offers-main">
 
         <div style={{ margin: "32px 0" }}>
           <div
