@@ -122,91 +122,6 @@ export default function OffersPage() {
   };
 
   return (
-    <>
-  <style jsx global>{`
-  
-    .im-links {
-      display: grid;
-      gap: 4px;
-    }
-
-    .im-nav-link {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      padding: 13px 15px;
-      border-radius: 10px;
-      text-decoration: none;
-      color: #657285;
-      font-size: 13px;
-      font-weight: 600;
-      border-left: 3px solid transparent;
-      white-space: nowrap;
-    }
-
-    .im-nav-link span {
-      width: 23px;
-      text-align: center;
-      font-size: 19px;
-    }
-
-    .im-nav-link.active {
-      color: #245340;
-      background: #eaf3ee;
-      border-left-color: #315f50;
-      font-weight: 800;
-    }
-
-    .im-nav-link:hover {
-      background: #f4f7f6;
-    }
-
-   
-    .im-offers-shell {
-      display: grid !important;
-      grid-template-columns: 254px minmax(0, 1fr) !important;
-      width: 100%;
-      min-height: 100vh;
-    }
-
-    .im-offers-sidebar {
-      flex: 0 0 254px;
-      width: 254px;
-      background: #ffffff;
-      border-right: 1px solid #e6eaf0;
-      padding: 24px 15px;
-      min-width: 0;
-      box-sizing: border-box;
-    }
-
-    .im-offers-main {
-      flex: 1 1 0;
-      width: 0;
-      min-width: 0;
-      padding: 28px clamp(17px, 3vw, 46px) 60px;
-      box-sizing: border-box;
-    }
-
-    @media (max-width: 800px) {
-      .im-offers-shell {
-        grid-template-columns: 1fr !important;
-      }
-
-      .im-offers-sidebar {
-        flex: none;
-        width: 100%;
-        border-right: 0;
-        border-bottom: 1px solid #e6eaf0;
-      }
-
-      .im-offers-main {
-        width: 100%;
-      }
-    }
-
-
-  `}</style>
-   
     <div
       style={{
         minHeight: "100vh",
@@ -215,118 +130,34 @@ export default function OffersPage() {
         fontFamily: "inherit",
       }}
     >
-      <div className="im-offers-shell" style={{ display: "grid", gridTemplateColumns: "254px minmax(0, 1fr)", minHeight: "100vh" }}>
-        <aside className="im-offers-sidebar" style={{ minWidth: 0, background: "#fff", borderRight: "1px solid #e6eaf0", padding: "24px 15px" }}>
-          <div className="im-brand" style={{
-            display: "flex",
-            alignItems: "center",
-            gap: 12,
-            padding: "10px 12px 24px",
-            marginBottom: 24,
-            borderBottom: "1px solid #edf0f2",
-          }}>
-            <div style={{
-              width: 42,
-              height: 42,
-              borderRadius: 12,
-              background: "#284e42",
-              color: "#fff",
-              display: "grid",
-              placeItems: "center",
-              fontSize: 23,
-              fontWeight: 800,
-            }}>
-              I
-            </div>
-            <div>
-              <strong style={{ display: "block", fontSize: 17 }}>
-                Inspire Match
-              </strong>
-              <small style={{ color: "#8795a4", fontSize: 9 }}>
-                TALENT INTELLIGENCE
-              </small>
-            </div>
-          </div>
-
-          <div style={{
-            padding: "0 14px",
-            color: "#9ba6b2",
-            fontSize: 10,
+      <header
+        style={{
+          background: "#ffffff",
+          borderBottom: "1px solid #e0ebe4",
+          padding: "18px 5%",
+        }}
+      >
+        <Link
+          href="/app/dashboard"
+          style={{
+            color: green,
             fontWeight: 800,
-            letterSpacing: 1.5,
-            marginBottom: 10,
-          }}>
-            WORKSPACE
-          </div>
+            fontSize: 22,
+            textDecoration: "none",
+          }}
+        >
+          Inspire Match ATS
+        </Link>
+      </header>
 
-          <ATSNavigation
-            className="im-links"
-            linkClassName="im-nav-link"
-          />
-
-          <div style={{
-            borderTop: "1px solid #edf0f2",
-            marginTop: 28,
-            padding: "20px 14px",
-          }}>
-            <Link
-              href="/"
-              style={{ color: "#657285", textDecoration: "none" }}
-            >
-              ↗ ATS Home
-            </Link>
-          </div>
-        </aside>
-
-        <main className="im-offers-main" style={{ minWidth: 0, padding: "28px clamp(17px, 3vw, 46px) 60px" }}>
-                
-<header
-  style={{
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "space-between",
-    flexWrap: "wrap",
-    gap: 16,
-    paddingBottom: 24,
-    marginBottom: 28,
-    borderBottom: "1px solid #e6eaf0",
-  }}
->
-  <div>
-    <div style={{
-      fontSize: 12,
-      color: "#8390a0",
-      marginBottom: 8,
-    }}>
-      Workspace / Recruitment Operations
-    </div>
-
-    <strong style={{
-      fontSize: 20,
-      color: "#284e42",
-    }}>
-      Offer Management
-    </strong>
-  </div>
-
-  <div style={{
-    display: "flex",
-    alignItems: "center",
-    gap: 10,
-  }}>
-    <span style={{
-      background: "#eaf3ee",
-      color: "#245340",
-      padding: "9px 14px",
-      borderRadius: 10,
-      fontSize: 12,
-      fontWeight: 700,
-    }}>
-      Inspire Match ATS
-    </span>
-  </div>
-</header>
-
+      <div
+        style={{
+          maxWidth: 1400,
+          margin: "auto",
+          padding: "28px 5%",
+        }}
+      >
+        <ATSNavigation />
 
         <div style={{ margin: "32px 0" }}>
           <div
@@ -493,12 +324,14 @@ export default function OffersPage() {
                           "Candidate"}
                       </td>
                       <td style={{ padding: 14 }}>
-                        {offer.job_title || offer.job_id || "—"}
+                        {offer.job_title}
                       </td>
                       <td style={{ padding: 14 }}>
                         {offer.base_salary == null
                           ? "—"
-                          : Number(offer.base_salary).toLocaleString()}
+                          : `${offer.currency} ${Number(
+                              offer.base_salary
+                            ).toLocaleString()}`}
                       </td>
                       <td style={{ padding: 14 }}>
                         <span
@@ -515,9 +348,9 @@ export default function OffersPage() {
                         </span>
                       </td>
                       <td style={{ padding: 14 }}>
-                        {offer.created_at
-                          ? new Date(offer.created_at).toLocaleDateString()
-                          : "—"}
+                        {new Date(
+                          offer.created_at
+                        ).toLocaleDateString()}
                       </td>
                     </tr>
                   ))}
@@ -526,9 +359,7 @@ export default function OffersPage() {
             </div>
           )}
         </section>
-        </main>
       </div>
     </div>
-    </>
   );
 }
