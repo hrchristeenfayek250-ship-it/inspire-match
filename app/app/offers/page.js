@@ -191,15 +191,15 @@ export default function OffersPage() {
           </p>
         </div>
 
-        <div
-          style={{
-            display: "grid",
-            gridTemplateColumns:
-              "repeat(auto-fit, minmax(180px, 1fr))",
-            gap: 16,
-            marginBottom: 28,
-          }}
-        >
+      <div
+  style={{
+    display: "grid",
+    gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))",
+    gap: 20,
+    marginBottom: 28,
+    width: "100%",
+  }}
+>
           {[
             ["Total Offers", offers.length],
             ["Pending Approval", pending],
