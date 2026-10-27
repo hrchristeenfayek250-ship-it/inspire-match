@@ -130,35 +130,45 @@ export default function OffersPage() {
         fontFamily: "inherit",
       }}
     >
-      <header
-        style={{
-          background: "#ffffff",
-          borderBottom: "1px solid #e0ebe4",
-          padding: "18px 5%",
-        }}
-      >
-        <Link
-          href="/app/dashboard"
-          style={{
-            color: green,
-            fontWeight: 800,
-            fontSize: 22,
-            textDecoration: "none",
-          }}
-        >
-          Inspire Match ATS
-        </Link>
-      </header>
-
-      <div
-        style={{
-          maxWidth: 1400,
-          margin: "auto",
-          padding: "28px 5%",
-        }}
-      >
-        <ATSNavigation />
-
+      <style>{`
+        .offers-workspace { display:grid; grid-template-columns:254px minmax(0,1fr); min-height:100vh; }
+        .offers-sidebar { background:#fff; border-right:1px solid #e6eaf0; padding:24px 15px; min-width:0; }
+        .offers-nav { display:grid; gap:4px; }
+        .offers-nav a { display:flex; align-items:center; gap:12px; padding:13px 15px; border-radius:10px; text-decoration:none; color:#657285; font-size:13px; font-weight:600; border-left:3px solid transparent; }
+        .offers-nav a span { width:23px; text-align:center; font-size:19px; }
+        .offers-nav a.active { color:#245340; background:#eaf3ee; border-left-color:#315f50; font-weight:800; }
+        .offers-nav a:hover { background:#f4f7f6; }
+        .offers-content { min-width:0; padding:29px clamp(17px,3vw,46px) 60px; }
+        @media(max-width:800px) {
+          .offers-workspace { grid-template-columns:minmax(0,1fr); }
+          .offers-sidebar { border-right:0; border-bottom:1px solid #e6eaf0; padding:16px; }
+          .offers-nav { grid-template-columns:repeat(auto-fit,minmax(130px,1fr)); }
+          .offers-content { padding:24px 16px; }
+        }
+      `}</style>
+      <div className="offers-workspace">
+        <aside className="offers-sidebar">
+          <Link href="/app/dashboard" style={{ display:"flex", alignItems:"center", gap:11, textDecoration:"none", padding:"7px 12px 26px", borderBottom:"1px solid #edf0f2", marginBottom:25 }}>
+            <span style={{ width:42, height:42, borderRadius:12, background:"#284e42", color:"#fff", display:"grid", placeItems:"center", fontSize:23, fontWeight:800 }}>I</span>
+            <span>
+              <strong style={{ display:"block", color:"#1e293b", fontSize:17 }}>Inspire Match</strong>
+              <small style={{ display:"block", color:"#8795a4", fontSize:9, letterSpacing:1.4 }}>TALENT INTELLIGENCE</small>
+            </span>
+          </Link>
+          <div style={{ padding:"0 14px", color:"#9ba6b2", fontSize:10, fontWeight:800, letterSpacing:1.5, marginBottom:10 }}>WORKSPACE</div>
+          <ATSNavigation className="offers-nav" linkClassName="offers-nav-link" />
+          <div style={{ borderTop:"1px solid #edf0f2", marginTop:28, padding:"20px 14px" }}>
+            <Link href="/" style={{ color:"#657285", textDecoration:"none", fontSize:13 }}>↗ ATS Home</Link>
+          </div>
+        </aside>
+        <main className="offers-content">
+          <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", gap:16, flexWrap:"wrap", paddingBottom:24, borderBottom:"1px solid #e6eaf0" }}>
+            <div>
+              <div style={{ fontSize:12, color:"#8390a0", marginBottom:8 }}>Workspace / Recruitment Operations</div>
+              <strong style={{ fontSize:20, color:"#284e42" }}>Offer Management</strong>
+            </div>
+            <span style={{ background:"#eaf3ee", color:"#245340", padding:"9px 14px", borderRadius:10, fontSize:12, fontWeight:700 }}>Inspire Match ATS</span>
+          </div>
         <div style={{ margin: "32px 0" }}>
           <div
             style={{
@@ -359,6 +369,7 @@ export default function OffersPage() {
             </div>
           )}
         </section>
+        </main>
       </div>
     </div>
   );
