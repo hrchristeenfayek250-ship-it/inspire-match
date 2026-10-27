@@ -264,6 +264,54 @@ export default function OffersPage() {
         </aside>
 
         <main className="im-offers-main">
+                
+<header
+  style={{
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "space-between",
+    flexWrap: "wrap",
+    gap: 16,
+    paddingBottom: 24,
+    marginBottom: 28,
+    borderBottom: "1px solid #e6eaf0",
+  }}
+>
+  <div>
+    <div style={{
+      fontSize: 12,
+      color: "#8390a0",
+      marginBottom: 8,
+    }}>
+      Workspace / Recruitment Operations
+    </div>
+
+    <strong style={{
+      fontSize: 20,
+      color: "#284e42",
+    }}>
+      Offer Management
+    </strong>
+  </div>
+
+  <div style={{
+    display: "flex",
+    alignItems: "center",
+    gap: 10,
+  }}>
+    <span style={{
+      background: "#eaf3ee",
+      color: "#245340",
+      padding: "9px 14px",
+      borderRadius: 10,
+      fontSize: 12,
+      fontWeight: 700,
+    }}>
+      Inspire Match ATS
+    </span>
+  </div>
+</header>
+
 
         <div style={{ margin: "32px 0" }}>
           <div
