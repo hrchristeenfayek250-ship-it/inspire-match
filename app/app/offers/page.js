@@ -161,34 +161,50 @@ export default function OffersPage() {
       background: #f4f7f6;
     }
 
+   
     .im-offers-shell {
-      display: grid;
-      grid-template-columns: 254px minmax(0, 1fr);
+      display: flex !important;
+      flex-direction: row !important;
+      align-items: stretch;
+      width: 100%;
       min-height: 100vh;
     }
 
     .im-offers-sidebar {
+      flex: 0 0 254px;
+      width: 254px;
       background: #ffffff;
       border-right: 1px solid #e6eaf0;
       padding: 24px 15px;
       min-width: 0;
+      box-sizing: border-box;
     }
 
     .im-offers-main {
+      flex: 1 1 0;
+      width: 0;
       min-width: 0;
       padding: 28px clamp(17px, 3vw, 46px) 60px;
+      box-sizing: border-box;
     }
 
     @media (max-width: 800px) {
       .im-offers-shell {
-        grid-template-columns: 1fr;
+        flex-direction: column !important;
       }
 
       .im-offers-sidebar {
+        flex: none;
+        width: 100%;
         border-right: 0;
         border-bottom: 1px solid #e6eaf0;
       }
+
+      .im-offers-main {
+        width: 100%;
+      }
     }
+
 
   `}</style>
    
