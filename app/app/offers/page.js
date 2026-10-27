@@ -163,9 +163,8 @@ export default function OffersPage() {
 
    
     .im-offers-shell {
-      display: flex !important;
-      flex-direction: row !important;
-      align-items: stretch;
+      display: grid !important;
+      grid-template-columns: 254px minmax(0, 1fr) !important;
       width: 100%;
       min-height: 100vh;
     }
@@ -190,7 +189,7 @@ export default function OffersPage() {
 
     @media (max-width: 800px) {
       .im-offers-shell {
-        flex-direction: column !important;
+        grid-template-columns: 1fr !important;
       }
 
       .im-offers-sidebar {
@@ -216,8 +215,8 @@ export default function OffersPage() {
         fontFamily: "inherit",
       }}
     >
-      <div className="im-offers-shell">
-        <aside className="im-offers-sidebar">
+      <div className="im-offers-shell" style={{ display: "grid", gridTemplateColumns: "254px minmax(0, 1fr)", minHeight: "100vh" }}>
+        <aside className="im-offers-sidebar" style={{ minWidth: 0, background: "#fff", borderRight: "1px solid #e6eaf0", padding: "24px 15px" }}>
           <div className="im-brand" style={{
             display: "flex",
             alignItems: "center",
@@ -279,7 +278,7 @@ export default function OffersPage() {
           </div>
         </aside>
 
-        <main className="im-offers-main">
+        <main className="im-offers-main" style={{ minWidth: 0, padding: "28px clamp(17px, 3vw, 46px) 60px" }}>
                 
 <header
   style={{
@@ -494,17 +493,12 @@ export default function OffersPage() {
                           "Candidate"}
                       </td>
                       <td style={{ padding: 14 }}>
-                      
-        </section>
-        </main>
-      </div>
-    </div>
-    </>
-  );
-}
-
-                              offer.base_salary
-                            ).toLocaleString()}`}
+                        {offer.job_title || offer.job_id || "—"}
+                      </td>
+                      <td style={{ padding: 14 }}>
+                        {offer.base_salary == null
+                          ? "—"
+                          : Number(offer.base_salary).toLocaleString()}
                       </td>
                       <td style={{ padding: 14 }}>
                         <span
@@ -521,9 +515,9 @@ export default function OffersPage() {
                         </span>
                       </td>
                       <td style={{ padding: 14 }}>
-                        {new Date(
-                          offer.created_at
-                        ).toLocaleDateString()}
+                        {offer.created_at
+                          ? new Date(offer.created_at).toLocaleDateString()
+                          : "—"}
                       </td>
                     </tr>
                   ))}
@@ -531,8 +525,7 @@ export default function OffersPage() {
               </table>
             </div>
           )}
-                             </section>
-        </div>
+        </section>
         </main>
       </div>
     </div>
