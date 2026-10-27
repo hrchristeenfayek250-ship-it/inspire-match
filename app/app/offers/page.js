@@ -430,12 +430,15 @@ export default function OffersPage() {
                           "Candidate"}
                       </td>
                       <td style={{ padding: 14 }}>
-                        {offer.job_title}
-                      </td>
-                      <td style={{ padding: 14 }}>
-                        {offer.base_salary == null
-                          ? "—"
-                          : `${offer.currency} ${Number(
+                      
+        </section>
+        </main>
+      </div>
+    </div>
+    </>
+  );
+}
+
                               offer.base_salary
                             ).toLocaleString()}`}
                       </td>
