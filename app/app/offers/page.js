@@ -395,8 +395,9 @@ export default function OffersPage() {
               </table>
             </div>
           )}
-        </section>
+                </section>
       </div>
     </div>
+    </>
   );
 }
