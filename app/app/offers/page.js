@@ -138,7 +138,13 @@ export default function OffersPage() {
         .offers-nav a span { width:23px; text-align:center; font-size:19px; }
         .offers-nav a.active { color:#245340; background:#eaf3ee; border-left-color:#315f50; font-weight:800; }
         .offers-nav a:hover { background:#f4f7f6; }
-        .offers-content { min-width:0; padding:29px clamp(17px,3vw,46px) 60px; }
+     .offers-content {
+  min-width: 0;
+  width: 100%;
+  max-width: none;
+  margin: 0;
+  padding: 29px clamp(17px, 3vw, 46px) 60px;
+}
         @media(max-width:800px) {
           .offers-workspace { grid-template-columns:minmax(0,1fr); }
           .offers-sidebar { border-right:0; border-bottom:1px solid #e6eaf0; padding:16px; }
