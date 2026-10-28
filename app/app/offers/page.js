@@ -316,7 +316,13 @@ setAvailableJobs(jobResult.data || []);
               ))}
             </select>
           </div>
+</div>
 
+{showCreateOffer && (
+  // هنا كود الفورم كامل
+)}
+
+{loading && <p>Loading offers...</p>}
           {loading && <p>Loading offers...</p>}
 
           {error && (
