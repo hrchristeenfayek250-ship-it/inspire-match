@@ -32,6 +32,9 @@ export default function OffersPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [filter, setFilter] = useState("all");
+  const [showCreateOffer, setShowCreateOffer] = useState(false);
+const [savingOffer, setSavingOffer] = useState(false);
+const [offerFormError, setOfferFormError] = useState("");
 
   useEffect(() => {
     async function loadOffers() {
