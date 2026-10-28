@@ -73,23 +73,30 @@ const [offerForm, setOfferForm] = useState({
 
         const companyId = memberships[0].company_id;
 
-        const [offerResult, candidateResult] =
-          await Promise.all([
-            supabase
-              .from("recruitment_offers")
-              .select("*")
-              .eq("company_id", companyId)
-              .order("created_at", { ascending: false }),
+       const [offerResult, candidateResult, jobResult] =
+  await Promise.all([
+    supabase
+      .from("recruitment_offers")
+      .select("*")
+      .eq("company_id", companyId)
+      .order("created_at", { ascending: false }),
 
-            supabase
-              .from("candidates")
-              .select("id, full_name")
-              .eq("company_id", companyId),
-          ]);
+    supabase
+      .from("candidates")
+      .select("id, full_name")
+      .eq("company_id", companyId),
 
-        if (offerResult.error) throw offerResult.error;
-        if (candidateResult.error) throw candidateResult.error;
+    supabase
+      .from("jobs")
+      .select("id, title")
+      .eq("company_id", companyId),
+  ]);
 
+if (offerResult.error) throw offerResult.error;
+if (candidateResult.error) throw candidateResult.error;
+if (jobResult.error) throw jobResult.error;
+
+setAvailableJobs(jobResult.data || []);
         setOffers(offerResult.data || []);
 
         setCandidates(
