@@ -97,7 +97,7 @@ if (candidateResult.error) throw candidateResult.error;
 if (jobResult.error) throw jobResult.error;
 
 setAvailableJobs(jobResult.data || []);
- setAvailableJobs(jobResult.data || []);
+
         setOffers(offerResult.data || []);
 
         setCandidates(
