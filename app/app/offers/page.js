@@ -35,6 +35,16 @@ export default function OffersPage() {
   const [showCreateOffer, setShowCreateOffer] = useState(false);
 const [savingOffer, setSavingOffer] = useState(false);
 const [offerFormError, setOfferFormError] = useState("");
+  const [availableJobs, setAvailableJobs] = useState([]);
+const [offerForm, setOfferForm] = useState({
+  candidate_id: "",
+  job_id: "",
+  base_salary: "",
+  currency: "EGP",
+  start_date: "",
+  benefits: "",
+  internal_notes: "",
+});
 
   useEffect(() => {
     async function loadOffers() {
