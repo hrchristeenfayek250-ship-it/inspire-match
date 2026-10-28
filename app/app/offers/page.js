@@ -249,9 +249,35 @@ const [offerFormError, setOfferFormError] = useState("");
               marginBottom: 22,
             }}
           >
-            <h2 style={{ margin: 0 }}>
-              Employment Offers
-            </h2>
+           <div
+  style={{
+    display: "flex",
+    alignItems: "center",
+    gap: 16,
+    flexWrap: "wrap",
+  }}
+>
+  <h2 style={{ margin: 0 }}>Employment Offers</h2>
+
+  <button
+    type="button"
+    onClick={() => {
+      setOfferFormError("");
+      setShowCreateOffer(true);
+    }}
+    style={{
+      background: "#176b4a",
+      color: "#ffffff",
+      border: "none",
+      borderRadius: 10,
+      padding: "12px 20px",
+      fontWeight: 700,
+      cursor: "pointer",
+    }}
+  >
+    + Create Offer
+  </button>
+</div>
 
             <select
               value={filter}
