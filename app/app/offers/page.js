@@ -73,7 +73,7 @@ const [offerForm, setOfferForm] = useState({
 
         const companyId = memberships[0].company_id;
 
-       const [offerResult, candidateResult, jobResult] =
+     const [offerResult, candidateResult, jobResult] =
   await Promise.all([
     supabase
       .from("recruitment_offers")
@@ -90,6 +90,13 @@ const [offerForm, setOfferForm] = useState({
       .from("jobs")
       .select("id, title")
       .eq("company_id", companyId),
+  ]);
+
+if (offerResult.error) throw offerResult.error;
+if (candidateResult.error) throw candidateResult.error;
+if (jobResult.error) throw jobResult.error;
+
+setAvailableJobs(jobResult.data || []);
   ]);
 
 if (offerResult.error) throw offerResult.error;
