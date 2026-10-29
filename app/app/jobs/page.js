@@ -165,13 +165,9 @@ export default function JobsPage() {
   }
 async function loadHiringManagers() {
   try {
-    const { companyId } = await getCompanyScope();
-
-    const { data, error } = await supabase
-      .from("company_members")
-      .select("user_id, role")
-      .eq("company_id", companyId)
-      .eq("role", "hiring_manager");
+    const { data, error } = await supabase.rpc(
+      "get_company_hiring_managers"
+    );
 
     if (error) throw error;
 
