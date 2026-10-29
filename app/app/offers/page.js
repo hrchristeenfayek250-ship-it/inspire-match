@@ -117,7 +117,95 @@ setAvailableJobs(jobResult.data || []);
 
     loadOffers();
   }, []);
+async function handleSaveOffer() {
+  if (savingOffer) return;
 
+  if (!offerForm.candidate_id || !offerForm.job_id) {
+    setOfferFormError("Please select a candidate and a job.");
+    return;
+  }
+
+  if (
+    offerForm.base_salary !== "" &&
+    (!Number.isFinite(Number(offerForm.base_salary)) ||
+      Number(offerForm.base_salary) < 0)
+  ) {
+    setOfferFormError("Please enter a valid salary.");
+    return;
+  }
+
+  setSavingOffer(true);
+  setOfferFormError("");
+
+  try {
+    const { data: auth, error: authError } =
+      await supabase.auth.getUser();
+
+    if (authError) throw authError;
+    if (!auth.user) throw new Error("Please log in.");
+
+    const { data: memberships, error: memberError } =
+      await supabase
+        .from("company_members")
+        .select("company_id")
+        .eq("user_id", auth.user.id);
+
+    if (memberError) throw memberError;
+
+    if (!memberships || memberships.length !== 1) {
+      throw new Error("Your account must belong to exactly one company.");
+    }
+
+    const selectedJob = availableJobs.find(
+      (job) => String(job.id) === String(offerForm.job_id)
+    );
+
+    if (!selectedJob) {
+      throw new Error("Please select a valid job.");
+    }
+
+    const { data: newOffer, error: insertError } =
+      await supabase
+        .from("recruitment_offers")
+        .insert({
+          company_id: memberships[0].company_id,
+          candidate_id: Number(offerForm.candidate_id),
+          job_id: Number(offerForm.job_id),
+          created_by: auth.user.id,
+          job_title: selectedJob.title,
+          currency: offerForm.currency,
+          base_salary:
+            offerForm.base_salary === ""
+              ? null
+              : Number(offerForm.base_salary),
+          salary_period: "monthly",
+          proposed_start_date: offerForm.start_date || null,
+          benefits: offerForm.benefits || null,
+          internal_notes: offerForm.internal_notes || null,
+          status: "draft",
+        })
+        .select()
+        .single();
+
+    if (insertError) throw insertError;
+
+    setOffers((previous) => [newOffer, ...previous]);
+    setShowCreateOffer(false);
+    setOfferForm({
+      candidate_id: "",
+      job_id: "",
+      base_salary: "",
+      currency: "EGP",
+      start_date: "",
+      benefits: "",
+      internal_notes: "",
+    });
+  } catch (err) {
+    setOfferFormError(err.message || "Could not save the offer.");
+  } finally {
+    setSavingOffer(false);
+  }
+}
   const filteredOffers =
     filter === "all"
       ? offers
