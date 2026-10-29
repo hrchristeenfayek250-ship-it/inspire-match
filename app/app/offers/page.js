@@ -445,7 +445,50 @@ setAvailableJobs(jobResult.data || []);
     />
   </label>
 </div>
-  
+  <div
+  style={{
+    display: "grid",
+    gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))",
+    gap: 16,
+    marginTop: 20,
+  }}
+>
+  <label style={{ display: "grid", gap: 8, fontWeight: 600 }}>
+    Benefits
+    <textarea
+      rows={4}
+      value={offerForm.benefits}
+      onChange={(e) =>
+        setOfferForm({ ...offerForm, benefits: e.target.value })
+      }
+      placeholder="Medical insurance, transportation, bonuses..."
+      style={{
+        padding: 12,
+        borderRadius: 10,
+        border: "1px solid #dce9e1",
+        resize: "vertical",
+      }}
+    />
+  </label>
+
+  <label style={{ display: "grid", gap: 8, fontWeight: 600 }}>
+    Internal Notes
+    <textarea
+      rows={4}
+      value={offerForm.internal_notes}
+      onChange={(e) =>
+        setOfferForm({ ...offerForm, internal_notes: e.target.value })
+      }
+      placeholder="Notes visible to the HR team..."
+      style={{
+        padding: 12,
+        borderRadius: 10,
+        border: "1px solid #dce9e1",
+        resize: "vertical",
+      }}
+    />
+  </label>
+</div>
   </div>
 )}
 
