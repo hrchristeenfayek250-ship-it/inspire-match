@@ -316,20 +316,47 @@ setAvailableJobs(jobResult.data || []);
               ))}
             </select>
           </div>
-</div>
-
 {showCreateOffer && (
-  // هنا كود الفورم كامل
-)}
-</div>
+  <div
+    style={{
+      background: "#f8fbf9",
+      border: "1px solid #dce9e1",
+      borderRadius: 14,
+      padding: 24,
+      marginBottom: 24,
+    }}
+  >
+    <div
+      style={{
+        display: "flex",
+        justifyContent: "space-between",
+        alignItems: "center",
+        marginBottom: 20,
+      }}
+    >
+      <h3 style={{ margin: 0 }}>Create Employment Offer</h3>
 
-{showCreateOffer && (
-  // هنا كود الفورم كامل
+      <button
+        type="button"
+        onClick={() => setShowCreateOffer(false)}
+        style={{
+          background: "transparent",
+          border: "none",
+          cursor: "pointer",
+          fontSize: 22,
+        }}
+      >
+        ×
+      </button>
+    </div>
+
+    <p style={{ color: "#708679", margin: 0 }}>
+      Complete the offer details below.
+    </p>
+  </div>
 )}
 
 {loading && <p>Loading offers...</p>}
-{loading && <p>Loading offers...</p>}
-          {loading && <p>Loading offers...</p>}
 
           {error && (
             <p role="alert" style={{ color: "#b42318" }}>
