@@ -128,8 +128,9 @@ export default function JobsPage() {
   const [successMessage, setSuccessMessage] = useState("");
 
   useEffect(() => {
-    loadJobs();
-  }, []);
+  loadJobs();
+  loadHiringManagers();
+}, []);
 
   async function getCompanyScope() {
     const {
