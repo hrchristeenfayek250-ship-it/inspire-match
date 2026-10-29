@@ -394,7 +394,57 @@ setAvailableJobs(jobResult.data || []);
       ))}
     </select>
   </label>
+<div
+  style={{
+    display: "grid",
+    gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))",
+    gap: 16,
+    marginTop: 20,
+  }}
+>
+  <label style={{ display: "grid", gap: 8, fontWeight: 600 }}>
+    Base Salary
+    <input
+      type="number"
+      min="0"
+      value={offerForm.base_salary}
+      onChange={(e) =>
+        setOfferForm({ ...offerForm, base_salary: e.target.value })
+      }
+      placeholder="Enter salary"
+      style={{ padding: 12, borderRadius: 10, border: "1px solid #dce9e1" }}
+    />
+  </label>
+
+  <label style={{ display: "grid", gap: 8, fontWeight: 600 }}>
+    Currency
+    <select
+      value={offerForm.currency}
+      onChange={(e) =>
+        setOfferForm({ ...offerForm, currency: e.target.value })
+      }
+      style={{ padding: 12, borderRadius: 10, border: "1px solid #dce9e1" }}
+    >
+      <option value="EGP">EGP</option>
+      <option value="SAR">SAR</option>
+      <option value="AED">AED</option>
+      <option value="USD">USD</option>
+    </select>
+  </label>
+
+  <label style={{ display: "grid", gap: 8, fontWeight: 600 }}>
+    Start Date
+    <input
+      type="date"
+      value={offerForm.start_date}
+      onChange={(e) =>
+        setOfferForm({ ...offerForm, start_date: e.target.value })
+      }
+      style={{ padding: 12, borderRadius: 10, border: "1px solid #dce9e1" }}
+    />
+  </label>
 </div>
+        </div>
   </div>
 )}
 
