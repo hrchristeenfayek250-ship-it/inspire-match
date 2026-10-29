@@ -350,9 +350,51 @@ setAvailableJobs(jobResult.data || []);
       </button>
     </div>
 
-    <p style={{ color: "#708679", margin: 0 }}>
-      Complete the offer details below.
-    </p>
+    <div
+  style={{
+    display: "grid",
+    gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))",
+    gap: 16,
+  }}
+>
+  <label style={{ display: "grid", gap: 8, fontWeight: 600 }}>
+    Candidate
+    <select
+      value={offerForm.candidate_id}
+      onChange={(e) =>
+        setOfferForm({
+          ...offerForm,
+          candidate_id: e.target.value,
+        })
+      }
+      style={{ padding: 12, borderRadius: 10, border: "1px solid #dce9e1" }}
+    >
+      <option value="">Select Candidate</option>
+      {Object.entries(candidates).map(([id, name]) => (
+        <option key={id} value={id}>{name}</option>
+      ))}
+    </select>
+  </label>
+
+  <label style={{ display: "grid", gap: 8, fontWeight: 600 }}>
+    Job
+    <select
+      value={offerForm.job_id}
+      onChange={(e) =>
+        setOfferForm({
+          ...offerForm,
+          job_id: e.target.value,
+        })
+      }
+      style={{ padding: 12, borderRadius: 10, border: "1px solid #dce9e1" }}
+    >
+      <option value="">Select Job</option>
+      {availableJobs.map((job) => (
+        <option key={job.id} value={job.id}>{job.title}</option>
+      ))}
+    </select>
+  </label>
+</div>
   </div>
 )}
 
