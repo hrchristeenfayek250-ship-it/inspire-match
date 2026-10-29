@@ -576,7 +576,53 @@ async function handleSaveOffer() {
       }}
     />
   </label>
+{offerFormError && (
+  <p role="alert" style={{ color: "#b42318", marginTop: 16 }}>
+    {offerFormError}
+  </p>
+)}
+
+<div
+  style={{
+    display: "flex",
+    justifyContent: "flex-end",
+    gap: 12,
+    marginTop: 24,
+  }}
+>
+  <button
+    type="button"
+    onClick={() => setShowCreateOffer(false)}
+    disabled={savingOffer}
+    style={{
+      padding: "12px 24px",
+      borderRadius: 10,
+      border: "1px solid #dce9e1",
+      background: "#fff",
+      cursor: "pointer",
+    }}
+  >
+    Cancel
+  </button>
+
+  <button
+    type="button"
+    onClick={handleSaveOffer}
+    disabled={savingOffer}
+    style={{
+      padding: "12px 24px",
+      borderRadius: 10,
+      border: "none",
+      background: "#176b4a",
+      color: "#fff",
+      fontWeight: 700,
+      cursor: "pointer",
+    }}
+  >
+    {savingOffer ? "Saving..." : "Save Draft"}
+  </button>
 </div>
+      </div>
  {offerFormError && (
   <p
     role="alert"
