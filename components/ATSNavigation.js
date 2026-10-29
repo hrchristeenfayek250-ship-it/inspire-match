@@ -12,6 +12,8 @@ export const ATS_NAVIGATION = [
   ["Pipeline", "/app/pipeline", "⇄"],
   
   ["Interviews", "/app/interviews", "▤"],
+  ["Offer Management", "/app/offers", "▦"],
+["Approval Center", "/app/approvals", "✓"],
 
   ["AI Matching", "/app/matching", "✧"],
   ["Reports", "/app/reports", "▥"],
