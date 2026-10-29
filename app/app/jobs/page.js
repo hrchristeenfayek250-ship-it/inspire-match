@@ -1371,10 +1371,6 @@ async function loadHiringManagers() {
         <option value="">Select Hiring Manager</option>
 
         {hiringManagers.map((manager) => (
-          <option
-            key={manager.user_id}
-            value={manager.user_id}
-         {hiringManagers.map((manager) => (
   <option
     key={manager.user_id}
     value={manager.user_id}
@@ -1382,10 +1378,14 @@ async function loadHiringManagers() {
     {manager.email}
   </option>
 ))}
-        can be assigned.
-      </small>
-    </label>
-  </div>
+</select>
+
+<small>
+  Only registered Hiring Managers from your company
+  can be assigned.
+</small>
+</label>
+</div>
 </div>
 
                   <div className="jm-form-section">
