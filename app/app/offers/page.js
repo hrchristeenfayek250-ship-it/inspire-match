@@ -394,7 +394,8 @@ setAvailableJobs(jobResult.data || []);
       ))}
     </select>
   </label>
-<div
+</div>
+        <div
   style={{
     display: "grid",
     gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))",
