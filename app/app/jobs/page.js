@@ -1374,14 +1374,14 @@ async function loadHiringManagers() {
           <option
             key={manager.user_id}
             value={manager.user_id}
-          >
-            {manager.user_id}
-          </option>
-        ))}
-      </select>
-
-      <small>
-        Only registered Hiring Managers from your company
+         {hiringManagers.map((manager) => (
+  <option
+    key={manager.user_id}
+    value={manager.user_id}
+  >
+    {manager.email}
+  </option>
+))}
         can be assigned.
       </small>
     </label>
