@@ -4,7 +4,7 @@ import Link from "next/link";
 import { supabase } from "@/lib/supabase";
 import ATSNavigation from "@/components/ATSNavigation";
 
-const empty = {title:"",description:"",assignee_name:"",priority:"medium",status:"todo",due_date:""};
+const empty = {title:"",description:"",assignee_name:"",priority:"medium",status:"todo",due_date:"",job_id:"",candidate_id:""};
 const statuses = ["todo","in_progress","blocked","completed"];
 const label = (s) => ({todo:"To Do",in_progress:"In Progress",blocked:"Blocked",completed:"Completed"}[s] || s);
 const card = {background:"#fff",border:"1px solid #e1eae4",borderRadius:16,padding:22};
@@ -15,22 +15,24 @@ export default function RecruitmentTasksPage(){
  const [error,setError]=useState(""),[message,setMessage]=useState(""),[saving,setSaving]=useState(false);
  const [form,setForm]=useState(empty),[editing,setEditing]=useState(null),[show,setShow]=useState(false);
  const [filter,setFilter]=useState("all"),[search,setSearch]=useState("");
+ const [jobs,setJobs]=useState([]),[candidates,setCandidates]=useState([]);
  async function load(){
   setLoading(true);setError("");
   const {data:auth,error:authError}=await supabase.auth.getUser();
   if(authError||!auth?.user){setError("Please sign in to manage tasks.");setLoading(false);return;}
   setUid(auth.user.id);
-  const {data,error:e}=await supabase.from("recruitment_tasks").select("id,title,description,assignee_name,priority,status,due_date,created_at").eq("created_by",auth.user.id).order("created_at",{ascending:false});
+  const {data,error:e}=await supabase.from("recruitment_tasks").select("id,title,description,assignee_name,priority,status,due_date,created_at,job_id,candidate_id").eq("created_by",auth.user.id).order("created_at",{ascending:false});
   if(e)setError(e.message);else setTasks(data||[]);
   setLoading(false);
  }
  useEffect(()=>{load();},[]);
+ useEffect(()=>{let active=true;(async()=>{const {data:auth}=await supabase.auth.getUser();if(!auth?.user)return;const member=await supabase.from("company_members").select("company_id").eq("user_id",auth.user.id);if(!active||member.error)return;const companyIds=[...new Set((member.data||[]).map(x=>x.company_id).filter(Boolean))];if(!companyIds.length)return;const [j,c]=await Promise.all([supabase.from("jobs").select("id,title").in("company_id",companyIds).limit(500),supabase.from("candidates").select("id,full_name,job_id").in("company_id",companyIds).is("deleted_at",null).limit(500)]);if(active){if(!j.error)setJobs(j.data||[]);if(!c.error)setCandidates(c.data||[]);}})();return()=>{active=false;};},[]);
  function create(){setEditing(null);setForm(empty);setShow(true);setMessage("");}
- function edit(t){setEditing(t.id);setForm({title:t.title||"",description:t.description||"",assignee_name:t.assignee_name||"",priority:t.priority,status:t.status,due_date:t.due_date||""});setShow(true);window.scrollTo({top:0,behavior:"smooth"});}
+ function edit(t){setEditing(t.id);setForm({title:t.title||"",description:t.description||"",assignee_name:t.assignee_name||"",priority:t.priority,status:t.status,due_date:t.due_date||"",job_id:t.job_id==null?"":String(t.job_id),candidate_id:t.candidate_id==null?"":String(t.candidate_id)});setShow(true);window.scrollTo({top:0,behavior:"smooth"});}
  async function save(e){
   e.preventDefault();if(!uid||saving||!form.title.trim())return;
   setSaving(true);setError("");setMessage("");
-  const payload={title:form.title.trim(),description:form.description.trim()||null,assignee_name:form.assignee_name.trim()||null,priority:form.priority,status:form.status,due_date:form.due_date||null,updated_at:new Date().toISOString()};
+  const payload={title:form.title.trim(),description:form.description.trim()||null,assignee_name:form.assignee_name.trim()||null,priority:form.priority,status:form.status,due_date:form.due_date||null,job_id:form.job_id?Number(form.job_id):null,candidate_id:form.candidate_id?Number(form.candidate_id):null,updated_at:new Date().toISOString()};
   const query=editing?supabase.from("recruitment_tasks").update(payload).eq("id",editing).eq("created_by",uid):supabase.from("recruitment_tasks").insert({...payload,created_by:uid});
   const {error:e2}=await query;setSaving(false);
   if(e2){setError(e2.message);return;}
@@ -72,6 +74,8 @@ export default function RecruitmentTasksPage(){
        <label>Responsible person (name)<input style={{...field,marginTop:7}} value={form.assignee_name} onChange={e=>setForm({...form,assignee_name:e.target.value})}/></label>
        <label>Priority<select style={{...field,marginTop:7}} value={form.priority} onChange={e=>setForm({...form,priority:e.target.value})}>{["low","medium","high","urgent"].map(p=><option key={p} value={p}>{p}</option>)}</select></label>
        <label>Due Date<input type="date" style={{...field,marginTop:7}} value={form.due_date} onChange={e=>setForm({...form,due_date:e.target.value})}/></label>
+       <label>Related Job<select style={{...field,marginTop:7}} value={form.job_id} onChange={e=>setForm({...form,job_id:e.target.value,candidate_id:""})}><option value="">No linked job</option>{jobs.map(j=><option key={j.id} value={j.id}>{j.title}</option>)}</select></label>
+       <label>Related Candidate<select style={{...field,marginTop:7}} value={form.candidate_id} onChange={e=>setForm({...form,candidate_id:e.target.value})}><option value="">No linked candidate</option>{candidates.filter(c=>!form.job_id||String(c.job_id)===String(form.job_id)).map(c=><option key={c.id} value={c.id}>{c.full_name}</option>)}</select></label>
        <label>Status<select style={{...field,marginTop:7}} value={form.status} onChange={e=>setForm({...form,status:e.target.value})}>{statuses.map(s=><option key={s} value={s}>{label(s)}</option>)}</select></label>
       </div>
       <div style={{display:"flex",gap:10,marginTop:20}}><button type="submit" disabled={saving} style={btn}>{saving?"Saving...":editing?"Save Changes":"Create Task"}</button><button type="button" onClick={()=>setShow(false)} style={{...btn,background:"#edf4ef",color:"#176b49"}}>Cancel</button></div>
@@ -83,7 +87,7 @@ export default function RecruitmentTasksPage(){
       </div>
       {loading?<p style={{padding:30,color:"#74887c"}}>Loading tasks...</p>:visible.length===0?<p style={{padding:35,textAlign:"center",color:"#84978b"}}>{tasks.length?"No matching tasks.":"No tasks yet. Create your first task."}</p>:
        <div className="rt-tasks">{visible.map(t=><article key={t.id} style={{border:"1px solid #e5eee7",borderRadius:12,padding:18,display:"flex",justifyContent:"space-between",alignItems:"center",gap:15,flexWrap:"wrap"}}>
-        <div style={{flex:1,minWidth:180}}><strong style={{fontSize:15}}>{t.title}</strong>{t.description&&<p style={{fontSize:12,color:"#73877b",whiteSpace:"pre-wrap",margin:"8px 0"}}>{t.description}</p>}<div style={{fontSize:11,color:"#678374",marginTop:9}}>Priority: <b>{t.priority.toUpperCase()}</b> &nbsp; · &nbsp; Due: {t.due_date||"Not set"} {t.assignee_name&&" · "+t.assignee_name}</div></div>
+        <div style={{flex:1,minWidth:180}}><strong style={{fontSize:15}}>{t.title}</strong>{t.description&&<p style={{fontSize:12,color:"#73877b",whiteSpace:"pre-wrap",margin:"8px 0"}}>{t.description}</p>}<div style={{fontSize:11,color:"#678374",marginTop:9}}>Priority: <b>{t.priority.toUpperCase()}</b> &nbsp; · &nbsp; Due: {t.due_date||"Not set"} {t.assignee_name&&" · "+t.assignee_name}{t.job_id&&" · Job: "+(jobs.find(j=>String(j.id)===String(t.job_id))?.title||"#"+t.job_id)}{t.candidate_id&&" · Candidate: "+(candidates.find(c=>String(c.id)===String(t.candidate_id))?.full_name||"#"+t.candidate_id)}</div></div>
         <div style={{display:"flex",gap:8,alignItems:"center",flexWrap:"wrap"}}><select aria-label={"Status for "+t.title} value={t.status} onChange={e=>changeStatus(t,e.target.value)} style={{...field,width:135,fontSize:11}}>{statuses.map(s=><option key={s} value={s}>{label(s)}</option>)}</select><button style={{...btn,background:"#e9f4ed",color:"#176b49",padding:10}} onClick={()=>edit(t)}>Edit</button><button style={{...btn,background:"#fff0ef",color:"#a44e43",padding:10}} onClick={()=>remove(t)}>Delete</button></div>
        </article>)}</div>}
      </section>
