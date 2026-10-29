@@ -206,6 +206,40 @@ async function handleSaveOffer() {
     setSavingOffer(false);
   }
 }
+ const [submittingOfferId, setSubmittingOfferId] = useState(null);
+const [submitError, setSubmitError] = useState("");
+
+async function handleSubmitForApproval(offerId) {
+  if (submittingOfferId) return;
+
+  setSubmittingOfferId(offerId);
+  setSubmitError("");
+
+  try {
+    const { error } = await supabase.rpc(
+      "submit_offer_for_approval",
+      { p_offer_id: offerId }
+    );
+
+    if (error) throw error;
+
+    setOffers((previous) =>
+      previous.map((offer) =>
+        offer.id === offerId
+          ? {
+              ...offer,
+              status: "pending_approval",
+              approval_status: "pending",
+            }
+          : offer
+      )
+    );
+  } catch (err) {
+    setSubmitError(err.message || "Could not submit offer.");
+  } finally {
+    setSubmittingOfferId(null);
+  }
+}
   const filteredOffers =
     filter === "all"
       ? offers
