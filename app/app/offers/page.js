@@ -396,12 +396,16 @@ async function handleSaveOffer() {
                 color: "#183e32",
               }}
             >
-              <option value="all">All Statuses</option>
-              {statuses.map((status) => (
-                <option key={status} value={status}>
-                  {formatStatus(status)}
-                </option>
-              ))}
+              <option value="all">
+  All Statuses ({offers.length})
+</option>
+
+{statuses.map((status) => (
+  <option key={status} value={status}>
+    {formatStatus(status)} (
+    {offers.filter((offer) => offer.status === status).length})
+  </option>
+))}
             </select>
           </div>
 {showCreateOffer && (
