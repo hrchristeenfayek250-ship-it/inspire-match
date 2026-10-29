@@ -14,7 +14,7 @@ const initialForm = {
   employment_type: "Full-time",
   salary_proposed: "",
   years_of_experience: "",
-  hiring_manager: "",
+  hiring_manager: "",hiring_manager_user_id: "",
   openings: "1",
   priority: "Medium",
   deadline: "",
@@ -44,7 +44,7 @@ const textFields = [
     fields: [
       ["salary_proposed", "Salary Proposed", "text", "e.g. 30,000 - 40,000 EGP"],
       ["years_of_experience", "Years of Experience", "text", "e.g. 5+ years"],
-      ["hiring_manager", "Hiring Manager", "text", "Hiring manager name"],
+     
       ["priority", "Priority", "select", ["High", "Medium", "Low"]],
       ["deadline", "Hiring Deadline", "date", ""],
     ],
@@ -281,6 +281,7 @@ export default function JobsPage() {
         years_of_experience:
           form.years_of_experience.trim() || null,
         hiring_manager: form.hiring_manager.trim() || null,
+        hiring_manager_user_id: form.hiring_manager_user_id || null,
         openings: Math.max(1, Number(form.openings) || 1),
         priority: form.priority || "Medium",
         deadline: form.deadline || null,
