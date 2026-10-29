@@ -11,6 +11,7 @@ export const ATS_NAVIGATION = [
   ["Recycle Bin", "/app/recycle-bin", "♻"],
   ["Pipeline", "/app/pipeline", "⇄"],
   
+   ["Recruitment Operations", "/app/recruitment-operations", "◈"],
   ["Interviews", "/app/interviews", "▤"],
   ["Offer Management", "/app/offers", "▦"],
 ["Approval Center", "/app/approvals", "✓"],
