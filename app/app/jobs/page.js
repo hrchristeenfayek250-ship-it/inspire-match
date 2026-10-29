@@ -1336,24 +1336,61 @@ async function loadHiringManagers() {
 
                 <form onSubmit={saveJob}>
                   {textFields.map((group) => (
-                    <div
-                      key={group.title}
-                      className="jm-form-section"
-                    >
-                      <h3>{group.title}</h3>
+  <div
+    key={group.title}
+    className="jm-form-section"
+  >
+    <h3>{group.title}</h3>
 
-                      <div className="jm-form-grid">
-                        {group.fields.map((field) => (
-                          <FormField
-                            key={field[0]}
-                            field={field}
-                            form={form}
-                            updateField={updateField}
-                          />
-                        ))}
-                      </div>
-                    </div>
-                  ))}
+    <div className="jm-form-grid">
+      {group.fields.map((field) => (
+        <FormField
+          key={field[0]}
+          field={field}
+          form={form}
+          updateField={updateField}
+        />
+      ))}
+    </div>
+  </div>
+))}
+
+<div className="jm-form-section">
+  <h3>Hiring Manager Assignment</h3>
+
+  <div className="jm-form-grid">
+    <label className="jm-field">
+      <span>Assigned Hiring Manager</span>
+
+      <select
+        className="jm-control"
+        value={form.hiring_manager_user_id || ""}
+        onChange={(e) =>
+          updateField(
+            "hiring_manager_user_id",
+            e.target.value
+          )
+        }
+      >
+        <option value="">Select Hiring Manager</option>
+
+        {hiringManagers.map((manager) => (
+          <option
+            key={manager.user_id}
+            value={manager.user_id}
+          >
+            {manager.user_id}
+          </option>
+        ))}
+      </select>
+
+      <small>
+        Only registered Hiring Managers from your company
+        can be assigned.
+      </small>
+    </label>
+  </div>
+</div>
 
                   <div className="jm-form-section">
                     <h3>Skills & Role Details</h3>
