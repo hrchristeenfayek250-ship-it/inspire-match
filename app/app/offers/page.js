@@ -444,7 +444,7 @@ setAvailableJobs(jobResult.data || []);
     />
   </label>
 </div>
-        </div>
+  
   </div>
 )}
 
