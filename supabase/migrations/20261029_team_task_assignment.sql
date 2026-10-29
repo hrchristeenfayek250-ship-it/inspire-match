@@ -14,10 +14,10 @@ CREATE INDEX IF NOT EXISTS idx_recruitment_tasks_assigned_to
 -- Backfill only when a task owner belongs to exactly one company.
 UPDATE public.recruitment_tasks t
 SET company_id = (
-  SELECT MIN(cm.company_id)
+  SELECT cm.company_id
   FROM public.company_members cm
   WHERE cm.user_id = t.created_by
-  HAVING COUNT(DISTINCT cm.company_id) = 1
+  LIMIT 1
 )
 WHERE t.company_id IS NULL
   AND (SELECT COUNT(DISTINCT cm.company_id)
