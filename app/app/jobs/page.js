@@ -111,6 +111,7 @@ export default function JobsPage() {
   const [jobs, setJobs] = useState([]);
   const [candidates, setCandidates] = useState([]);
   const [form, setForm] = useState(initialForm);
+  const [hiringManagers, setHiringManagers] = useState([]);
 
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -161,7 +162,24 @@ export default function JobsPage() {
 
     return { user, companyId, filter };
   }
+async function loadHiringManagers() {
+  try {
+    const { companyId } = await getCompanyScope();
 
+    const { data, error } = await supabase
+      .from("company_members")
+      .select("user_id, role")
+      .eq("company_id", companyId)
+      .eq("role", "hiring_manager");
+
+    if (error) throw error;
+
+    setHiringManagers(data || []);
+  } catch (error) {
+    console.error("Could not load hiring managers:", error);
+    setHiringManagers([]);
+  }
+}
   async function loadJobs() {
     setLoading(true);
     setErrorMessage("");
