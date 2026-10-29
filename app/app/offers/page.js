@@ -744,7 +744,11 @@ async function handleSubmitForApproval(offerId) {
               </p>
             </div>
           )}
-
+{submitError && (
+  <p role="alert" style={{ color: "#b42318", marginBottom: 16 }}>
+    {submitError}
+  </p>
+)}
           {!loading && !error && filteredOffers.length > 0 && (
             <div style={{ overflowX: "auto" }}>
               <table
@@ -762,6 +766,7 @@ async function handleSubmitForApproval(offerId) {
                       "Salary",
                       "Status",
                       "Created",
+                      "Actions",
                     ].map((heading) => (
                       <th
                         key={heading}
@@ -812,6 +817,30 @@ async function handleSubmitForApproval(offerId) {
                           offer.created_at
                         ).toLocaleDateString()}
                       </td>
+                        <td style={{ padding: 14 }}>
+  {offer.status === "draft" && (
+    <button
+      type="button"
+      onClick={() => handleSubmitForApproval(offer.id)}
+      disabled={submittingOfferId !== null}
+      style={{
+        padding: "10px 14px",
+        borderRadius: 9,
+        border: "none",
+        background: "#176b4a",
+        color: "#ffffff",
+        fontSize: 12,
+        fontWeight: 700,
+        cursor: submittingOfferId ? "wait" : "pointer",
+        opacity: submittingOfferId ? 0.65 : 1,
+      }}
+    >
+      {submittingOfferId === offer.id
+        ? "Submitting..."
+        : "Submit for Approval"}
+    </button>
+  )}
+</td>
                     </tr>
                   ))}
                 </tbody>
