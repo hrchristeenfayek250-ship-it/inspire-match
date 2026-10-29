@@ -4,6 +4,7 @@ import Link from "next/link";
 import ATSNavigation from "@/components/ATSNavigation";
 
 const operations = [
+  { number: "00", label: "TASK PLANNING", title: "Recruitment Task Management", description: "Create, prioritize, and track recruitment tasks and deadlines.", href: "/app/recruitment-operations/tasks", action: "Manage Tasks", icon: "☑" },
   {
     number: "01",
     label: "REQUISITIONS",
@@ -219,7 +220,7 @@ export default function RecruitmentOperationsPage() {
               </div>
               <div className="ops-hero-side">
                 <div className="ops-hero-side-label">CONNECTED WORKSPACE</div>
-                <strong>06</strong>
+                <strong>07</strong>
                 <p>Recruitment modules, one streamlined hiring journey.</p>
                 <div className="ops-hero-dots" aria-hidden="true">
                   {operations.map((item) => <span key={item.number} />)}
@@ -233,7 +234,7 @@ export default function RecruitmentOperationsPage() {
                 <h2>Manage your operations</h2>
                 <p>Everything your recruitment team needs, organized in one place.</p>
               </div>
-              <span className="ops-section-count">6 Modules</span>
+              <span className="ops-section-count">7 Modules</span>
             </div>
 
             <div className="ops-grid">
@@ -252,7 +253,7 @@ export default function RecruitmentOperationsPage() {
 
             <div className="ops-bottom">
               <span aria-hidden="true">✦</span>
-              <span><strong>Built for connected hiring.</strong> All six cards open existing Inspire Match modules; no permissions or financial data have been changed.</span>
+              <span><strong>Built for connected hiring.</strong> Your task workspace and six existing recruitment modules are connected here.</span>
             </div>
           </div>
         </div>
