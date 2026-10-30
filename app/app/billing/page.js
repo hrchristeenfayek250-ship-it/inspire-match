@@ -74,6 +74,8 @@ export default function BillingPage(){
  const [invoices,setInvoices]=useState([]);
  const [payments,setPayments]=useState([]);
  const [subscriptionEvents,setSubscriptionEvents]=useState([]);
+ const [planEntitlements,setPlanEntitlements]=useState([]);
+ const [planQuotas,setPlanQuotas]=useState([]);
  const [subscriptionControlsReady,setSubscriptionControlsReady]=useState(false);
  const [managingSubscription,setManagingSubscription]=useState(false);
  const [period,setPeriod]=useState("month");
@@ -114,6 +116,13 @@ export default function BillingPage(){
   if(!active)return;
   const failure=p.find(r=>r.error);
   if(failure){setError(failure.error.message+" — Run the Billing Foundation SQL in Supabase first.");setLoading(false);return;}
+  const [features,quotas]=await Promise.all([
+   supabase.from("billing_plan_entitlements").select("plan_id,feature_key,enabled"),
+   supabase.from("billing_plan_quotas").select("plan_id,quota_key,limit_value")
+  ]);
+  if(!active)return;
+  setPlanEntitlements(features.error?[]:features.data||[]);
+  setPlanQuotas(quotas.error?[]:quotas.data||[]);
   setPlans(p[0].data?.length?p[0].data:defaultPlans);
   setPrices(p[1].data||[]);
   setSubscription(p[2].data||null);
@@ -194,6 +203,20 @@ export default function BillingPage(){
     {!subscriptionControlsReady&&companyId&&<p className="billing-muted">Subscription management controls become available after the subscription management SQL migration is applied.</p>}
     <p className="billing-muted">Important: The current Paymob checkout uses one-time payments; automatic recurring charges are not active. This action stores your future renewal preference and does not initiate a refund or contact Paymob.</p>
     {!!subscriptionEvents.length&&<div style={{marginTop:16}}><strong>Subscription activity</strong>{subscriptionEvents.slice(0,8).map(event=><div key={event.id} style={{display:"flex",justifyContent:"space-between",gap:12,padding:"10px 0",borderBottom:"1px solid #ebf1ed"}}><span>{event.action==="cancel_at_period_end"?"End-of-period cancellation requested":"Cancellation request withdrawn"}</span><span className="billing-muted">{date(event.created_at)}</span></div>)}</div>}
+   </section>
+   <div className="billing-section-head"><h2>Plan features &amp; usage limits</h2><span className="billing-pill">Draft configuration · not enforced yet</span></div>
+   <section className="billing-panel">
+    <p className="billing-muted">The feature matrix below describes planned commercial tiers. Existing ATS routes do not yet restrict access by plan, and no usage caps have been approved.</p>
+    <div className="billing-table-wrap"><table className="billing-table"><thead><tr><th>Capability</th>{plans.map(plan=><th key={plan.id}>{plan.name}</th>)}</tr></thead><tbody>
+     {[
+      ["job_management","Jobs & candidates"],["interviews","Interviews"],["essential_reports","Essential reports"],
+      ["ai_matching","AI matching"],["ai_shortlisting","AI shortlisting"],["advanced_analytics","Advanced analytics"],
+      ["recruitment_operations","Recruitment operations"],["ask_inspire_ai","Ask Inspire AI"],["custom_support","Enterprise support"]
+     ].map(([key,label])=><tr key={key}><td>{label}</td>{plans.map(plan=><td key={plan.id}>{planEntitlements.length?(planEntitlements.find(e=>e.plan_id===plan.id&&e.feature_key===key)?.enabled?"Included":"—"):"Pending setup"}</td>)}</tr>)}
+     {[
+      ["active_jobs","Active jobs"],["team_members","Team members"],["ai_requests_per_month","AI requests / month"],["candidate_records","Candidate records"]
+     ].map(([key,label])=><tr key={key}><td>{label}</td>{plans.map(plan=>{const q=planQuotas.find(x=>x.plan_id===plan.id&&x.quota_key===key);return <td key={plan.id}>{q?.limit_value==null?"Not set":q.limit_value.toLocaleString("en-US")}</td>})}</tr>)}
+    </tbody></table></div>
    </section>
    <div className="billing-section-head"><h2>Choose your plan</h2><span className="billing-pill">Paymob integration prepared</span></div>
    <section className="billing-plans">{plans.map(plan=>{
