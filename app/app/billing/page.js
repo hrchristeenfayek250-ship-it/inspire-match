@@ -182,6 +182,14 @@ export default function BillingPage(){
   if(e)setError(e.message);
   else{setNotice("Billing draft details saved. No payment was made.");setRefresh(x=>x+1);}
  }
+ async function submitSetupReview(){
+  if(!companyId||!setupInvoice||setupInvoice.status!=="draft"||submittingSetupReview)return;
+  setSubmittingSetupReview(true);setError("");setNotice("");
+  const {error:reviewError}=await supabase.rpc("billing_submit_setup_invoice_review",{p_company_id:companyId});
+  setSubmittingSetupReview(false);
+  if(reviewError)setError(reviewError.message);
+  else{setNotice("Setup invoice submitted for internal review. No invoice was issued or charged.");setRefresh(x=>x+1);}
+ }
  async function checkout(priceId){
   if(!priceId||processing||!companyId)return;
   setProcessing(priceId);setError("");setNotice("");
