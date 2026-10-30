@@ -21,6 +21,7 @@ export const ATS_NAVIGATION = [
   ["Ask Inspire AI", "/app/ask-inspire", "✦"],
   ["Executive", "/app/executive", "◈"],
   ["Team", "/app/team", "♧"],
+  ["Billing & Subscriptions", "/app/billing", "▤"],
 ];
 
 
