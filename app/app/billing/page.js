@@ -74,6 +74,8 @@ export default function BillingPage(){
  const [setupInvoice,setSetupInvoice]=useState(null);
  const [setupInvoiceReady,setSetupInvoiceReady]=useState(false);
  const [creatingSetup,setCreatingSetup]=useState(false);
+ const [savingSetupDetails,setSavingSetupDetails]=useState(false);
+ const [setupDetails,setSetupDetails]=useState({name:"",email:"",address:"",taxId:"",notes:""});
  const [subscription,setSubscription]=useState(null);
  const [invoices,setInvoices]=useState([]);
  const [payments,setPayments]=useState([]);
@@ -146,11 +148,12 @@ export default function BillingPage(){
   setSubscriptionControlsReady(!audit.error);
   setSubscriptionEvents(audit.data||[]);
   const setup=await supabase.from("billing_setup_invoices")
-   .select("id,commercial_offer_id,plan_id,currency,billing_interval,amount_minor,status,created_at,updated_at")
+   .select("id,commercial_offer_id,plan_id,currency,billing_interval,amount_minor,status,created_at,updated_at,bill_to_name,bill_to_email,bill_to_address,bill_to_tax_id,tax_treatment,billing_notes")
    .eq("company_id",companyId).maybeSingle();
   if(!active)return;
   setSetupInvoiceReady(!setup.error);
   setSetupInvoice(setup.error?null:(setup.data||null));
+  if(!setup.error){setSetupDetails({name:setup.data?.bill_to_name||"",email:setup.data?.bill_to_email||"",address:setup.data?.bill_to_address||"",taxId:setup.data?.bill_to_tax_id||"",notes:setup.data?.billing_notes||""});}
   setRole("admin");
   setLoading(false);
  })().catch(e=>{if(active){setError(e.message);setLoading(false);}});return()=>{active=false;};
