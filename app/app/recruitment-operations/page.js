@@ -20,6 +20,7 @@ const operations = [
   { number: "00K", label: "DECISION INTELLIGENCE", title: "Recruitment Decision Intelligence", description: "Compare applicants for the same role using interview scorecards, evaluator recommendations, evidence gaps and documented decisions.", href: "/app/recruitment-operations/decisions", action: "Compare Candidates", icon: "◎" },
   { number: "00L", label: "CANDIDATE EXPERIENCE", title: "Candidate Experience & Communication Intelligence", description: "Identify candidate follow-up needs, unresolved interviews and candidate-linked task commitments with a prioritized review queue.", href: "/app/recruitment-operations/candidate-experience", action: "Review Experience", icon: "♡" },
   { number: "00M", label: "COMMUNICATION HUB", title: "Candidate Communication Hub", description: "Log candidate conversations, review communication timelines and manage upcoming or overdue follow-up commitments.", href: "/app/recruitment-operations/communications", action: "Open Communication Hub", icon: "✉" },
+  { number: "00N", label: "CANDIDATE FEEDBACK", title: "Candidate Feedback & Experience Insights", description: "Capture candidate-reported feedback separately from recruiter observations, identify low ratings and analyze experience across hiring stages.", href: "/app/recruitment-operations/feedback", action: "Explore Feedback", icon: "✦" },
   {
     number: "01",
     label: "REQUISITIONS",
