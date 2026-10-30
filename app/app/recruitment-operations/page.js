@@ -10,6 +10,7 @@ const operations = [
   { number: "00A", label: "WORKFLOW LIBRARY", title: "Recruitment Workflow Playbooks", description: "Launch structured hiring checklists with pre-set deadlines and team ownership.", href: "/app/recruitment-operations/playbooks", action: "Explore Playbooks", icon: "✧" },
   { number: "00B", label: "SMART AUTOMATION", title: "Workflow Automation Settings", description: "Configure stage-triggered recruitment tasks, priorities and due dates for your team.", href: "/app/recruitment-operations/automation", action: "Configure Automations", icon: "⚙" },
   { number: "00C", label: "AUTOMATION INTELLIGENCE", title: "Automation Activity & Performance", description: "Track automatically generated tasks, completion trends, stage performance, and overdue follow-ups.", href: "/app/recruitment-operations/analytics", action: "View Automation Analytics", icon: "◩" },
+  { number: "00D", label: "RESOURCE PLANNING", title: "Recruitment Capacity & Resource Planning", description: "Balance recruiter workloads, spot capacity risks, and prioritize unassigned recruitment tasks.", href: "/app/recruitment-operations/capacity", action: "Plan Team Capacity", icon: "▥" },
   {
     number: "01",
     label: "REQUISITIONS",
