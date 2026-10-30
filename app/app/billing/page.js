@@ -248,7 +248,7 @@ export default function BillingPage(){
    <section className="billing-plans">{plans.map(plan=>{
     const price=prices.find(p=>p.plan_id===plan.id&&p.currency===currency&&p.billing_interval===period);
     const offer=commercialOffers.find(o=>o.plan_id===plan.id&&o.currency===currency&&o.billing_interval===period);
-    const checkoutReady=!!offer&&Number(offer.setup_fee_minor)===0&&!!price&&Number(price.amount_minor)===Number(offer.recurring_fee_minor);
+    const checkoutReady=currency!=="USD"&&!!offer&&Number(offer.setup_fee_minor)===0&&!!price&&Number(price.amount_minor)===Number(offer.recurring_fee_minor);
     const features=Array.isArray(plan.feature_list)?plan.feature_list:[];
     return <article className={"billing-plan "+(plan.id==="professional"?"featured":"")} key={plan.id}>
      <span className="billing-pill">{plan.id==="professional"?"MOST ADVANCED":plan.id==="enterprise"?"TAILORED":"ESSENTIALS"}</span>
