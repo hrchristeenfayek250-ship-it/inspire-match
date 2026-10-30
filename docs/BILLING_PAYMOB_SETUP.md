@@ -13,7 +13,8 @@ Status: **foundation implemented; live payments not enabled**.
 
 1. Apply `supabase/sql/saas_billing_foundation.sql` in Supabase.
 2. Apply `supabase/sql/saas_billing_subscription_management.sql` for self-service preferences.
-3. Approve actual plan prices, legal terms, tax treatment and merchant settlement country **before** activating any price.
+3. Apply `supabase/sql/saas_billing_plan_entitlements.sql`, `supabase/sql/saas_billing_access_snapshot.sql` and `supabase/sql/billing_currency_usd.sql` for feature catalog, access snapshot and USD pricing catalog. The USD migration also creates the draft commercial offers table if missing.
+4. Approve actual setup fees and recurring fees, legal terms, tax treatment and merchant settlement country **before** activating any price.
 4. Create/approve a Paymob merchant account for the country. Region is chosen by the merchant credentials, not by the customer's billing currency selector.
 5. Add **server-side** Vercel environment variables:
 
@@ -22,7 +23,7 @@ Status: **foundation implemented; live payments not enabled**.
 | `NEXT_PUBLIC_SUPABASE_URL` | Existing Supabase project URL |
 | `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` | Existing Supabase publishable key |
 | `SUPABASE_SERVICE_ROLE_KEY` | Secret service role key; **never use in browser or commit** |
-| `PAYMOB_REGION` | `EGY`, `KSA`, `UAE` or `OMN` |
+| `PAYMOB_REGION` | `EGY`, `KSA` or `UAE` |
 | `PAYMOB_MODE` | `test` while onboarding; `live` only after signoff |
 | `PAYMOB_SECRET_KEY` | Paymob secret key for same region/mode |
 | `PAYMOB_PUBLIC_KEY` | Paymob public key for same region/mode |
@@ -31,7 +32,7 @@ Status: **foundation implemented; live payments not enabled**.
 | `APP_URL` | `https://inspire-match-ats.vercel.app` (no trailing slash) |
 
 6. Register the callback URL with Paymob or confirm the intention's `notification_url` reaches `https://inspire-match-ats.vercel.app/api/billing/paymob/webhook`.
-7. After payment provider approval, agree on checkout currencies and subscription prices. Publish rows in `billing_plan_prices` using approved minor-unit amounts only.
+7. After payment provider approval, agree on checkout currencies and subscription prices. Approved rows in `billing_commercial_offers` must match active recurring prices in `billing_plan_prices` before checkout is allowed. Nonzero setup fees are displayed, but require a separate, not-yet-implemented checkout.
 8. Carry out **test-mode** payments and callback/security reconciliation in the pre-launch QA phase, then enable live credentials once they pass.
 
 ## Security and commercial limitations
@@ -41,6 +42,8 @@ Status: **foundation implemented; live payments not enabled**.
 - Existing backend assumes **one merchant account per deployment**. Selling in multiple countries under different Paymob regional accounts requires country-specific routing and merchant configuration before going live.
 - Prices are not defined here; do not enable live checkout with arbitrary example amounts.
 - Payments currently represent **one-off checkout transactions**, not automatic recurring billing.
+- **Commercial offer approval is mandatory for any checkout**; a recurring fee mismatch or nonzero setup fee prevents checkout. The UI displays approved setup and recurring pricing but does not collect setup fees.
+- **USD is pricing-display only** until an eligible merchant configuration is approved for USD acceptance and settlement. The current region configuration covers EGP, SAR and AED only.
 - The cancellation preference is recorded, but does not automatically cancel a Paymob recurring mandate (there is no such mandate in this implementation).
 - Feature limits are planned but **not enforced** by the ATS yet; do not market tiers as actively restricted.
 - Invoice records are internal accounting entries, not downloadable VAT-compliant tax invoices.
