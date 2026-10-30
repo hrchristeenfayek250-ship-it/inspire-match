@@ -179,6 +179,10 @@ const styles = `
   .ops-monitor-row {display:flex;justify-content:space-between;gap:12px;border-top:1px solid #edf2ee;padding:12px 0;font-size:12px;align-items:center;}
   .ops-monitor-row small {display:block;color:#829488;margin-top:4px;}
   .ops-monitor-row b {color:#176b49;white-space:nowrap;}
+  .ops-progress-track {height:10px;background:#e9f1eb;border-radius:999px;overflow:hidden;margin:11px 0 18px;}
+  .ops-progress-fill {height:100%;background:#207e55;border-radius:999px;transition:width .2s;}
+  .ops-stage-line {display:flex;justify-content:space-between;gap:12px;font-size:12px;color:#5b7465;padding:9px 0;border-top:1px solid #edf2ee;}
+  .ops-stage-line b {color:#174c36;}
   .ops-bottom { margin-top: 25px; padding: 16px 19px; border: 1px solid #e1ebe3; background: #f0f6f1; border-radius: 12px; display: flex; align-items: center; gap: 12px; color: #567566; font-size: 12px; }
   .ops-bottom strong { color: #225d42; }
   @media (max-width: 1120px) { .ops-hero { grid-template-columns: minmax(0,1fr); } .ops-hero-side { display: none; } }
@@ -205,6 +209,7 @@ export default function RecruitmentOperationsPage() {
   const [tasks,setTasks]=useState([]);
   const [userId,setUserId]=useState("");
   const [taskError,setTaskError]=useState("");
+  const [selectedRecruiter,setSelectedRecruiter]=useState("all");
   const [loadingTasks,setLoadingTasks]=useState(true);
   useEffect(()=>{
     let active=true;
@@ -227,6 +232,9 @@ export default function RecruitmentOperationsPage() {
   const overdue=activeTasks.filter(t=>t.due_date&&t.due_date<today);
   const completed=tasks.filter(t=>t.status==="completed");
   const dueSoon=activeTasks.filter(t=>t.due_date&&t.due_date>=today).sort((a,b)=>a.due_date.localeCompare(b.due_date)).slice(0,5);
+  const filteredTasks=selectedRecruiter==="all"?tasks:tasks.filter(t=>t.assigned_to===selectedRecruiter);
+  const stageCounts=[["To Do",filteredTasks.filter(t=>t.status==="todo").length],["In Progress",filteredTasks.filter(t=>t.status==="in_progress").length],["Blocked",filteredTasks.filter(t=>t.status==="blocked").length],["Completed",filteredTasks.filter(t=>t.status==="completed").length]];
+  const completionRate=filteredTasks.length?Math.round(100*stageCounts[3][1]/filteredTasks.length):0;
   const workload=useMemo(()=>{
     const counts=new Map();
     for(const t of tasks){if(!t.assigned_to)continue;const key=`${t.company_id||""}:${t.assigned_to}`;const entry=counts.get(key)||{id:t.assigned_to,companyId:t.company_id,total:0,open:0,completed:0,overdue:0};entry.total++;if(t.status==="completed")entry.completed++;else{entry.open++;if(t.due_date&&t.due_date<today)entry.overdue++;}counts.set(key,entry);}
@@ -277,9 +285,10 @@ export default function RecruitmentOperationsPage() {
               {taskError&&<p role="alert" style={{color:"#a13f38"}}>{taskError}</p>}
               <div className="ops-metrics">{[["Total Tasks",tasks.length],["In Progress",tasks.filter(t=>t.status==="in_progress").length],["Overdue",overdue.length],["Completed",completed.length]].map(([name,value])=><div className="ops-metric" key={name}><span>{name}</span><strong>{loadingTasks?"—":value}</strong></div>)}</div>
               <div className="ops-monitor">
-                <div className="ops-panel"><h3>Recruiter Workload</h3>{loadingTasks?<p>Loading team workload...</p>:workload.length?workload.map(w=><div className="ops-monitor-row" key={`${w.companyId}:${w.id}`}><div><strong>{w.id===userId?"You":`Team Member · ${w.id.slice(0,8)}`}</strong><small>{w.open} open · {w.completed} completed · {w.overdue} overdue</small></div><b>{w.total} tasks</b></div>):<p style={{color:"#819286",fontSize:12}}>No assigned tasks yet.</p>}</div>
+                <div className="ops-panel"><h3>Recruiter Workload</h3><label style={{display:"block",fontSize:11,color:"#698173",marginBottom:12}}>View recruiter details <select aria-label="Select recruiter for task analytics" value={selectedRecruiter} onChange={e=>setSelectedRecruiter(e.target.value)} style={{display:"block",width:"100%",padding:10,border:"1px solid #d8e7dc",borderRadius:9,background:"#fff",color:"#174c36",marginTop:6}}><option value="all">All Recruiters</option>{[...new Set(workload.map(w=>w.id))].map(id=><option key={id} value={id}>{id===userId?"You":`Team Member · ${id.slice(0,8)}`}</option>)}</select></label>{loadingTasks?<p>Loading team workload...</p>:workload.length?workload.map(w=><div className="ops-monitor-row" key={`${w.companyId}:${w.id}`}><div><strong>{w.id===userId?"You":`Team Member · ${w.id.slice(0,8)}`}</strong><small>{w.open} open · {w.completed} completed · {w.overdue} overdue</small></div><b>{w.total} tasks</b></div>):<p style={{color:"#819286",fontSize:12}}>No assigned tasks yet.</p>}</div>
                 <div className="ops-panel"><h3>Upcoming & Overdue</h3>{loadingTasks?<p>Loading deadlines...</p>:[...overdue.sort((a,b)=>a.due_date.localeCompare(b.due_date)).slice(0,3),...dueSoon].slice(0,6).length?[...overdue.sort((a,b)=>a.due_date.localeCompare(b.due_date)).slice(0,3),...dueSoon].slice(0,6).map(t=><div className="ops-monitor-row" key={t.id}><div><strong>{t.title}</strong><small>{t.due_date} · {t.priority}</small></div><b style={{color:t.due_date<today?"#b34c41":"#176b49"}}>{t.due_date<today?"Overdue":"Upcoming"}</b></div>):<p style={{color:"#819286",fontSize:12}}>No upcoming or overdue tasks.</p>}</div>
               </div>
+              <div className="ops-panel" style={{marginTop:17}}><div style={{display:"flex",justifyContent:"space-between",gap:12,flexWrap:"wrap",alignItems:"center"}}><h3 style={{margin:0}}>Task Completion & Status Breakdown</h3><span style={{fontSize:12,color:"#557a63"}}>{selectedRecruiter==="all"?"All Recruiters":selectedRecruiter===userId?"Your Tasks":"Selected Recruiter"}</span></div><div style={{display:"flex",justifyContent:"space-between",alignItems:"baseline",marginTop:12}}><span style={{fontSize:12,color:"#698173"}}>Completion rate</span><strong style={{fontSize:25,color:"#176b49"}}>{loadingTasks?"—":`${completionRate}%`}</strong></div><div className="ops-progress-track"><div className="ops-progress-fill" style={{width:`${completionRate}%`}}/></div>{stageCounts.map(([name,n])=><div className="ops-stage-line" key={name}><span>{name}</span><b>{loadingTasks?"—":n}</b></div>)}<p style={{fontSize:11,color:"#829488",marginBottom:0}}>Based on {filteredTasks.length} accessible tasks. Select a recruiter above to see individual progress.</p></div>
             </section>
 
             <div className="ops-section-head">
