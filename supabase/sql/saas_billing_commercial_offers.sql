@@ -4,7 +4,7 @@
 create table if not exists public.billing_commercial_offers (
  id uuid primary key default gen_random_uuid(),
  plan_id text not null references public.billing_plans(id),
- currency text not null check(currency in ('EGP','SAR','AED','OMR')),
+ currency text not null check(currency in ('EGP','SAR','AED','USD')),
  billing_interval text not null check(billing_interval in ('month','year')),
  setup_fee_minor bigint check(setup_fee_minor is null or setup_fee_minor >= 0),
  recurring_fee_minor bigint check(recurring_fee_minor is null or recurring_fee_minor > 0),
