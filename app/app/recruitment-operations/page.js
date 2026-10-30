@@ -13,6 +13,7 @@ const operations = [
   { number: "00D", label: "RESOURCE PLANNING", title: "Recruitment Capacity & Resource Planning", description: "Balance recruiter workloads, spot capacity risks, and prioritize unassigned recruitment tasks.", href: "/app/recruitment-operations/capacity", action: "Plan Team Capacity", icon: "▥" },
   { number: "00E", label: "RESOURCE FORECASTING", title: "Recruitment Resource Forecasting", description: "Forecast upcoming task demand, team capacity gaps, and staffing needs with adjustable planning scenarios.", href: "/app/recruitment-operations/forecasting", action: "Explore Forecast", icon: "▤" },
   { number: "00F", label: "BOTTLENECK INTELLIGENCE", title: "Recruitment Bottleneck Intelligence", description: "Identify aging candidates, past-due interviews, overdue tasks, and priority follow-up risks.", href: "/app/recruitment-operations/bottlenecks", action: "Explore Bottlenecks", icon: "◇" },
+  { number: "00G", label: "SLA ESCALATIONS", title: "Recruitment SLA & Escalation Intelligence", description: "Prioritize overdue recruitment tasks, identify escalation severity, and guide manager follow-up.", href: "/app/recruitment-operations/escalations", action: "Review Escalations", icon: "⚑" },
   {
     number: "01",
     label: "REQUISITIONS",
