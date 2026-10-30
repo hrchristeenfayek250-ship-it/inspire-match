@@ -183,6 +183,11 @@ const styles = `
   .ops-progress-fill {height:100%;background:#207e55;border-radius:999px;transition:width .2s;}
   .ops-stage-line {display:flex;justify-content:space-between;gap:12px;font-size:12px;color:#5b7465;padding:9px 0;border-top:1px solid #edf2ee;}
   .ops-stage-line b {color:#174c36;}
+  .ops-sla-grid {display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin:16px 0;}
+  .ops-sla-stat {border:1px solid #e3ebe5;background:#f8fbf8;border-radius:12px;padding:15px;}
+  .ops-sla-stat strong {display:block;font-size:25px;color:#176b49;margin-top:6px;}
+  .ops-sla-stat span {font-size:11px;color:#637c6d;font-weight:700;}
+  .ops-sla-alert {padding:12px;border-radius:10px;background:#fff5ed;border:1px solid #f2dfcc;margin:8px 0;color:#885333;font-size:12px;}
   .ops-bottom { margin-top: 25px; padding: 16px 19px; border: 1px solid #e1ebe3; background: #f0f6f1; border-radius: 12px; display: flex; align-items: center; gap: 12px; color: #567566; font-size: 12px; }
   .ops-bottom strong { color: #225d42; }
   @media (max-width: 1120px) { .ops-hero { grid-template-columns: minmax(0,1fr); } .ops-hero-side { display: none; } }
@@ -200,6 +205,7 @@ const styles = `
     .ops-grid { grid-template-columns: 1fr; }
     .ops-metrics {grid-template-columns:repeat(2,minmax(0,1fr));}
     .ops-monitor {grid-template-columns:1fr;}
+    .ops-sla-grid {grid-template-columns:1fr;}
     .ops-card { min-height: 160px; }
   }
   @media (prefers-reduced-motion: reduce) { .ops-page * { transition: none !important; } }
@@ -210,6 +216,7 @@ export default function RecruitmentOperationsPage() {
   const [userId,setUserId]=useState("");
   const [taskError,setTaskError]=useState("");
   const [selectedRecruiter,setSelectedRecruiter]=useState("all");
+  const [slaWindow,setSlaWindow]=useState(3);
   const [loadingTasks,setLoadingTasks]=useState(true);
   useEffect(()=>{
     let active=true;
@@ -233,6 +240,11 @@ export default function RecruitmentOperationsPage() {
   const completed=tasks.filter(t=>t.status==="completed");
   const dueSoon=activeTasks.filter(t=>t.due_date&&t.due_date>=today).sort((a,b)=>a.due_date.localeCompare(b.due_date)).slice(0,5);
   const filteredTasks=selectedRecruiter==="all"?tasks:tasks.filter(t=>t.assigned_to===selectedRecruiter);
+  const daysUntil=(date)=>{if(!date)return null;const [y,m,d]=date.split("-").map(Number);if(!y||!m||!d)return null;const now=new Date();return Math.round((Date.UTC(y,m-1,d)-Date.UTC(now.getFullYear(),now.getMonth(),now.getDate()))/86400000);};
+  const slaTasks=filteredTasks.filter(t=>t.status!=="completed"&&t.due_date).map(t=>({...t,daysRemaining:daysUntil(t.due_date)})).filter(t=>t.daysRemaining!==null);
+  const slaBreached=slaTasks.filter(t=>t.daysRemaining<0).sort((a,b)=>a.daysRemaining-b.daysRemaining);
+  const slaAtRisk=slaTasks.filter(t=>t.daysRemaining>=0&&t.daysRemaining<=slaWindow).sort((a,b)=>a.daysRemaining-b.daysRemaining);
+  const slaHealthy=slaTasks.filter(t=>t.daysRemaining>slaWindow);
   const stageCounts=[["To Do",filteredTasks.filter(t=>t.status==="todo").length],["In Progress",filteredTasks.filter(t=>t.status==="in_progress").length],["Blocked",filteredTasks.filter(t=>t.status==="blocked").length],["Completed",filteredTasks.filter(t=>t.status==="completed").length]];
   const completionRate=filteredTasks.length?Math.round(100*stageCounts[3][1]/filteredTasks.length):0;
   const workload=useMemo(()=>{
@@ -289,6 +301,7 @@ export default function RecruitmentOperationsPage() {
                 <div className="ops-panel"><h3>Upcoming & Overdue</h3>{loadingTasks?<p>Loading deadlines...</p>:[...overdue.sort((a,b)=>a.due_date.localeCompare(b.due_date)).slice(0,3),...dueSoon].slice(0,6).length?[...overdue.sort((a,b)=>a.due_date.localeCompare(b.due_date)).slice(0,3),...dueSoon].slice(0,6).map(t=><div className="ops-monitor-row" key={t.id}><div><strong>{t.title}</strong><small>{t.due_date} · {t.priority}</small></div><b style={{color:t.due_date<today?"#b34c41":"#176b49"}}>{t.due_date<today?"Overdue":"Upcoming"}</b></div>):<p style={{color:"#819286",fontSize:12}}>No upcoming or overdue tasks.</p>}</div>
               </div>
               <div className="ops-panel" style={{marginTop:17}}><div style={{display:"flex",justifyContent:"space-between",gap:12,flexWrap:"wrap",alignItems:"center"}}><h3 style={{margin:0}}>Task Completion & Status Breakdown</h3><span style={{fontSize:12,color:"#557a63"}}>{selectedRecruiter==="all"?"All Recruiters":selectedRecruiter===userId?"Your Tasks":"Selected Recruiter"}</span></div><div style={{display:"flex",justifyContent:"space-between",alignItems:"baseline",marginTop:12}}><span style={{fontSize:12,color:"#698173"}}>Completion rate</span><strong style={{fontSize:25,color:"#176b49"}}>{loadingTasks?"—":`${completionRate}%`}</strong></div><div className="ops-progress-track"><div className="ops-progress-fill" style={{width:`${completionRate}%`}}/></div>{stageCounts.map(([name,n])=><div className="ops-stage-line" key={name}><span>{name}</span><b>{loadingTasks?"—":n}</b></div>)}<p style={{fontSize:11,color:"#829488",marginBottom:0}}>Based on {filteredTasks.length} accessible tasks. Select a recruiter above to see individual progress.</p></div>
+              <div className="ops-panel" style={{marginTop:17}}><div style={{display:"flex",justifyContent:"space-between",alignItems:"center",gap:12,flexWrap:"wrap"}}><div><div className="ops-section-eyebrow">DEADLINE RISK INTELLIGENCE</div><h3 style={{margin:0}}>Recruitment SLA Monitoring</h3><p style={{fontSize:12,color:"#73877b",margin:"8px 0 0"}}>Early warnings based on task due dates. Completed tasks are excluded.</p></div><label style={{fontSize:11,color:"#698173"}}>Risk window <select value={slaWindow} onChange={e=>setSlaWindow(Number(e.target.value))} aria-label="SLA risk window" style={{display:"block",marginTop:6,padding:9,border:"1px solid #d8e7dc",borderRadius:9,background:"#fff",color:"#174c36"}}><option value={1}>1 day</option><option value={3}>3 days</option><option value={7}>7 days</option></select></label></div><div className="ops-sla-grid">{[["SLA Breached",slaBreached.length],["At Risk",slaAtRisk.length],["On Track",slaHealthy.length]].map(([name,value])=><div className="ops-sla-stat" key={name}><span>{name}</span><strong>{loadingTasks?"—":value}</strong></div>)}</div>{!loadingTasks&&(slaBreached.length||slaAtRisk.length)?<div aria-label="SLA alerts">{[...slaBreached,...slaAtRisk].slice(0,8).map(t=><div className="ops-sla-alert" key={t.id}><div style={{display:"flex",justifyContent:"space-between",gap:12,flexWrap:"wrap"}}><strong>{t.title}</strong><b>{t.daysRemaining<0?`${Math.abs(t.daysRemaining)} day(s) overdue`:t.daysRemaining===0?"Due today":`Due in ${t.daysRemaining} day(s)`}</b></div><div style={{marginTop:5,fontSize:11}}>Due {t.due_date} · {t.priority} priority · {t.assigned_to?(t.assigned_to===userId?"Assigned to you":`Member ${t.assigned_to.slice(0,8)}`):"Unassigned"}</div></div>)}<Link href="/app/recruitment-operations/tasks" style={{display:"inline-block",marginTop:10,color:"#176b49",fontSize:12,fontWeight:800}}>Review tasks →</Link></div>:<p style={{fontSize:12,color:"#829488",marginBottom:0}}>{loadingTasks?"Checking SLA deadlines...":"No breached or at-risk tasks in the selected window."}</p>}<p style={{fontSize:11,color:"#829488",marginTop:14,marginBottom:0}}>Tasks without a due date are not included. These are dashboard alerts, not email notifications.</p></div>
             </section>
 
             <div className="ops-section-head">
