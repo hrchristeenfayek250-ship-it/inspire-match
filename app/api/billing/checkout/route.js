@@ -5,8 +5,7 @@ const response=(body,status=200)=>Response.json(body,{status,headers:{"Cache-Con
 const regions={
   EGY:{base:"https://accept.paymob.com",currency:"EGP",country:"EGY"},
   KSA:{base:"https://ksa.paymob.com",currency:"SAR",country:"SAU"},
-  UAE:{base:"https://uae.paymob.com",currency:"AED",country:"ARE"},
-  OMN:{base:"https://oman.paymob.com",currency:"OMR",country:"OMN"}
+  UAE:{base:"https://uae.paymob.com",currency:"AED",country:"ARE"}
 };
 export async function POST(request){
  let reserved=null,admin=null;
