@@ -71,6 +71,9 @@ export default function BillingPage(){
  const [plans,setPlans]=useState(defaultPlans);
  const [prices,setPrices]=useState([]);
  const [commercialOffers,setCommercialOffers]=useState([]);
+ const [setupInvoice,setSetupInvoice]=useState(null);
+ const [setupInvoiceReady,setSetupInvoiceReady]=useState(false);
+ const [creatingSetup,setCreatingSetup]=useState(false);
  const [subscription,setSubscription]=useState(null);
  const [invoices,setInvoices]=useState([]);
  const [payments,setPayments]=useState([]);
@@ -105,7 +108,7 @@ export default function BillingPage(){
   if(!adminRows.length)setError("Only company admins can access subscription and billing details.");
   setLoading(false);
  })().catch(e=>{if(active){setError(e.message);setLoading(false);}});return()=>{active=false;};},[]);
- useEffect(()=>{if(!companyId){setSubscription(null);setInvoices([]);setPayments([]);setSubscriptionEvents([]);setSubscriptionControlsReady(false);return;}
+ useEffect(()=>{if(!companyId){setSubscription(null);setInvoices([]);setPayments([]);setSubscriptionEvents([]);setSetupInvoice(null);setSetupInvoiceReady(false);setSubscriptionControlsReady(false);return;}
  let active=true;setLoading(true);setError("");
  (async()=>{
   const p=await Promise.all([
@@ -131,7 +134,7 @@ export default function BillingPage(){
   setPlans(p[0].data?.length?p[0].data:defaultPlans);
   setPrices(p[1].data||[]);
   const commercial=await supabase.from("billing_commercial_offers")
-   .select("plan_id,currency,billing_interval,setup_fee_minor,recurring_fee_minor")
+   .select("id,plan_id,currency,billing_interval,setup_fee_minor,recurring_fee_minor")
    .eq("status","approved");
   if(!active)return;
   setCommercialOffers(commercial.error?[]:(commercial.data||[]));
@@ -142,6 +145,12 @@ export default function BillingPage(){
   if(!active)return;
   setSubscriptionControlsReady(!audit.error);
   setSubscriptionEvents(audit.data||[]);
+  const setup=await supabase.from("billing_setup_invoices")
+   .select("id,plan_id,currency,amount_minor,status,created_at,updated_at")
+   .eq("company_id",companyId).maybeSingle();
+  if(!active)return;
+  setSetupInvoiceReady(!setup.error);
+  setSetupInvoice(setup.error?null:(setup.data||null));
   setRole("admin");
   setLoading(false);
  })().catch(e=>{if(active){setError(e.message);setLoading(false);}});return()=>{active=false;};
