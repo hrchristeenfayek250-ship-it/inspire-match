@@ -171,6 +171,16 @@ export default function BillingPage(){
   }catch(e){setError(e.message||"Unable to prepare setup fee draft.");}
   finally{setCreatingSetup(false);}
  }
+ async function saveSetupDetails(){
+  setSavingSetupDetails(true);setError("");
+  const {error:e}=await supabase.rpc("billing_save_setup_invoice_details",{
+   p_company_id:companyId,p_name:setupDetails.name,p_email:setupDetails.email,
+   p_address:setupDetails.address,p_tax_id:setupDetails.taxId,p_notes:setupDetails.notes
+  });
+  setSavingSetupDetails(false);
+  if(e)setError(e.message);
+  else{setNotice("Billing draft details saved. No payment was made.");setRefresh(x=>x+1);}
+ }
  async function checkout(priceId){
   if(!priceId||processing||!companyId)return;
   setProcessing(priceId);setError("");setNotice("");
