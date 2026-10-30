@@ -44,10 +44,21 @@ export async function POST(request){
   if(!firstName||!lastName||! /^\+?[0-9 ()-]{8,22}$/.test(phone)||!email)
    return response({error:"Enter your first name, last name and valid phone number."},400);
   const {data:chosen,error:priceError}=await client.from("billing_plan_prices")
-    .select("id,currency,is_active,amount_minor").eq("id",priceId).maybeSingle();
+    .select("id,plan_id,currency,billing_interval,is_active,amount_minor").eq("id",priceId).maybeSingle();
   if(priceError)return response({error:priceError.message},400);
   if(!chosen?.is_active||chosen.currency!==region.currency)return response({error:"This plan is not available for the configured merchant region."},400);
   admin=createClient(url,service,{auth:{persistSession:false,autoRefreshToken:false}});
+  // A commercial offer must be explicitly approved before any checkout.
+  const {data:offer,error:offerError}=await admin.from("billing_commercial_offers")
+    .select("status,setup_fee_minor,recurring_fee_minor")
+    .eq("plan_id",chosen.plan_id).eq("currency",chosen.currency)
+    .eq("billing_interval",chosen.billing_interval).eq("status","approved")
+    .maybeSingle();
+  if(offerError)return response({error:"Approved commercial pricing could not be verified."},503);
+  if(!offer||Number(offer.recurring_fee_minor)!==Number(chosen.amount_minor))
+    return response({error:"This plan has no matching approved subscription price."},409);
+  if(offer.setup_fee_minor===null||Number(offer.setup_fee_minor)!==0)
+    return response({error:"This plan includes a separate setup fee. Combined checkout is not enabled yet."},409);
   const {data:created,error:createError}=await client.rpc("billing_start_checkout",{
    p_company_id:companyId,p_price_id:priceId,p_provider_mode:mode
   });
