@@ -10,12 +10,12 @@ const styles=`
 .ch-page *{box-sizing:border-box}.ch-layout{display:grid;grid-template-columns:252px minmax(0,1fr);min-height:100vh}
 .ch-side{background:#fff;border-right:1px solid #e4ede6;padding:27px 14px}
 .ch-brand{display:flex;align-items:center;gap:11px;padding:4px 13px 30px;font-size:17px;font-weight:850}
-.ch-mark{display:grid;plach-items:center;width:36px;height:36px;border-radius:11px;background:#14583e;color:white;font-size:22px}
+.ch-mark{display:grid;place-items:center;width:36px;height:36px;border-radius:11px;background:#14583e;color:white;font-size:22px}
 .ch-brand small{display:block;color:#8a9d8f;letter-spacing:1.5px;font-size:9px}
 .ch-nav{display:flex;flex-direction:column;gap:4px}.ch-nav a{display:flex;align-items:center;gap:12px;min-height:40px;padding:10px 12px;border-radius:10px;color:#5d7267;text-decoration:none;font-size:12px;font-weight:700}
 .ch-nav a span{width:17px;text-align:center}.ch-nav a:hover,.ch-nav a.active{background:#e5f2e9;color:#145f42}
 .ch-main{min-width:0;padding:0 clamp(18px,3.4vw,54px) 65px}.ch-wrap{max-width:1240px;margin:auto}
-.ch-top{height:77px;display:flex;justify-content:spach-between;align-items:center;gap:12px;border-bottom:1px solid #e5ece7;margin-bottom:30px}
+.ch-top{height:77px;display:flex;justify-content:space-between;align-items:center;gap:12px;border-bottom:1px solid #e5ece7;margin-bottom:30px}
 .ch-link{color:#19734c;text-decoration:none;font-weight:800;font-size:12px}
 .ch-hero{background:linear-gradient(115deg,#103c2c,#176448 72%,#217755);border-radius:22px;padding:36px 38px;color:#fff;box-shadow:0 12px 32px #134a311a}
 .ch-hero small{color:#b7e5cb;letter-spacing:2px;font-size:10px;font-weight:850}.ch-hero h1{font:850 clamp(27px,3vw,36px)/1.2 Arial,sans-serif;color:#fff;margin:13px 0}.ch-hero p{color:#dceee4;font-size:13px;max-width:730px;margin:0}
@@ -27,7 +27,7 @@ const styles=`
 .ch-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:17px}
 .ch-panel h2{font:800 17px Arial,sans-serif;color:#1c4531;margin:0 0 9px}
 .ch-desc{color:#809687;font-size:12px;margin:0 0 16px}
-.ch-row{display:flex;justify-content:spach-between;align-items:center;gap:14px;border-top:1px solid #edf2ee;padding:14px 0}
+.ch-row{display:flex;justify-content:space-between;align-items:center;gap:14px;border-top:1px solid #edf2ee;padding:14px 0}
 .ch-row strong{font-size:12px}.ch-row small{display:block;color:#819688;font-size:11px;margin-top:5px}
 .ch-tag{display:inline-block;padding:5px 10px;border-radius:30px;background:#e7f3eb;color:#20734b;font-size:10px;font-weight:800;white-space:nowrap}
 .ch-tag.warn{background:#fff0dd;color:#986b2a}.ch-tag.bad{background:#ffebe6;color:#a54b37}
@@ -58,13 +58,14 @@ const styles=`
 `;
 const channels=["Email","Phone","WhatsApp","SMS","Video","Other"];
 const outcomes=["Contacted","Replied","No response","Interview coordination","Follow-up needed","Other"];
-const fmt=x=>x?new Date(x).toLocaleString():"—";
+const fmt=x=>x?new Date(x).toLocaleString("en-GB",{dateStyle:"medium",timeStyle:"short"}):"—";
 const toLocal=x=>{const d=new Date(x);return new Date(d.getTime()-d.getTimezoneOffset()*60000).toISOString().slice(0,16);};
 const escapeCsv=x=>{const s=String(x??"");return '"'+(/^[=+\-@\t\r]/.test(s)?"'"+s:s).replaceAll('"','""')+'"';};
 export default function CommunicationHub(){
- const [companies,setCompanies]=useState([]),[company,setCompany]=useState(""),[candidates,setCandidates]=useState([]),[events,setEvents]=useState([]),[selected,setSelected]=useState(""),[filter,setFilter]=useState("all"),[loading,setLoading]=useState(true),[saving,setSaving]=useState(false),[error,setError]=useState(""),[success,setSuccess]=useState(""),[reload,setReload]=useState(0),[form,setForm]=useState({channel:"Email",outcome:"Contacted",direction:"outbound",contacted_at:toLocal(new Date()),next_follow_up_at:"",notes:""});
+ const [companies,setCompanies]=useState([]),[company,setCompany]=useState(""),[candidates,setCandidates]=useState([]),[events,setEvents]=useState([]),[selected,setSelected]=useState(""),[filter,setFilter]=useState("all"),[loading,setLoading]=useState(true),[saving,setSaving]=useState(false),[error,setError]=useState(""),[success,setSuccess]=useState(""),[reload,setReload]=useState(0),[form,setForm]=useState({channel:"Email",outcome:"Contacted",direction:"outbound",contacted_at:"",next_follow_up_at:"",notes:""});
+ useEffect(()=>{setForm(f=>({...f,contacted_at:toLocal(new Date())}));},[]);
  useEffect(()=>{let alive=true;(async()=>{const a=await supabase.auth.getUser();if(!alive)return;if(!a.data?.user){setError("Please sign in.");setLoading(false);return;}const r=await supabase.from("company_members").select("company_id").eq("user_id",a.data.user.id);if(!alive)return;if(r.error)setError(r.error.message);else{setCompanies(r.data||[]);setCompany(r.data?.[0]?.company_id||"");}setLoading(false);})();return()=>{alive=false;};},[]);
- useEffect(()=>{if(!company){setCandidates([]);setEvents([]);return;}let alive=true;setLoading(true);setError("");(async()=>{const [c,e]=await Promise.all([supabase.from("candidates").select("id,full_name,email,status").eq("company_id",company).is("deleted_at",null).order("full_name").limit(5000),supabase.from("candidate_communications").select("id,candidate_id,channel,outcome,direction,contacted_at,next_follow_up_at,notes,created_at").eq("company_id",company).order("contacted_at",{ascending:false}).limit(5000)]);if(!alive)return;if(c.error||e.error){setError([c.error?.message,e.error?.message].filter(Boolean).join("; "));setCandidates([]);setEvents([]);}else{setCandidates(c.data||[]);setEvents(e.data||[]);setSelected(s=>(c.data||[]).some(x=>String(x.id)===s)?s:String(c.data?.[0]?.id||""));}setLoading(false);})();return()=>{alive=false;};},[company,reload]);
+ useEffect(()=>{if(!company){setCandidates([]);setEvents([]);return;}let alive=true;setLoading(true);setError("");(async()=>{const [c,e]=await Promise.all([supabase.from("candidates").select("id,full_name,email,status").eq("company_id",company).is("deleted_at",null).order("full_name").limit(5000),supabase.from("candidate_communications").select("id,candidate_id,channel,outcome,direction,contacted_at,next_follow_up_at,notes,created_at").eq("company_id",company).order("contacted_at",{ascending:false}).limit(5000)]);if(!alive)return;if(c.error||e.error){setError(e.error?.code==="42P01"?"Communication table is missing. Run the supplied Supabase SQL migration first.":[c.error?.message,e.error?.message].filter(Boolean).join("; "));setCandidates([]);setEvents([]);}else{setCandidates(c.data||[]);setEvents(e.data||[]);setSelected(s=>(c.data||[]).some(x=>String(x.id)===s)?s:String(c.data?.[0]?.id||""));}setLoading(false);})();return()=>{alive=false;};},[company,reload]);
  const names=new Map(candidates.map(c=>[String(c.id),c.full_name||"Unnamed candidate"]));
  const now=Date.now();
  const lastByCandidate=new Map();events.forEach(e=>{const id=String(e.candidate_id);if(!lastByCandidate.has(id))lastByCandidate.set(id,e);});
