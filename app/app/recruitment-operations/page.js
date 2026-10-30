@@ -15,6 +15,7 @@ const operations = [
   { number: "00F", label: "BOTTLENECK INTELLIGENCE", title: "Recruitment Bottleneck Intelligence", description: "Identify aging candidates, past-due interviews, overdue tasks, and priority follow-up risks.", href: "/app/recruitment-operations/bottlenecks", action: "Explore Bottlenecks", icon: "◇" },
   { number: "00G", label: "SLA ESCALATIONS", title: "Recruitment SLA & Escalation Intelligence", description: "Prioritize overdue recruitment tasks, identify escalation severity, and guide manager follow-up.", href: "/app/recruitment-operations/escalations", action: "Review Escalations", icon: "⚑" },
   { number: "00H", label: "HANDOVER & CONTINUITY", title: "Recruitment Handover & Continuity", description: "Prepare recruiter handovers, review ownership gaps, and export priority action briefs for smooth transitions.", href: "/app/recruitment-operations/handover", action: "Prepare Handover", icon: "↗" },
+  { number: "00I", label: "QUALITY & COMPLIANCE", title: "Recruitment Quality & Compliance Hub", description: "Audit missing recruitment information, task ownership, and workflow quality exceptions in one workspace.", href: "/app/recruitment-operations/quality", action: "Review Quality", icon: "✓" },
   {
     number: "01",
     label: "REQUISITIONS",
