@@ -73,6 +73,9 @@ export default function BillingPage(){
  const [subscription,setSubscription]=useState(null);
  const [invoices,setInvoices]=useState([]);
  const [payments,setPayments]=useState([]);
+ const [subscriptionEvents,setSubscriptionEvents]=useState([]);
+ const [subscriptionControlsReady,setSubscriptionControlsReady]=useState(false);
+ const [managingSubscription,setManagingSubscription]=useState(false);
  const [period,setPeriod]=useState("month");
  const [currency,setCurrency]=useState("EGP");
  const [loading,setLoading]=useState(true);
@@ -98,7 +101,7 @@ export default function BillingPage(){
   if(!adminRows.length)setError("Only company admins can access subscription and billing details.");
   setLoading(false);
  })().catch(e=>{if(active){setError(e.message);setLoading(false);}});return()=>{active=false;};},[]);
- useEffect(()=>{if(!companyId){setSubscription(null);setInvoices([]);setPayments([]);return;}
+ useEffect(()=>{if(!companyId){setSubscription(null);setInvoices([]);setPayments([]);setSubscriptionEvents([]);setSubscriptionControlsReady(false);return;}
  let active=true;setLoading(true);setError("");
  (async()=>{
   const p=await Promise.all([
@@ -116,6 +119,10 @@ export default function BillingPage(){
   setSubscription(p[2].data||null);
   setInvoices(p[3].data||[]);
   setPayments(p[4].data||[]);
+  const audit=await supabase.from("billing_subscription_events").select("id,action,plan_id,effective_period_end,created_at").eq("company_id",companyId).order("created_at",{ascending:false}).limit(30);
+  if(!active)return;
+  setSubscriptionControlsReady(!audit.error);
+  setSubscriptionEvents(audit.data||[]);
   setRole("admin");
   setLoading(false);
  })().catch(e=>{if(active){setError(e.message);setLoading(false);}});return()=>{active=false;};
@@ -137,6 +144,22 @@ export default function BillingPage(){
    window.location.assign(result.checkoutUrl);
   }catch(e){setError(e.message||"Unable to process payment.");setProcessing("");}
  }
+ async function manageSubscription(cancel){
+  if(!companyId||!subscription||managingSubscription||!subscriptionControlsReady)return;
+  if(cancel&&!window.confirm("Record an end-of-period cancellation request for this subscription? Access remains through the current paid period. Automatic recurring billing is not enabled yet."))return;
+  setManagingSubscription(true);setError("");setNotice("");
+  try{
+   const {error:rpcError}=await supabase.rpc("billing_set_cancel_at_period_end",{
+    p_company_id:companyId,p_cancel:cancel
+   });
+   if(rpcError)throw rpcError;
+   setNotice(cancel?"Your request to end this subscription at the current period end is recorded.":"Your end-of-period cancellation request has been withdrawn. Automatic charges are not enabled.");
+   setRefresh(x=>x+1);
+  }catch(e){setError(e.message||"Could not update subscription settings.");}
+  finally{setManagingSubscription(false);}
+ }
+ const effectiveStatus=subscription?.current_period_end&&new Date(subscription.current_period_end)<=new Date()&&["active","trialing"].includes(subscription.status)?"expired":subscription?.status;
+ const canManage=subscriptionControlsReady&&["active","trialing"].includes(effectiveStatus)&&!!subscription?.current_period_end;
  const planName=subscription?plans.find(p=>p.id===subscription.plan_id)?.name||subscription.plan_id:"None";
  const paid=payments.filter(p=>p.status==="paid");
  return <main className="billing-page"><style>{styles}</style><div className="billing-shell">
@@ -155,9 +178,23 @@ export default function BillingPage(){
    {loading&&<div className="billing-info">Loading your billing records…</div>}
    <div className="billing-summary">
     <div className="billing-stat"><small>Current plan</small><strong>{planName}</strong><span className="billing-muted">Company subscription</span></div>
-    <div className="billing-stat"><small>Subscription status</small><strong style={{textTransform:"capitalize"}}>{subscription?.status?.replaceAll("_"," ")||"Not subscribed"}</strong><span className="billing-muted">{subscription?.cancel_at_period_end?"Set to cancel at period end":"Confirmed from billing records"}</span></div>
+    <div className="billing-stat"><small>Subscription status</small><strong style={{textTransform:"capitalize"}}>{effectiveStatus?.replaceAll("_"," ")||"Not subscribed"}</strong><span className="billing-muted">{subscription?.cancel_at_period_end?"End-of-period cancellation requested":"Confirmed from billing records"}</span></div>
     <div className="billing-stat"><small>Period ends</small><strong>{date(subscription?.current_period_end)}</strong><span className="billing-muted">Updated by verified payment processing</span></div>
    </div>
+   <div className="billing-section-head"><h2>Manage subscription</h2><span className="billing-muted">Company administrators only</span></div>
+   <section className="billing-panel">
+    <div style={{display:"flex",justifyContent:"space-between",gap:20,flexWrap:"wrap",alignItems:"center"}}>
+     <div><strong style={{fontSize:14,color:"#184a33"}}>{subscription?.cancel_at_period_end?"End-of-period cancellation requested":"Subscription management"}</strong>
+      <p className="billing-muted" style={{maxWidth:650,marginTop:9}}>{!subscription?"No paid subscription is available to manage yet.":subscription.cancel_at_period_end?"Your end-of-period request is recorded. Current paid access runs until "+date(subscription.current_period_end)+".":"Your subscription is recorded through "+date(subscription.current_period_end)+". You can request to end it at the period boundary."}</p>
+     </div>
+     {subscription?.cancel_at_period_end?
+       <button className="billing-button" type="button" disabled={!canManage||managingSubscription} onClick={()=>manageSubscription(false)}>{managingSubscription?"Saving…":"Withdraw cancellation request"}</button>:
+       <button className="billing-button billing-secondary" type="button" disabled={!canManage||managingSubscription} onClick={()=>manageSubscription(true)}>{managingSubscription?"Saving…":"Request end at period end"}</button>}
+    </div>
+    {!subscriptionControlsReady&&companyId&&<p className="billing-muted">Subscription management controls become available after the subscription management SQL migration is applied.</p>}
+    <p className="billing-muted">Important: The current Paymob checkout uses one-time payments; automatic recurring charges are not active. This action stores your future renewal preference and does not initiate a refund or contact Paymob.</p>
+    {!!subscriptionEvents.length&&<div style={{marginTop:16}}><strong>Subscription activity</strong>{subscriptionEvents.slice(0,8).map(event=><div key={event.id} style={{display:"flex",justifyContent:"space-between",gap:12,padding:"10px 0",borderBottom:"1px solid #ebf1ed"}}><span>{event.action==="cancel_at_period_end"?"End-of-period cancellation requested":"Cancellation request withdrawn"}</span><span className="billing-muted">{date(event.created_at)}</span></div>)}</div>}
+   </section>
    <div className="billing-section-head"><h2>Choose your plan</h2><span className="billing-pill">Paymob integration prepared</span></div>
    <section className="billing-plans">{plans.map(plan=>{
     const price=prices.find(p=>p.plan_id===plan.id&&p.currency===currency&&p.billing_interval===period);
@@ -182,7 +219,7 @@ export default function BillingPage(){
    <section className="billing-panel"><div className="billing-table-wrap"><table className="billing-table"><thead><tr><th>Invoice</th><th>Issued</th><th>Plan</th><th>Amount</th><th>Status</th></tr></thead><tbody>{invoices.map(i=><tr key={i.id}><td>INV-{i.id.slice(0,8).toUpperCase()}</td><td>{date(i.issued_at)}</td><td>{plans.find(p=>p.id===i.plan_id)?.name||i.plan_id}</td><td>{money(i.amount_minor,i.currency)}</td><td><span className="billing-pill">{i.status}</span></td></tr>)}</tbody></table></div>{!invoices.length&&<p className="billing-muted">No invoices yet. Paid invoices will appear here after verified payments.</p>}</section>
    <div className="billing-section-head"><h2>Payment history</h2><span className="billing-muted">{paid.length} successful payment records</span></div>
    <section className="billing-panel"><div className="billing-table-wrap"><table className="billing-table"><thead><tr><th>Date</th><th>Amount</th><th>Status</th></tr></thead><tbody>{payments.map(p=><tr key={p.id}><td>{date(p.created_at)}</td><td>{money(p.amount_minor,p.currency)}</td><td><span className="billing-pill">{p.status}</span></td></tr>)}</tbody></table></div>{!payments.length&&<p className="billing-muted">No payments recorded.</p>}</section>
-   <p className="billing-muted" style={{marginTop:20}}>Payments are one-off checkout payments in this foundation. Automatic recurring charges, downloadable tax invoices, cancellation self-service and feature enforcement are not yet enabled.</p>
+   <p className="billing-muted" style={{marginTop:20}}>Payments are one-off checkout payments in this foundation. Cancellation preference can be recorded; automatic recurring charges, downloadable tax invoices and feature enforcement are not yet enabled.</p>
   </div></div>
  </div></main>;
 }
