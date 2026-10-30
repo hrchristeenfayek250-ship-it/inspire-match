@@ -149,7 +149,7 @@ export default function WorkflowAutomationSettings() {
     </section>)}</div>
     <div className="wa-actions"><button type="button" className="wa-reset" onClick={reset} disabled={!isManager||loading||saving}>Reset to suggested defaults</button><button type="button" className="wa-action" disabled={!isManager||loading||saving||Boolean(error)} onClick={save}>{saving?"Saving...":"Save Automation Rules"}</button></div>
     <p className="wa-foot">{isManager?"Only future stage changes use the saved rules.":"Read-only: company Admins and HR Managers can change rules."} Automatic tasks are assigned to the teammate changing the stage and appear in Task Management and SLA Monitoring. No system tests are run from this page.</p>
-    <Link href="/app/recruitment-operations/tasks" className="wa-back" style={{marginTop:12}}>View Recruitment Tasks →</Link>
+    <div style={{display:"flex",alignItems:"center",gap:22,flexWrap:"wrap",marginTop:16}}><Link href="/app/recruitment-operations/analytics" className="wa-back">View Automation Analytics →</Link><Link href="/app/recruitment-operations/tasks" className="wa-back">View Recruitment Tasks →</Link></div>
   </div></div>
  </div></main>;
 }
