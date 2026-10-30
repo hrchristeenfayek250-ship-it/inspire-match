@@ -223,6 +223,13 @@ export default function BillingPage(){
      <div><small className="billing-muted">Access enforcement</small><div style={{fontWeight:800}}>Not enabled</div></div>
     </div>
    </section>
+   <div className="billing-section-head"><h2>Commercial pricing</h2><span className="billing-pill">Approved offers only</span></div>
+   <section className="billing-panel">
+    <p className="billing-muted">One-time onboarding and recurring subscription fees are separate. Setup fees are displayed for reference and are not charged by the current checkout. Prices stay unpublished until approved.</p>
+    <div className="billing-table-wrap"><table className="billing-table"><thead><tr><th>Plan</th><th>One-time setup fee</th><th>{period==="month"?"Monthly":"Annual"} subscription</th><th>Currency</th></tr></thead><tbody>
+     {plans.map(plan=>{const offer=commercialOffers.find(o=>o.plan_id===plan.id&&o.currency===currency&&o.billing_interval===period);return <tr key={plan.id}><td>{plan.name}</td><td>{offer?money(offer.setup_fee_minor,currency):"Not published"}</td><td>{offer?money(offer.recurring_fee_minor,currency):"Not published"}</td><td>{currency}</td></tr>})}
+    </tbody></table></div>
+   </section>
    <div className="billing-section-head"><h2>Plan features &amp; usage limits</h2><span className="billing-pill">Draft configuration · not enforced yet</span></div>
    <section className="billing-panel">
     <p className="billing-muted">The feature matrix below describes planned commercial tiers. Existing ATS routes do not yet restrict access by plan, and no usage caps have been approved.</p>
