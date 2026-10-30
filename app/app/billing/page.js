@@ -158,7 +158,7 @@ export default function BillingPage(){
    });
    const result=await res.json();
    if(!res.ok)throw Error(result.error||"Unable to create checkout.");
-   if(!result.checkoutUrl||!/^https:\/\/(accept|ksa|uae|oman)\.paymob\.com\/unifiedcheckout\//.test(result.checkoutUrl))
+   if(!result.checkoutUrl||!/^https:\/\/(accept|ksa|uae)\.paymob\.com\/unifiedcheckout\//.test(result.checkoutUrl))
     throw Error("Payment redirect was invalid.");
    window.location.assign(result.checkoutUrl);
   }catch(e){setError(e.message||"Unable to process payment.");setProcessing("");}
@@ -247,14 +247,17 @@ export default function BillingPage(){
    <div className="billing-section-head"><h2>Choose your plan</h2><span className="billing-pill">Paymob integration prepared</span></div>
    <section className="billing-plans">{plans.map(plan=>{
     const price=prices.find(p=>p.plan_id===plan.id&&p.currency===currency&&p.billing_interval===period);
+    const offer=commercialOffers.find(o=>o.plan_id===plan.id&&o.currency===currency&&o.billing_interval===period);
+    const checkoutReady=!!offer&&Number(offer.setup_fee_minor)===0&&!!price&&Number(price.amount_minor)===Number(offer.recurring_fee_minor);
     const features=Array.isArray(plan.feature_list)?plan.feature_list:[];
     return <article className={"billing-plan "+(plan.id==="professional"?"featured":"")} key={plan.id}>
      <span className="billing-pill">{plan.id==="professional"?"MOST ADVANCED":plan.id==="enterprise"?"TAILORED":"ESSENTIALS"}</span>
      <h3>{plan.name}</h3><p>{plan.description}</p>
-     <div className="billing-price">{price?money(price.amount_minor,currency):"Contact us"} <small>{price?"/ "+(period==="month"?"month":"year"):"Pricing not published yet"}</small></div>
+     <div className="billing-price">{offer?money(offer.recurring_fee_minor,currency):"Contact us"} <small>{offer?"/ "+(period==="month"?"month":"year"):"Pricing not approved yet"}</small></div>
+     {offer&&<p className="billing-muted">One-time setup: {money(offer.setup_fee_minor,currency)} · {Number(offer.setup_fee_minor)>0?"Separate checkout not available yet":"No setup fee"}</p>}
      <ul className="billing-features">{features.map((feature,index)=><li key={index}>{feature}</li>)}</ul>
-     <button type="button" className="billing-button" style={{width:"100%"}} disabled={!price||!companyId||loading||!!processing||subscription?.plan_id===plan.id&&subscription?.status==="active"} onClick={()=>checkout(price?.id)}>
-      {processing===price?.id?"Starting payment…":subscription?.plan_id===plan.id&&subscription?.status==="active"?"Current plan":price?"Continue to Paymob":"Awaiting approved pricing"}
+     <button type="button" className="billing-button" style={{width:"100%"}} disabled={!checkoutReady||!companyId||loading||!!processing||subscription?.plan_id===plan.id&&subscription?.status==="active"} onClick={()=>checkout(price?.id)}>
+      {processing===price?.id?"Starting payment…":subscription?.plan_id===plan.id&&subscription?.status==="active"?"Current plan":!offer?"Awaiting approved pricing":!checkoutReady?"Checkout not enabled":"Continue to Paymob"}
      </button>
     </article>;
    })}</section>
