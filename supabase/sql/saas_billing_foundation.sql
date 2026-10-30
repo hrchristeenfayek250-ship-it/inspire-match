@@ -155,6 +155,9 @@ begin
   where pr.id=p_price_id and pr.is_active and pl.is_visible;
   if not found then raise exception 'Selected plan price is not available'; end if;
   if v_price.amount_minor <= 0 then raise exception 'Invalid price'; end if;
+  if exists(select 1 from public.company_subscriptions sub where sub.company_id=p_company_id and sub.plan_id=v_price.plan_id and sub.status in ('active','trialing') and sub.current_period_end>now()) then
+    raise exception 'This subscription plan is already active';
+  end if;
   perform pg_catalog.pg_advisory_xact_lock(pg_catalog.hashtext(p_company_id::text));
   if exists(select 1 from public.billing_checkout_sessions cs
     where cs.company_id=p_company_id and cs.status in ('initiated','pending')
@@ -216,6 +219,12 @@ begin
     if i.status='refunded' then return 'already_refunded'; end if;
     update public.billing_invoices set status='paid',paid_at=coalesce(paid_at,now()) where id=i.id;
     update public.billing_checkout_sessions set status='paid' where id=s.id;
+    -- A delayed older successful payment must not overwrite a newer subscription.
+    if exists(select 1 from public.company_subscriptions sub
+      join public.billing_invoices newer on newer.id=sub.latest_invoice_id
+      where sub.company_id=s.company_id and newer.issued_at>i.issued_at) then
+      return 'paid_previous_invoice';
+    end if;
     if not exists(select 1 from public.company_subscriptions sub where sub.company_id=s.company_id and sub.latest_invoice_id=i.id) then
       insert into public.company_subscriptions(company_id,plan_id,status,provider,current_period_start,current_period_end,latest_invoice_id,updated_at)
       values(s.company_id,i.plan_id,'active','paymob',now(),
