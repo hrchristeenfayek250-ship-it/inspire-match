@@ -299,6 +299,10 @@ export default function BillingPage(){
       <td>{date(setupInvoice.created_at)}</td></tr></tbody></table></div>:
      <p className="billing-muted">No setup invoice draft for this company.</p>}
    </section>
+   {setupInvoice?.status==="draft"&&<div style={{display:"flex",gap:14,alignItems:"center",flexWrap:"wrap",marginTop:12}}>
+    <Link href={`/app/billing/setup-invoice/${setupInvoice.id}`} className="billing-button" style={{textDecoration:"none",display:"inline-block"}}>Preview / Print Setup Draft</Link>
+    <span className="billing-muted">Save billing details first to include your latest changes. Preview is not an issued or tax invoice.</span>
+   </div>}
    <div className="billing-section-head"><h2>Plan features &amp; usage limits</h2><span className="billing-pill">Draft configuration · not enforced yet</span></div>
    <section className="billing-panel">
     <p className="billing-muted">The feature matrix below describes planned commercial tiers. Existing ATS routes do not yet restrict access by plan, and no usage caps have been approved.</p>
