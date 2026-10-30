@@ -299,6 +299,15 @@ export default function BillingPage(){
      </div>
      <button className="billing-button" type="button" disabled={savingSetupDetails} onClick={saveSetupDetails}>{savingSetupDetails?"Saving…":"Save draft details"}</button>
     </div>}
+    {setupInvoice&&<div style={{margin:"12px 0"}}>
+     <span className="billing-pill">Review: {setupInvoice.review_status||"not_submitted"}</span>
+     {setupInvoice.submitted_at&&<span className="billing-muted"> Submitted {date(setupInvoice.submitted_at)}</span>}
+     {setupInvoice.review_note&&<p className="billing-muted">{setupInvoice.review_note}</p>}
+     {setupInvoice.status==="draft"&&["not_submitted","changes_requested"].includes(setupInvoice.review_status||"not_submitted")&&
+      <button className="billing-button" type="button" style={{marginLeft:12}}
+       disabled={submittingSetupReview||savingSetupDetails||!setupDetails.name.trim()||!setupDetails.email.trim()||!setupDetails.address.trim()}
+       onClick={submitSetupReview}>{submittingSetupReview?"Submitting…":"Submit for review"}</button>}
+    </div>}
     {setupInvoice?<div className="billing-table-wrap"><table className="billing-table">
      <thead><tr><th>Draft reference</th><th>Plan</th><th>Amount</th><th>Status</th><th>Created</th></tr></thead>
      <tbody><tr><td>SETUP-{setupInvoice.id.slice(0,8).toUpperCase()}</td>
