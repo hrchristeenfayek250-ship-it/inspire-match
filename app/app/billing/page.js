@@ -248,9 +248,35 @@ export default function BillingPage(){
    <div className="billing-section-head"><h2>Commercial pricing</h2><span className="billing-pill">Approved offers only</span></div>
    <section className="billing-panel">
     <p className="billing-muted">One-time onboarding and recurring subscription fees are separate. Setup fees are displayed for reference and are not charged by the current checkout. Prices stay unpublished until approved.</p>
-    <div className="billing-table-wrap"><table className="billing-table"><thead><tr><th>Plan</th><th>One-time setup fee</th><th>{period==="month"?"Monthly":"Annual"} subscription</th><th>Currency</th></tr></thead><tbody>
-     {plans.map(plan=>{const offer=commercialOffers.find(o=>o.plan_id===plan.id&&o.currency===currency&&o.billing_interval===period);return <tr key={plan.id}><td>{plan.name}</td><td>{offer?money(offer.setup_fee_minor,currency):"Not published"}</td><td>{offer?money(offer.recurring_fee_minor,currency):"Not published"}</td><td>{currency}</td></tr>})}
+    <div className="billing-table-wrap"><table className="billing-table"><thead><tr><th>Plan</th><th>One-time setup fee</th><th>{period==="month"?"Monthly":"Annual"} subscription</th><th>Currency</th><th>Setup invoice draft</th></tr></thead><tbody>
+     {plans.map(plan=>{
+      const offer=commercialOffers.find(o=>o.plan_id===plan.id&&o.currency===currency&&o.billing_interval===period);
+      const canDraft=setupInvoiceReady&&!!companyId&&!creatingSetup&&
+       (!setupInvoice||setupInvoice.status==="draft"&&setupInvoice.commercial_offer_id!==offer?.id);
+      return <tr key={plan.id}>
+       <td>{plan.name}</td><td>{offer?money(offer.setup_fee_minor,currency):"Not published"}</td>
+       <td>{offer?money(offer.recurring_fee_minor,currency):"Not published"}</td><td>{currency}</td>
+       <td>{!offer?"Awaiting approval":Number(offer.setup_fee_minor)===0?"Not required":
+        <button type="button" className="billing-button billing-secondary"
+         disabled={!canDraft} onClick={()=>prepareSetupDraft(offer)}>
+         {creatingSetup?"Saving…":setupInvoice?.commercial_offer_id===offer.id?"Draft prepared":setupInvoice&&setupInvoice.status!=="draft"?"Already issued":"Prepare draft"}
+        </button>}</td>
+      </tr>;
+     })}
     </tbody></table></div>
+   </section>
+   <div className="billing-section-head"><h2>One-time setup invoice</h2><span className="billing-pill">Internal draft · no payment</span></div>
+   <section className="billing-panel">
+    <p className="billing-muted">Prepare one draft per company from an approved commercial offer. This is an internal record, not an issued tax invoice. No charge will be made, and subscription status will not change.</p>
+    {!setupInvoiceReady&&companyId&&<p className="billing-muted">Setup invoice drafts will become available after applying the Setup Invoice Drafts SQL migration.</p>}
+    {setupInvoice?<div className="billing-table-wrap"><table className="billing-table">
+     <thead><tr><th>Draft reference</th><th>Plan</th><th>Amount</th><th>Status</th><th>Created</th></tr></thead>
+     <tbody><tr><td>SETUP-{setupInvoice.id.slice(0,8).toUpperCase()}</td>
+      <td>{plans.find(p=>p.id===setupInvoice.plan_id)?.name||setupInvoice.plan_id}</td>
+      <td>{money(setupInvoice.amount_minor,setupInvoice.currency)}</td>
+      <td><span className="billing-pill">{setupInvoice.status}</span></td>
+      <td>{date(setupInvoice.created_at)}</td></tr></tbody></table></div>:
+     <p className="billing-muted">No setup invoice draft for this company.</p>}
    </section>
    <div className="billing-section-head"><h2>Plan features &amp; usage limits</h2><span className="billing-pill">Draft configuration · not enforced yet</span></div>
    <section className="billing-panel">
