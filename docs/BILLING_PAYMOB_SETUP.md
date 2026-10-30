@@ -6,6 +6,7 @@ Status: **foundation implemented; live payments not enabled**.
 
 - Company-scoped plans, approved prices, subscriptions, checkout sessions, invoices and payments.
 - Admin-only billing view and subscription cancellation preferences.
+- One-time setup fee **drafts**, one per company, created by company admins from approved offers; no setup-fee payment, tax invoice, or subscription activation yet.
 - Server-side Paymob intention creation and Hosted Unified Checkout redirect.
 - Signed transaction callback (HMAC SHA-512) and idempotent payment recording.
 
@@ -14,9 +15,10 @@ Status: **foundation implemented; live payments not enabled**.
 1. Apply `supabase/sql/saas_billing_foundation.sql` in Supabase.
 2. Apply `supabase/sql/saas_billing_subscription_management.sql` for self-service preferences.
 3. Apply `supabase/sql/saas_billing_plan_entitlements.sql`, `supabase/sql/saas_billing_access_snapshot.sql` and `supabase/sql/billing_currency_usd.sql` for feature catalog, access snapshot and USD pricing catalog. The USD migration also creates the draft commercial offers table if missing.
-4. Approve actual setup fees and recurring fees, legal terms, tax treatment and merchant settlement country **before** activating any price.
-5. Create/approve a Paymob merchant account for the country. Region is chosen by the merchant credentials, not by the customer's billing currency selector.
-6. Add **server-side** Vercel environment variables:
+4. Apply `supabase/sql/saas_billing_setup_invoice_drafts.sql` for separate internal setup-fee drafts (no payments).
+5. Approve actual setup fees and recurring fees, legal terms, tax treatment and merchant settlement country **before** activating any price.
+6. Create/approve a Paymob merchant account for the country. Region is chosen by the merchant credentials, not by the customer's billing currency selector.
+7. Add **server-side** Vercel environment variables:
 
 | Variable | Example / use |
 | --- | --- |
@@ -31,9 +33,9 @@ Status: **foundation implemented; live payments not enabled**.
 | `PAYMOB_HMAC_SECRET` | Paymob transaction callback HMAC secret |
 | `APP_URL` | `https://inspire-match-ats.vercel.app` (no trailing slash) |
 
-7. Register the callback URL with Paymob or confirm the intention's `notification_url` reaches `https://inspire-match-ats.vercel.app/api/billing/paymob/webhook`.
-8. After payment provider approval, agree on checkout currencies and subscription prices. Approved rows in `billing_commercial_offers` must match active recurring prices in `billing_plan_prices` before checkout is allowed. Nonzero setup fees are displayed, but require a separate, not-yet-implemented checkout.
-9. Carry out **test-mode** payments and callback/security reconciliation in the pre-launch QA phase, then enable live credentials once they pass.
+8. Register the callback URL with Paymob or confirm the intention's `notification_url` reaches `https://inspire-match-ats.vercel.app/api/billing/paymob/webhook`.
+9. After payment provider approval, agree on checkout currencies and subscription prices. Approved rows in `billing_commercial_offers` must match active recurring prices in `billing_plan_prices` before checkout is allowed. Nonzero setup fees are displayed, but require a separate, not-yet-implemented checkout.
+10. Carry out **test-mode** payments and callback/security reconciliation in the pre-launch QA phase, then enable live credentials once they pass.
 
 ## Security and commercial limitations
 
@@ -47,6 +49,7 @@ Status: **foundation implemented; live payments not enabled**.
 - The cancellation preference is recorded, but does not automatically cancel a Paymob recurring mandate (there is no such mandate in this implementation).
 - Feature limits are planned but **not enforced** by the ATS yet; do not market tiers as actively restricted.
 - Invoice records are internal accounting entries, not downloadable VAT-compliant tax invoices.
+- Setup invoice drafts are deliberately separate from subscription invoices. Only an approved commercial offer with a positive setup fee can generate a company draft; one company cannot have multiple separate setup invoices. An issued/paid draft cannot be overwritten by an admin action.
 - Expiration is reflected in the UI according to `current_period_end`; a scheduled lifecycle job and access enforcement are still required before production rollout.
 - Rollout must account for local tax invoices, data protection, settlement agreements and customer terms.
 
