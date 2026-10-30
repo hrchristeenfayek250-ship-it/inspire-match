@@ -18,6 +18,7 @@ const operations = [
   { number: "00I", label: "QUALITY & COMPLIANCE", title: "Recruitment Quality & Compliance Hub", description: "Audit missing recruitment information, task ownership, and workflow quality exceptions in one workspace.", href: "/app/recruitment-operations/quality", action: "Review Quality", icon: "✓" },
   { number: "00J", label: "RISK INTELLIGENCE", title: "Recruitment Risk & Early Warning Center", description: "Rank each active job by transparent recruitment risk signals, spot emerging problems, and plan proactive interventions.", href: "/app/recruitment-operations/risks", action: "View Risk Watchlist", icon: "⚡" },
   { number: "00K", label: "DECISION INTELLIGENCE", title: "Recruitment Decision Intelligence", description: "Compare applicants for the same role using interview scorecards, evaluator recommendations, evidence gaps and documented decisions.", href: "/app/recruitment-operations/decisions", action: "Compare Candidates", icon: "◎" },
+  { number: "00L", label: "CANDIDATE EXPERIENCE", title: "Candidate Experience & Communication Intelligence", description: "Identify candidate follow-up needs, unresolved interviews and candidate-linked task commitments with a prioritized review queue.", href: "/app/recruitment-operations/candidate-experience", action: "Review Experience", icon: "♡" },
   {
     number: "01",
     label: "REQUISITIONS",
