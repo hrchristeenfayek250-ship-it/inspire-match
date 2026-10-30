@@ -15,8 +15,8 @@ Status: **foundation implemented; live payments not enabled**.
 2. Apply `supabase/sql/saas_billing_subscription_management.sql` for self-service preferences.
 3. Apply `supabase/sql/saas_billing_plan_entitlements.sql`, `supabase/sql/saas_billing_access_snapshot.sql` and `supabase/sql/billing_currency_usd.sql` for feature catalog, access snapshot and USD pricing catalog. The USD migration also creates the draft commercial offers table if missing.
 4. Approve actual setup fees and recurring fees, legal terms, tax treatment and merchant settlement country **before** activating any price.
-4. Create/approve a Paymob merchant account for the country. Region is chosen by the merchant credentials, not by the customer's billing currency selector.
-5. Add **server-side** Vercel environment variables:
+5. Create/approve a Paymob merchant account for the country. Region is chosen by the merchant credentials, not by the customer's billing currency selector.
+6. Add **server-side** Vercel environment variables:
 
 | Variable | Example / use |
 | --- | --- |
@@ -31,9 +31,9 @@ Status: **foundation implemented; live payments not enabled**.
 | `PAYMOB_HMAC_SECRET` | Paymob transaction callback HMAC secret |
 | `APP_URL` | `https://inspire-match-ats.vercel.app` (no trailing slash) |
 
-6. Register the callback URL with Paymob or confirm the intention's `notification_url` reaches `https://inspire-match-ats.vercel.app/api/billing/paymob/webhook`.
-7. After payment provider approval, agree on checkout currencies and subscription prices. Approved rows in `billing_commercial_offers` must match active recurring prices in `billing_plan_prices` before checkout is allowed. Nonzero setup fees are displayed, but require a separate, not-yet-implemented checkout.
-8. Carry out **test-mode** payments and callback/security reconciliation in the pre-launch QA phase, then enable live credentials once they pass.
+7. Register the callback URL with Paymob or confirm the intention's `notification_url` reaches `https://inspire-match-ats.vercel.app/api/billing/paymob/webhook`.
+8. After payment provider approval, agree on checkout currencies and subscription prices. Approved rows in `billing_commercial_offers` must match active recurring prices in `billing_plan_prices` before checkout is allowed. Nonzero setup fees are displayed, but require a separate, not-yet-implemented checkout.
+9. Carry out **test-mode** payments and callback/security reconciliation in the pre-launch QA phase, then enable live credentials once they pass.
 
 ## Security and commercial limitations
 
