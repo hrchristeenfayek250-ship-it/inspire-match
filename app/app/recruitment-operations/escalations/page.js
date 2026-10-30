@@ -2,9 +2,9 @@
 import Link from "next/link";
 import {useEffect,useState} from "react";
 import {supabase} from "@/lib/supabase";
-import ATSNavigation from "@/components/ATSNavigation";
+import {ATS_NAVIGATION} from "@/components/ATSNavigation";
 const pageStyles = `
-.sla-page { width:100%; min-height:100vh; background:#f5f8f6; color:#1c4531; font:14px/1.5 Arial,Helvetica,sans-serif; }
+.sla-page { display:block; width:100%; max-width:none; margin:0; padding:0; min-height:100vh; background:#f5f8f6; color:#1c4531; font:14px/1.5 Arial,Helvetica,sans-serif; }
 .sla-page *, .sla-page *::before, .sla-page *::after { box-sizing:border-box; }
 .sla-page h1,.sla-page h2,.sla-page h3 { font-family:Arial,Helvetica,sans-serif; font-weight:800; letter-spacing:-.5px; line-height:1.25; }
 .sla-page h3 { font-size:17px; margin:0 0 11px; color:#173d2c; }
@@ -40,7 +40,7 @@ const pageStyles = `
 .sla-page td:first-child { font-weight:750; }
 .sla-page a:not(.sla-nav a):hover { color:#218456; }
 @media(max-width:1000px){.sla-layout{grid-template-columns:210px minmax(0,1fr)}.sla-content{padding:0 20px 42px}}
-@media(max-width:760px){.sla-layout{display:block}.sla-sidebar{padding:14px 16px;border-right:0;border-bottom:1px solid #e5ece7}.sla-brand{padding:0 0 12px}.sla-nav{flex-direction:row;overflow-x:auto}.sla-nav a{flex:0 0 auto;white-space:nowrap}.sla-content{padding:0 15px 35px}.sla-topbar{min-height:60px;margin-bottom:18px}.sla-hero{padding:27px 23px}.sla-page table{min-width:640px}}
+@media(max-width:760px){.sla-layout{display:block!important;grid-template-columns:none!important}.sla-sidebar{padding:14px 16px!important;border-right:0!important;border-bottom:1px solid #e5ece7}.sla-brand{padding:0 0 12px!important}.sla-nav{flex-direction:row!important;overflow-x:auto}.sla-nav a{flex:0 0 auto;white-space:nowrap}.sla-content{padding:0 15px 35px!important}.sla-topbar{min-height:60px!important;margin-bottom:18px!important}.sla-hero{padding:27px 23px!important}.sla-page table{min-width:640px}}
 `;
 const card={background:"#fff",border:"1px solid #dce9df",borderRadius:15,padding:22};
 const input={border:"1px solid #d6e6da",borderRadius:9,padding:10,background:"#fff",color:"#21543a"};
@@ -58,14 +58,22 @@ export default function EscalationPage(){
  const queue=alerts.filter(t=>t.level!=="healthy"&&(filter==="all"||t.level===filter)).sort((a,b)=>b.days-a.days);
  const metrics=[["SLA Compliance",monitored.length?Math.round(100*(monitored.length-breached.length)/monitored.length)+"%":"N/A"],["SLA Breaches",breached.length],["Manager Escalations",escalated.length],["At-risk Tasks",atRisk.length]];
  const row=(label,value)=><div style={{display:"flex",justifyContent:"space-between",gap:12,padding:"13px 0",borderBottom:"1px solid #edf2ee"}}><strong>{label}</strong><span>{value}</span></div>;
- return <main className="sla-page"><style>{pageStyles}</style><div className="sla-layout">
-  <aside className="sla-sidebar">
-   <div className="sla-brand"><span className="sla-logo" aria-hidden="true">◈</span><div><span className="sla-brand-name">Inspire Match</span><span className="sla-brand-sub">TALENT INTELLIGENCE</span></div></div>
-   <div className="sla-nav-label">WORKSPACE</div><ATSNavigation className="sla-nav"/>
+ return <main className="sla-page" style={{display:"block",width:"100%",maxWidth:"none",margin:0,padding:0,minHeight:"100vh",background:"#f5f8f6",fontFamily:"Arial,Helvetica,sans-serif",color:"#1c4531"}}><style>{pageStyles}</style><div className="sla-layout" style={{display:"grid",gridTemplateColumns:"252px minmax(0,1fr)",width:"100%",minHeight:"100vh"}}>
+  <aside className="sla-sidebar" style={{minWidth:0,background:"#fff",borderRight:"1px solid #e5ece7",padding:"27px 14px 22px"}}>
+   <div className="sla-brand" style={{display:"flex",alignItems:"center",gap:11,padding:"3px 13px 32px"}}>
+    <span aria-hidden="true" className="sla-logo" style={{display:"grid",placeItems:"center",width:36,height:36,flex:"0 0 36px",background:"#14583e",borderRadius:11,color:"#fff",fontWeight:850,fontSize:22}}>I</span>
+    <div><span className="sla-brand-name" style={{display:"block",fontSize:17,fontWeight:850,letterSpacing:"-.5px",color:"#173e30"}}>Inspire Match</span><span className="sla-brand-sub" style={{display:"block",marginTop:3,fontSize:9,fontWeight:800,letterSpacing:"1.7px",color:"#83978a"}}>TALENT INTELLIGENCE</span></div>
+   </div>
+   <div className="sla-nav-label" style={{fontSize:10,fontWeight:800,letterSpacing:"1.5px",color:"#93a49a",padding:"0 13px 12px"}}>WORKSPACE</div>
+   <nav aria-label="Main navigation" className="sla-nav" style={{display:"flex",flexDirection:"column",gap:4}}>
+    {ATS_NAVIGATION.map(([label,href,icon])=><Link key={href} href={href} aria-current={href==="/app/recruitment-operations"?"page":undefined} style={{display:"flex",alignItems:"center",gap:12,minHeight:40,padding:"10px 12px",borderRadius:10,textDecoration:"none",color:href==="/app/recruitment-operations"?"#145f42":"#5d7267",background:href==="/app/recruitment-operations"?"#e5f2e9":"transparent",fontSize:12,fontWeight:href==="/app/recruitment-operations"?800:650}}>
+     <span aria-hidden="true" style={{display:"inline-block",flex:"0 0 17px",width:17,textAlign:"center",fontSize:15}}>{icon}</span>{label}
+    </Link>)}
+   </nav>
   </aside>
-  <div className="sla-content"><div className="sla-container">
-  <div className="sla-topbar"><Link className="sla-breadcrumb" href="/app/recruitment-operations">Workspace / <strong>Recruitment Operations</strong> / SLA Escalations</Link><Link href="/app/recruitment-operations" className="sla-toplink">← All Operations</Link></div>
-  <header className="sla-hero"><small style={{letterSpacing:2}}>RECRUITMENT OPERATIONS / SLA GOVERNANCE</small><h1 style={{color:"#fff",fontSize:30}}>Recruitment SLA &amp; Escalation Intelligence</h1><p style={{color:"#e4f2e9",lineHeight:1.6}}>Prioritize deadline breaches, route follow-ups to the responsible owner, and identify cases needing manager review.</p></header>
+  <div className="sla-content" style={{minWidth:0,padding:"0 clamp(18px,3.4vw,54px) 65px"}}><div className="sla-container" style={{maxWidth:1250,margin:"0 auto"}}>
+  <div className="sla-topbar" style={{display:"flex",justifyContent:"space-between",alignItems:"center",gap:12,minHeight:77,borderBottom:"1px solid #e5ece7",marginBottom:30}}><Link className="sla-breadcrumb" href="/app/recruitment-operations">Workspace / <strong>Recruitment Operations</strong> / SLA Escalations</Link><div style={{display:"flex",alignItems:"center",gap:12}}><small style={{fontSize:10,color:"#799685",whiteSpace:"nowrap"}}>Layout v2</small><Link href="/app/recruitment-operations" className="sla-toplink">← All Operations</Link></div></div>
+  <header className="sla-hero" style={{background:"linear-gradient(115deg,#103c2c,#176448 72%,#217755)",borderRadius:22,padding:"36px 38px",color:"#fff",boxShadow:"0 12px 32px rgba(19,74,49,.10)"}}><small style={{letterSpacing:2}}>RECRUITMENT OPERATIONS / SLA GOVERNANCE</small><h1 style={{color:"#fff",fontSize:30}}>Recruitment SLA &amp; Escalation Intelligence</h1><p style={{color:"#e4f2e9",lineHeight:1.6}}>Prioritize deadline breaches, route follow-ups to the responsible owner, and identify cases needing manager review.</p></header>
   <div style={{display:"flex",gap:13,flexWrap:"wrap",alignItems:"end",margin:"25px 0"}}>
    <label>Company<select style={{...input,display:"block"}} value={company} onChange={e=>setCompany(e.target.value)}>{companies.map((c,i)=><option key={i} value={c.company_id}>Company {String(c.company_id).slice(0,8)}</option>)}</select></label>
    <label>Risk window<select style={{...input,display:"block"}} value={warning} onChange={e=>setWarning(Number(e.target.value))}>{[1,3,5,7].map(n=><option key={n} value={n}>{n} days</option>)}</select></label>
