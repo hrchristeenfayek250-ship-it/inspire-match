@@ -5,6 +5,57 @@ import {supabase} from "@/lib/supabase";
 import ATSNavigation from "@/components/ATSNavigation";
 
 
+const styles=`
+.ch-page{display:block!important;max-width:none!important;width:100%!important;margin:0!important;padding:0!important;min-height:100vh;background:#f5f8f6;color:#214632;font:13px/1.6 Arial,sans-serif}
+.ch-page *{box-sizing:border-box}.ch-layout{display:grid;grid-template-columns:252px minmax(0,1fr);min-height:100vh}
+.ch-side{background:#fff;border-right:1px solid #e4ede6;padding:27px 14px}
+.ch-brand{display:flex;align-items:center;gap:11px;padding:4px 13px 30px;font-size:17px;font-weight:850}
+.ch-mark{display:grid;plach-items:center;width:36px;height:36px;border-radius:11px;background:#14583e;color:white;font-size:22px}
+.ch-brand small{display:block;color:#8a9d8f;letter-spacing:1.5px;font-size:9px}
+.ch-nav{display:flex;flex-direction:column;gap:4px}.ch-nav a{display:flex;align-items:center;gap:12px;min-height:40px;padding:10px 12px;border-radius:10px;color:#5d7267;text-decoration:none;font-size:12px;font-weight:700}
+.ch-nav a span{width:17px;text-align:center}.ch-nav a:hover,.ch-nav a.active{background:#e5f2e9;color:#145f42}
+.ch-main{min-width:0;padding:0 clamp(18px,3.4vw,54px) 65px}.ch-wrap{max-width:1240px;margin:auto}
+.ch-top{height:77px;display:flex;justify-content:spach-between;align-items:center;gap:12px;border-bottom:1px solid #e5ece7;margin-bottom:30px}
+.ch-link{color:#19734c;text-decoration:none;font-weight:800;font-size:12px}
+.ch-hero{background:linear-gradient(115deg,#103c2c,#176448 72%,#217755);border-radius:22px;padding:36px 38px;color:#fff;box-shadow:0 12px 32px #134a311a}
+.ch-hero small{color:#b7e5cb;letter-spacing:2px;font-size:10px;font-weight:850}.ch-hero h1{font:850 clamp(27px,3vw,36px)/1.2 Arial,sans-serif;color:#fff;margin:13px 0}.ch-hero p{color:#dceee4;font-size:13px;max-width:730px;margin:0}
+.ch-controls{display:flex;gap:13px;flex-wrap:wrap;align-items:end;margin:25px 0 18px}.ch-controls label{font-size:11px;font-weight:800;color:#688372}
+.ch-input{display:block;margin-top:6px;min-width:150px;padding:11px;border:1px solid #d9e7dc;border-radius:9px;background:#fff;color:#22543b;font:12px Arial}
+.ch-metrics{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:13px;margin-bottom:17px}
+.ch-metric,.ch-panel{background:#fff;border:1px solid #e1ebe4;border-radius:15px;padding:22px;min-width:0}
+.ch-metric span{font-size:11px;font-weight:800;color:#708b78}.ch-metric strong{display:block;font-size:29px;color:#19764e;margin:8px 0}.ch-metric small{color:#8a9f8e;font-size:11px}
+.ch-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:17px}
+.ch-panel h2{font:800 17px Arial,sans-serif;color:#1c4531;margin:0 0 9px}
+.ch-desc{color:#809687;font-size:12px;margin:0 0 16px}
+.ch-row{display:flex;justify-content:spach-between;align-items:center;gap:14px;border-top:1px solid #edf2ee;padding:14px 0}
+.ch-row strong{font-size:12px}.ch-row small{display:block;color:#819688;font-size:11px;margin-top:5px}
+.ch-tag{display:inline-block;padding:5px 10px;border-radius:30px;background:#e7f3eb;color:#20734b;font-size:10px;font-weight:800;white-space:nowrap}
+.ch-tag.warn{background:#fff0dd;color:#986b2a}.ch-tag.bad{background:#ffebe6;color:#a54b37}
+.ch-tablewrap{overflow-x:auto}.ch-table{width:100%;border-collapse:collapse;min-width:710px;font-size:12px}
+.ch-table th{background:#f7faf8;text-align:left;color:#708b79;font-size:10px;padding:13px}.ch-table td{padding:13px;border-top:1px solid #edf2ee;color:#3d604a}
+.ch-error{padding:13px;background:#fff0e6;color:#a6503d;border-radius:9px;margin:14px 0}
+.ch-note{font-size:11px;color:#82988a;line-height:1.7;margin-top:16px}
+@media(max-width:1040px){.ch-grid{grid-template-columns:1fr}.ch-metrics{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:760px){.ch-layout{display:block}.ch-side{padding:13px 16px;border-right:0;border-bottom:1px solid #e4ede6}.ch-brand{padding:0 0 12px}.ch-nav{flex-direction:row;overflow:auto}.ch-nav a{flex:0 0 auto;white-space:nowrap}.ch-main{padding:0 15px 40px}.ch-top{height:60px;margin-bottom:18px}.ch-hero{padding:26px 22px}.ch-panel,.ch-metric{padding:16px}}
+
+.ch-pill{padding:6px 10px;border-radius:99px;background:#edf6ef;color:#216844;font-size:10px;font-weight:800}
+.ch-heat{height:9px;background:#eaf1ec;border-radius:99px;overflow:hidden;margin-top:7px}
+.ch-heat span{display:block;height:100%;background:#278254;border-radius:99px}
+.ch-heat span.ch-alert{background:#d99a50}
+.ch-btn{cursor:pointer;font-weight:800}
+.ch-btn:disabled{opacity:.5;cursor:not-allowed}
+
+.ch-form{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+.ch-form label{display:flex;flex-direction:column;gap:6px;font-size:11px;font-weight:750}
+.ch-form .wide{grid-column:1/-1}
+.ch-textarea{min-height:86px;resize:vertical}
+.ch-button{background:#16613f!important;color:#fff!important;border-color:#16613f!important;cursor:pointer;font-weight:800}
+.ch-button:disabled{opacity:.5;cursor:not-allowed}
+.ch-event{padding:14px;border-bottom:1px solid #e5eee7}
+.ch-event:last-child{border:0}
+.ch-pill{display:inline-block;border-radius:8px;background:#edf5ef;padding:4px 8px;color:#286f4b;font-size:11px;font-weight:800}
+@media(max-width:750px){.ch-form{grid-template-columns:1fr}}
+`;
 const channels=["Email","Phone","WhatsApp","SMS","Video","Other"];
 const outcomes=["Contacted","Replied","No response","Interview coordination","Follow-up needed","Other"];
 const fmt=x=>x?new Date(x).toLocaleString():"—";
