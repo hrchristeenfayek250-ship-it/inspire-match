@@ -282,6 +282,14 @@ export default function BillingPage(){
    <section className="billing-panel">
     <p className="billing-muted">Prepare one draft per company from an approved commercial offer. This is an internal record, not an issued tax invoice. No charge will be made, and subscription status will not change.</p>
     {!setupInvoiceReady&&companyId&&<p className="billing-muted">Setup invoice drafts will become available after applying the Setup Invoice Drafts SQL migration.</p>}
+    {setupInvoice?.status==="draft"&&<div>
+     <div className="billing-form">
+      {["name","email","address","taxId","notes"].map(key=><label key={key}>{({name:"Billing name",email:"Billing email",address:"Billing address",taxId:"Tax ID",notes:"Notes"})[key]}
+       <input className="billing-input" value={setupDetails[key]} onChange={e=>setSetupDetails(v=>({...v,[key]:e.target.value}))}/>
+      </label>)}
+     </div>
+     <button className="billing-button" type="button" disabled={savingSetupDetails} onClick={saveSetupDetails}>{savingSetupDetails?"Saving…":"Save draft details"}</button>
+    </div>}
     {setupInvoice?<div className="billing-table-wrap"><table className="billing-table">
      <thead><tr><th>Draft reference</th><th>Plan</th><th>Amount</th><th>Status</th><th>Created</th></tr></thead>
      <tbody><tr><td>SETUP-{setupInvoice.id.slice(0,8).toUpperCase()}</td>
