@@ -1,6 +1,8 @@
 "use client";
 
 import Link from "next/link";
+import { useEffect, useMemo, useState } from "react";
+import { supabase } from "@/lib/supabase";
 import ATSNavigation from "@/components/ATSNavigation";
 
 const operations = [
@@ -167,6 +169,16 @@ const styles = `
   .ops-page .ops-card h3 { font-size: 17px; color: #173e2f !important; font-weight: 850; margin: 0 0 9px; }
   .ops-card-description { font-size: 12px; color: #74877a; line-height: 1.65; margin: 0 0 17px; max-width: 380px; }
   .ops-card-action { margin-top: auto; color: #16734b; font-size: 12px; font-weight: 850; }
+  .ops-metrics { display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:13px;margin-top:22px; }
+  .ops-metric {background:#fff;border:1px solid #e3ebe5;border-radius:15px;padding:20px;}
+  .ops-metric strong {display:block;font-size:29px;color:#176b49;margin:6px 0;}
+  .ops-metric span {font-size:12px;color:#698173;font-weight:700;}
+  .ops-monitor {display:grid;grid-template-columns:1.1fr 1fr;gap:16px;margin-top:17px;}
+  .ops-panel {background:#fff;border:1px solid #e3ebe5;border-radius:16px;padding:22px;min-width:0;}
+  .ops-panel h3 {font-size:16px!important;margin-bottom:13px!important;}
+  .ops-monitor-row {display:flex;justify-content:space-between;gap:12px;border-top:1px solid #edf2ee;padding:12px 0;font-size:12px;align-items:center;}
+  .ops-monitor-row small {display:block;color:#829488;margin-top:4px;}
+  .ops-monitor-row b {color:#176b49;white-space:nowrap;}
   .ops-bottom { margin-top: 25px; padding: 16px 19px; border: 1px solid #e1ebe3; background: #f0f6f1; border-radius: 12px; display: flex; align-items: center; gap: 12px; color: #567566; font-size: 12px; }
   .ops-bottom strong { color: #225d42; }
   @media (max-width: 1120px) { .ops-hero { grid-template-columns: minmax(0,1fr); } .ops-hero-side { display: none; } }
@@ -182,12 +194,44 @@ const styles = `
     .ops-topbar { min-height: 65px; margin-bottom: 20px; }
     .ops-hero { padding: 27px 23px; }
     .ops-grid { grid-template-columns: 1fr; }
+    .ops-metrics {grid-template-columns:repeat(2,minmax(0,1fr));}
+    .ops-monitor {grid-template-columns:1fr;}
     .ops-card { min-height: 160px; }
   }
   @media (prefers-reduced-motion: reduce) { .ops-page * { transition: none !important; } }
 `;
 
 export default function RecruitmentOperationsPage() {
+  const [tasks,setTasks]=useState([]);
+  const [userId,setUserId]=useState("");
+  const [taskError,setTaskError]=useState("");
+  const [loadingTasks,setLoadingTasks]=useState(true);
+  useEffect(()=>{
+    let active=true;
+    (async()=>{
+      const {data:auth,error:authError}=await supabase.auth.getUser();
+      if(!active)return;
+      if(authError||!auth?.user){setTaskError("Sign in to view live task analytics.");setLoadingTasks(false);return;}
+      setUserId(auth.user.id);
+      const [taskResult]=await Promise.all([
+        supabase.from("recruitment_tasks").select("id,title,status,due_date,priority,assigned_to,company_id,created_by").order("created_at",{ascending:false}).limit(1000)
+      ]);
+      if(!active)return;
+      if(taskResult.error)setTaskError(taskResult.error.message);else setTasks(taskResult.data||[]);
+      if(active)setLoadingTasks(false);
+    })();
+    return()=>{active=false};
+  },[]);
+  const today=new Date().toLocaleDateString("en-CA");
+  const activeTasks=tasks.filter(t=>t.status!=="completed");
+  const overdue=activeTasks.filter(t=>t.due_date&&t.due_date<today);
+  const completed=tasks.filter(t=>t.status==="completed");
+  const dueSoon=activeTasks.filter(t=>t.due_date&&t.due_date>=today).sort((a,b)=>a.due_date.localeCompare(b.due_date)).slice(0,5);
+  const workload=useMemo(()=>{
+    const counts=new Map();
+    for(const t of tasks){if(!t.assigned_to)continue;const key=`${t.company_id||""}:${t.assigned_to}`;const entry=counts.get(key)||{id:t.assigned_to,companyId:t.company_id,total:0,open:0,completed:0,overdue:0};entry.total++;if(t.status==="completed")entry.completed++;else{entry.open++;if(t.due_date&&t.due_date<today)entry.overdue++;}counts.set(key,entry);}
+    return [...counts.values()].sort((a,b)=>b.open-a.open);
+  },[tasks,today]);
   return (
     <main className="ops-page">
       <style>{styles}</style>
@@ -225,6 +269,16 @@ export default function RecruitmentOperationsPage() {
                 <div className="ops-hero-dots" aria-hidden="true">
                   {operations.map((item) => <span key={item.number} />)}
                 </div>
+              </div>
+            </section>
+
+            <section aria-label="Live recruitment task overview">
+              <div className="ops-section-head"><div><div className="ops-section-eyebrow">LIVE TASK INTELLIGENCE</div><h2>Team operations overview</h2><p>Real-time recruitment task progress from your accessible workspace.</p></div><Link className="ops-section-count" href="/app/recruitment-operations/tasks">Manage Tasks →</Link></div>
+              {taskError&&<p role="alert" style={{color:"#a13f38"}}>{taskError}</p>}
+              <div className="ops-metrics">{[["Total Tasks",tasks.length],["In Progress",tasks.filter(t=>t.status==="in_progress").length],["Overdue",overdue.length],["Completed",completed.length]].map(([name,value])=><div className="ops-metric" key={name}><span>{name}</span><strong>{loadingTasks?"—":value}</strong></div>)}</div>
+              <div className="ops-monitor">
+                <div className="ops-panel"><h3>Recruiter Workload</h3>{loadingTasks?<p>Loading team workload...</p>:workload.length?workload.map(w=><div className="ops-monitor-row" key={`${w.companyId}:${w.id}`}><div><strong>{w.id===userId?"You":`Team Member · ${w.id.slice(0,8)}`}</strong><small>{w.open} open · {w.completed} completed · {w.overdue} overdue</small></div><b>{w.total} tasks</b></div>):<p style={{color:"#819286",fontSize:12}}>No assigned tasks yet.</p>}</div>
+                <div className="ops-panel"><h3>Upcoming & Overdue</h3>{loadingTasks?<p>Loading deadlines...</p>:[...overdue.sort((a,b)=>a.due_date.localeCompare(b.due_date)).slice(0,3),...dueSoon].slice(0,6).length?[...overdue.sort((a,b)=>a.due_date.localeCompare(b.due_date)).slice(0,3),...dueSoon].slice(0,6).map(t=><div className="ops-monitor-row" key={t.id}><div><strong>{t.title}</strong><small>{t.due_date} · {t.priority}</small></div><b style={{color:t.due_date<today?"#b34c41":"#176b49"}}>{t.due_date<today?"Overdue":"Upcoming"}</b></div>):<p style={{color:"#819286",fontSize:12}}>No upcoming or overdue tasks.</p>}</div>
               </div>
             </section>
 
