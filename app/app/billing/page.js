@@ -297,7 +297,7 @@ export default function BillingPage(){
        <input className="billing-input" value={setupDetails[key]} onChange={e=>setSetupDetails(v=>({...v,[key]:e.target.value}))}/>
       </label>)}
      </div>
-     <button className="billing-button" type="button" disabled={savingSetupDetails} onClick={saveSetupDetails}>{savingSetupDetails?"Saving…":"Save draft details"}</button>
+     <button className="billing-button" type="button" disabled={savingSetupDetails||!["not_submitted","changes_requested"].includes(setupInvoice.review_status||"not_submitted")} onClick={saveSetupDetails}>{savingSetupDetails?"Saving…":"Save draft details"}</button>
     </div>}
     {setupInvoice&&<div style={{margin:"12px 0"}}>
      <span className="billing-pill">Review: {setupInvoice.review_status||"not_submitted"}</span>
