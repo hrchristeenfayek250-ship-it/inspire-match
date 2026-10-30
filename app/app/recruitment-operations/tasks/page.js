@@ -64,7 +64,7 @@ export default function RecruitmentTasksPage(){
      <div style={{fontSize:12,color:"#71877b",marginBottom:22}}><Link href="/app/recruitment-operations" style={{color:"#176b49"}}>Recruitment Operations</Link> / Task Management</div>
      <header style={{background:"linear-gradient(110deg,#103c2c,#1e7050)",color:"#fff",borderRadius:20,padding:"32px",display:"flex",alignItems:"center",justifyContent:"space-between",gap:20,flexWrap:"wrap",marginBottom:22}}>
       <div><div style={{color:"#bce5cc",fontSize:10,fontWeight:800,letterSpacing:2}}>RECRUITMENT OPERATIONS</div><h1 style={{color:"#fff",font:"800 32px Arial,sans-serif",margin:"10px 0"}}>Task Management</h1><p style={{margin:0,color:"#e0ede4",fontSize:13}}>Plan, prioritize and track your recruitment tasks.</p></div>
-      <button style={{...btn,background:"#fff",color:"#14583c"}} onClick={create}>+ New Task</button>
+      <div style={{display:"flex",gap:10,flexWrap:"wrap"}}><Link href="/app/recruitment-operations/playbooks" style={{...btn,background:"#d8f1e0",color:"#14583c",textDecoration:"none",display:"inline-flex",alignItems:"center"}}>✧ Workflow Playbooks</Link><button style={{...btn,background:"#fff",color:"#14583c"}} onClick={create}>+ New Task</button></div>
      </header>
      <div className="rt-grid" style={{marginBottom:22}}>{counts.map(([name,n])=><div key={name} style={card}><div style={{fontSize:26,fontWeight:850,color:"#176b49"}}>{n}</div><div style={{fontSize:11,color:"#758b7e",marginTop:6}}>{name}</div></div>)}</div>
      {error&&<p role="alert" style={{padding:12,background:"#ffefec",color:"#a13f38",borderRadius:9}}>{error}</p>}
