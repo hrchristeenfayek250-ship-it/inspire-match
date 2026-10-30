@@ -75,6 +75,7 @@ export default function BillingPage(){
  const [setupInvoiceReady,setSetupInvoiceReady]=useState(false);
  const [creatingSetup,setCreatingSetup]=useState(false);
  const [savingSetupDetails,setSavingSetupDetails]=useState(false);
+ const [submittingSetupReview,setSubmittingSetupReview]=useState(false);
  const [setupDetails,setSetupDetails]=useState({name:"",email:"",address:"",taxId:"",notes:""});
  const [subscription,setSubscription]=useState(null);
  const [invoices,setInvoices]=useState([]);
@@ -148,7 +149,7 @@ export default function BillingPage(){
   setSubscriptionControlsReady(!audit.error);
   setSubscriptionEvents(audit.data||[]);
   const setup=await supabase.from("billing_setup_invoices")
-   .select("id,commercial_offer_id,plan_id,currency,billing_interval,amount_minor,status,created_at,updated_at,bill_to_name,bill_to_email,bill_to_address,bill_to_tax_id,tax_treatment,billing_notes")
+   .select("id,commercial_offer_id,plan_id,currency,billing_interval,amount_minor,status,review_status,submitted_at,reviewed_at,review_note,created_at,updated_at,bill_to_name,bill_to_email,bill_to_address,bill_to_tax_id,tax_treatment,billing_notes")
    .eq("company_id",companyId).maybeSingle();
   if(!active)return;
   setSetupInvoiceReady(!setup.error);
