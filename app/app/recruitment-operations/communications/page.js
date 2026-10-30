@@ -78,8 +78,8 @@ export default function CommunicationHub(){
   if(saving)return;setSaving(true);setError("");setSuccess("");
   try{
    const auth=await supabase.auth.getUser();if(!auth.data?.user)throw Error("Please sign in.");
+   if(action==="reschedule"&&(!rescheduleDate||!Number.isFinite(Date.parse(rescheduleDate))||Date.parse(rescheduleDate)<=Date.now()))throw Error("Choose a future follow-up date.");
    const changes=action==="completed"?{follow_up_status:"completed",follow_up_resolved_at:new Date().toISOString()}:{follow_up_status:"pending",follow_up_resolved_at:null,next_follow_up_at:new Date(rescheduleDate).toISOString()};
-   if(action==="reschedule"&&(!rescheduleDate||Date.parse(rescheduleDate)<=Date.now()))throw Error("Choose a future follow-up date.");
    const r=await supabase.from("candidate_communications").update(changes).eq("id",entry.id).eq("company_id",company).eq("created_by",auth.data.user.id).select("id");
    if(r.error)throw r.error;if(!r.data?.length)throw Error("Only the entry creator can update this follow-up.");
    setSuccess(action==="completed"?"Follow-up completed.":"Follow-up rescheduled.");setRescheduleId(null);setRescheduleDate("");setReload(n=>n+1);
