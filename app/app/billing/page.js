@@ -70,6 +70,7 @@ export default function BillingPage(){
  const [role,setRole]=useState("");
  const [plans,setPlans]=useState(defaultPlans);
  const [prices,setPrices]=useState([]);
+ const [commercialOffers,setCommercialOffers]=useState([]);
  const [subscription,setSubscription]=useState(null);
  const [invoices,setInvoices]=useState([]);
  const [payments,setPayments]=useState([]);
@@ -129,6 +130,11 @@ export default function BillingPage(){
   setAccessSnapshot(snapshot.error?null:snapshot.data);
   setPlans(p[0].data?.length?p[0].data:defaultPlans);
   setPrices(p[1].data||[]);
+  const commercial=await supabase.from("billing_commercial_offers")
+   .select("plan_id,currency,billing_interval,setup_fee_minor,recurring_fee_minor")
+   .eq("status","approved");
+  if(!active)return;
+  setCommercialOffers(commercial.error?[]:(commercial.data||[]));
   setSubscription(p[2].data||null);
   setInvoices(p[3].data||[]);
   setPayments(p[4].data||[]);
