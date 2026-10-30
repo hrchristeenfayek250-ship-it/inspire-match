@@ -182,7 +182,7 @@ export default function BillingPage(){
    <header className="billing-hero"><small>SAAS MANAGEMENT / PAYMENTS</small><h1>Billing &amp; Subscriptions</h1><p>Manage your company's subscription, compare commercial plans and track payment and invoice history. Checkout is powered by Paymob after merchant onboarding and price activation.</p></header>
    <div className="billing-controls">
     <label>Company <select className="billing-select" value={companyId} onChange={e=>setCompanyId(e.target.value)} disabled={!companies.length}>{companies.map(c=><option value={c.company_id} key={c.company_id}>Company {c.company_id.slice(0,8)}</option>)}{!companies.length&&<option value="">No admin membership</option>}</select></label>
-    <label>Currency <select className="billing-select" value={currency} onChange={e=>setCurrency(e.target.value)}>{["EGP","SAR","AED","OMR"].map(x=><option key={x}>{x}</option>)}</select></label>
+    <label>Currency <select className="billing-select" value={currency} onChange={e=>setCurrency(e.target.value)}>{["EGP","SAR","AED","USD"].map(x=><option key={x}>{x}</option>)}</select></label>
     <label>Billing period <select className="billing-select" value={period} onChange={e=>setPeriod(e.target.value)}><option value="month">Monthly</option><option value="year">Yearly</option></select></label>
     <button type="button" className="billing-button billing-secondary" onClick={()=>setRefresh(x=>x+1)} disabled={loading||!companyId}>↻ Refresh</button>
    </div>
