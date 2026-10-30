@@ -146,7 +146,7 @@ export default function BillingPage(){
   setSubscriptionControlsReady(!audit.error);
   setSubscriptionEvents(audit.data||[]);
   const setup=await supabase.from("billing_setup_invoices")
-   .select("id,plan_id,currency,amount_minor,status,created_at,updated_at")
+   .select("id,commercial_offer_id,plan_id,currency,billing_interval,amount_minor,status,created_at,updated_at")
    .eq("company_id",companyId).maybeSingle();
   if(!active)return;
   setSetupInvoiceReady(!setup.error);
@@ -155,6 +155,19 @@ export default function BillingPage(){
   setLoading(false);
  })().catch(e=>{if(active){setError(e.message);setLoading(false);}});return()=>{active=false;};
  },[companyId,refresh]);
+ async function prepareSetupDraft(offer){
+  if(!offer?.id||!companyId||creatingSetup||!setupInvoiceReady)return;
+  setCreatingSetup(true);setError("");setNotice("");
+  try{
+   const {data,error:rpcError}=await supabase.rpc("billing_prepare_setup_invoice",{
+    p_company_id:companyId,p_offer_id:offer.id
+   });
+   if(rpcError)throw rpcError;
+   setNotice("Setup fee draft saved: SETUP-"+String(data.id).slice(0,8).toUpperCase()+". No payment or tax invoice has been issued.");
+   setRefresh(value=>value+1);
+  }catch(e){setError(e.message||"Unable to prepare setup fee draft.");}
+  finally{setCreatingSetup(false);}
+ }
  async function checkout(priceId){
   if(!priceId||processing||!companyId)return;
   setProcessing(priceId);setError("");setNotice("");
