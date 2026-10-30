@@ -22,7 +22,7 @@ export const ATS_NAVIGATION = [
   ["Executive", "/app/executive", "◈"],
   ["Team", "/app/team", "♧"],
   ["Billing & Subscriptions", "/app/billing", "▤"],
-  ["Billing & Subscriptions", "/app/billing", "▤"],
+
 ];
 
 
