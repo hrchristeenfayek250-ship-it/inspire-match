@@ -17,6 +17,7 @@ const styles = `
 .setup-preview .brand-mark{display:inline-grid;place-items:center;background:#165a3f;color:#fff;width:44px;height:44px;border-radius:12px;font-size:29px;font-weight:800;margin-right:13px}
 .setup-preview .brand-name{display:flex;align-items:center;font-size:22px;font-weight:850;color:#154a35}
 .setup-preview .brand-note{font-size:11px;color:#709080;margin:10px 0 0}
+.setup-preview .approval-note{margin-top:24px;padding:16px 18px;border:1px solid #b6d8c2;background:#f1faf3;border-radius:10px;color:#18583a;font-size:12px;line-height:1.8}
 .setup-preview .draft-tag{border:1px solid #c0d7c5;background:#edf5ee;border-radius:20px;padding:9px 14px;font-size:12px;font-weight:800;color:#215d40;text-align:center}
 .setup-preview h1{font-size:27px;color:#163d2a;margin:30px 0 7px}
 .setup-preview .subheading{color:#6a8272;font-size:13px;line-height:1.7}
@@ -76,7 +77,7 @@ export default function SetupInvoiceDraftPreview(){
    const {data:{user},error:authError}=await supabase.auth.getUser();
    if(authError||!user)throw Error("Please sign in to view this draft.");
    const {data:invoice,error:invoiceError}=await supabase.from("billing_setup_invoices")
-    .select("id,company_id,plan_id,currency,billing_interval,amount_minor,status,created_at,updated_at,bill_to_name,bill_to_email,bill_to_address,bill_to_tax_id,tax_treatment,billing_notes")
+    .select("id,company_id,plan_id,currency,billing_interval,amount_minor,status,review_status,submitted_at,reviewed_at,review_note,created_at,updated_at,bill_to_name,bill_to_email,bill_to_address,bill_to_tax_id,tax_treatment,billing_notes")
     .eq("id",id).maybeSingle();
    if(invoiceError)throw invoiceError;
    if(!invoice)throw Error("This invoice draft was not found or is not accessible.");
@@ -92,10 +93,11 @@ export default function SetupInvoiceDraftPreview(){
   return ()=>{active=false;};
  },[id]);
 
+ const isApproved=draft?.review_status==="approved";
  return <main className="setup-preview"><style>{styles}</style>
   <div className="toolbar">
    <Link href="/app/billing">← Billing &amp; Subscriptions</Link>
-   {draft&&<div className="buttons"><button type="button" onClick={()=>window.print()}>Print / Save as PDF</button></div>}
+   {draft&&<div className="buttons"><button type="button" onClick={()=>window.print()}>{isApproved?"Print Proforma / Save as PDF":"Print Draft / Save as PDF"}</button></div>}
   </div>
   {loading&&<div className="error" role="status">Loading setup fee draft…</div>}
   {error&&<div className="error" role="alert">{error}</div>}
@@ -105,18 +107,19 @@ export default function SetupInvoiceDraftPreview(){
      <div className="brand-name"><span className="brand-mark">I</span>Inspire Match ATS</div>
      <p className="brand-note">A product by Hire &amp; Inspire by Christine</p>
     </div>
-    <span className="draft-tag">DRAFT · NOT A TAX INVOICE</span>
+    <span className="draft-tag">{isApproved?"PROFORMA · NOT A TAX INVOICE":"DRAFT · NOT A TAX INVOICE"}</span>
    </header>
-   <h1>One-time Setup Fee — Draft Summary</h1>
+   <h1>{isApproved?"Proforma Invoice — One-time Setup Fee":"One-time Setup Fee — Draft Summary"}</h1>
    <p className="subheading">
-    Internal billing review document. It is neither an issued invoice nor a payment request.
+    {isApproved?"Finance-approved commercial proforma for reference only. Not a tax invoice, payment request, or receipt.":"Internal billing review document. It is neither an issued invoice nor a payment request."}
    </p>
    <div className="details">
-    <div><span className="label">Draft reference</span><strong>SETUP-{draft.id.slice(0,8).toUpperCase()}</strong></div>
-    <div><span className="label">Created</span><strong>{fmtDate(draft.created_at)}</strong></div>
+    <div><span className="label">Draft reference</span><strong>{isApproved?"PF-":"SETUP-"}{draft.id.slice(0,8).toUpperCase()}</strong></div>
+    <div><span className="label">{isApproved?"Finance reviewed":"Created"}</span><strong>{fmtDate(isApproved?draft.reviewed_at:draft.created_at)}</strong></div>
     <div><span className="label">Billing period selected</span><strong>{draft.billing_interval==="year"?"Annual":"Monthly"}</strong></div>
-    <div><span className="label">Draft status</span><strong>DRAFT · Not issued</strong></div>
+    <div><span className="label">Document status</span><strong>{isApproved?"FINANCE APPROVED · Proforma only":"DRAFT · Not issued"}</strong></div>
    </div>
+   {isApproved&&<div className="approval-note"><strong>Finance review approved on {fmtDate(draft.reviewed_at)}.</strong> This is a proforma estimate only. The setup fee has not been charged, and no official invoice, tax amount, or payment due date has been issued.</div>}
    <div className="meta">
     <section className="panel">
      <span className="label">Proposed service</span>
@@ -146,10 +149,10 @@ export default function SetupInvoiceDraftPreview(){
     <p style={{whiteSpace:"pre-wrap",overflowWrap:"anywhere"}}>{draft.billing_notes||"No notes recorded."}</p>
    </div>
    <div className="warning">
-    <strong>Tax and payment review pending.</strong> No tax rate, tax amount, final payable total, due date, or payment instructions have been approved or calculated. This document must not be used as an official tax invoice, payment request, or proof of payment.
+    <strong>{isApproved?"Proforma only — tax invoice not issued.":"Tax and payment review pending."}</strong> No tax rate, tax amount, final payable total, due date, or payment instructions have been approved or calculated. This document must not be used as an official tax invoice, payment request, or proof of payment.
     <div>Recorded tax treatment: {draft.tax_treatment||"pending_review"}.</div>
    </div>
-   <footer className="footer">Inspire Match ATS · Internal setup-fee draft preview · Not issued</footer>
+   <footer className="footer">Inspire Match ATS · {isApproved?"Finance-approved Proforma":"Internal setup-fee draft preview"} · Not a tax invoice · Not issued</footer>
   </article>}
  </main>;
 }
