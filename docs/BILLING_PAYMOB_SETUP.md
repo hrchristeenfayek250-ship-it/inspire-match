@@ -7,6 +7,7 @@ Status: **foundation implemented; live payments not enabled**.
 - Company-scoped plans, approved prices, subscriptions, checkout sessions, invoices and payments.
 - Admin-only billing view and subscription cancellation preferences.
 - One-time setup fee **drafts**, one per company, created by company admins from approved offers; no setup-fee payment, tax invoice, or subscription activation yet.
+- Restricted finance review queue for setup drafts, with approve/request-changes decisions, reviewer audit events, and customer draft editing locks.
 - Server-side Paymob intention creation and Hosted Unified Checkout redirect.
 - Signed transaction callback (HMAC SHA-512) and idempotent payment recording.
 
@@ -16,9 +17,10 @@ Status: **foundation implemented; live payments not enabled**.
 2. Apply `supabase/sql/saas_billing_subscription_management.sql` for self-service preferences.
 3. Apply `supabase/sql/saas_billing_plan_entitlements.sql`, `supabase/sql/saas_billing_access_snapshot.sql` and `supabase/sql/billing_currency_usd.sql` for feature catalog, access snapshot and USD pricing catalog. The USD migration also creates the draft commercial offers table if missing.
 4. Apply `supabase/sql/saas_billing_setup_invoice_drafts.sql` for separate internal setup-fee drafts (no payments).
-5. Approve actual setup fees and recurring fees, legal terms, tax treatment and merchant settlement country **before** activating any price.
-6. Create/approve a Paymob merchant account for the country. Region is chosen by the merchant credentials, not by the customer's billing currency selector.
-7. Add **server-side** Vercel environment variables:
+5. Apply `supabase/sql/saas_billing_setup_invoice_details.sql`, `supabase/sql/saas_billing_setup_invoice_review.sql`, and `supabase/sql/saas_billing_finance_review.sql` in that order for billing identity, submitted-review state, and the restricted finance queue.
+6. Approve actual setup fees and recurring fees, legal terms, tax treatment and merchant settlement country **before** activating any price.
+7. Create/approve a Paymob merchant account for the country. Region is chosen by the merchant credentials, not by the customer's billing currency selector.
+8. Add **server-side** Vercel environment variables:
 
 | Variable | Example / use |
 | --- | --- |
@@ -33,9 +35,17 @@ Status: **foundation implemented; live payments not enabled**.
 | `PAYMOB_HMAC_SECRET` | Paymob transaction callback HMAC secret |
 | `APP_URL` | `https://inspire-match-ats.vercel.app` (no trailing slash) |
 
-8. Register the callback URL with Paymob or confirm the intention's `notification_url` reaches `https://inspire-match-ats.vercel.app/api/billing/paymob/webhook`.
-9. After payment provider approval, agree on checkout currencies and subscription prices. Approved rows in `billing_commercial_offers` must match active recurring prices in `billing_plan_prices` before checkout is allowed. Nonzero setup fees are displayed, but require a separate, not-yet-implemented checkout.
-10. Carry out **test-mode** payments and callback/security reconciliation in the pre-launch QA phase, then enable live credentials once they pass.
+9. Register the callback URL with Paymob or confirm the intention's `notification_url` reaches `https://inspire-match-ats.vercel.app/api/billing/paymob/webhook`.
+10. After payment provider approval, agree on checkout currencies and subscription prices. Approved rows in `billing_commercial_offers` must match active recurring prices in `billing_plan_prices` before checkout is allowed. Nonzero setup fees are displayed, but require a separate, not-yet-implemented checkout.
+11. Carry out **test-mode** payments and callback/security reconciliation in the pre-launch QA phase, then enable live credentials once they pass.
+
+## Setup invoice finance review
+
+The company administrator prepares the draft and submits it from `/app/billing`. Only an explicitly provisioned finance reviewer can open `/app/billing/finance` and approve the internal review or request corrections. The reviewer queue and decisions use checked SECURITY DEFINER RPCs; company-admin membership alone is **not** enough.
+
+The `billing_finance_reviewers` allowlist starts **empty** and is never automatically populated. A trusted database operator must verify a finance staff user's UUID in `auth.users` and explicitly provision that user, separately from the submitting customer account. The original draft creator cannot approve their own submission. Do not add every company admin or make this a self-service grant.
+
+All decisions are written to `billing_setup_review_events`. Submitted invoice amounts and billing identity are protected against edits; returned drafts may be corrected and resubmitted. Approval changes only `review_status`, **not** the invoice's `status`, and does not trigger payments, subscriptions, VAT calculations, or official tax invoice issuance.
 
 ## Security and commercial limitations
 
