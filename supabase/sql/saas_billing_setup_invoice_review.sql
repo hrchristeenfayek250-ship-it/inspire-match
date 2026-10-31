@@ -17,7 +17,7 @@ create or replace function public.billing_save_setup_invoice_details(
  p_company_id uuid, p_name text, p_email text, p_address text,
  p_tax_id text, p_notes text
 ) returns jsonb language plpgsql security definer set search_path=''
-as $
+as $$
 declare v_id uuid;
 begin
  if auth.uid() is null or not exists(
@@ -40,7 +40,7 @@ begin
  if v_id is null then raise exception 'Draft cannot be edited during finance review'; end if;
  return jsonb_build_object('id',v_id,'status','draft');
 end;
-$;
+$$;
 revoke all on function public.billing_save_setup_invoice_details(uuid,text,text,text,text,text)
  from public,anon;
 grant execute on function public.billing_save_setup_invoice_details(uuid,text,text,text,text,text)
