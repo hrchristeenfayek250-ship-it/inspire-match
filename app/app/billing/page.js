@@ -274,7 +274,7 @@ export default function BillingPage(){
      {plans.map(plan=>{
       const offer=commercialOffers.find(o=>o.plan_id===plan.id&&o.currency===currency&&o.billing_interval===period);
       const canDraft=setupInvoiceReady&&!!companyId&&!creatingSetup&&
-       (!setupInvoice||setupInvoice.status==="draft"&&setupInvoice.commercial_offer_id!==offer?.id);
+       (!setupInvoice||setupInvoice.status==="draft"&&["not_submitted","changes_requested"].includes(setupInvoice.review_status||"not_submitted")&&setupInvoice.commercial_offer_id!==offer?.id);
       return <tr key={plan.id}>
        <td>{plan.name}</td><td>{offer?money(offer.setup_fee_minor,currency):"Not published"}</td>
        <td>{offer?money(offer.recurring_fee_minor,currency):"Not published"}</td><td>{currency}</td>
@@ -287,7 +287,7 @@ export default function BillingPage(){
      })}
     </tbody></table></div>
    </section>
-   <div className="billing-section-head"><h2>One-time setup invoice</h2><span className="billing-pill">Internal draft · no payment</span></div>
+   <div className="billing-section-head"><h2>One-time setup invoice</h2><span className="billing-pill">Internal draft · no payment</span><Link href="/app/billing/finance" style={{fontSize:12,color:"#176448",fontWeight:700}}>Finance review center (restricted)</Link></div>
    <section className="billing-panel">
     <p className="billing-muted">Prepare one draft per company from an approved commercial offer. This is an internal record, not an issued tax invoice. No charge will be made, and subscription status will not change.</p>
     {!setupInvoiceReady&&companyId&&<p className="billing-muted">Setup invoice drafts will become available after applying the Setup Invoice Drafts SQL migration.</p>}
@@ -302,7 +302,9 @@ export default function BillingPage(){
     {setupInvoice&&<div style={{margin:"12px 0"}}>
      <span className="billing-pill">Review: {setupInvoice.review_status||"not_submitted"}</span>
      {setupInvoice.submitted_at&&<span className="billing-muted"> Submitted {date(setupInvoice.submitted_at)}</span>}
-     {setupInvoice.review_note&&<p className="billing-muted">{setupInvoice.review_note}</p>}
+     {setupInvoice.review_note&&<p className="billing-muted">{setupInvoice.review_note}</p>
+     {setupInvoice.review_status==="approved"&&<p className="billing-muted">Internal review approved. This is still a draft; no tax invoice or payment has been issued.</p>}
+     {setupInvoice.review_status==="pending_review"&&<p className="billing-muted">Waiting for an authorized finance reviewer. Billing details are locked until a decision.</p>}}
      {setupInvoice.status==="draft"&&["not_submitted","changes_requested"].includes(setupInvoice.review_status||"not_submitted")&&
       <button className="billing-button" type="button" style={{marginLeft:12}}
        disabled={submittingSetupReview||savingSetupDetails||!setupDetails.name.trim()||!setupDetails.email.trim()||!setupDetails.address.trim()}
