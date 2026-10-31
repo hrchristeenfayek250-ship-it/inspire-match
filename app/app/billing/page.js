@@ -320,8 +320,8 @@ export default function BillingPage(){
      <p className="billing-muted">No setup invoice draft for this company.</p>}
    </section>
    {setupInvoice?.status==="draft"&&<div style={{display:"flex",gap:14,alignItems:"center",flexWrap:"wrap",marginTop:12}}>
-    <Link href={`/app/billing/setup-invoice/${setupInvoice.id}`} className="billing-button" style={{textDecoration:"none",display:"inline-block"}}>Preview / Print Setup Draft</Link>
-    <span className="billing-muted">Save billing details first to include your latest changes. Preview is not an issued or tax invoice.</span>
+    <Link href={`/app/billing/setup-invoice/${setupInvoice.id}`} className="billing-button" style={{textDecoration:"none",display:"inline-block"}}>{setupInvoice.review_status==="approved"?"View Approved Proforma / Print":"Preview / Print Setup Draft"}</Link>
+    <span className="billing-muted">{setupInvoice.review_status==="approved"?"Finance-approved proforma is ready to print. It is not a tax invoice or payment request.":"Save billing details first to include your latest changes. Preview is not an issued or tax invoice."}</span>
    </div>}
    <div className="billing-section-head"><h2>Plan features &amp; usage limits</h2><span className="billing-pill">Draft configuration · not enforced yet</span></div>
    <section className="billing-panel">
