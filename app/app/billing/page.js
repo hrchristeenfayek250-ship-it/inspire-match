@@ -302,9 +302,9 @@ export default function BillingPage(){
     {setupInvoice&&<div style={{margin:"12px 0"}}>
      <span className="billing-pill">Review: {setupInvoice.review_status||"not_submitted"}</span>
      {setupInvoice.submitted_at&&<span className="billing-muted"> Submitted {date(setupInvoice.submitted_at)}</span>}
-     {setupInvoice.review_note&&<p className="billing-muted">{setupInvoice.review_note}</p>
+     {setupInvoice.review_note&&<p className="billing-muted">{setupInvoice.review_note}</p>}
      {setupInvoice.review_status==="approved"&&<p className="billing-muted">Internal review approved. This is still a draft; no tax invoice or payment has been issued.</p>}
-     {setupInvoice.review_status==="pending_review"&&<p className="billing-muted">Waiting for an authorized finance reviewer. Billing details are locked until a decision.</p>}}
+     {setupInvoice.review_status==="pending_review"&&<p className="billing-muted">Waiting for an authorized finance reviewer. Billing details are locked until a decision.</p>}
      {setupInvoice.status==="draft"&&["not_submitted","changes_requested"].includes(setupInvoice.review_status||"not_submitted")&&
       <button className="billing-button" type="button" style={{marginLeft:12}}
        disabled={submittingSetupReview||savingSetupDetails||!setupDetails.name.trim()||!setupDetails.email.trim()||!setupDetails.address.trim()}
