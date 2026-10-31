@@ -45,6 +45,8 @@ The company administrator prepares the draft and submits it from `/app/billing`.
 
 The `billing_finance_reviewers` allowlist starts **empty** and is never automatically populated. A trusted database operator must verify a finance staff user's UUID in `auth.users` and explicitly provision that user, separately from the submitting customer account. The original draft creator cannot approve their own submission. Do not add every company admin or make this a self-service grant.
 
+Once the separate finance reviewer approves a submitted setup draft, its existing print preview at `/app/billing/setup-invoice/[id]` becomes a **Proforma** view with a reference beginning `PF-` and the recorded finance review date. This is still **not** an official tax invoice, payable bill, or receipt; tax, settlement details, and issuance remain disabled.
+
 All decisions are written to `billing_setup_review_events`. Submitted invoice amounts and billing identity are protected against edits; returned drafts may be corrected and resubmitted. Approval changes only `review_status`, **not** the invoice's `status`, and does not trigger payments, subscriptions, VAT calculations, or official tax invoice issuance.
 
 ## Security and commercial limitations
