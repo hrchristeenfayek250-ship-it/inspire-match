@@ -61,6 +61,8 @@ export default function InternalContractsPage(){
  const [proposals,setProposals]=useState([]);
  const [leads,setLeads]=useState([]);
  const [contracts,setContracts]=useState([]);
+ const [events,setEvents]=useState([]);
+ const [userId,setUserId]=useState("");
  const [loading,setLoading]=useState(true);
  const [error,setError]=useState("");
  const [notice,setNotice]=useState("");
@@ -69,9 +71,16 @@ export default function InternalContractsPage(){
  const [editingId,setEditingId]=useState("");
  const [showForm,setShowForm]=useState(false);
  const [saving,setSaving]=useState(false);
+ const [workingId,setWorkingId]=useState("");
+ const [reviewTarget,setReviewTarget]=useState(null);
+ const [reviewReason,setReviewReason]=useState("");
+ const [signatureTarget,setSignatureTarget]=useState(null);
+ const [signature,setSignature]=useState({signed_date:"",document_reference:"",client_signatory:"",vendor_signatory:""});
+ const [expandedId,setExpandedId]=useState("");
  const [search,setSearch]=useState("");
  const [statusFilter,setStatusFilter]=useState("all");
  const canManage=role==="sales"||role==="platform_admin";
+ const canReview=role==="legal"||role==="platform_admin";
 
  useEffect(()=>{
   let active=true;
@@ -81,15 +90,17 @@ export default function InternalContractsPage(){
    if(auth?.error||!auth?.data?.user?.id)throw new Error("Sign in with an approved Inspire Match internal account.");
    const overview=await supabase.rpc("billing_internal_overview");
    if(overview.error)throw overview.error;
-   const [proposalsRes,leadsRes,contractsRes]=await Promise.all([
+   const [proposalsRes,leadsRes,contractsRes,eventsRes]=await Promise.all([
     supabase.from("billing_sales_proposals").select("id,lead_id,reference,title,status,currency,setup_fee_minor,recurring_fee_minor,billing_interval").order("created_at",{ascending:false}).limit(500),
     supabase.from("billing_sales_leads").select("id,company_name").order("company_name").limit(500),
-    supabase.from("billing_sales_contracts").select("id,proposal_id,contract_reference,status,legal_entity_name,contract_notes,effective_date,expiry_date,signed_at,signed_document_reference,created_at,updated_at").order("created_at",{ascending:false}).limit(500)
+    supabase.from("billing_sales_contracts").select("id,proposal_id,contract_reference,status,legal_entity_name,contract_notes,effective_date,expiry_date,signed_at,signed_document_reference,client_signatory_name,vendor_signatory_name,signature_date,legal_reviewed_at,signature_recorded_at,created_by,updated_by,created_at,updated_at").order("created_at",{ascending:false}).limit(500),
+    supabase.from("billing_sales_contract_events").select("id,contract_id,action,actor_id,comment,created_at").order("created_at",{ascending:false}).limit(500)
    ]);
    if(proposalsRes.error)throw proposalsRes.error;
    if(leadsRes.error)throw leadsRes.error;
    if(contractsRes.error)throw contractsRes.error;
-   if(active){setRole(overview.data?.staff_role||"");setProposals(proposalsRes.data||[]);setLeads(leadsRes.data||[]);setContracts(contractsRes.data||[]);}
+   if(eventsRes.error)throw eventsRes.error;
+   if(active){setUserId(auth.data.user.id);setRole(overview.data?.staff_role||"");setProposals(proposalsRes.data||[]);setLeads(leadsRes.data||[]);setContracts(contractsRes.data||[]);setEvents(eventsRes.data||[]);}
   })().catch(err=>{if(active){setError(err.message||"Unable to load internal contracts.");setRole("");}})
    .finally(()=>{if(active)setLoading(false);});
   return()=>{active=false;};
@@ -155,6 +166,43 @@ export default function InternalContractsPage(){
   }catch(err){setError(err.message||"Unable to save contract draft.");}
   finally{setSaving(false);}
  }
+
+ async function runContractAction(contract,action,comment=""){
+  if(workingId||!contract)return;
+  setWorkingId(contract.id);setError("");setNotice("");
+  try{
+   const result=action==="submit_for_legal"
+    ?await supabase.rpc("billing_sales_submit_contract",{p_contract_id:contract.id})
+    :await supabase.rpc("billing_sales_review_contract",{p_contract_id:contract.id,p_decision:action,p_comment:comment});
+   if(result.error)throw result.error;
+   setNotice(action==="submit_for_legal"?"Submitted for independent legal review.":action==="approve_legal"?"Legal review approved. Ready for external signatures.":"Returned to draft with legal feedback.");
+   setReviewTarget(null);setReviewReason("");setExpandedId(contract.id);setRefresh(n=>n+1);
+  }catch(err){setError(err.message||"Contract workflow could not be updated.");}
+  finally{setWorkingId("");}
+ }
+ async function recordSignature(event){
+  event.preventDefault();
+  if(workingId||!signatureTarget)return;
+  if(!signature.signed_date||!signature.document_reference.trim()||!signature.client_signatory.trim()||!signature.vendor_signatory.trim()){
+   setError("Signed date, private document reference and both signatories are required.");return;
+  }
+  setWorkingId(signatureTarget.id);setError("");setNotice("");
+  try{
+   const result=await supabase.rpc("billing_sales_record_signature",{
+    p_contract_id:signatureTarget.id,p_signed_date:signature.signed_date,
+    p_document_reference:signature.document_reference.trim(),
+    p_client_signatory:signature.client_signatory.trim(),
+    p_vendor_signatory:signature.vendor_signatory.trim()
+   });
+   if(result.error)throw result.error;
+   setNotice("External signature evidence recorded internally. No digital signature, activation or payment occurred.");
+   setExpandedId(signatureTarget.id);setSignatureTarget(null);
+   setSignature({signed_date:"",document_reference:"",client_signatory:"",vendor_signatory:""});
+   setRefresh(n=>n+1);
+  }catch(err){setError(err.message||"Could not record signature evidence.");}
+  finally{setWorkingId("");}
+ }
+ const reviewLabel={submit_for_legal:"Submitted for legal review",approve_legal:"Approved by legal reviewer",request_changes:"Changes requested",record_signature:"External signature recorded"};
  return <main className="im-contracts"><style>{css}</style><div className="im-contracts-shell">
   <aside className="im-contracts-side">
    <div className="im-contracts-brand"><span className="im-contracts-logo">I</span><div>Inspire Match<small>TALENT INTELLIGENCE</small></div></div>
@@ -165,12 +213,12 @@ export default function InternalContractsPage(){
     <Link href="/app/billing/internal">Command Center</Link><Link href="/app/billing/internal/proposals">Proposals</Link></div></div>
    <header className="im-contracts-hero"><small>PRIVATE / SALES &amp; LEGAL OPERATIONS</small>
     <h1>Contract Management</h1>
-    <p>Prepare contract records linked to approved commercial proposals. Draft preparation is separate from legal approval, electronic signing, onboarding and billing.</p>
+    <p>Prepare contracts, request independent legal approval and record verified external signatures. No built-in electronic signing, subscription activation or payments.</p>
    </header>
    <div className="im-contracts-stats">
     <div className="im-contracts-stat"><small>Total contracts</small><strong>{contracts.length}</strong><span>Internal records</span></div>
     <div className="im-contracts-stat"><small>Draft contracts</small><strong>{contracts.filter(c=>c.status==="draft").length}</strong><span>Ready for preparation</span></div>
-    <div className="im-contracts-stat"><small>Awaiting legal / signature</small><strong>{contracts.filter(c=>["legal_review","ready_for_signature"].includes(c.status)).length}</strong><span>Future approval workflow</span></div>
+    <div className="im-contracts-stat"><small>Awaiting legal / signature</small><strong>{contracts.filter(c=>["legal_review","ready_for_signature"].includes(c.status)).length}</strong><span>Controlled internal review</span></div>
     <div className="im-contracts-stat"><small>Approved proposals available</small><strong>{availableProposals.length}</strong><span>Eligible to create contract</span></div>
    </div>
    {loading&&<div className="im-contracts-info">Loading internal contracts and permissions…</div>}
