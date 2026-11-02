@@ -122,7 +122,7 @@ export default function InternalSalesFinance(){
     <div className="im-int-heading"><h2>Setup draft review</h2>{data.can_review_finance&&<Link className="im-int-button" href="/app/billing/finance">Open Finance Review Center</Link>}</div>
     <section className="im-int-card"><div className="im-int-tablewrap"><table className="im-int-table">
      <thead><tr><th>Reference</th><th>Prepared for</th><th>Amount</th><th>Draft status</th><th>Review status</th><th>Submitted</th></tr></thead>
-     <tbody>{setup.map(i=><tr key={i.id}><td>SETUP-{short(i.id)}</td><td>{i.bill_to_name||i.bill_to_email||"—"}</td><td>{money(i.amount_minor,i.currency)}</td><td>{i.status}</td><td><span className="im-int-chip">{i.review_status}</span></td><td>{date(i.submitted_at)}</td></tr>)}</tbody>
+     <tbody>{setup.map(i=><tr key={i.id}><td><Link href={`/app/billing/setup-invoice/${i.id}`}>SETUP-{short(i.id)}</Link></td><td>{i.bill_to_name||i.bill_to_email||"—"}</td><td>{money(i.amount_minor,i.currency)}</td><td>{i.status}</td><td><span className="im-int-chip">{i.review_status}</span></td><td>{date(i.submitted_at)}</td></tr>)}</tbody>
     </table></div>{!setup.length&&<p className="im-int-muted">No setup invoice drafts yet.</p>}</section>
     <div className="im-int-warning"><strong>Safety status:</strong> Customer checkout is disabled. Billing activation, live payment collection, tax invoice issuance and feature enforcement are not enabled by this screen. This overview never changes subscription records.</div>
    </>}
