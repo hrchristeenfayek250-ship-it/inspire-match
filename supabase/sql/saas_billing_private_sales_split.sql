@@ -103,7 +103,17 @@ declare v_snapshot jsonb;
 begin
  -- Original function checks current auth.uid() membership in this company.
  v_snapshot := public.billing_my_hybrid_access_snapshot(p_company_id);
- return v_snapshot - 'plan_id';
+ -- Only billing-authorized company admins may see period/status metadata.
+ if exists(
+  select 1 from public.company_members m
+  where m.company_id=p_company_id and m.user_id=auth.uid()
+    and m.role='admin'
+ ) then
+  return v_snapshot - 'plan_id';
+ end if;
+ -- Ordinary HR members get feature flags only, never billing dates/status.
+ return v_snapshot - 'plan_id' - 'subscription_status' - 'period_end'
+  - 'cancel_at_period_end' - 'subscription_valid';
 end;
 $$;
 revoke all on function public.billing_my_private_access_snapshot(uuid)
