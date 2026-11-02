@@ -1,287 +1,171 @@
 "use client";
+
 import Link from "next/link";
 import {useEffect,useState} from "react";
 import {supabase} from "@/lib/supabase";
 import ATSNavigation from "@/components/ATSNavigation";
 
-const styles=`
-.billing-page{background:#f5f8f6;min-height:100vh;color:#1e4232;font:13px/1.6 Arial,Helvetica,sans-serif}
-.billing-page *{box-sizing:border-box}
-.billing-shell{display:grid;grid-template-columns:252px minmax(0,1fr);min-height:100vh}
-.billing-side{background:#fff;border-right:1px solid #e4ede6;padding:27px 14px}
-.billing-brand{display:flex;align-items:center;gap:11px;padding:4px 13px 30px;font-size:17px;font-weight:850}
-.billing-brand span{display:grid;place-items:center;width:36px;height:36px;border-radius:11px;background:#14583e;color:#fff;font-size:22px}
-.billing-brand small{display:block;font-size:9px;color:#8b9c92;letter-spacing:1.5px}
-.billing-nav{display:flex;flex-direction:column;gap:4px}
-.billing-nav a{display:flex;align-items:center;gap:12px;padding:10px 12px;min-height:40px;border-radius:10px;color:#60766b;text-decoration:none;font-weight:700;font-size:12px}
-.billing-nav a span{width:17px;text-align:center}.billing-nav a:hover,.billing-nav a.active{background:#e5f2e9;color:#145f42}
-.billing-main{min-width:0;padding:0 clamp(18px,3.4vw,54px) 65px}
-.billing-inner{max-width:1240px;margin:auto}
-.billing-top{min-height:77px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid #e5ece7;margin-bottom:30px;gap:10px}
-.billing-top a{color:#176648;text-decoration:none;font-weight:800}
-.billing-hero{background:linear-gradient(115deg,#103c2c,#176448 72%,#217755);color:white;border-radius:22px;padding:36px 38px}
-.billing-hero small{color:#bcebd2;font-weight:800;font-size:10px;letter-spacing:1.8px}
-.billing-hero h1{color:white!important;font:850 clamp(27px,3vw,36px)/1.18 Arial;margin:12px 0}
-.billing-hero p{max-width:700px;color:#d8eade;line-height:1.8;margin:0}
-.billing-controls{display:flex;flex-wrap:wrap;align-items:center;gap:12px;margin:22px 0}
-.billing-select,.billing-input{border:1px solid #d7e6dc;background:white;border-radius:10px;padding:11px 13px;color:#22533a;font:13px Arial;max-width:100%;min-width:140px}
-.billing-select:focus,.billing-input:focus{outline:2px solid #62b889}
-.billing-button{background:#176448;color:white;border:0;padding:12px 16px;border-radius:10px;font:800 12px Arial;cursor:pointer}
-.billing-button:disabled{opacity:.48;cursor:not-allowed}
-.billing-secondary{background:#edf5ef;color:#1d6448}
-.billing-error{border:1px solid #f1d4c8;background:#fff3ed;color:#a34736;border-radius:10px;padding:13px;margin-bottom:15px}
-.billing-info{border:1px solid #d9e9db;background:#f1f8f2;color:#3b7151;border-radius:10px;padding:13px;margin-bottom:15px}
-.billing-summary{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;margin-bottom:18px}
-.billing-stat,.billing-panel,.billing-plan{border:1px solid #e0ebe4;background:white;border-radius:16px;padding:22px;min-width:0}
-.billing-stat small{color:#82988a;display:block;font-weight:800}.billing-stat strong{display:block;color:#166745;font-size:25px;margin:9px 0}
-.billing-section-head{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;margin:25px 0 13px}
-.billing-section-head h2{font:850 20px Arial;color:#1c4831;margin:0}
-.billing-plans{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}
-.billing-plan.featured{border:2px solid #217653;box-shadow:0 12px 28px #0a6b2c0c}
-.billing-pill{display:inline-block;font-size:10px;font-weight:800;background:#e5f2e8;color:#176648;padding:6px 10px;border-radius:20px}
-.billing-plan h3{font:850 21px Arial;color:#174b35;margin:15px 0 8px}
-.billing-plan p{font-size:12px;color:#759080;min-height:36px}
-.billing-price{font:850 25px Arial;color:#185b3f;margin:20px 0}
-.billing-price small{font:500 11px Arial;color:#718d7d}
-.billing-features{list-style:none;padding:0;margin:16px 0 22px;min-height:132px}
-.billing-features li{padding:7px 0;color:#506b5b}.billing-features li:before{content:'✓';color:#198357;font-weight:800;margin-right:10px}
-.billing-table-wrap{overflow-x:auto}
-.billing-table{width:100%;border-collapse:collapse;min-width:650px;text-align:left}
-.billing-table th{font-size:10px;text-transform:uppercase;letter-spacing:1px;background:#f6faf7;color:#81988a;padding:14px}
-.billing-table td{padding:14px;border-bottom:1px solid #edf3ee;color:#496951}
-.billing-muted{color:#869c8d;font-size:12px}
-.billing-form{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin:15px 0}
-.billing-form label{font-size:11px;font-weight:800;color:#617f6b}
-.billing-form input{display:block;width:100%;margin-top:5px}
-@media(max-width:1100px){.billing-plans{grid-template-columns:1fr}.billing-summary{grid-template-columns:repeat(2,minmax(0,1fr))}.billing-features{min-height:0}}
-@media(max-width:760px){.billing-shell{display:block}.billing-side{border-right:0;border-bottom:1px solid #e4ede6;padding:14px}.billing-brand{padding:4px 10px 12px}.billing-nav{flex-direction:row;overflow:auto}.billing-nav a{white-space:nowrap;flex:none}.billing-main{padding:0 15px 40px}.billing-top{min-height:60px;margin-bottom:18px}.billing-hero{padding:26px 22px}.billing-summary{grid-template-columns:1fr}.billing-form{grid-template-columns:1fr}}
+const style=`
+.cb-page{min-height:100vh;background:#f5f8f6;color:#1c4430;font:13px/1.7 Arial,Helvetica,sans-serif}
+.cb-page *{box-sizing:border-box}
+.cb-shell{display:grid;grid-template-columns:252px minmax(0,1fr);min-height:100vh}
+.cb-side{background:white;border-right:1px solid #e4ede6;padding:27px 14px}
+.cb-brand{display:flex;gap:11px;align-items:center;padding:4px 13px 29px;font-weight:850;font-size:17px}
+.cb-brand>span{display:grid;place-items:center;width:36px;height:36px;border-radius:11px;background:#14583e;color:white;font-size:23px}
+.cb-brand small{display:block;font-size:9px;letter-spacing:1.4px;color:#90a597}
+.cb-nav{display:flex;flex-direction:column;gap:4px}
+.cb-nav a{display:flex;gap:12px;align-items:center;padding:10px 12px;border-radius:10px;text-decoration:none;color:#60776b;font-weight:750;font-size:12px}
+.cb-nav a.active,.cb-nav a:hover{background:#e5f2e9;color:#145f42}
+.cb-main{min-width:0;padding:0 clamp(18px,3.4vw,52px) 64px}
+.cb-inner{max-width:1140px;margin:auto}
+.cb-top{display:flex;justify-content:space-between;align-items:center;min-height:77px;border-bottom:1px solid #e3ece5;margin-bottom:28px;gap:10px}
+.cb-top a{color:#176648;text-decoration:none;font-weight:800}
+.cb-hero{padding:34px 38px;border-radius:22px;background:linear-gradient(115deg,#103c2c,#176448 72%,#217755);color:white}
+.cb-hero small{letter-spacing:1.6px;color:#bcebd2;font-size:10px;font-weight:850}
+.cb-hero h1{color:white!important;font:850 clamp(26px,3vw,36px)/1.2 Arial;margin:10px 0}
+.cb-hero p{margin:0;max-width:710px;color:#d9ecdf;line-height:1.8}
+.cb-controls{display:flex;gap:12px;align-items:center;justify-content:space-between;flex-wrap:wrap;margin:22px 0}
+.cb-select{max-width:100%;border:1px solid #d3e5d7;background:white;border-radius:10px;padding:11px 13px;color:#26523b}
+.cb-button{border:0;background:#176448;color:white;border-radius:10px;padding:11px 18px;font:800 12px Arial;cursor:pointer}
+.cb-button:disabled{opacity:.45;cursor:not-allowed}
+.cb-stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:15px}
+.cb-box{background:white;border:1px solid #e0ebe4;border-radius:16px;padding:23px;margin-bottom:16px;min-width:0}
+.cb-box small{display:block;font-weight:800;font-size:11px;color:#83998b}
+.cb-box strong{display:block;margin:10px 0;color:#195c3e;font-size:24px;overflow-wrap:anywhere}
+.cb-heading{display:flex;justify-content:space-between;gap:10px;align-items:center;flex-wrap:wrap;margin:25px 0 12px}
+.cb-heading h2{margin:0;font:850 19px Arial;color:#194733}
+.cb-pill{border-radius:20px;background:#e7f4eb;color:#1c6848;font-weight:800;font-size:11px;padding:6px 11px}
+.cb-muted{color:#82998a;font-size:12px}
+.cb-alert{background:#fff3ed;border:1px solid #efd1c4;color:#a64837;border-radius:11px;padding:14px;margin:15px 0}
+.cb-info{background:#f0f7f2;border:1px solid #dbe9df;border-radius:11px;padding:14px;margin:15px 0}
+.cb-chips{display:flex;flex-wrap:wrap;gap:9px;margin-top:16px}
+.cb-chip{padding:8px 12px;background:#f0f7f2;color:#1c6547;border:1px solid #e0eee3;border-radius:10px;font-weight:800;font-size:12px}
+.cb-tablewrap{overflow-x:auto}
+.cb-table{border-collapse:collapse;width:100%;min-width:600px;text-align:left}
+.cb-table th{font-size:10px;text-transform:uppercase;letter-spacing:1px;color:#81998a;background:#f5faf6;padding:14px}
+.cb-table td{font-size:12px;color:#41634f;padding:14px;border-bottom:1px solid #eaf0eb}
+@media(max-width:760px){.cb-shell{display:block}.cb-side{padding:13px;border-right:0;border-bottom:1px solid #e4ede6}.cb-brand{padding:3px 10px 12px}.cb-nav{flex-direction:row;overflow:auto}.cb-nav a{flex:none;white-space:nowrap}.cb-main{padding:0 15px 40px}.cb-top{min-height:60px;margin-bottom:17px}.cb-hero{padding:25px 22px}.cb-stats{grid-template-columns:1fr}}
 `;
+const date=value=>value?new Date(value).toLocaleDateString("en-GB",{day:"2-digit",month:"short",year:"numeric"}):"—";
+const money=(value,currency)=>{try{return new Intl.NumberFormat("en-US",{style:"currency",currency:currency||"EGP"}).format(Number(value)/100);}catch{return String(value||0)+" "+(currency||"");}};
+const featureNames={
+ job_management:"Jobs & Candidate Management",interviews:"Interview Management",
+ essential_reports:"Recruitment Reports",ai_matching:"AI Candidate Matching",
+ ai_shortlisting:"AI Shortlisting",advanced_analytics:"Advanced Analytics",
+ recruitment_operations:"Recruitment Operations",ask_inspire_ai:"Ask Inspire AI",
+ custom_support:"Dedicated Support"
+};
 
-const date=x=>x?new Date(x).toLocaleDateString("en-GB",{day:"2-digit",month:"short",year:"numeric"}):"—";
-const money=(minor,currency)=>new Intl.NumberFormat("en",{style:"currency",currency:currency||"EGP"}).format(Number(minor)/100);
-const defaultPlans=[
- {id:"starter",name:"Starter",description:"For growing recruitment teams.",feature_list:["Jobs & candidate pipeline","Interview management","Essential reports"]},
- {id:"professional",name:"Professional",description:"Advanced recruitment intelligence.",feature_list:["Everything in Starter","Advanced recruitment operations","AI workflows & analytics"]},
- {id:"enterprise",name:"Enterprise",description:"Tailored to your organization.",feature_list:["Everything in Professional","Enterprise configuration","Tailored onboarding & support"]}
-];
-export default function BillingPage(){
- const [companyId,setCompanyId]=useState("");
+export default function ClientBillingPage(){
  const [companies,setCompanies]=useState([]);
- const [role,setRole]=useState("");
- const [plans,setPlans]=useState(defaultPlans);
- const [prices,setPrices]=useState([]);
- const [commercialOffers,setCommercialOffers]=useState([]);
- const [setupInvoice,setSetupInvoice]=useState(null);
- const [setupInvoiceReady,setSetupInvoiceReady]=useState(false);
- const [creatingSetup,setCreatingSetup]=useState(false);
- const [savingSetupDetails,setSavingSetupDetails]=useState(false);
- const [submittingSetupReview,setSubmittingSetupReview]=useState(false);
- const [setupDetails,setSetupDetails]=useState({name:"",email:"",address:"",taxId:"",notes:""});
+ const [companyId,setCompanyId]=useState("");
+ const [loadingAccount,setLoadingAccount]=useState(true);
+ const [loadingData,setLoadingData]=useState(false);
  const [subscription,setSubscription]=useState(null);
  const [invoices,setInvoices]=useState([]);
  const [payments,setPayments]=useState([]);
- const [subscriptionEvents,setSubscriptionEvents]=useState([]);
- const [planEntitlements,setPlanEntitlements]=useState([]);
- const [planQuotas,setPlanQuotas]=useState([]);
- const [accessSnapshot,setAccessSnapshot]=useState(null);
- const [subscriptionControlsReady,setSubscriptionControlsReady]=useState(false);
- const [managingSubscription,setManagingSubscription]=useState(false);
- const [period,setPeriod]=useState("month");
- const [currency,setCurrency]=useState("EGP");
- const [loading,setLoading]=useState(true);
- const [processing,setProcessing]=useState("");
+ const [access,setAccess]=useState(null);
+ const [internal,setInternal]=useState(false);
  const [error,setError]=useState("");
- const [notice,setNotice]=useState("");
  const [refresh,setRefresh]=useState(0);
- const [customer,setCustomer]=useState({firstName:"",lastName:"",phone:""});
- useEffect(()=>{if(typeof window!=="undefined"&&new URLSearchParams(window.location.search).get("payment")==="returned"){
-  setNotice("You've returned from Paymob. Payment is only confirmed after Paymob's verified server notification. Refresh your billing status shortly.");
- }},[]);
- useEffect(()=>{let active=true;(async()=>{
-  setLoading(true);setError("");
-  const {data:{user},error:authErr}=await supabase.auth.getUser();
-  if(!active)return;
-  if(authErr||!user){setError("Please sign in to view billing.");setLoading(false);return;}
-  const member=await supabase.from("company_members").select("company_id,role").eq("user_id",user.id);
-  if(!active)return;
-  if(member.error){setError(member.error.message);setLoading(false);return;}
-  const adminRows=(member.data||[]).filter(m=>m.role==="admin");
-  setCompanies(adminRows);
-  setCompanyId(old=>adminRows.some(x=>x.company_id===old)?old:(adminRows[0]?.company_id||""));
-  if(!adminRows.length)setError("Only company admins can access subscription and billing details.");
-  setLoading(false);
- })().catch(e=>{if(active){setError(e.message);setLoading(false);}});return()=>{active=false;};},[]);
- useEffect(()=>{if(!companyId){setSubscription(null);setInvoices([]);setPayments([]);setSubscriptionEvents([]);setSetupInvoice(null);setSetupInvoiceReady(false);setSubscriptionControlsReady(false);return;}
- let active=true;setLoading(true);setError("");
- (async()=>{
-  const p=await Promise.all([
-   supabase.from("billing_plans").select("id,name,description,feature_list,limits,sort_order").order("sort_order"),
-   supabase.from("billing_plan_prices").select("id,plan_id,currency,billing_interval,amount_minor").eq("is_active",true),
-   supabase.from("company_subscriptions").select("plan_id,status,provider,current_period_end,cancel_at_period_end,started_at").eq("company_id",companyId).maybeSingle(),
-   supabase.from("billing_invoices").select("id,plan_id,amount_minor,currency,status,billing_interval,issued_at,paid_at").eq("company_id",companyId).order("issued_at",{ascending:false}).limit(50),
-   supabase.from("billing_payments").select("id,amount_minor,currency,status,created_at").eq("company_id",companyId).order("created_at",{ascending:false}).limit(50)
-  ]);
-  if(!active)return;
-  const failure=p.find(r=>r.error);
-  if(failure){setError(failure.error.message+" — Run the Billing Foundation SQL in Supabase first.");setLoading(false);return;}
-  const [features,quotas]=await Promise.all([
-   supabase.from("billing_plan_entitlements").select("plan_id,feature_key,enabled"),
-   supabase.from("billing_plan_quotas").select("plan_id,quota_key,limit_value")
-  ]);
-  if(!active)return;
-  setPlanEntitlements(features.error?[]:features.data||[]);
-  setPlanQuotas(quotas.error?[]:quotas.data||[]);
-  const snapshot=await supabase.rpc("billing_my_access_snapshot",{p_company_id:companyId});
-  if(!active)return;
-  setAccessSnapshot(snapshot.error?null:snapshot.data);
-  setPlans(p[0].data?.length?p[0].data:defaultPlans);
-  setPrices(p[1].data||[]);
-  const commercial=await supabase.from("billing_commercial_offers")
-   .select("id,plan_id,currency,billing_interval,setup_fee_minor,recurring_fee_minor")
-   .eq("status","approved");
-  if(!active)return;
-  setCommercialOffers(commercial.error?[]:(commercial.data||[]));
-  setSubscription(p[2].data||null);
-  setInvoices(p[3].data||[]);
-  setPayments(p[4].data||[]);
-  const audit=await supabase.from("billing_subscription_events").select("id,action,plan_id,effective_period_end,created_at").eq("company_id",companyId).order("created_at",{ascending:false}).limit(30);
-  if(!active)return;
-  setSubscriptionControlsReady(!audit.error);
-  setSubscriptionEvents(audit.data||[]);
-  const setup=await supabase.from("billing_setup_invoices")
-   .select("id,commercial_offer_id,plan_id,currency,billing_interval,amount_minor,status,review_status,submitted_at,reviewed_at,review_note,created_at,updated_at,bill_to_name,bill_to_email,bill_to_address,bill_to_tax_id,tax_treatment,billing_notes")
-   .eq("company_id",companyId).maybeSingle();
-  if(!active)return;
-  setSetupInvoiceReady(!setup.error);
-  setSetupInvoice(setup.error?null:(setup.data||null));
-  if(!setup.error){setSetupDetails({name:setup.data?.bill_to_name||"",email:setup.data?.bill_to_email||"",address:setup.data?.bill_to_address||"",taxId:setup.data?.bill_to_tax_id||"",notes:setup.data?.billing_notes||""});}
-  setRole("admin");
-  setLoading(false);
- })().catch(e=>{if(active){setError(e.message);setLoading(false);}});return()=>{active=false;};
+
+ useEffect(()=>{
+  let active=true;
+  (async()=>{
+   setLoadingAccount(true);setError("");
+   const {data:{user},error:userError}=await supabase.auth.getUser();
+   if(userError||!user)throw new Error("Please sign in to access billing.");
+   const member=await supabase.from("company_members")
+    .select("company_id,role").eq("user_id",user.id).eq("role","admin");
+   if(member.error)throw member.error;
+   const isStaff=await supabase.rpc("billing_is_internal_staff");
+   if(!active)return;
+   const admins=member.data||[];
+   setCompanies(admins);
+   setCompanyId(old=>admins.some(a=>a.company_id===old)?old:(admins[0]?.company_id||""));
+   setInternal(isStaff.data===true&&!isStaff.error);
+  })().catch(e=>{if(active)setError(e.message||"Unable to load your billing permissions.");})
+    .finally(()=>{if(active)setLoadingAccount(false);});
+  return()=>{active=false;};
+ },[]);
+
+ useEffect(()=>{
+  let active=true;
+  if(!companyId){setSubscription(null);setInvoices([]);setPayments([]);setAccess(null);return;}
+  (async()=>{
+   setLoadingData(true);setError("");
+   const [sub,inv,pay,snapshot]=await Promise.all([
+    supabase.from("company_subscriptions")
+     .select("plan_id,status,provider,current_period_end,cancel_at_period_end,started_at")
+     .eq("company_id",companyId).maybeSingle(),
+    supabase.from("billing_invoices")
+     .select("id,amount_minor,currency,status,billing_interval,issued_at,paid_at")
+     .eq("company_id",companyId).order("issued_at",{ascending:false}).limit(30),
+    supabase.from("billing_payments")
+     .select("id,amount_minor,currency,status,created_at")
+     .eq("company_id",companyId).order("created_at",{ascending:false}).limit(30),
+    supabase.rpc("billing_my_hybrid_access_snapshot",{p_company_id:companyId})
+   ]);
+   if(!active)return;
+   const failure=[sub,inv,pay].find(r=>r.error);
+   if(failure)throw failure.error;
+   setSubscription(sub.data||null);
+   setInvoices(inv.data||[]);
+   setPayments(pay.data||[]);
+   setAccess(snapshot.error?null:snapshot.data);
+  })().catch(e=>{if(active)setError(e.message||"Unable to load the company's billing records.");})
+   .finally(()=>{if(active)setLoadingData(false);});
+  return()=>{active=false;};
  },[companyId,refresh]);
- async function prepareSetupDraft(offer){
-  if(!offer?.id||!companyId||creatingSetup||!setupInvoiceReady)return;
-  setCreatingSetup(true);setError("");setNotice("");
-  try{
-   const {data,error:rpcError}=await supabase.rpc("billing_prepare_setup_invoice",{
-    p_company_id:companyId,p_offer_id:offer.id
-   });
-   if(rpcError)throw rpcError;
-   setNotice("Setup fee draft saved: SETUP-"+String(data.id).slice(0,8).toUpperCase()+". No payment or tax invoice has been issued.");
-   setRefresh(value=>value+1);
-  }catch(e){setError(e.message||"Unable to prepare setup fee draft.");}
-  finally{setCreatingSetup(false);}
- }
- async function saveSetupDetails(){
-  setSavingSetupDetails(true);setError("");
-  const {error:e}=await supabase.rpc("billing_save_setup_invoice_details",{
-   p_company_id:companyId,p_name:setupDetails.name,p_email:setupDetails.email,
-   p_address:setupDetails.address,p_tax_id:setupDetails.taxId,p_notes:setupDetails.notes
-  });
-  setSavingSetupDetails(false);
-  if(e)setError(e.message);
-  else{setNotice("Billing draft details saved. No payment was made.");setRefresh(x=>x+1);}
- }
- async function submitSetupReview(){
-  if(!companyId||!setupInvoice||setupInvoice.status!=="draft"||submittingSetupReview)return;
-  setSubmittingSetupReview(true);setError("");setNotice("");
-  const {error:reviewError}=await supabase.rpc("billing_submit_setup_invoice_review",{p_company_id:companyId});
-  setSubmittingSetupReview(false);
-  if(reviewError)setError(reviewError.message);
-  else{setNotice("Setup invoice submitted for internal review. No invoice was issued or charged.");setRefresh(x=>x+1);}
- }
- async function checkout(priceId){
-  if(!priceId||processing||!companyId)return;
-  setProcessing(priceId);setError("");setNotice("");
-  try{
-   const {data,error}=await supabase.auth.getSession();
-   if(error||!data?.session?.access_token)throw Error("Please sign in again.");
-   const res=await fetch("/api/billing/checkout",{
-    method:"POST",headers:{"Content-Type":"application/json",Authorization:"Bearer "+data.session.access_token},
-    body:JSON.stringify({companyId,priceId,customer})
-   });
-   const result=await res.json();
-   if(!res.ok)throw Error(result.error||"Unable to create checkout.");
-   if(!result.checkoutUrl||!/^https:\/\/(accept|ksa|uae)\.paymob\.com\/unifiedcheckout\//.test(result.checkoutUrl))
-    throw Error("Payment redirect was invalid.");
-   window.location.assign(result.checkoutUrl);
-  }catch(e){setError(e.message||"Unable to process payment.");setProcessing("");}
- }
- async function manageSubscription(cancel){
-  if(!companyId||!subscription||managingSubscription||!subscriptionControlsReady)return;
-  if(cancel&&!window.confirm("Record an end-of-period cancellation request for this subscription? Access remains through the current paid period. Automatic recurring billing is not enabled yet."))return;
-  setManagingSubscription(true);setError("");setNotice("");
-  try{
-   const {error:rpcError}=await supabase.rpc("billing_set_cancel_at_period_end",{
-    p_company_id:companyId,p_cancel:cancel
-   });
-   if(rpcError)throw rpcError;
-   setNotice(cancel?"Your request to end this subscription at the current period end is recorded.":"Your end-of-period cancellation request has been withdrawn. Automatic charges are not enabled.");
-   setRefresh(x=>x+1);
-  }catch(e){setError(e.message||"Could not update subscription settings.");}
-  finally{setManagingSubscription(false);}
- }
- const effectiveStatus=subscription?.current_period_end&&new Date(subscription.current_period_end)<=new Date()&&["active","trialing"].includes(subscription.status)?"expired":subscription?.status;
- const canManage=subscriptionControlsReady&&["active","trialing"].includes(effectiveStatus)&&!!subscription?.current_period_end;
- const planName=subscription?plans.find(p=>p.id===subscription.plan_id)?.name||subscription.plan_id:"None";
- const paid=payments.filter(p=>p.status==="paid");
- return <main className="billing-page"><style>{styles}</style><div className="billing-shell">
-  <aside className="billing-side"><div className="billing-brand"><span>I</span><div>Inspire Match<small>TALENT INTELLIGENCE</small></div></div><ATSNavigation className="billing-nav"/></aside>
-  <div className="billing-main"><div className="billing-inner">
-   <div className="billing-top"><div>Settings / <strong>Billing &amp; Subscriptions</strong></div><Link href="/app/dashboard">← Dashboard</Link></div>
-   <header className="billing-hero"><small>SAAS MANAGEMENT / PAYMENTS</small><h1>Billing &amp; Subscriptions</h1><p>Manage your company's subscription, compare commercial plans and track payment and invoice history. Checkout is powered by Paymob after merchant onboarding and price activation.</p></header>
-   <div className="billing-controls">
-    <label>Company <select className="billing-select" value={companyId} onChange={e=>setCompanyId(e.target.value)} disabled={!companies.length}>{companies.map(c=><option value={c.company_id} key={c.company_id}>Company {c.company_id.slice(0,8)}</option>)}{!companies.length&&<option value="">No admin membership</option>}</select></label>
-    <label>Currency <select className="billing-select" value={currency} onChange={e=>setCurrency(e.target.value)}>{["EGP","SAR","AED","USD"].map(x=><option key={x}>{x}</option>)}</select></label>
-    <label>Billing period <select className="billing-select" value={period} onChange={e=>setPeriod(e.target.value)}><option value="month">Monthly</option><option value="year">Yearly</option></select></label>
-    <button type="button" className="billing-button billing-secondary" onClick={()=>setRefresh(x=>x+1)} disabled={loading||!companyId}>↻ Refresh</button>
+
+ const expired=subscription?.current_period_end&&new Date(subscription.current_period_end)<=new Date();
+ const status=expired&&["active","trialing"].includes(subscription?.status)? "expired":subscription?.status||"Not subscribed";
+ const activeFeatures=Object.entries(access?.features||{})
+  .filter(([,enabled])=>enabled===true).map(([key])=>featureNames[key]||key.replaceAll("_"," "));
+ const canRead=!!companyId&&!loadingAccount;
+
+ return <main className="cb-page"><style>{style}</style><div className="cb-shell">
+  <aside className="cb-side"><div className="cb-brand"><span>I</span><div>Inspire Match<small>TALENT INTELLIGENCE</small></div></div><ATSNavigation className="cb-nav"/></aside>
+  <section className="cb-main"><div className="cb-inner">
+   <div className="cb-top"><strong>Workspace / Billing</strong><Link href="/app/dashboard">Dashboard</Link></div>
+   <header className="cb-hero"><small>PRIVATE CLIENT WORKSPACE</small><h1>Billing &amp; Subscription</h1><p>Your company's subscription, contracted services and billing history — managed directly by Inspire Match Sales. There is no self-service purchase or checkout.</p></header>
+   <div className="cb-controls">
+    <label>Company{" "}<select className="cb-select" value={companyId} disabled={!companies.length} onChange={e=>setCompanyId(e.target.value)}>{companies.map(c=><option key={c.company_id} value={c.company_id}>Company {c.company_id.slice(0,8)}</option>)}{!companies.length&&<option value="">No company assigned</option>}</select></label>
+    <div style={{display:"flex",gap:10}}>{internal&&<Link href="/app/billing/internal" className="cb-button" style={{textDecoration:"none"}}>Internal Sales &amp; Finance</Link>}
+     <button type="button" className="cb-button" disabled={!canRead||loadingData} onClick={()=>setRefresh(n=>n+1)}>Refresh</button>
+    </div>
    </div>
-   {error&&<div role="alert" className="billing-error">{error}</div>}
-   {notice&&<div className="billing-info" role="status">{notice}</div>}
-   {loading&&<div className="billing-info">Loading your billing records…</div>}
-   <div className="billing-summary">
-    <div className="billing-stat"><small>Current plan</small><strong>{planName}</strong><span className="billing-muted">Company subscription</span></div>
-    <div className="billing-stat"><small>Subscription status</small><strong style={{textTransform:"capitalize"}}>{effectiveStatus?.replaceAll("_"," ")||"Not subscribed"}</strong><span className="billing-muted">{subscription?.cancel_at_period_end?"End-of-period cancellation requested":"Confirmed from billing records"}</span></div>
-    <div className="billing-stat"><small>Period ends</small><strong>{date(subscription?.current_period_end)}</strong><span className="billing-muted">Updated by verified payment processing</span></div>
-   </div>
-   <div className="billing-section-head"><h2>Manage subscription</h2><span className="billing-muted">Company administrators only</span></div>
-   <section className="billing-panel">
-    <div style={{display:"flex",justifyContent:"space-between",gap:20,flexWrap:"wrap",alignItems:"center"}}>
-     <div><strong style={{fontSize:14,color:"#184a33"}}>{subscription?.cancel_at_period_end?"End-of-period cancellation requested":"Subscription management"}</strong>
-      <p className="billing-muted" style={{maxWidth:650,marginTop:9}}>{!subscription?"No paid subscription is available to manage yet.":subscription.cancel_at_period_end?"Your end-of-period request is recorded. Current paid access runs until "+date(subscription.current_period_end)+".":"Your subscription is recorded through "+date(subscription.current_period_end)+". You can request to end it at the period boundary."}</p>
+   {error&&<div role="alert" className="cb-alert">{error}</div>}
+   {loadingAccount?<div className="cb-info">Checking billing access…</div>:
+    !canRead?<div className="cb-info">Subscription billing is visible only to designated company administrators. Recruiters and other HR users cannot access company financial records.</div>:
+    <>
+     {loadingData&&<div className="cb-info">Loading subscription records…</div>}
+     <div className="cb-stats">
+      <div className="cb-box"><small>Subscription</small><strong style={{textTransform:"capitalize"}}>{status.replaceAll("_"," ")}</strong><span className="cb-muted">Managed by Inspire Match</span></div>
+      <div className="cb-box"><small>Current period ends</small><strong>{date(subscription?.current_period_end)}</strong><span className="cb-muted">Renewals handled by Sales</span></div>
+      <div className="cb-box"><small>Company activation</small><strong style={{textTransform:"capitalize"}}>{access?.activation_status&&access.activation_status!=="not_configured"?access.activation_status:"Under setup"}</strong><span className="cb-muted">Contract-based workspace access</span></div>
      </div>
-     {subscription?.cancel_at_period_end?
-       <button className="billing-button" type="button" disabled={!canManage||managingSubscription} onClick={()=>manageSubscription(false)}>{managingSubscription?"Saving…":"Withdraw cancellation request"}</button>:
-       <button className="billing-button billing-secondary" type="button" disabled={!canManage||managingSubscription} onClick={()=>manageSubscription(true)}>{managingSubscription?"Saving…":"Request end at period end"}</button>}
-    </div>
-    {!subscriptionControlsReady&&companyId&&<p className="billing-muted">Subscription management controls become available after the subscription management SQL migration is applied.</p>}
-    <p className="billing-muted">Important: The current Paymob checkout uses one-time payments; automatic recurring charges are not active. This action stores your future renewal preference and does not initiate a refund or contact Paymob.</p>
-    {!!subscriptionEvents.length&&<div style={{marginTop:16}}><strong>Subscription activity</strong>{subscriptionEvents.slice(0,8).map(event=><div key={event.id} style={{display:"flex",justifyContent:"space-between",gap:12,padding:"10px 0",borderBottom:"1px solid #ebf1ed"}}><span>{event.action==="cancel_at_period_end"?"End-of-period cancellation requested":"Cancellation request withdrawn"}</span><span className="billing-muted">{date(event.created_at)}</span></div>)}</div>}
-   </section>
-   <div className="billing-section-head"><h2>Subscription access snapshot</h2><span className="billing-pill">Read-only · enforcement off</span></div>
-   <section className="billing-panel">
-    <p className="billing-muted">This status is calculated from your company's recorded subscription and its paid period. It does not restrict existing ATS features.</p>
-    <div style={{display:"flex",gap:24,flexWrap:"wrap",marginTop:14}}>
-     <div><small className="billing-muted">Current plan</small><div style={{fontWeight:800}}>{accessSnapshot?.plan_id||"No verified active plan"}</div></div>
-     <div><small className="billing-muted">Period valid</small><div style={{fontWeight:800}}>{accessSnapshot?accessSnapshot.subscription_valid?"Yes":"No":"Snapshot not configured"}</div></div>
-     <div><small className="billing-muted">Access enforcement</small><div style={{fontWeight:800}}>Not enabled</div></div>
-    </div>
-   </section>
-   <div className="billing-section-head"><h2>Your subscription</h2><span className="billing-pill">Managed by Inspire Match Sales</span></div>
-   <section className="billing-panel">
-    <p className="billing-muted">Inspire Match is a privately managed B2B platform. Your contracted services and activation are arranged with our Sales team. Self-service plan selection and checkout are unavailable.</p>
-    <div className="billing-grid" style={{marginTop:18}}>
-     <div className="billing-stat"><span>Subscription status</span><strong>{subscription?.status||"Not assigned"}</strong></div>
-     <div className="billing-stat"><span>Renewal / period end</span><strong>{date(subscription?.current_period_end)}</strong></div>
-     <div className="billing-stat"><span>Service access</span><strong>{accessSnapshot?.subscription_valid?"Subscription recorded":"Awaiting activation"}</strong></div>
-    </div>
-    <p className="billing-muted" style={{marginTop:18}}>For contract changes, additional users or premium add-ons, contact your Inspire Match account representative.</p>
-   </section>
-   <div className="billing-section-head"><h2>Invoice history</h2><span className="billing-muted">{invoices.length} records</span></div>
-   <section className="billing-panel"><div className="billing-table-wrap"><table className="billing-table"><thead><tr><th>Invoice</th><th>Issued</th><th>Plan</th><th>Amount</th><th>Status</th></tr></thead><tbody>{invoices.map(i=><tr key={i.id}><td>INV-{i.id.slice(0,8).toUpperCase()}</td><td>{date(i.issued_at)}</td><td>{plans.find(p=>p.id===i.plan_id)?.name||i.plan_id}</td><td>{money(i.amount_minor,i.currency)}</td><td><span className="billing-pill">{i.status}</span></td></tr>)}</tbody></table></div>{!invoices.length&&<p className="billing-muted">No invoices yet. Paid invoices will appear here after verified payments.</p>}</section>
-   <div className="billing-section-head"><h2>Payment history</h2><span className="billing-muted">{paid.length} successful payment records</span></div>
-   <section className="billing-panel"><div className="billing-table-wrap"><table className="billing-table"><thead><tr><th>Date</th><th>Amount</th><th>Status</th></tr></thead><tbody>{payments.map(p=><tr key={p.id}><td>{date(p.created_at)}</td><td>{money(p.amount_minor,p.currency)}</td><td><span className="billing-pill">{p.status}</span></td></tr>)}</tbody></table></div>{!payments.length&&<p className="billing-muted">No payments recorded.</p>}</section>
-   <p className="billing-muted" style={{marginTop:20}}>Payments are one-off checkout payments in this foundation. Cancellation preference can be recorded; automatic recurring charges, downloadable tax invoices and feature enforcement are not yet enabled.</p>
-  </div></div>
+     <div className="cb-heading"><h2>Contracted services</h2><span className="cb-pill">Private agreement</span></div>
+     <section className="cb-box">
+      <p>Inspire Match combines core recruitment tools with optional capabilities chosen for your organization. Available features are determined by your company's agreement and user permissions.</p>
+      {activeFeatures.length?<div className="cb-chips">{activeFeatures.map(f=><span key={f} className="cb-chip">{f}</span>)}</div>:
+       <p className="cb-muted">Your contracted feature list will appear after subscription configuration. Existing ATS access is not restricted by this informational view yet.</p>}
+      <p className="cb-muted" style={{marginTop:17}}>To request more users, add-ons, renewal changes or a commercial update, please contact your Inspire Match account representative.</p>
+     </section>
+     <div className="cb-heading"><h2>Invoice records</h2><span className="cb-muted">{invoices.length} records</span></div>
+     <section className="cb-box"><div className="cb-tablewrap"><table className="cb-table"><thead><tr><th>Reference</th><th>Recorded</th><th>Amount</th><th>Status</th></tr></thead>
+      <tbody>{invoices.map(i=><tr key={i.id}><td>INV-{i.id.slice(0,8).toUpperCase()}</td><td>{date(i.issued_at)}</td><td>{money(i.amount_minor,i.currency)}</td><td><span className="cb-pill">{i.status}</span></td></tr>)}</tbody></table></div>
+      {!invoices.length&&<p className="cb-muted">No invoice records have been created for your company.</p>}
+      <p className="cb-muted">These are system billing records, not necessarily issued or tax-compliant invoices.</p>
+     </section>
+     <div className="cb-heading"><h2>Payment history</h2><span className="cb-muted">{payments.length} records</span></div>
+     <section className="cb-box"><div className="cb-tablewrap"><table className="cb-table"><thead><tr><th>Recorded</th><th>Amount</th><th>Status</th></tr></thead>
+      <tbody>{payments.map(p=><tr key={p.id}><td>{date(p.created_at)}</td><td>{money(p.amount_minor,p.currency)}</td><td><span className="cb-pill">{p.status}</span></td></tr>)}</tbody></table></div>
+      {!payments.length&&<p className="cb-muted">No recorded payments.</p>}
+     </section>
+     <p className="cb-muted">No live payment collection, online checkout or automatic recurring billing is enabled for Inspire Match customers.</p>
+    </>
+   }
+  </div></section>
  </div></main>;
 }
