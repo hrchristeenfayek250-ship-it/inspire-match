@@ -337,29 +337,16 @@ export default function BillingPage(){
      ].map(([key,label])=><tr key={key}><td>{label}</td>{plans.map(plan=>{const q=planQuotas.find(x=>x.plan_id===plan.id&&x.quota_key===key);return <td key={plan.id}>{q?.limit_value==null?"Not set":q.limit_value.toLocaleString("en-US")}</td>})}</tr>)}
     </tbody></table></div>
    </section>
-   <div className="billing-section-head"><h2>Choose your plan</h2><span className="billing-pill">Paymob integration prepared</span></div>
-   <section className="billing-plans">{plans.map(plan=>{
-    const price=prices.find(p=>p.plan_id===plan.id&&p.currency===currency&&p.billing_interval===period);
-    const offer=commercialOffers.find(o=>o.plan_id===plan.id&&o.currency===currency&&o.billing_interval===period);
-    const checkoutReady=currency!=="USD"&&!!offer&&Number(offer.setup_fee_minor)===0&&!!price&&Number(price.amount_minor)===Number(offer.recurring_fee_minor);
-    const features=Array.isArray(plan.feature_list)?plan.feature_list:[];
-    return <article className={"billing-plan "+(plan.id==="professional"?"featured":"")} key={plan.id}>
-     <span className="billing-pill">{plan.id==="professional"?"MOST ADVANCED":plan.id==="enterprise"?"TAILORED":"ESSENTIALS"}</span>
-     <h3>{plan.name}</h3><p>{plan.description}</p>
-     <div className="billing-price">{offer?money(offer.recurring_fee_minor,currency):"Contact us"} <small>{offer?"/ "+(period==="month"?"month":"year"):"Pricing not approved yet"}</small></div>
-     {offer&&<p className="billing-muted">One-time setup: {money(offer.setup_fee_minor,currency)} · {Number(offer.setup_fee_minor)>0?"Separate checkout not available yet":"No setup fee"}</p>}
-     <ul className="billing-features">{features.map((feature,index)=><li key={index}>{feature}</li>)}</ul>
-     <button type="button" className="billing-button" style={{width:"100%"}} disabled={!checkoutReady||!companyId||loading||!!processing||subscription?.plan_id===plan.id&&subscription?.status==="active"} onClick={()=>checkout(price?.id)}>
-      {processing===price?.id?"Starting payment…":subscription?.plan_id===plan.id&&subscription?.status==="active"?"Current plan":!offer?"Awaiting approved pricing":!checkoutReady?"Checkout not enabled":"Continue to Paymob"}
-     </button>
-    </article>;
-   })}</section>
-   <div className="billing-section-head"><h2>Billing contact</h2><span className="billing-muted">Only used when initiating checkout</span></div>
-   <section className="billing-panel"><div className="billing-form">
-    <label>First name <input className="billing-input" autoComplete="given-name" maxLength={80} value={customer.firstName} onChange={e=>setCustomer(c=>({...c,firstName:e.target.value}))} placeholder="First name"/></label>
-    <label>Last name <input className="billing-input" autoComplete="family-name" maxLength={80} value={customer.lastName} onChange={e=>setCustomer(c=>({...c,lastName:e.target.value}))} placeholder="Last name"/></label>
-    <label>Phone <input className="billing-input" autoComplete="tel" maxLength={22} value={customer.phone} onChange={e=>setCustomer(c=>({...c,phone:e.target.value}))} placeholder="+20…"/></label>
-   </div><p className="billing-muted">The invoice amount is always retrieved from the database on the server. Enter your contact details before proceeding with an available plan.</p></section>
+   <div className="billing-section-head"><h2>Your subscription</h2><span className="billing-pill">Managed by Inspire Match Sales</span></div>
+   <section className="billing-panel">
+    <p className="billing-muted">Inspire Match is a privately managed B2B platform. Your contracted services and activation are arranged with our Sales team. Self-service plan selection and checkout are unavailable.</p>
+    <div className="billing-grid" style={{marginTop:18}}>
+     <div className="billing-stat"><span>Subscription status</span><strong>{subscription?.status||"Not assigned"}</strong></div>
+     <div className="billing-stat"><span>Renewal / period end</span><strong>{date(subscription?.current_period_end)}</strong></div>
+     <div className="billing-stat"><span>Service access</span><strong>{accessSnapshot?.subscription_valid?"Subscription recorded":"Awaiting activation"}</strong></div>
+    </div>
+    <p className="billing-muted" style={{marginTop:18}}>For contract changes, additional users or premium add-ons, contact your Inspire Match account representative.</p>
+   </section>
    <div className="billing-section-head"><h2>Invoice history</h2><span className="billing-muted">{invoices.length} records</span></div>
    <section className="billing-panel"><div className="billing-table-wrap"><table className="billing-table"><thead><tr><th>Invoice</th><th>Issued</th><th>Plan</th><th>Amount</th><th>Status</th></tr></thead><tbody>{invoices.map(i=><tr key={i.id}><td>INV-{i.id.slice(0,8).toUpperCase()}</td><td>{date(i.issued_at)}</td><td>{plans.find(p=>p.id===i.plan_id)?.name||i.plan_id}</td><td>{money(i.amount_minor,i.currency)}</td><td><span className="billing-pill">{i.status}</span></td></tr>)}</tbody></table></div>{!invoices.length&&<p className="billing-muted">No invoices yet. Paid invoices will appear here after verified payments.</p>}</section>
    <div className="billing-section-head"><h2>Payment history</h2><span className="billing-muted">{paid.length} successful payment records</span></div>
