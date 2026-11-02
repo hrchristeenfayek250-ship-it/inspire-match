@@ -8,6 +8,8 @@ const regions={
   UAE:{base:"https://uae.paymob.com",currency:"AED",country:"ARE"}
 };
 export async function POST(request){
+ // Sales-led model: no customer self-service checkout, including sandbox.
+ return response({error:"Self-service checkout is disabled. Please contact Inspire Match Sales."},403);
  let reserved=null,admin=null;
  try{
   const url=process.env.NEXT_PUBLIC_SUPABASE_URL;
