@@ -104,7 +104,7 @@ export default function ClientBillingPage(){
     supabase.from("billing_payments")
      .select("id,amount_minor,currency,status,created_at")
      .eq("company_id",companyId).order("created_at",{ascending:false}).limit(30),
-    supabase.rpc("billing_my_hybrid_access_snapshot",{p_company_id:companyId})
+    supabase.rpc("billing_my_private_access_snapshot",{p_company_id:companyId})
    ]);
    if(!active)return;
    const failure=[sub,inv,pay].find(r=>r.error);
