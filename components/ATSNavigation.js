@@ -2,6 +2,8 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useEffect, useState } from "react";
+import { supabase } from "@/lib/supabase";
 
 
 export const ATS_NAVIGATION = [
@@ -32,10 +34,38 @@ export default function ATSNavigation({
   onNavigate,
 }) {
   const pathname = usePathname();
+  const [canViewCompanyBilling, setCanViewCompanyBilling] = useState(false);
+  const [isInternalStaff, setIsInternalStaff] = useState(false);
+
+  useEffect(() => {
+    let active = true;
+    (async () => {
+      const { data: { user }, error } = await supabase.auth.getUser();
+      if (error || !user || !active) return;
+      const [membership, internal] = await Promise.all([
+        supabase.from("company_members").select("company_id")
+          .eq("user_id", user.id).eq("role", "admin").limit(1),
+        supabase.rpc("billing_is_internal_staff")
+      ]);
+      if (!active) return;
+      setCanViewCompanyBilling(!membership.error && (membership.data || []).length > 0);
+      setIsInternalStaff(!internal.error && internal.data === true);
+    })().catch(() => {
+      if (active) { setCanViewCompanyBilling(false); setIsInternalStaff(false); }
+    });
+    return () => { active = false; };
+  }, []);
+
+  const visibleNavigation = [
+    ...ATS_NAVIGATION.filter(([label]) =>
+      label !== "Billing & Subscriptions" || canViewCompanyBilling
+    ),
+    ...(isInternalStaff ? [["Internal Sales & Finance", "/app/billing/internal", "▧"]] : [])
+  ];
 
   return (
     <nav className={className} aria-label="Main navigation">
-      {ATS_NAVIGATION.map(([label, href, icon]) => {
+      {visibleNavigation.map(([label, href, icon]) => {
         const active =
           pathname === href ||
           pathname.startsWith(`${href}/`);
