@@ -27,6 +27,8 @@ export async function POST(request){
  const service=process.env.SUPABASE_SERVICE_ROLE_KEY;
  const url=process.env.NEXT_PUBLIC_SUPABASE_URL;
  const mode=process.env.PAYMOB_MODE;
+ // No live payment callbacks until merchant, tax and production security sign-off.
+ if(mode==="live")return json({error:"Live payment processing is disabled"},503);
  if(!secret||!service||!url||!["live","test"].includes(mode))return json({error:"Payment webhooks are disabled"},503);
  try{
   const raw=await request.text();
