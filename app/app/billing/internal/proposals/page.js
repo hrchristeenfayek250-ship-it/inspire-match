@@ -29,7 +29,7 @@ const amount=(value,currency)=>value==null?"—":new Intl.NumberFormat("en-US",{
 export default function SalesProposals(){
  const [role,setRole]=useState("");const [leads,setLeads]=useState([]);const [proposals,setProposals]=useState([]);
  const [loading,setLoading]=useState(true);const [saving,setSaving]=useState(false);const [error,setError]=useState("");const [notice,setNotice]=useState("");
- const [form,setForm]=useState(blank);const [showForm,setShowForm]=useState(false);const [refresh,setRefresh]=useState(0);
+ const [reviewing,setReviewing]=useState("");const [form,setForm]=useState(blank);const [showForm,setShowForm]=useState(false);const [refresh,setRefresh]=useState(0);
  const canEdit=role==="sales"||role==="platform_admin";
  useEffect(()=>{let active=true;(async()=>{
   setLoading(true);setError("");
@@ -45,6 +45,21 @@ export default function SalesProposals(){
  return()=>{active=false};},[refresh]);
  const names=useMemo(()=>Object.fromEntries(leads.map(l=>[l.id,l.company_name])),[leads]);
  const change=(key,value)=>setForm(f=>({...f,[key]:value}));
+ async function proposalAction(proposal,action){
+  if(reviewing)return;
+  let comment="";
+  if(action==="request_changes"){
+   comment=window.prompt("Reason for requested changes (required):")||"";
+   if(comment.trim().length<3)return;
+  }
+  setReviewing(proposal.id);setError("");setNotice("");
+  const result=action==="submit"
+   ?await supabase.rpc("billing_sales_submit_proposal",{p_proposal_id:proposal.id})
+   :await supabase.rpc("billing_sales_review_proposal",{p_proposal_id:proposal.id,p_decision:action,p_comment:comment});
+  if(result.error)setError(result.error.message);
+  else{setNotice(action==="submit"?"Proposal submitted for internal review.":action==="approve"?"Proposal approved internally. No client delivery or payment.":"Proposal returned to draft.");setRefresh(n=>n+1);}
+  setReviewing("");
+ }
  async function save(e){e.preventDefault();if(!canEdit||saving)return;
   if(!form.lead_id||form.title.trim().length<2){setError("Select a lead and enter a proposal title.");return;}
   for(const v of [form.setup_fee,form.recurring_fee])if(v!==""&&(!Number.isFinite(Number(v))||Number(v)<0||Math.round(Number(v)*100)!==Number(v)*100)){setError("Enter valid non-negative amounts with up to two decimal places.");return;}
@@ -85,8 +100,8 @@ export default function SalesProposals(){
     </div><div className="im-prop-tools"><span>Draft only · Not approved or client-visible</span><button disabled={saving} className="im-prop-btn" type="submit">{saving?"Saving…":"Save draft"}</button></div>
    </form>}
    <section className="im-prop-card"><h2>Private proposals</h2><div className="im-prop-wrap"><table className="im-prop-table">
-    <thead><tr><th>Reference</th><th>Company</th><th>Title</th><th>Setup</th><th>Recurring</th><th>Status</th><th>Valid until</th></tr></thead>
-    <tbody>{proposals.map(p=><tr key={p.id}><td>{p.reference}</td><td>{names[p.lead_id]||"—"}</td><td>{p.title}</td><td>{amount(p.setup_fee_minor,p.currency)}</td><td>{amount(p.recurring_fee_minor,p.currency)} / {p.billing_interval}</td><td>{p.status}</td><td>{p.valid_until||"—"}</td></tr>)}</tbody>
+    <thead><tr><th>Reference</th><th>Company</th><th>Title</th><th>Setup</th><th>Recurring</th><th>Status</th><th>Valid until</th><th>Review actions</th></tr></thead>
+    <tbody>{proposals.map(p=><tr key={p.id}><td>{p.reference}</td><td>{names[p.lead_id]||"—"}</td><td>{p.title}</td><td>{amount(p.setup_fee_minor,p.currency)}</td><td>{amount(p.recurring_fee_minor,p.currency)} / {p.billing_interval}</td><td>{p.status}</td><td>{p.valid_until||"—"}</td><td>{p.status==="draft"&&canEdit?<button disabled={!!reviewing} className="im-prop-btn" onClick={()=>proposalAction(p,"submit")}>Submit for review</button>:p.status==="internal_review"?<div style={{display:"flex",gap:7}}><button disabled={!!reviewing} className="im-prop-btn" onClick={()=>proposalAction(p,"approve")}>Approve</button><button disabled={!!reviewing} className="im-prop-btn alt" onClick={()=>proposalAction(p,"request_changes")}>Request changes</button></div>:"—"}</td></tr>)}</tbody>
    </table></div>{!proposals.length&&!loading&&<p>No proposals yet. Create a lead in Sales CRM first, then prepare a draft.</p>}</section>
    <div className="im-prop-note">Internal-only. No client delivery, contract signature, tax invoice, payment collection or subscription activation is performed here.</div>
   </div></section></div></main>;
