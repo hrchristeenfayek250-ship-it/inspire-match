@@ -104,8 +104,11 @@ export default function InternalLeadsPage(){
   let active=true;
   (async()=>{
    setLoading(true);setError("");
-   const {data:identity,error:identityError}=await supabase.auth.getUser();
-   if(identityError||!identity?.user)throw new Error("Please sign in with an approved Inspire Match internal account.");
+   const authResponse=await supabase.auth.getUser();
+   const currentUser=authResponse?.data?.user;
+   if(authResponse?.error||!currentUser?.id){
+    throw new Error(authResponse?.error?.message||"Your Inspire Match login session is missing or expired. Sign in again with your approved internal account.");
+   }
    const overview=await supabase.rpc("billing_internal_overview");
    if(overview.error)throw overview.error;
    const result=await supabase.from("billing_sales_leads")
@@ -114,7 +117,7 @@ export default function InternalLeadsPage(){
    if(result.error)throw result.error;
    if(active){
     setRole(overview.data?.staff_role||"");
-    setUserId(identity.user.id);
+    setUserId(currentUser.id);
     setLeads(result.data||[]);
    }
   })().catch(e=>{if(active){setLeads([]);setRole("");setError(e.message||"Could not load internal Sales CRM.");}})
