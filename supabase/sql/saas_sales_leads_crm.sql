@@ -3,6 +3,19 @@
 -- Sales-led only: no public lead intake, payment, tax invoice, company activation or subscription change.
 begin;
 
+-- Permission-checking helper runs with SQL owner privileges; tenant members never qualify.
+create or replace function public.billing_sales_can_manage()
+returns boolean language sql stable security definer set search_path=''
+as $
+ select auth.uid() is not null and exists (
+  select 1 from public.billing_internal_staff s
+  where s.user_id=auth.uid() and s.is_active
+    and s.staff_role in ('sales','platform_admin')
+ );
+$;
+revoke all on function public.billing_sales_can_manage() from public,anon;
+grant execute on function public.billing_sales_can_manage() to authenticated;
+
 create table if not exists public.billing_sales_leads (
  id uuid primary key default gen_random_uuid(),
  company_name text not null check (char_length(btrim(company_name)) between 2 and 160),
@@ -48,24 +61,18 @@ create policy billing_sales_leads_sales_insert
  on public.billing_sales_leads for insert to authenticated
  with check (
   created_by=auth.uid() and updated_by=auth.uid() and
-  exists (select 1 from public.billing_internal_staff s
-   where s.user_id=auth.uid() and s.is_active
-    and s.staff_role in ('sales','platform_admin'))
+  public.billing_sales_can_manage()
  );
 
 drop policy if exists billing_sales_leads_sales_update on public.billing_sales_leads;
 create policy billing_sales_leads_sales_update
  on public.billing_sales_leads for update to authenticated
  using (
-  exists (select 1 from public.billing_internal_staff s
-   where s.user_id=auth.uid() and s.is_active
-    and s.staff_role in ('sales','platform_admin'))
+  public.billing_sales_can_manage()
  )
  with check (
   updated_by=auth.uid() and
-  exists (select 1 from public.billing_internal_staff s
-   where s.user_id=auth.uid() and s.is_active
-    and s.staff_role in ('sales','platform_admin'))
+  public.billing_sales_can_manage()
  );
 
 create table if not exists public.billing_sales_lead_stage_events (
@@ -100,11 +107,14 @@ create or replace function public.billing_sales_lead_audit_stage()
 returns trigger language plpgsql security definer set search_path=''
 as $$
 begin
- if tg_op='INSERT' or old.stage is distinct from new.stage then
+ if tg_op='INSERT' then
   insert into public.billing_sales_lead_stage_events
     (lead_id,old_stage,new_stage,actor_id)
-  values (new.id,case when tg_op='INSERT' then null else old.stage end,
-   new.stage,auth.uid());
+  values (new.id,null,new.stage,auth.uid());
+ elsif old.stage is distinct from new.stage then
+  insert into public.billing_sales_lead_stage_events
+    (lead_id,old_stage,new_stage,actor_id)
+  values (new.id,old.stage,new.stage,auth.uid());
  end if;
  return new;
 end;
