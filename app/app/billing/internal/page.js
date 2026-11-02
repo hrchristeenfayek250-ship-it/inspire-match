@@ -57,6 +57,9 @@ export default function InternalSalesFinance(){
  const [error,setError]=useState("");
  const [currency,setCurrency]=useState("all");
  const [refresh,setRefresh]=useState(0);
+ const [companyConfigs,setCompanyConfigs]=useState([]);
+ const [companyConfigError,setCompanyConfigError]=useState("");
+ const [companySearch,setCompanySearch]=useState("");
 
  useEffect(()=>{
   let active=true;
@@ -64,9 +67,16 @@ export default function InternalSalesFinance(){
    setLoading(true);setError("");setData(null);
    const {data:identity,error:authError}=await supabase.auth.getUser();
    if(authError||!identity?.user)throw new Error("Sign in with an approved internal Inspire Match account.");
-   const result=await supabase.rpc("billing_internal_overview");
+   const [result,config]=await Promise.all([
+    supabase.rpc("billing_internal_overview"),
+    supabase.rpc("billing_internal_company_configurations")
+   ]);
    if(result.error)throw result.error;
-   if(active)setData(result.data);
+   if(active){
+    setData(result.data);
+    setCompanyConfigs(config.error?[]:(config.data?.companies||[]));
+    setCompanyConfigError(config.error?"Company configuration data unavailable. Check the latest SQL migration.":"");
+   }
   })().catch(e=>{if(active)setError(e.message||"Internal access unavailable. Check staff permissions and apply the private billing SQL.");})
    .finally(()=>{if(active)setLoading(false);});
   return()=>{active=false;};
@@ -79,6 +89,7 @@ export default function InternalSalesFinance(){
  const pending=setup.filter(i=>i.review_status==="pending_review");
  const planName=id=>plans.find(p=>p.id===id)?.name||id||"—";
  const allowed=!!data&&!error;
+ const filteredCompanies=companyConfigs.filter(c=>String(c.company_id).toLowerCase().includes(companySearch.trim().toLowerCase())||String(c.internal_plan_id||"").toLowerCase().includes(companySearch.trim().toLowerCase()));
 
  return <main className="im-int"><style>{css}</style><div className="im-int-shell">
   <aside className="im-int-side"><div className="im-int-brand"><span>I</span><div>Inspire Match<small>TALENT INTELLIGENCE</small></div></div><ATSNavigation className="im-int-nav"/></aside>
@@ -119,6 +130,27 @@ export default function InternalSalesFinance(){
      <thead><tr><th>Company reference</th><th>Internal plan</th><th>Subscription</th><th>Activation</th><th>Period end</th><th>Provider</th></tr></thead>
      <tbody>{subs.map(s=><tr key={s.company_id}><td>{short(s.company_id)}</td><td>{planName(s.plan_id)}</td><td><span className="im-int-chip">{s.status}</span></td><td>{s.activation_status}</td><td>{date(s.current_period_end)}</td><td>{s.provider||"—"}</td></tr>)}</tbody>
     </table></div>{!subs.length&&<p className="im-int-muted">No company subscriptions have been recorded yet. No companies are activated automatically.</p>}</section>
+    <div className="im-int-heading"><h2>Company activation &amp; module configuration</h2><span className="im-int-chip">Read-only • No automatic activation</span></div>
+    <section className="im-int-card">
+     <div className="im-int-controls" style={{marginTop:0,marginBottom:14}}>
+      <p className="im-int-muted">Review company onboarding status and custom add-on settings before we introduce controlled editing and approvals.</p>
+      <input className="im-int-select" aria-label="Search company configuration" placeholder="Search company ID or plan" value={companySearch} onChange={e=>setCompanySearch(e.target.value)}/>
+     </div>
+     {companyConfigError&&<div className="im-int-warning im-int-error">{companyConfigError}</div>}
+     <div className="im-int-tablewrap"><table className="im-int-table">
+      <thead><tr><th>Company</th><th>Activation</th><th>Subscription</th><th>Internal plan</th><th>Period end</th><th>Custom add-ons</th></tr></thead>
+      <tbody>{filteredCompanies.map(c=><tr key={c.company_id}>
+       <td title={c.company_id}>{short(c.company_id)}</td>
+       <td><span className="im-int-chip">{c.activation_status}</span></td>
+       <td>{c.subscription_status}</td>
+       <td>{planName(c.internal_plan_id)}</td>
+       <td>{date(c.current_period_end)}</td>
+       <td>{Object.entries(c.feature_overrides||{}).length?Object.entries(c.feature_overrides).map(([feature,enabled])=><div key={feature} style={{fontSize:11}}>{feature.replaceAll("_"," ")}: {enabled?"Enabled":"Disabled"}</div>):<span className="im-int-muted">No overrides</span>}</td>
+      </tr>)}</tbody>
+     </table></div>
+     {!filteredCompanies.length&&!companyConfigError&&<p className="im-int-muted">No company configurations match this search.</p>}
+     <p className="im-int-muted" style={{marginTop:15}}>This section does not change any subscription, company access, or module permissions. The next stage will add approved internal configuration actions.</p>
+    </section>
     <div className="im-int-heading"><h2>Setup draft review</h2>{data.can_review_finance&&<Link className="im-int-button" href="/app/billing/finance">Open Finance Review Center</Link>}</div>
     <section className="im-int-card"><div className="im-int-tablewrap"><table className="im-int-table">
      <thead><tr><th>Reference</th><th>Prepared for</th><th>Amount</th><th>Draft status</th><th>Review status</th><th>Submitted</th></tr></thead>
