@@ -6,13 +6,13 @@ begin;
 -- Permission-checking helper runs with SQL owner privileges; tenant members never qualify.
 create or replace function public.billing_sales_can_manage()
 returns boolean language sql stable security definer set search_path=''
-as $
+as $$
  select auth.uid() is not null and exists (
   select 1 from public.billing_internal_staff s
   where s.user_id=auth.uid() and s.is_active
     and s.staff_role in ('sales','platform_admin')
  );
-$;
+$$;
 revoke all on function public.billing_sales_can_manage() from public,anon;
 grant execute on function public.billing_sales_can_manage() to authenticated;
 
