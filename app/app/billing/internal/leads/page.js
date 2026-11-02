@@ -114,7 +114,7 @@ export default function InternalLeadsPage(){
    if(result.error)throw result.error;
    if(active){
     setRole(overview.data?.staff_role||"");
-    setUserId(identity.data.user.id);
+    setUserId(identity.user.id);
     setLeads(result.data||[]);
    }
   })().catch(e=>{if(active){setLeads([]);setRole("");setError(e.message||"Could not load internal Sales CRM.");}})
