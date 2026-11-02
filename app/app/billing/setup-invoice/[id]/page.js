@@ -76,16 +76,14 @@ export default function SetupInvoiceDraftPreview(){
    }
    const {data:{user},error:authError}=await supabase.auth.getUser();
    if(authError||!user)throw Error("Please sign in to view this draft.");
+   const {data:staffAccess,error:staffError}=await supabase.rpc("billing_is_internal_staff");
+   if(staffError||staffAccess!==true)throw Error("This commercial setup draft is restricted to Inspire Match Sales and Finance.");
    const {data:invoice,error:invoiceError}=await supabase.from("billing_setup_invoices")
     .select("id,company_id,plan_id,currency,billing_interval,amount_minor,status,review_status,submitted_at,reviewed_at,review_note,created_at,updated_at,bill_to_name,bill_to_email,bill_to_address,bill_to_tax_id,tax_treatment,billing_notes")
     .eq("id",id).maybeSingle();
    if(invoiceError)throw invoiceError;
    if(!invoice)throw Error("This invoice draft was not found or is not accessible.");
    if(invoice.status!=="draft")throw Error("This preview is available only for setup invoice drafts.");
-   const {data:membership,error:memberError}=await supabase.from("company_members")
-    .select("company_id").eq("company_id",invoice.company_id)
-    .eq("user_id",user.id).eq("role","admin").maybeSingle();
-   if(memberError||!membership)throw Error("Only an administrator of this company can view this draft.");
    const {data:plan}=await supabase.from("billing_plans")
     .select("name").eq("id",invoice.plan_id).maybeSingle();
    if(active){setDraft(invoice);setPlanName(plan?.name||invoice.plan_id);setLoading(false);}
