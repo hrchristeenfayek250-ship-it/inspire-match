@@ -43,19 +43,13 @@ drop policy if exists billing_commercial_offers_internal_read on public.billing_
 create policy billing_commercial_offers_internal_read on public.billing_commercial_offers
  for select to authenticated using (public.billing_is_internal_staff());
 
--- Companies can see only their assigned plan (never other plan/package names).
+-- Internal tier/package names stay private. Clients see only contracted
+-- services through their own access snapshot, not the global tier catalog.
 drop policy if exists billing_plans_read on public.billing_plans;
 drop policy if exists billing_plans_private_read on public.billing_plans;
-create policy billing_plans_private_read on public.billing_plans
- for select to authenticated using (
-  public.billing_is_internal_staff()
-  or exists (
-   select 1 from public.company_subscriptions sub
-   join public.company_members m on m.company_id=sub.company_id
-   where sub.plan_id=billing_plans.id
-     and m.user_id=auth.uid() and m.role='admin'
-  )
- );
+drop policy if exists billing_plans_internal_read on public.billing_plans;
+create policy billing_plans_internal_read on public.billing_plans
+ for select to authenticated using (public.billing_is_internal_staff());
 
 -- The feature catalog and uncontracted plan feature/quotas matrix are internal.
 -- Client-facing access is delivered through billing_my_hybrid_access_snapshot
@@ -93,6 +87,29 @@ create policy billing_setup_invoices_internal_read on public.billing_setup_invoi
 -- Sales-led subscriptions require contacting Sales to change contracted terms.
 revoke execute on function public.billing_set_cancel_at_period_end(uuid,boolean)
  from public,anon,authenticated;
+
+-- Disable the old broad membership snapshot endpoints so ordinary HR users
+-- cannot inspect internal plan identifiers. The client-facing snapshot below
+-- deliberately omits plan_id, while retaining authorized feature summaries.
+revoke execute on function public.billing_my_access_snapshot(uuid)
+ from public,anon,authenticated;
+revoke execute on function public.billing_my_hybrid_access_snapshot(uuid)
+ from public,anon,authenticated;
+
+create or replace function public.billing_my_private_access_snapshot(p_company_id uuid)
+returns jsonb language plpgsql stable security definer set search_path=''
+as $
+declare v_snapshot jsonb;
+begin
+ -- Original function checks current auth.uid() membership in this company.
+ v_snapshot := public.billing_my_hybrid_access_snapshot(p_company_id);
+ return v_snapshot - 'plan_id';
+end;
+$;
+revoke all on function public.billing_my_private_access_snapshot(uuid)
+ from public,anon;
+grant execute on function public.billing_my_private_access_snapshot(uuid)
+ to authenticated;
 
 -- An authenticated finance/sales-only read-only operational overview.
 -- SECURITY DEFINER checks internal allowlisting explicitly before returning
