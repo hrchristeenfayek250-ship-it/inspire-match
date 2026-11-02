@@ -71,6 +71,7 @@ export default function InternalContractsPage(){
  const [editingId,setEditingId]=useState("");
  const [showForm,setShowForm]=useState(false);
  const [saving,setSaving]=useState(false);
+ const [acting,setActing]=useState("");
  const [workingId,setWorkingId]=useState("");
  const [reviewTarget,setReviewTarget]=useState(null);
  const [reviewReason,setReviewReason]=useState("");
@@ -137,6 +138,28 @@ export default function InternalContractsPage(){
   });
   setShowForm(true);
  };
+ async function runContractAction(contract,action){
+  if(acting)return;
+  let comment="",documentReference="";
+  if(action==="request_changes"){
+   comment=window.prompt("Reason for requesting changes:")||"";
+   if(comment.trim().length<3)return;
+  }
+  if(action==="record_signature"){
+   documentReference=window.prompt("Signed document reference / secure archive ID (not a public URL):")||"";
+   if(documentReference.trim().length<8)return;
+   comment=window.prompt("How was the signed document verified?")||"";
+   if(comment.trim().length<8)return;
+   if(!window.confirm("Record signature evidence for this contract? This does not verify a signature automatically or activate the customer."))return;
+  }
+  setActing(contract.id);setError("");setNotice("");
+  const result=await supabase.rpc("billing_sales_contract_action",{
+   p_contract_id:contract.id,p_action:action,p_comment:comment,p_document_reference:documentReference
+  });
+  if(result.error)setError(result.error.message);
+  else{setNotice(action==="record_signature"?"Signature evidence recorded internally. No customer activation.":"Contract status updated and audit event recorded.");setRefresh(x=>x+1);}
+  setActing("");
+ }
  async function save(event){
   event.preventDefault();
   if(saving||!canManage)return;
@@ -275,13 +298,18 @@ export default function InternalContractsPage(){
         <td>{proposal?.reference||"—"}<div className="im-contracts-muted">{proposal?.title||""}</div></td>
         <td><span className="im-contracts-pill">{statusLabels[c.status]||c.status}</span></td>
         <td>{c.effective_date||"—"}</td><td>{c.expiry_date||"—"}</td><td>{formatDate(c.updated_at)}</td>
-        <td>{canManage&&c.status==="draft"?<button type="button" className="im-contracts-btn secondary" onClick={()=>edit(c)}>Edit draft</button>:<span className="im-contracts-muted">Read only</span>}</td>
+        <td><div className="im-contracts-actions">
+         {canManage&&c.status==="draft"&&<><button type="button" className="im-contracts-btn secondary" onClick={()=>edit(c)}>Edit</button><button type="button" className="im-contracts-btn" disabled={!!acting} onClick={()=>runContractAction(c,"submit_legal")}>Submit legal</button></>}
+         {role==="platform_admin"&&c.status==="legal_review"&&<><button type="button" className="im-contracts-btn" disabled={!!acting} onClick={()=>runContractAction(c,"approve_legal")}>Legal approve</button><button type="button" className="im-contracts-btn secondary" disabled={!!acting} onClick={()=>runContractAction(c,"request_changes")}>Request changes</button></>}
+         {role==="platform_admin"&&c.status==="ready_for_signature"&&<button type="button" className="im-contracts-btn" disabled={!!acting} onClick={()=>runContractAction(c,"record_signature")}>Record signature</button>}
+         {c.status==="signed"&&<span className="im-contracts-muted">Evidence recorded · {formatDate(c.signed_at)}</span>}
+        </div></td>
        </tr>;
       })}</tbody>
      </table></div>
      {!filtered.length&&<div className="im-contracts-info">{contracts.length?"No contracts match this filter.":"No contracts created yet. Start with an internally approved proposal."}</div>}
     </div>
-    <div className="im-contracts-info"><strong>Security:</strong> Contracts remain internal. Preparing or editing a draft does not sign the agreement, create an ATS client account, activate a subscription, issue a tax invoice or initiate payment.</div>
+    <div className="im-contracts-info"><strong>Security:</strong> Contracts remain internal. Recording signature evidence is an internal administrative record, not cryptographic signature verification. No action here creates an ATS client account, activates a subscription, issues a tax invoice or initiates payment.</div>
    </>}
   </div></section>
  </div></main>;
