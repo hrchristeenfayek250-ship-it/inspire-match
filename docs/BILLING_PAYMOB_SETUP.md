@@ -28,7 +28,7 @@ Internal staff access is based on explicitly allowlisted `billing_internal_staff
 10. `supabase/sql/saas_billing_sales_led_hybrid.sql`
 11. **Next:** `supabase/sql/saas_billing_private_sales_split.sql`
 
-Do not rerun already-applied files simply to install the next one. The private-sales migration moves pricing read policies to internal-only, restricts company-visible plan data to the contracted plan, and replaces customer-controlled setup-draft/cancellation RPC permissions with reserved future internal workflows.
+Do not rerun already-applied files simply to install the next one. The private-sales migration moves pricing and all plan/package catalogs to internal-only. Customers receive only a plan-redacted feature snapshot and their own subscription/payment history. It also disables customer-controlled setup-draft/cancellation RPC permissions pending reviewed internal workflows.
 
 **Historical records are preserved.** This migration does not automatically activate or suspend any company, send invitations, edit jobs, calculate taxes, collect money, or enforce subscription entitlements.
 
@@ -39,7 +39,7 @@ Do not rerun already-applied files simply to install the next one. The private-s
 - `billing_internal_overview()`: authenticated staff-only read-only operational summary with private offers and company subscription references.
 - `billing_company_feature_overrides`: future company-level optional modules.
 - `billing_company_activation`: staged company activation records; **not yet enforced** against ATS routes.
-- `billing_my_hybrid_access_snapshot(company_id)`: membership-checked informational snapshot; `enforcement_enabled=false`.
+- `billing_my_private_access_snapshot(company_id)`: membership-checked, plan-redacted client feature snapshot; `enforcement_enabled=false`. The previous broader access-snapshot RPC grants are removed.
 
 **Important:** The service-provider sales team's ability to create/edit offers, issue drafts, assign company subscriptions, approve activation, and apply feature entitlements is still to be built. No client-self-service write access should be added as a shortcut.
 
