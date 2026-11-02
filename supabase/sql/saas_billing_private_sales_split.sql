@@ -98,14 +98,14 @@ revoke execute on function public.billing_my_hybrid_access_snapshot(uuid)
 
 create or replace function public.billing_my_private_access_snapshot(p_company_id uuid)
 returns jsonb language plpgsql stable security definer set search_path=''
-as $
+as $$
 declare v_snapshot jsonb;
 begin
  -- Original function checks current auth.uid() membership in this company.
  v_snapshot := public.billing_my_hybrid_access_snapshot(p_company_id);
  return v_snapshot - 'plan_id';
 end;
-$;
+$$;
 revoke all on function public.billing_my_private_access_snapshot(uuid)
  from public,anon;
 grant execute on function public.billing_my_private_access_snapshot(uuid)
