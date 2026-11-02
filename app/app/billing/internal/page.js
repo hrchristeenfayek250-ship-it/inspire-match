@@ -116,7 +116,9 @@ export default function InternalSalesFinance(){
     <section className="im-int-card">
      <p style={{margin:0}}>Track prospects, demo appointments and follow-ups in the private Sales CRM. Only approved Sales staff and Platform Admins can edit leads; Finance has read-only access.</p>
     </section>
-    <div className="im-int-heading"><h2>Private commercial offers</h2><span className="im-int-chip">Not visible to clients</span></div>
+    <div className="im-int-heading"><h2>Commercial proposals &amp; contracts</h2><div className="im-int-controls" style={{marginTop:0}}><Link className="im-int-button" href="/app/billing/internal/proposals">Manage proposals</Link><Link className="im-int-button" href="/app/billing/internal/contracts">Manage contracts</Link></div></div>
+     <section className="im-int-card"><p style={{margin:0}}>Create private proposals linked to Sales leads, submit them for internal review and prepare contract drafts from approved proposals. No automatic signatures, activation or payments.</p></section>
+     <div className="im-int-heading"><h2>Private commercial offers</h2><span className="im-int-chip">Not visible to clients</span></div>
     <section className="im-int-card">
      <div className="im-int-controls" style={{marginTop:0,marginBottom:13}}>
       <p className="im-int-muted">Read-only overview. New prices and offers require separate internal approval and configuration.</p>
