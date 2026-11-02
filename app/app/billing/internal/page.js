@@ -112,6 +112,10 @@ export default function InternalSalesFinance(){
      <div className="im-int-stat"><small>Setup invoice drafts</small><strong>{setup.length}</strong><span>Internal finance review</span></div>
      <div className="im-int-stat"><small>Pending review</small><strong>{pending.length}</strong><span>Requires finance decision</span></div>
     </div>
+    <div className="im-int-heading"><h2>Sales pipeline &amp; demos</h2><Link className="im-int-button" href="/app/billing/internal/leads">Manage leads &amp; demos</Link></div>
+    <section className="im-int-card">
+     <p style={{margin:0}}>Track prospects, demo appointments and follow-ups in the private Sales CRM. Only approved Sales staff and Platform Admins can edit leads; Finance has read-only access.</p>
+    </section>
     <div className="im-int-heading"><h2>Private commercial offers</h2><span className="im-int-chip">Not visible to clients</span></div>
     <section className="im-int-card">
      <div className="im-int-controls" style={{marginTop:0,marginBottom:13}}>
