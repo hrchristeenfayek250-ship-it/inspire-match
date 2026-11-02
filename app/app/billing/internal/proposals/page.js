@@ -76,7 +76,7 @@ export default function SalesProposals(){
  return <main className="im-prop"><style>{css}</style><div className="im-prop-shell">
   <aside className="im-prop-aside"><h2>Inspire Match</h2><ATSNavigation/></aside>
   <section className="im-prop-main"><div className="im-prop-inner">
-   <div className="im-prop-top"><strong>Inspire Management / Sales Proposals</strong><Link href="/app/billing/internal/leads">Sales CRM</Link></div>
+   <div className="im-prop-top"><strong>Inspire Management / Sales Proposals</strong><div style={{display:"flex",gap:14}}><Link href="/app/billing/internal/leads">Sales CRM</Link><Link href="/app/billing/internal/contracts">Contracts</Link></div></div>
    <header className="im-prop-hero"><small>PRIVATE / COMMERCIAL OPERATIONS</small><h1>Commercial Proposals</h1>
     <p>Prepare confidential, lead-linked commercial drafts. Approval, client delivery, subscriptions and payments remain separate.</p></header>
    <div className="im-prop-tools"><div><strong>{proposals.length} proposals</strong> · Internal access only</div>
