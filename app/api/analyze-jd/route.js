@@ -33,11 +33,37 @@ export async function POST(req) {
     return Response.json(jd);
  
   } catch (err) {
-    console.error("JD analysis failed:", err);
-
+    const message = String(err?.message || "");
+    const status = Number(err?.status) || 0;
+    const code = !process.env.GEMINI_API_KEY || message.includes("GEMINI_API_KEY")
+      ? "AI_CONFIGURATION_MISSING"
+      : [401, 403].includes(status)
+        ? "AI_CREDENTIALS_REJECTED"
+        : status === 429
+          ? "AI_QUOTA_EXCEEDED"
+          : status === 404
+            ? "AI_MODEL_UNAVAILABLE"
+            : /TimeoutError|AbortError|timeout/i.test(message)
+              ? "AI_TIMEOUT"
+              : /JSON|no usable response/i.test(message)
+                ? "AI_INVALID_RESPONSE"
+                : [500, 502, 503, 504].includes(status)
+                  ? "AI_PROVIDER_UNAVAILABLE"
+                  : "JD_ANALYSIS_FAILED";
+    console.error("JD analysis failed:", { code, providerStatus: status || null, message });
+    const messages = {
+      AI_CONFIGURATION_MISSING: "AI service configuration is missing. Contact the administrator.",
+      AI_CREDENTIALS_REJECTED: "AI provider credentials were rejected. Contact the administrator.",
+      AI_QUOTA_EXCEEDED: "AI provider quota has been reached. Please try again later.",
+      AI_MODEL_UNAVAILABLE: "The configured AI model is unavailable. Contact the administrator.",
+      AI_TIMEOUT: "The AI provider timed out. Please try again.",
+      AI_INVALID_RESPONSE: "The AI provider returned an invalid analysis. Please try again.",
+      AI_PROVIDER_UNAVAILABLE: "The AI provider is temporarily unavailable. Please try again.",
+      JD_ANALYSIS_FAILED: "JD analysis failed. Please contact support with the error code.",
+    };
     return Response.json(
-      { error: "Could not analyze the job description. Please try again." },
-      { status: 500 }
+      { error: messages[code], code },
+      { status: [429, 500, 502, 503, 504].includes(status) ? 503 : 500, headers: { "Cache-Control": "no-store" } }
     );
   }
 
