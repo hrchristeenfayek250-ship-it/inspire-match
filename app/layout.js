@@ -25,56 +25,66 @@ const allura = Allura({
   display: "swap",
 });
 
+// Public marketing, login and HR-invitation pages must be accessible
+// without an active Supabase session. All other workspace routes
+// retain their existing session redirect while server/RLS permissions
+// provide the actual data-access boundary.
+function publicRoute(pathname) {
+  return (
+    pathname === "/" ||
+    pathname === "/app/login" ||
+    pathname === "/login" ||
+    pathname === "/app/accept-invite"
+  );
+}
+
 export default function RootLayout({ children }) {
   const router = useRouter();
   const pathname = usePathname();
-
-  const [checkingAuth, setCheckingAuth] = useState(true);
+  const [verifiedPath, setVerifiedPath] = useState(null);
+  const isPublic = publicRoute(pathname);
+  const isLoginPage = pathname === "/app/login" || pathname === "/login";
 
   useEffect(() => {
-    const checkAuth = async () => {
-      const { data } = await supabase.auth.getSession();
+    let active = true;
 
-      const isLoginPage =
-        pathname === "/app/login" ||
-        pathname === "/login";
-
-      if (!data.session && !isLoginPage) {
-        router.replace("/app/login");
+    async function checkAuth() {
+      if (publicRoute(pathname)) {
+        if (active) setVerifiedPath(pathname);
         return;
       }
 
-      setCheckingAuth(false);
-    };
+      const { data, error } = await supabase.auth.getSession();
+      if (!active) return;
+      if (error || !data?.session) {
+        router.replace("/app/login");
+        return;
+      }
+      setVerifiedPath(pathname);
+    }
 
     checkAuth();
 
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange(
-      (_event, session) => {
-        const isLoginPage =
-          pathname === "/app/login" ||
-          pathname === "/login";
-
-        if (!session && !isLoginPage) {
-          router.replace("/app/login");
-        }
-
-        if (session && isLoginPage) {
-          router.replace("/app/dashboard");
-        }
+    } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (!active) return;
+      if (!session && !publicRoute(pathname)) {
+        setVerifiedPath(null);
+        router.replace("/app/login");
       }
-    );
+      if (session && isLoginPage) {
+        router.replace("/app/dashboard");
+      }
+    });
 
     return () => {
+      active = false;
       subscription.unsubscribe();
     };
-  }, [pathname, router]);
+  }, [pathname, router, isLoginPage]);
 
-  const isLoginPage =
-    pathname === "/app/login" ||
-    pathname === "/login";
+  const isChecking = !isPublic && verifiedPath !== pathname;
 
   return (
     <html
@@ -82,16 +92,16 @@ export default function RootLayout({ children }) {
       className={`${playfair.variable} ${montserrat.variable} ${allura.variable}`}
     >
       <head>
-        <title>Inspire Match | Hire & Inspire by Christine</title>
+        <title>Inspire Match | AI-Powered Recruitment by Hire &amp; Inspire</title>
         <meta
           name="description"
-          content="AI-powered recruitment and CV matching platform."
+          content="Inspire Match is an AI-powered recruitment workspace. Explore the platform and request a private demo with our Sales team."
         />
-        <meta name="theme-color" content="#1E3B32" />
+        <meta name="theme-color" content="#174c39" />
       </head>
 
       <body>
-        {checkingAuth && !isLoginPage ? (
+        {isChecking ? (
           <div
             style={{
               minHeight: "100vh",
