@@ -95,6 +95,7 @@ export default function RecruitmentCapacityPage(){
  const [loading,setLoading]=useState(true);
  const [error,setError]=useState("");
  const [limit,setLimit]=useState(8);
+ const [progressPeriod,setProgressPeriod]=useState("all");
  const [reload,setReload]=useState(0);
  const [assignmentChoices,setAssignmentChoices]=useState({});
  const [assigningId,setAssigningId]=useState(null);
@@ -158,6 +159,18 @@ export default function RecruitmentCapacityPage(){
  const eligibleMembers=people.filter(p=>p.remaining>0&&members.some(m=>m.user_id===p.uid));
  const suggestedMember=eligibleMembers.slice().sort((a,b)=>a.pct-b.pct||a.open-b.open)[0];
  const canManageCompany=memberships.some(m=>m.company_id===companyId&&["admin","hr_manager"].includes(String(m.role||"").toLowerCase()));
+ const progressSince=progressPeriod==="all"?null:Date.now()-Number(progressPeriod)*86400000;
+ const progressTasks=tasks.filter(t=>t.assigned_to&&(!progressSince||(t.created_at&&new Date(t.created_at).getTime()>=progressSince)));
+ const teamProgress=people.map(person=>{
+  const mine=progressTasks.filter(t=>t.assigned_to===person.uid);
+  const done=mine.filter(t=>t.status==="completed").length;
+  const inProgress=mine.filter(t=>t.status==="in_progress").length;
+  const blocked=mine.filter(t=>t.status==="blocked").length;
+  const overdue=mine.filter(t=>t.status!=="completed"&&t.due_date&&t.due_date<today).length;
+  return {...person,totalAssigned:mine.length,done,inProgress,blocked,overdueOpen:overdue,completionShare:mine.length?Math.round(done/mine.length*100):null};
+ }).sort((a,b)=>b.totalAssigned-a.totalAssigned||b.overdueOpen-a.overdueOpen);
+ const progressAssigned=teamProgress.reduce((sum,p)=>sum+p.totalAssigned,0);
+ const progressDone=teamProgress.reduce((sum,p)=>sum+p.done,0);
  const overloadedIds=new Set(overloaded.map(p=>p.uid));
  const rebalanceTasks=tasks.filter(t=>t.status!=="completed"&&overloadedIds.has(t.assigned_to))
   .sort((a,b)=>String(a.due_date||"9999").localeCompare(String(b.due_date||"9999"))).slice(0,6);
@@ -218,6 +231,21 @@ export default function RecruitmentCapacityPage(){
     ].map(([title,value,desc])=><div className="cp-metric" key={title}><span>{title}</span><strong>{loading?"—":value}</strong><small>{desc}</small></div>)}</div>
     <p className="cp-note">Completion rate is the share of currently visible tasks marked completed. Without a reliable completion timestamp, this page cannot measure on-time completion or historical SLA compliance.</p>
    </section>
+   {canManageCompany&&<section className="cp-panel" style={{marginBottom:17}}>
+    <div className="cp-row" style={{flexWrap:"wrap"}}>
+     <h3>Team Task Progress Snapshot</h3>
+     <div className="cp-field"><label htmlFor="cp-progress-period">Tasks created</label><select id="cp-progress-period" value={progressPeriod} onChange={e=>setProgressPeriod(e.target.value)}><option value="30">Last 30 days</option><option value="90">Last 90 days</option><option value="all">All time</option></select></div>
+    </div>
+    <p className="cp-desc">Current status of tasks assigned to each team member. Use this to review workload follow-through and unresolved tasks, not to rank employee performance.</p>
+    {loading?<div className="cp-empty">Loading team progress...</div>:<><div className="cp-row" style={{flexWrap:"wrap",marginBottom:14}}>
+     <span>{progressAssigned} assigned tasks · {progressDone} currently completed · {progressAssigned?Math.round(progressDone/progressAssigned*100)+"%":"N/A"} completion share</span>
+     <Link className="cp-link" href="/app/recruitment-operations/tasks">Review task records →</Link>
+    </div>
+    <div className="cp-table-wrap"><table className="cp-table"><thead><tr><th>Team Member</th><th>Assigned</th><th>Completed</th><th>In Progress</th><th>Blocked</th><th>Overdue Open</th><th>Completion Share</th></tr></thead><tbody>
+     {teamProgress.map(p=><tr key={p.uid}><td>{shortName(p.uid,uid)}</td><td>{p.totalAssigned}</td><td>{p.done}</td><td>{p.inProgress}</td><td>{p.blocked}</td><td>{p.overdueOpen}</td><td>{p.completionShare===null?"—":p.completionShare+"%"}</td></tr>)}
+    </tbody></table></div></>}
+    <p className="cp-note">The period filters tasks by creation date, not completion date. Assignment reflects each task's current owner; reassigned tasks are not attributed to earlier owners. Historical throughput, on-time completion and individual productivity require reliable completion and ownership history. Results may be incomplete if the 5,000-task query limit is reached.</p>
+   </section>}
    <div className="cp-grid">
     <section className="cp-panel"><h3>Recruiter Workload &amp; Capacity</h3><p className="cp-desc">Compare each teammate's assigned open tasks with the planning target. Adjust the target above to model a different workload threshold.</p>
      {loading?<div className="cp-empty">Loading team workload...</div>:!people.length?<div className="cp-empty">No team members or assigned tasks are available in this company.</div>:people.map(p=><div className="cp-member" key={p.uid}>
