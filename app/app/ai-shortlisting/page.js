@@ -842,38 +842,15 @@ job_id: selectedJobId ? Number(selectedJobId) : null,
         ]
       );
 
-   <header className="im-home-topbar">
-  <div className="im-topbar-search">
-    <span>⌕</span>
-    <input
-      type="search"
-      placeholder="Search jobs, candidates, or keywords..."
-      aria-label="Search"
-    />
-  </div>
-
-  <div className="im-topbar-actions">
-    <a
-      href="/app/dashboard"
-      className="im-topbar-dashboard"
-    >
-      Dashboard
-    </a>
-
-    <a
-      href="/app/notifications"
-      className="im-topbar-notifications"
-      aria-label="Notifications"
-    >
-      ♧
-    </a>
-
-    <div className="im-topbar-profile">
-      <span className="im-profile-avatar">CF</span>
-      <span>My Workspace</span>
-    </div>
-  </div>
-</header>
+    // Quote all fields and neutralize spreadsheet formulas in user-provided data.
+    const csvSafe = (value) => {
+      const raw = String(value ?? "");
+      const safe = /^[\\s]*[=+\\-@]/.test(raw) ? "'" + raw : raw;
+      return escape(safe);
+    };
+    const csv = [headers, ...rows]
+      .map((row) => row.map(csvSafe).join(","))
+      .join("\\r\\n");
 
     const url =
       URL.createObjectURL(
@@ -2109,8 +2086,8 @@ job_id: selectedJobId ? Number(selectedJobId) : null,
                           !shortlist.length
                         }
                       >
-                        Export client
-                        report
+                        Print / Save
+                        report as PDF
                       </button>
 
                       <button
