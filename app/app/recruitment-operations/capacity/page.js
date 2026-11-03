@@ -59,6 +59,9 @@ const css = [
 ".cp-empty{font-size:12px;color:#87998c;padding:25px 0}",
 ".cp-note{font-size:11px;color:#83978a;line-height:1.7;margin:14px 0}",
 ".cp-error{border:1px solid #f1d4ca;background:#fff0e9;color:#9e4639;border-radius:10px;padding:14px;margin:14px 0;font-size:12px}",
+".cp-success{border:1px solid #d1e9d8;background:#eaf7ee;color:#176b49;border-radius:10px;padding:14px;margin:14px 0;font-size:12px}",
+".cp-assign-controls{display:flex;align-items:center;gap:9px;flex-wrap:wrap;margin-top:12px}",
+".cp-assign-controls select{min-width:180px;flex:1;max-width:320px;background:#fff;border:1px solid #dce7df;border-radius:9px;padding:10px;color:#1c5237;font:inherit}",
 ".cp-table-wrap{overflow-x:auto}",
 ".cp-table{width:100%;border-collapse:collapse;font-size:12px}",
 ".cp-table th{background:#f7faf8;color:#7c9685;text-align:left;padding:13px 11px;font-size:10px;white-space:nowrap}",
@@ -93,6 +96,9 @@ export default function RecruitmentCapacityPage(){
  const [error,setError]=useState("");
  const [limit,setLimit]=useState(8);
  const [reload,setReload]=useState(0);
+ const [assignmentChoices,setAssignmentChoices]=useState({});
+ const [assigningId,setAssigningId]=useState(null);
+ const [notice,setNotice]=useState("");
  useEffect(()=>{
   let active=true;
   (async()=>{
@@ -144,7 +150,30 @@ export default function RecruitmentCapacityPage(){
   const weight=t=>({urgent:4,high:3,medium:2,low:1}[String(t.priority||"").toLowerCase()]||0);
   return weight(b)-weight(a)||String(a.due_date||"9999").localeCompare(String(b.due_date||"9999"));
  }).slice(0,6);
- const suggestedMember=available.slice().sort((a,b)=>a.pct-b.pct)[0];
+ const eligibleMembers=people.filter(p=>p.remaining>0&&members.some(m=>m.user_id===p.uid));
+ const suggestedMember=eligibleMembers.slice().sort((a,b)=>a.pct-b.pct||a.open-b.open)[0];
+ const canManageCompany=memberships.some(m=>m.company_id===companyId&&["admin","hr_manager"].includes(String(m.role||"").toLowerCase()));
+ async function assignTask(task){
+  if(!canManageCompany||!companyId||!uid||loading||assigningId)return;
+  const assignee=assignmentChoices[task.id]||suggestedMember?.uid||"";
+  if(!assignee||!members.some(m=>m.user_id===assignee&&m.company_id===companyId)){
+   setError("Select a current member of this company before assigning the task.");return;
+  }
+  if(!window.confirm(`Assign "${task.title}" to ${shortName(assignee,uid)}?`))return;
+  setAssigningId(task.id);setError("");setNotice("");
+  try{
+   const {data,error:assignError}=await supabase.from("recruitment_tasks")
+    .update({assigned_to:assignee,updated_at:new Date().toISOString()})
+    .eq("id",task.id).eq("company_id",companyId)
+    .is("assigned_to",null).neq("status","completed").select("id");
+   if(assignError){setError(assignError.message);return;}
+   if(!data?.length){setError("Task could not be assigned. It may have changed, or you may not have permission. Refresh and retry.");return;}
+   setTasks(prev=>prev.map(t=>t.id===task.id?{...t,assigned_to:assignee}:t));
+   setAssignmentChoices(prev=>{const next={...prev};delete next[task.id];return next;});
+   setNotice("Task assigned successfully. Workload and capacity figures have been updated.");
+  }catch(e){setError(e?.message||"Could not assign the task.");}
+  finally{setAssigningId(null);}
+ }
  return <main className="cp-root"><style>{css}</style><div className="cp-shell">
   <aside className="cp-side"><div className="cp-brand">◈ Inspire Match<small>TALENT INTELLIGENCE</small></div><ATSNavigation className="cp-nav"/></aside>
   <div className="cp-main"><div className="cp-inner">
@@ -152,12 +181,13 @@ export default function RecruitmentCapacityPage(){
    <header className="cp-hero"><div><small>RECRUITMENT OPERATIONS / RESOURCE INTELLIGENCE</small><h1>Recruitment Capacity &amp; Resource Planning</h1><p>See workload pressure across recruiters, identify unassigned tasks and plan a fairer distribution of hiring operations.</p></div><div className="cp-hero-box"><strong>{loading?"—":people.length}</strong><span>Team members</span></div></header>
    <div className="cp-toolbar"><div><h2>Team capacity overview</h2><p>Live workload based on assigned, non-completed recruitment tasks.</p></div>
     <div className="cp-filters">
-     <div className="cp-field"><label htmlFor="cp-company">Company</label><select id="cp-company" value={companyId} onChange={e=>setCompanyId(e.target.value)}>{memberships.filter((m,i,list)=>list.findIndex(x=>x.company_id===m.company_id)===i).map(m=><option key={m.company_id} value={m.company_id}>Company {String(m.company_id).slice(0,8)}</option>)}</select></div>
+     <div className="cp-field"><label htmlFor="cp-company">Company</label><select id="cp-company" value={companyId} onChange={e=>{setLoading(true);setCompanyId(e.target.value);setAssignmentChoices({});setNotice("");}}>{memberships.filter((m,i,list)=>list.findIndex(x=>x.company_id===m.company_id)===i).map(m=><option key={m.company_id} value={m.company_id}>Company {String(m.company_id).slice(0,8)}</option>)}</select></div>
      <div className="cp-field"><label htmlFor="cp-limit">Planning target / member</label><input id="cp-limit" type="number" min="1" max="100" value={limit} onChange={e=>setLimit(Math.min(100,Math.max(1,Number(e.target.value)||1)))}/></div>
      <button className="cp-btn" disabled={loading||!companyId} onClick={()=>setReload(n=>n+1)}>↻ Refresh</button>
     </div>
    </div>
    {error&&<div className="cp-error" role="alert">{error}</div>}
+   {notice&&<div className="cp-success" role="status">{notice}</div>}
    <div className="cp-metrics">{[
     ["Open Assigned Tasks",occupied,"Active work currently owned by team members"],
     ["Team Utilization",utilized+"%","Against the adjustable planning target"],
@@ -182,8 +212,10 @@ export default function RecruitmentCapacityPage(){
     </section>
    </div>
    <div className="cp-grid">
-    <section className="cp-panel"><div className="cp-row"><h3>Unassigned Task Queue</h3><Link className="cp-link" href="/app/recruitment-operations/tasks">Assign owners →</Link></div><p className="cp-desc">Prioritized unassigned work. Task assignment is managed in Recruitment Task Management.</p>
-     {!suggestions.length?<div className="cp-empty">No unassigned open tasks.</div>:suggestions.map(t=><div className="cp-list-item" key={t.id}><div className="cp-row"><strong>{t.title}</strong><span className="cp-tag">{t.priority||"medium"}</span></div><small>Due {t.due_date||"not set"} · {t.status==="blocked"?"Blocked":"Open"}</small></div>)}
+    <section className="cp-panel"><div className="cp-row"><h3>Unassigned Task Queue</h3><Link className="cp-link" href="/app/recruitment-operations/tasks">Manage all tasks →</Link></div><p className="cp-desc">Prioritized unassigned work. HR Managers and company admins can assign directly after reviewing each task and teammate capacity.</p>
+     {loading?<div className="cp-empty">Loading unassigned tasks...</div>:!suggestions.length?<div className="cp-empty">No unassigned open tasks.</div>:suggestions.map(t=><div className="cp-list-item" key={t.id}><div className="cp-row"><strong>{t.title}</strong><span className="cp-tag">{t.priority||"medium"}</span></div><small>Due {t.due_date||"not set"} · {t.status==="blocked"?"Blocked":"Open"}</small>
+      {canManageCompany&&<div className="cp-assign-controls"><select aria-label={"Assignee for "+t.title} value={assignmentChoices[t.id]||suggestedMember?.uid||""} onChange={e=>setAssignmentChoices(prev=>({...prev,[t.id]:e.target.value}))}><option value="">Select team member</option>{[...new Map(members.map(m=>[m.user_id,m])).values()].filter(m=>m.user_id).map(m=>{const p=people.find(person=>person.uid===m.user_id);return <option key={m.user_id} value={m.user_id}>{shortName(m.user_id,uid)} · {p?.open??0} open tasks</option>;})}</select><button className="cp-btn" type="button" disabled={!!assigningId||loading||!(assignmentChoices[t.id]||suggestedMember?.uid)} onClick={()=>assignTask(t)}>{assigningId===t.id?"Assigning...":"Assign task"}</button></div>}
+     </div>)}
     </section>
     <section className="cp-panel"><h3>Suggested Assignment Direction</h3><p className="cp-desc">A simple workload-based suggestion for manager review, not an automatic assignment.</p>
      {suggestedMember?<><div className="cp-list-item"><strong>{shortName(suggestedMember.uid,uid)}</strong><small>Currently has {suggestedMember.open} open tasks and {suggestedMember.remaining} available planning slots.</small></div><div className="cp-list-item"><strong>Suggested next action</strong><small>Review this member's skills and active requisitions, then consider assigning one of the unowned tasks if appropriate.</small></div></>:<div className="cp-empty">No team member currently has available planning capacity.</div>}
