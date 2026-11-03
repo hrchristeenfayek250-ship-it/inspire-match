@@ -89,7 +89,7 @@ Extraction rules:
     const result = await askClaude({
       system: systemPrompt,
       content,
-      maxTokens: 4000,
+      maxTokens: 8192,
     });
 
     if (blind && result.candidate) {
@@ -99,11 +99,51 @@ Extraction rules:
     return Response.json(result);
   
   } catch (err) {
-    console.error("CV scoring failed:", err);
-
+    const message = String(err?.message || "");
+    const providerStatus = Number(err?.status) || 0;
+    const code = /larger than 4 MB/i.test(message)
+      ? "CV_FILE_TOO_LARGE"
+      : /not supported|no readable text|No file received/i.test(message)
+        ? "CV_FILE_UNREADABLE"
+        : err?.code === "AI_OUTPUT_TRUNCATED"
+          ? "AI_OUTPUT_TRUNCATED"
+          : !process.env.GEMINI_API_KEY || /GEMINI_API_KEY/.test(message)
+            ? "AI_NOT_CONFIGURED"
+            : [401, 403].includes(providerStatus)
+              ? "AI_CREDENTIALS_REJECTED"
+              : providerStatus === 429
+                ? "AI_QUOTA_REACHED"
+                : providerStatus === 404
+                  ? "AI_MODEL_UNAVAILABLE"
+                  : providerStatus === 400
+                    ? "AI_FILE_REJECTED"
+                    : /TimeoutError|AbortError|timed out/i.test(message)
+                      ? "AI_TIMEOUT"
+                      : /JSON|no usable response/i.test(message)
+                        ? "AI_INVALID_OUTPUT"
+                        : [500, 502, 503, 504].includes(providerStatus)
+                          ? "AI_PROVIDER_UNAVAILABLE"
+                          : "CV_SCORING_FAILED";
+    const messages = {
+      CV_FILE_TOO_LARGE: "The CV is larger than 4 MB. Compress the PDF and try again.",
+      CV_FILE_UNREADABLE: "This CV could not be read. Upload a readable PDF, DOCX or TXT file.",
+      AI_OUTPUT_TRUNCATED: "The AI output was cut off. Please try again.",
+      AI_NOT_CONFIGURED: "AI service is not configured. Contact your administrator.",
+      AI_CREDENTIALS_REJECTED: "AI service credentials were rejected. Contact your administrator.",
+      AI_QUOTA_REACHED: "AI usage limit has been reached. Try again later.",
+      AI_MODEL_UNAVAILABLE: "The selected AI model is unavailable. Contact your administrator.",
+      AI_FILE_REJECTED: "The AI provider could not process this CV. Try a text-based PDF or DOCX.",
+      AI_TIMEOUT: "CV analysis timed out. Try again with a smaller CV.",
+      AI_INVALID_OUTPUT: "The AI response was incomplete or invalid. Please try again.",
+      AI_PROVIDER_UNAVAILABLE: "AI provider is temporarily unavailable. Please try again.",
+      CV_SCORING_FAILED: "CV scoring failed. Contact support with the error code.",
+    };
+    // No candidate names or CV text in logs or client errors.
+    console.error("CV scoring failed:", { code, providerStatus: providerStatus || null });
     return Response.json(
-      { error: "Could not score the CV. Please try again." },
-      { status: 500 }
+      { error: messages[code], code },
+      { status: code === "CV_FILE_TOO_LARGE" ? 413 : code === "CV_FILE_UNREADABLE" ? 422 : 500,
+        headers: { "Cache-Control": "no-store" } }
     );
   }
 
