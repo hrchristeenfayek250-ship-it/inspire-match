@@ -139,6 +139,11 @@ export default function RecruitmentCapacityPage(){
   return ids.map(id=>({...countWorkload(tasks.filter(t=>t.assigned_to===id),id,limit,today),role:members.find(m=>m.user_id===id)?.role||"Team Member"})).sort((a,b)=>b.pct-a.pct);
  },[members,tasks,limit,today]);
  const openTasks=tasks.filter(t=>t.status!=="completed");
+ const completedTasks=tasks.filter(t=>t.status==="completed");
+ const overdueTasks=openTasks.filter(t=>t.due_date&&t.due_date<today);
+ const dueSoonTasks=openTasks.filter(t=>t.due_date&&t.due_date>=today&&t.due_date<=(()=>{const d=new Date();d.setDate(d.getDate()+3);return [d.getFullYear(),String(d.getMonth()+1).padStart(2,"0"),String(d.getDate()).padStart(2,"0")].join("-");})());
+ const completionRate=tasks.length?Math.round(completedTasks.length/tasks.length*100):0;
+ const deadlineCompliance=openTasks.filter(t=>t.due_date).length?Math.round(100*(1-overdueTasks.length/openTasks.filter(t=>t.due_date).length)):null;
  const unassigned=openTasks.filter(t=>!t.assigned_to);
  const overloaded=people.filter(p=>p.pct>100);
  const available=people.filter(p=>p.remaining>0);
@@ -202,6 +207,17 @@ export default function RecruitmentCapacityPage(){
     ["Over Capacity",overloaded.length,"Members above the planning target"],
     ["Unassigned Tasks",unassigned.length,unassignedUrgent.length+" high / urgent without owner"]
    ].map(([title,value,desc])=><div className="cp-metric" key={title}><span>{title}</span><strong>{loading?"—":value}</strong><small>{desc}</small></div>)}</div>
+   <section className="cp-panel" style={{marginBottom:17}}>
+    <div className="cp-row"><h3>Task Completion &amp; Deadline Health</h3><Link className="cp-link" href="/app/recruitment-operations/tasks">View tasks →</Link></div>
+    <p className="cp-desc">Current task status and deadline snapshot for the selected company. These are operational counts, not historical completion-time or SLA-resolution metrics.</p>
+    <div className="cp-metrics" style={{marginBottom:12}}>{[
+     ["Completed",completedTasks.length,completionRate+"% of visible tasks"],
+     ["Overdue Open",overdueTasks.length,"Open tasks past their due date"],
+     ["Due Within 3 Days",dueSoonTasks.length,"Includes tasks due today"],
+     ["Open Deadline Compliance",deadlineCompliance===null?"N/A":deadlineCompliance+"%","Open dated tasks not yet overdue"]
+    ].map(([title,value,desc])=><div className="cp-metric" key={title}><span>{title}</span><strong>{loading?"—":value}</strong><small>{desc}</small></div>)}</div>
+    <p className="cp-note">Completion rate is the share of currently visible tasks marked completed. Without a reliable completion timestamp, this page cannot measure on-time completion or historical SLA compliance.</p>
+   </section>
    <div className="cp-grid">
     <section className="cp-panel"><h3>Recruiter Workload &amp; Capacity</h3><p className="cp-desc">Compare each teammate's assigned open tasks with the planning target. Adjust the target above to model a different workload threshold.</p>
      {loading?<div className="cp-empty">Loading team workload...</div>:!people.length?<div className="cp-empty">No team members or assigned tasks are available in this company.</div>:people.map(p=><div className="cp-member" key={p.uid}>
