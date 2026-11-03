@@ -92,6 +92,8 @@ export default function RecruitmentCapacityPage(){
  const [companyId,setCompanyId]=useState("");
  const [members,setMembers]=useState([]);
  const [tasks,setTasks]=useState([]);
+ const [taskHistory,setTaskHistory]=useState([]);
+ const [historyError,setHistoryError]=useState("");
  const [loading,setLoading]=useState(true);
  const [error,setError]=useState("");
  const [limit,setLimit]=useState(8);
@@ -121,15 +123,18 @@ export default function RecruitmentCapacityPage(){
   if(!companyId)return;
   let active=true;
   (async()=>{
-   setLoading(true);setError("");
-   const [memberResult,taskResult]=await Promise.all([
+   setLoading(true);setError("");setHistoryError("");
+   const [memberResult,taskResult,historyResult]=await Promise.all([
     supabase.from("company_members").select("user_id,role,company_id").eq("company_id",companyId),
-    supabase.from("recruitment_tasks").select("id,title,status,priority,due_date,assigned_to,company_id,job_id,created_at").eq("company_id",companyId).order("created_at",{ascending:false}).limit(5000)
+    supabase.from("recruitment_tasks").select("id,title,status,priority,due_date,assigned_to,company_id,job_id,created_at").eq("company_id",companyId).order("created_at",{ascending:false}).limit(5000),
+    supabase.from("recruitment_task_status_history").select("task_id,changed_by,old_status,new_status,changed_at").eq("company_id",companyId).order("changed_at",{ascending:false}).limit(5000)
    ]);
    if(!active)return;
    if(memberResult.error||taskResult.error)setError("Could not load capacity data: "+(memberResult.error?.message||taskResult.error?.message));
    setMembers(memberResult.data||[]);
    setTasks(taskResult.data||[]);
+   setTaskHistory(historyResult.error?[]:historyResult.data||[]);
+   if(historyResult.error)setHistoryError("Completion history unavailable: "+historyResult.error.message);
    setLoading(false);
   })();
   return()=>{active=false;};
@@ -171,6 +176,34 @@ export default function RecruitmentCapacityPage(){
  }).sort((a,b)=>b.totalAssigned-a.totalAssigned||b.overdueOpen-a.overdueOpen);
  const progressAssigned=teamProgress.reduce((sum,p)=>sum+p.totalAssigned,0);
  const progressDone=teamProgress.reduce((sum,p)=>sum+p.done,0);
+ const historyByTask=new Map();
+ for(const h of taskHistory){
+  if(!historyByTask.has(h.task_id))historyByTask.set(h.task_id,[]);
+  historyByTask.get(h.task_id).push(h);
+ }
+ const completionSamples=[];
+ for(const t of tasks){
+  const events=(historyByTask.get(t.id)||[]).slice().sort((a,b)=>new Date(a.changed_at)-new Date(b.changed_at));
+  let startedAt=null;
+  for(const h of events){
+   if(h.new_status==="in_progress")startedAt=h.changed_at;
+   else if(h.new_status==="todo"||h.new_status==="blocked")startedAt=null;
+   else if(h.new_status==="completed"){
+    if(startedAt){
+     const hours=(new Date(h.changed_at)-new Date(startedAt))/3600000;
+     if(Number.isFinite(hours)&&hours>=0)completionSamples.push({task:t,hours,completedAt:h.changed_at,actor:h.changed_by});
+    }
+    startedAt=null;
+   }
+  }
+ }
+ const filteredSamples=completionSamples.filter(s=>progressPeriod==="all"||new Date(s.completedAt).getTime()>=progressSince);
+ const averageCompletionHours=filteredSamples.length?filteredSamples.reduce((sum,s)=>sum+s.hours,0)/filteredSamples.length:null;
+ const measuredByMember=people.map(p=>{
+  const samples=filteredSamples.filter(s=>s.actor===p.uid);
+  const avg=samples.length?samples.reduce((sum,s)=>sum+s.hours,0)/samples.length:null;
+  return {uid:p.uid,count:samples.length,avg};
+ });
  const overloadedIds=new Set(overloaded.map(p=>p.uid));
  const rebalanceTasks=tasks.filter(t=>t.status!=="completed"&&overloadedIds.has(t.assigned_to))
   .sort((a,b)=>String(a.due_date||"9999").localeCompare(String(b.due_date||"9999"))).slice(0,6);
@@ -231,6 +264,19 @@ export default function RecruitmentCapacityPage(){
     ].map(([title,value,desc])=><div className="cp-metric" key={title}><span>{title}</span><strong>{loading?"—":value}</strong><small>{desc}</small></div>)}</div>
     <p className="cp-note">Completion rate is the share of currently visible tasks marked completed. Without a reliable completion timestamp, this page cannot measure on-time completion or historical SLA compliance.</p>
    </section>
+   {canManageCompany&&<section className="cp-panel" style={{marginBottom:17}}>
+    <div className="cp-row" style={{flexWrap:"wrap"}}><h3>Measured Task Completion Time</h3><span className="cp-tag">Recorded transitions only</span></div>
+    <p className="cp-desc">Elapsed time from a recorded move into In Progress to the next Completed transition. Calendar time, not active working hours.</p>
+    {historyError&&<p className="cp-error" role="alert">{historyError}</p>}
+    <div className="cp-metrics" style={{marginBottom:12}}>{[
+     ["Measured Completions",filteredSamples.length,"Recorded In Progress to Completed cycles"],
+     ["Average Elapsed Time",averageCompletionHours===null?"N/A":averageCompletionHours<24?averageCompletionHours.toFixed(1)+" hrs":(averageCompletionHours/24).toFixed(1)+" days","Calendar time per measured cycle"],
+     ["Unmeasured Completed Tasks",completedTasks.filter(t=>!completionSamples.some(s=>s.task.id===t.id)).length,"Current completed tasks without a measurable cycle"],
+     ["History Events",taskHistory.length,"Latest 5,000 visible transitions"]
+    ].map(([name,value,detail])=><div className="cp-metric" key={name}><span>{name}</span><strong>{loading?"—":value}</strong><small>{detail}</small></div>)}</div>
+    <div className="cp-table-wrap"><table className="cp-table"><thead><tr><th>Member who completed</th><th>Measured cycles</th><th>Average elapsed</th></tr></thead><tbody>{measuredByMember.map(p=><tr key={p.uid}><td>{shortName(p.uid,uid)}</td><td>{p.count}</td><td>{p.avg===null?"N/A":p.avg<24?p.avg.toFixed(1)+" hrs":(p.avg/24).toFixed(1)+" days"}</td></tr>)}</tbody></table></div>
+    <p className="cp-note">Only transitions recorded after the history migration count. The period filter below applies by completion date. Reopened tasks may have multiple cycles. The person changing the status is credited, not necessarily the assignee. Incomplete history and records beyond the 5,000-event limit are excluded from elapsed-time averages. This is not a productivity score or SLA measure.</p>
+   </section>}
    {canManageCompany&&<section className="cp-panel" style={{marginBottom:17}}>
     <div className="cp-row" style={{flexWrap:"wrap"}}>
      <h3>Team Task Progress Snapshot</h3>
