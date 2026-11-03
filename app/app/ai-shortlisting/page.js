@@ -845,12 +845,12 @@ job_id: selectedJobId ? Number(selectedJobId) : null,
     // Quote all fields and neutralize spreadsheet formulas in user-provided data.
     const csvSafe = (value) => {
       const raw = String(value ?? "");
-      const safe = /^[\\s]*[=+\\-@]/.test(raw) ? "'" + raw : raw;
+      const safe = /^[\s]*[=+\-@]/.test(raw) ? "'" + raw : raw;
       return escape(safe);
     };
     const csv = [headers, ...rows]
       .map((row) => row.map(csvSafe).join(","))
-      .join("\\r\\n");
+      .join("\r\n");
 
     const url =
       URL.createObjectURL(
