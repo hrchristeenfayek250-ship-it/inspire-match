@@ -42,8 +42,17 @@ export default function RecruitmentTasksPage(){
   setMessage(editing?"Task updated successfully.":"Task created successfully.");setShow(false);setEditing(null);setForm(empty);await load();
  }
  async function changeStatus(t,status){
-  setError("");const {error:e}=t.assigned_to===uid&&t.created_by!==uid?await supabase.rpc("update_my_recruitment_task_status",{p_task_id:t.id,p_status:status}):await supabase.from("recruitment_tasks").update({status,updated_at:new Date().toISOString()}).eq("id",t.id);
-  if(e){setError(e.message);return;}setTasks(p=>p.map(x=>x.id===t.id?{...x,status}:x));
+  setError("");setMessage("");
+  if(t.assigned_to===uid&&t.created_by!==uid){
+   const {data:updated,error:e}=await supabase.rpc("update_my_recruitment_task_status",{p_task_id:t.id,p_status:status});
+   if(e){setError(e.message);return;}
+   if(updated!==true){setError("Task status could not be updated. Please check your permissions.");return;}
+  }else{
+   const {data:updated,error:e}=await supabase.from("recruitment_tasks").update({status,updated_at:new Date().toISOString()}).eq("id",t.id).select("id");
+   if(e){setError(e.message);return;}
+   if(!updated?.length){setError("Task status could not be updated. Please check your permissions.");return;}
+  }
+  setTasks(p=>p.map(x=>x.id===t.id?{...x,status}:x));
  }
  async function remove(t){
   if(!window.confirm('Delete task: '+t.title+'?'))return;
