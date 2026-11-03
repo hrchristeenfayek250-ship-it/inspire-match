@@ -47,8 +47,12 @@ export default function RecruitmentTasksPage(){
  }
  async function remove(t){
   if(!window.confirm('Delete task: '+t.title+'?'))return;
-  const {error:e}=await supabase.from("recruitment_tasks").delete().eq("id",t.id).eq("created_by",uid);
-  if(e){setError(e.message);return;}setTasks(p=>p.filter(x=>x.id!==t.id));setMessage("Task deleted.");
+  const deletion=supabase.from("recruitment_tasks").delete().eq("id",t.id);
+  const scopedDeletion=manager(t.company_id)?deletion:deletion.eq("created_by",uid);
+  const {data:deleted,error:e}=await scopedDeletion.select("id");
+  if(e){setError(e.message);return;}
+  if(!deleted?.length){setError("Task could not be deleted. Please check your permissions.");return;}
+  setTasks(p=>p.filter(x=>x.id!==t.id));setMessage("Task deleted.");
  }
  const visible=tasks.filter(t=>(filter==="all"||t.status===filter)&&[t.title,t.description,t.assignee_name].some(x=>(x||"").toLowerCase().includes(search.toLowerCase())));
  const counts=[["All Tasks",tasks.length],...statuses.map(s=>[label(s),tasks.filter(t=>t.status===s).length])];
