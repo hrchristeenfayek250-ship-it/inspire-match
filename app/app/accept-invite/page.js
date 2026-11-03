@@ -12,6 +12,7 @@ export default function AcceptInvitePage() {
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
   const [accepted, setAccepted] = useState(false);
+  const [authenticated, setAuthenticated] = useState(false);
 
   useEffect(() => {
     async function checkInvitation() {
@@ -19,6 +20,9 @@ export default function AcceptInvitePage() {
       const invitationToken = params.get("token") || "";
 
       setToken(invitationToken);
+
+      const { data } = await supabase.auth.getUser();
+      setAuthenticated(Boolean(data?.user));
 
       if (!invitationToken) {
         setError("Invitation link is missing or invalid.");
@@ -117,24 +121,40 @@ export default function AcceptInvitePage() {
             )}
 
             {!accepted && token && (
-              <button
-                type="button"
-                onClick={acceptInvitation}
-                disabled={working}
-                style={{
-                  background: "#173f3a",
-                  color: "white",
-                  border: "none",
-                  borderRadius: 10,
-                  padding: "15px 25px",
-                  cursor: "pointer",
-                  marginTop: 18,
-                }}
-              >
-                {working
-                  ? "Accepting Invitation..."
-                  : "Accept Invitation"}
-              </button>
+              authenticated ? (
+                <button
+                  type="button"
+                  onClick={acceptInvitation}
+                  disabled={working}
+                  style={{
+                    background: "#173f3a",
+                    color: "white",
+                    border: "none",
+                    borderRadius: 10,
+                    padding: "15px 25px",
+                    cursor: "pointer",
+                    marginTop: 18,
+                  }}
+                >
+                  {working ? "Accepting Invitation..." : "Accept Invitation"}
+                </button>
+              ) : (
+                <Link
+                  href={`/app/login?invite=${encodeURIComponent(token)}`}
+                  style={{
+                    display: "inline-block",
+                    background: "#173f3a",
+                    color: "white",
+                    textDecoration: "none",
+                    borderRadius: 10,
+                    padding: "15px 25px",
+                    fontWeight: 700,
+                    marginTop: 18,
+                  }}
+                >
+                  Sign in or create invited account
+                </Link>
+              )
             )}
 
             {accepted && (
