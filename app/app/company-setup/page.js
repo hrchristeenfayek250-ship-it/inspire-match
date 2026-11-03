@@ -1,399 +1,253 @@
-
 "use client";
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { supabase } from "@/lib/supabase";
 
+const brand = "#174c39";
+const muted = "#668275";
+
 export default function CompanySetupPage() {
-  const [user, setUser] = useState(null);
-  const [company, setCompany] = useState(null);
-  const [companyName, setCompanyName] = useState("");
-  const [adminReady, setAdminReady] = useState(false);
   const [loading, setLoading] = useState(true);
-  const [saving, setSaving] = useState(false);
+  const [workspaces, setWorkspaces] = useState([]);
   const [error, setError] = useState("");
-  const [message, setMessage] = useState("");
 
   useEffect(() => {
-    let active = true;
+    let mounted = true;
 
-    async function loadCompany() {
+    async function loadExistingAccess() {
       try {
-        const {
-          data: { user: currentUser },
-          error: authError,
-        } = await supabase.auth.getUser();
-
+        const { data: auth, error: authError } = await supabase.auth.getUser();
         if (authError) throw authError;
 
-        if (!currentUser) {
-          window.location.href = "/app/login";
+        if (!auth?.user) {
+          window.location.replace("/app/login");
           return;
         }
 
-        if (!active) return;
-        setUser(currentUser);
+        // Read existing approved-by-membership access only.
+        // This page must never create a company or assign an admin role.
+        const { data: memberships, error: membershipError } = await supabase
+          .from("company_members")
+          .select("company_id, role")
+          .eq("user_id", auth.user.id)
+          .limit(50);
 
-        const { data: existing, error: companyError } =
-          await supabase
+        if (membershipError) throw membershipError;
+        const accessible = memberships || [];
+
+        let companyNames = [];
+        const companyIds = [...new Set(accessible.map((m) => m.company_id).filter(Boolean))];
+        if (companyIds.length) {
+          const { data: companies, error: companyError } = await supabase
             .from("companies")
             .select("id, name")
-            .eq("created_by", currentUser.id)
-            .order("created_at", { ascending: true })
-            .limit(1)
-            .maybeSingle();
+            .in("id", companyIds);
 
-        if (companyError) throw companyError;
+          // A company may be intentionally hidden by RLS; do not expose it.
+          if (companyError) throw companyError;
+          companyNames = companies || [];
+        }
 
-        if (existing) {
-          const { data: membership, error: memberError } =
-            await supabase
-              .from("company_members")
-              .select("id, role")
-              .eq("company_id", existing.id)
-              .eq("user_id", currentUser.id)
-              .maybeSingle();
-
-          if (memberError) throw memberError;
-
-          if (active) {
-            setCompany(existing);
-            setAdminReady(membership?.role === "admin");
-          }
+        const names = new Map(companyNames.map((c) => [c.id, c.name]));
+        if (mounted) {
+          setWorkspaces(
+            accessible
+              .filter((m) => names.has(m.company_id))
+              .map((m) => ({
+                id: m.company_id,
+                name: names.get(m.company_id),
+                role: m.role,
+              }))
+          );
         }
       } catch (err) {
-        if (active) {
-          setError(err.message || "Unable to load company.");
-        }
+        if (mounted) setError(err?.message || "Unable to load your workspace access.");
       } finally {
-        if (active) setLoading(false);
+        if (mounted) setLoading(false);
       }
     }
 
-    loadCompany();
-
+    loadExistingAccess();
     return () => {
-      active = false;
+      mounted = false;
     };
   }, []);
-
-  async function createAdminMembership(companyId) {
-    const { data: existing, error: readError } =
-      await supabase
-        .from("company_members")
-        .select("id, role")
-        .eq("company_id", companyId)
-        .eq("user_id", user.id)
-        .maybeSingle();
-
-    if (readError) throw readError;
-
-    if (existing) {
-      if (existing.role !== "admin") {
-        throw new Error("This account is not an admin.");
-      }
-      setAdminReady(true);
-      return;
-    }
-
-    const { error: insertError } = await supabase
-      .from("company_members")
-      .insert({
-        company_id: companyId,
-        user_id: user.id,
-        role: "admin",
-      });
-
-    if (insertError) throw insertError;
-
-    setAdminReady(true);
-  }
-
-  async function handleCreateCompany(event) {
-    event.preventDefault();
-
-    const name = companyName.trim();
-
-    if (!user || saving || company) return;
-
-    if (name.length < 2) {
-      setError("Please enter a valid company name.");
-      return;
-    }
-
-    setSaving(true);
-    setError("");
-    setMessage("");
-
-    try {
-      const { data: created, error: createError } =
-        await supabase
-          .from("companies")
-          .insert({
-            name,
-            created_by: user.id,
-          })
-          .select("id, name")
-          .single();
-
-      if (createError) throw createError;
-
-      setCompany(created);
-
-      await createAdminMembership(created.id);
-
-      setMessage("Company account created successfully!");
-    } catch (err) {
-      setError(err.message || "Company setup failed.");
-    } finally {
-      setSaving(false);
-    }
-  }
-
-  async function finishAdminSetup() {
-    if (!company || !user || saving) return;
-
-    setSaving(true);
-    setError("");
-    setMessage("");
-
-    try {
-      await createAdminMembership(company.id);
-      setMessage("Admin account activated successfully!");
-    } catch (err) {
-      setError(err.message || "Could not activate admin.");
-    } finally {
-      setSaving(false);
-    }
-  }
-
-  const inputStyle = {
-    width: "100%",
-    boxSizing: "border-box",
-    padding: "15px 16px",
-    borderRadius: 12,
-    border: "1px solid #d6dfda",
-    fontSize: 15,
-    outline: "none",
-  };
-
-  const buttonStyle = {
-    width: "100%",
-    padding: 16,
-    borderRadius: 12,
-    border: "none",
-    background: "#173f3a",
-    color: "white",
-    fontWeight: 700,
-    fontSize: 15,
-    cursor: saving ? "wait" : "pointer",
-  };
 
   return (
     <main
       style={{
         minHeight: "100vh",
-        background: "#faf9f6",
-        padding: "55px 20px",
-        color: "#173f3a",
-        fontFamily: "Arial, sans-serif",
+        background: "#f5f8f6",
+        padding: "48px 18px",
+        color: brand,
+        fontFamily: "Arial, Helvetica, sans-serif",
       }}
     >
-      <div style={{ maxWidth: 560, margin: "0 auto" }}>
+      <div style={{ maxWidth: 660, margin: "0 auto" }}>
         <Link
           href="/app/dashboard"
-          style={{
-            color: "#173f3a",
-            textDecoration: "none",
-            fontSize: 14,
-          }}
+          style={{ color: brand, textDecoration: "none", fontSize: 13, fontWeight: 700 }}
         >
           ← Back to Dashboard
         </Link>
 
-        <div
+        <section
           style={{
-            marginTop: 30,
-            background: "#ffffff",
-            padding: "40px 30px",
+            background: "#fff",
+            border: "1px solid #dce9e0",
             borderRadius: 22,
-            border: "1px solid #e0e8e2",
-            boxShadow: "0 15px 40px rgba(0,0,0,0.05)",
+            marginTop: 26,
+            padding: "clamp(24px, 5vw, 42px)",
+            boxShadow: "0 16px 45px rgba(18, 66, 42, .06)",
           }}
         >
-          <div
+          <p
             style={{
-              fontSize: 13,
+              fontSize: 11,
+              fontWeight: 800,
               letterSpacing: 2,
-              textAlign: "center",
-              color: "#7b8c82",
+              color: "#658a76",
+              margin: "0 0 16px",
             }}
           >
             HIRE & INSPIRE BY CHRISTINE
-          </div>
-
+          </p>
           <h1
             style={{
               fontFamily: "Georgia, serif",
-              textAlign: "center",
-              fontSize: 36,
-              marginBottom: 8,
+              fontSize: "clamp(29px, 5vw, 39px)",
+              margin: "0 0 12px",
+              color: "#163c2d",
             }}
           >
-            Company Setup
+            Inspire Match Workspace Access
           </h1>
-
-          <p
-            style={{
-              textAlign: "center",
-              color: "#777",
-              lineHeight: 1.7,
-              marginBottom: 30,
-            }}
-          >
-            Create your company account on Inspire Match.
+          <p style={{ color: muted, lineHeight: 1.8, fontSize: 14, marginBottom: 26 }}>
+            Inspire Match is available through a guided, sales-led onboarding process.
+            Company workspaces and administrator access are prepared by our team after
+            the required commercial and security reviews.
           </p>
 
           {error && (
             <p
+              role="alert"
               style={{
-                padding: 14,
-                background: "#fff0f0",
-                color: "#a82c2c",
-                borderRadius: 10,
+                borderRadius: 11,
+                padding: "13px 15px",
+                color: "#a23a29",
+                background: "#fff1ed",
+                fontSize: 13,
               }}
             >
               {error}
             </p>
           )}
 
-          {message && (
-            <p
-              style={{
-                padding: 14,
-                background: "#eaf5ee",
-                color: "#245c4a",
-                borderRadius: 10,
-              }}
-            >
-              {message}
-            </p>
-          )}
-
           {loading ? (
-            <p style={{ textAlign: "center" }}>
-              Loading company information...
-            </p>
-          ) : company ? (
-            <div>
-              <p style={{ color: "#777" }}>Company Name</p>
-
-              <h2
-                style={{
-                  fontFamily: "Georgia, serif",
-                  fontSize: 26,
-                }}
-              >
-                {company.name}
+            <p style={{ color: muted, fontSize: 13 }}>Checking your workspace access...</p>
+          ) : workspaces.length > 0 ? (
+            <div style={{ marginBottom: 27 }}>
+              <h2 style={{ marginBottom: 13, fontSize: 17, color: brand }}>
+                Your existing workspaces
               </h2>
-
-              <p>
-                Account Role:{" "}
-                <strong>
-                  {adminReady
-                    ? "Company Admin"
-                    : "Setup Incomplete"}
-                </strong>
-              </p>
-
-              {!adminReady && (
-                <button
-                  type="button"
-                  onClick={finishAdminSetup}
-                  disabled={saving}
-                  style={buttonStyle}
-                >
-                  {saving
-                    ? "Please wait..."
-                    : "Finish Admin Setup"}
-                </button>
-              )}
-
-              {adminReady && (
-                <p
+              {workspaces.map((workspace) => (
+                <div
+                  key={workspace.id}
                   style={{
-                    color: "#245c4a",
-                    marginTop: 20,
-                    lineHeight: 1.6,
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "center",
+                    gap: 12,
+                    flexWrap: "wrap",
+                    padding: "15px 17px",
+                    border: "1px solid #dce9e0",
+                    background: "#f7fbf8",
+                    borderRadius: 12,
+                    marginBottom: 9,
                   }}
                 >
-                  Your company account and admin membership
-                  are registered successfully.
-                </p>
-              )}
+                  <strong style={{ fontSize: 14 }}>{workspace.name}</strong>
+                  <span style={{ color: muted, fontSize: 12 }}>
+                    {String(workspace.role || "member").replaceAll("_", " ")}
+                  </span>
+                </div>
+              ))}
+              <p style={{ color: muted, fontSize: 12, lineHeight: 1.7 }}>
+                Existing membership is shown for reference. Product access remains
+                subject to applicable workspace permissions and activation controls.
+              </p>
+              <Link
+                href="/app/dashboard"
+                style={{
+                  display: "inline-block",
+                  padding: "12px 19px",
+                  borderRadius: 11,
+                  background: brand,
+                  color: "#fff",
+                  textDecoration: "none",
+                  fontWeight: 800,
+                  fontSize: 13,
+                }}
+              >
+                Open Dashboard
+              </Link>
             </div>
           ) : (
-            <form onSubmit={handleCreateCompany}>
-              <label
-                htmlFor="company-name"
-                style={{
-                  display: "block",
-                  fontWeight: 600,
-                  marginBottom: 10,
-                }}
-              >
-                Company Name
-              </label>
-
-              <input
-                id="company-name"
-                type="text"
-                value={companyName}
-                onChange={(e) =>
-                  setCompanyName(e.target.value)
-                }
-                placeholder="Enter your company name"
-                required
-                minLength={2}
-                maxLength={120}
-                style={inputStyle}
-              />
-
-              <p
-                style={{
-                  color: "#777",
-                  fontSize: 13,
-                  lineHeight: 1.7,
-                  marginTop: 16,
-                  marginBottom: 24,
-                }}
-              >
-                You will be registered as the company
-                administrator.
+            <div
+              style={{
+                border: "1px solid #d9e7dc",
+                background: "#f3f9f4",
+                borderRadius: 13,
+                padding: 19,
+                marginBottom: 26,
+              }}
+            >
+              <strong style={{ fontSize: 15 }}>No workspace assigned yet</strong>
+              <p style={{ color: muted, fontSize: 13, lineHeight: 1.8, marginBottom: 0 }}>
+                If your organization is an existing client, ask your company administrator
+                or Inspire Match team to arrange your access. New organizations can
+                request a product demo and private consultation.
               </p>
-
-              <button
-                type="submit"
-                disabled={saving || !user}
-                style={buttonStyle}
-              >
-                {saving
-                  ? "Creating Company..."
-                  : "Create Company Account"}
-              </button>
-            </form>
+            </div>
           )}
-        </div>
 
-        <p
-          style={{
-            textAlign: "center",
-            color: "#888",
-            fontSize: 12,
-            marginTop: 22,
-          }}
-        >
+          <div
+            style={{
+              borderTop: "1px solid #e4ece6",
+              paddingTop: 25,
+              marginTop: 10,
+            }}
+          >
+            <h2 style={{ fontSize: 18, margin: "0 0 8px" }}>
+              New to Inspire Match?
+            </h2>
+            <p style={{ color: muted, lineHeight: 1.8, fontSize: 13 }}>
+              Speak with Sales about your recruitment needs, a tailored demonstration,
+              and the onboarding process. Packages and pricing are discussed privately.
+            </p>
+            <a
+              href="https://hireandinspirebychristine.com/"
+              target="_blank"
+              rel="noopener noreferrer"
+              style={{
+                display: "inline-block",
+                background: brand,
+                color: "#fff",
+                padding: "13px 22px",
+                borderRadius: 11,
+                textDecoration: "none",
+                fontWeight: 800,
+                fontSize: 13,
+                marginTop: 4,
+              }}
+            >
+              Visit Hire & Inspire to Contact Sales
+            </a>
+          </div>
+        </section>
+
+        <p style={{ textAlign: "center", color: "#829c8d", fontSize: 11, marginTop: 22 }}>
           INSPIRE MATCH · HIRE BETTER. INSPIRE MORE.
         </p>
       </div>
