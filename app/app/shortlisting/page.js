@@ -653,14 +653,25 @@ job_id: selectedJobId ? Number(selectedJobId) : null,
               }
             );
 
-          const data =
-            await res.json();
+          const responseText = await res.text();
+          let data;
+          try {
+            data = JSON.parse(responseText);
+          } catch {
+            throw new Error(
+              res.status === 413
+                ? "The CV upload is too large. Compress the file and try again."
+                : [502, 503, 504].includes(res.status)
+                  ? "CV scoring service is temporarily unavailable. Please try again."
+                  : "CV scoring returned an invalid response. Please try again."
+            );
+          }
 
           if (!res.ok) {
-            throw new Error(
-              data.error ||
-                "Scoring failed."
-            );
+            throw new Error(data?.error || "Scoring failed.");
+          }
+          if (!data || typeof data !== "object" || Array.isArray(data) || !data.candidate) {
+            throw new Error("CV scoring returned an incomplete candidate result.");
           }
 
           update(index, {
