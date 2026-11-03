@@ -127,7 +127,7 @@ export default function RecruitmentCapacityPage(){
    const [memberResult,taskResult,historyResult]=await Promise.all([
     supabase.from("company_members").select("user_id,role,company_id").eq("company_id",companyId),
     supabase.from("recruitment_tasks").select("id,title,status,priority,due_date,assigned_to,company_id,job_id,created_at").eq("company_id",companyId).order("created_at",{ascending:false}).limit(5000),
-    supabase.from("recruitment_task_status_history").select("task_id,changed_by,old_status,new_status,changed_at").eq("company_id",companyId).order("changed_at",{ascending:false}).limit(5000)
+    supabase.from("recruitment_task_status_history").select("task_id,changed_by,old_status,new_status,changed_at,due_date_at_change").eq("company_id",companyId).order("changed_at",{ascending:false}).limit(5000)
    ]);
    if(!active)return;
    if(memberResult.error||taskResult.error)setError("Could not load capacity data: "+(memberResult.error?.message||taskResult.error?.message));
@@ -204,6 +204,22 @@ export default function RecruitmentCapacityPage(){
   const avg=samples.length?samples.reduce((sum,s)=>sum+s.hours,0)/samples.length:null;
   return {uid:p.uid,count:samples.length,avg};
  });
+ const slaEvents=taskHistory.filter(h=>h.new_status==="completed"&&h.due_date_at_change&&tasks.some(t=>t.id===h.task_id)&&
+  (progressPeriod==="all"||new Date(h.changed_at).getTime()>=progressSince));
+ const slaResults=slaEvents.map(h=>{
+  const d=new Date(h.changed_at);
+  const completedDate=[d.getFullYear(),String(d.getMonth()+1).padStart(2,"0"),String(d.getDate()).padStart(2,"0")].join("-");
+  const due=h.due_date_at_change.slice(0,10);
+  const dayDiff=Math.round((Date.parse(completedDate+"T12:00:00Z")-Date.parse(due+"T12:00:00Z"))/86400000);
+  return {...h,completedDate,lateDays:Math.max(0,dayDiff),onTime:dayDiff<=0};
+ });
+ const onTimeSla=slaResults.filter(x=>x.onTime).length;
+ const lateSla=slaResults.filter(x=>!x.onTime);
+ const averageLateDays=lateSla.length?lateSla.reduce((s,x)=>s+x.lateDays,0)/lateSla.length:null;
+ const slaByMember=people.map(p=>{
+  const records=slaResults.filter(x=>x.changed_by===p.uid);
+  return {uid:p.uid,measured:records.length,onTime:records.filter(x=>x.onTime).length,late:records.filter(x=>!x.onTime).length};
+ });
  const overloadedIds=new Set(overloaded.map(p=>p.uid));
  const rebalanceTasks=tasks.filter(t=>t.status!=="completed"&&overloadedIds.has(t.assigned_to))
   .sort((a,b)=>String(a.due_date||"9999").localeCompare(String(b.due_date||"9999"))).slice(0,6);
@@ -264,6 +280,19 @@ export default function RecruitmentCapacityPage(){
     ].map(([title,value,desc])=><div className="cp-metric" key={title}><span>{title}</span><strong>{loading?"—":value}</strong><small>{desc}</small></div>)}</div>
     <p className="cp-note">Completion rate is the share of currently visible tasks marked completed. Without a reliable completion timestamp, this page cannot measure on-time completion or historical SLA compliance.</p>
    </section>
+   {canManageCompany&&<section className="cp-panel" style={{marginBottom:17}}>
+    <div className="cp-row" style={{flexWrap:"wrap"}}><h3>Task SLA Performance</h3><span className="cp-tag">Deadline captured at completion</span></div>
+    <p className="cp-desc">On-time completion is measured against the due date recorded on each Completed transition. Completing on the due date counts as on time.</p>
+    {historyError&&<p className="cp-error" role="alert">{historyError}</p>}
+    <div className="cp-metrics">{[
+     ["Measured Completions",slaResults.length,"Completed events with recorded deadlines"],
+     ["On-Time Completion",slaResults.length?Math.round(onTimeSla/slaResults.length*100)+"%":"N/A",onTimeSla+" on time"],
+     ["Late Completions",lateSla.length,"Completed after the recorded due date"],
+     ["Average Late Delay",averageLateDays===null?"N/A":averageLateDays.toFixed(1)+" days","Among late completions only"]
+    ].map(([name,value,detail])=><div className="cp-metric" key={name}><span>{name}</span><strong>{loading?"—":value}</strong><small>{detail}</small></div>)}</div>
+    <div className="cp-table-wrap"><table className="cp-table"><thead><tr><th>Completed by</th><th>Measured</th><th>On time</th><th>Late</th><th>On-time rate</th></tr></thead><tbody>{slaByMember.map(p=><tr key={p.uid}><td>{shortName(p.uid,uid)}</td><td>{p.measured}</td><td>{p.onTime}</td><td>{p.late}</td><td>{p.measured?Math.round(p.onTime/p.measured*100)+"%":"N/A"}</td></tr>)}</tbody></table></div>
+    <p className="cp-note">Only completion events with a due-date snapshot are counted; undated and older events are excluded. Uses the viewer's local calendar date for completion and the recorded date-only deadline. The period filter below applies by completion date. Reopened tasks may count more than once. Completed-by identifies the status-changing user, not necessarily the assignee. Limited to the latest 5,000 history events and currently loaded tasks; this is not a contractual SLA audit.</p>
+   </section>}
    {canManageCompany&&<section className="cp-panel" style={{marginBottom:17}}>
     <div className="cp-row" style={{flexWrap:"wrap"}}><h3>Measured Task Completion Time</h3><span className="cp-tag">Recorded transitions only</span></div>
     <p className="cp-desc">Elapsed time from a recorded move into In Progress to the next Completed transition. Calendar time, not active working hours.</p>
