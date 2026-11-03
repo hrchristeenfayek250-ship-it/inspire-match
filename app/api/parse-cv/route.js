@@ -59,6 +59,10 @@ export async function POST(request) {
       );
     }
 
+    const access = await supabase.rpc("billing_my_tenant_entry_gate");
+    if (access.error || access.data?.allowed !== true) {
+      return Response.json({ error: "Workspace access not approved." }, { status: 403 });
+    }
     const form = await request.formData();
     const cv = form.get("cv");
 
