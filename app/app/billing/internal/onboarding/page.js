@@ -187,7 +187,7 @@ export default function ClientOnboardingPage(){
  return <main className="im-on"><style>{css}</style><div className="im-on-shell">
   <aside className="im-on-side"><div className="im-on-brand"><b>I</b><div>Inspire Match<small>TALENT INTELLIGENCE</small></div></div><ATSNavigation className="im-on-nav"/></aside>
   <section className="im-on-main"><div className="im-on-inner">
-   <div className="im-on-top"><strong>Inspire Management / Client Onboarding</strong><div className="im-on-links"><Link href="/app/billing/internal">Command Center</Link><Link href="/app/billing/internal/contracts">Contracts</Link></div></div>
+   <div className="im-on-top"><strong>Inspire Management / Client Onboarding</strong><div className="im-on-links"><Link href="/app/billing/internal">Command Center</Link><Link href="/app/billing/internal/contracts">Contracts</Link><Link href="/app/billing/internal/provisioning">Provisioning</Link></div></div>
    <header className="im-on-hero"><small>PRIVATE / CUSTOMER IMPLEMENTATION</small><h1>Client Onboarding</h1>
     <p>Prepare client data and collect implementation readiness checks after contract signature. Approval here is internal only — accounts, subscriptions and payments remain untouched.</p></header>
    <div className="im-on-stats">
