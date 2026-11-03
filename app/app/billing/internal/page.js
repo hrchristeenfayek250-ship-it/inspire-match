@@ -118,6 +118,8 @@ export default function InternalSalesFinance(){
     </section>
     <div className="im-int-heading"><h2>Commercial proposals &amp; contracts</h2><div className="im-int-controls" style={{marginTop:0}}><Link className="im-int-button" href="/app/billing/internal/proposals">Manage proposals</Link><Link className="im-int-button" href="/app/billing/internal/contracts">Manage contracts</Link></div></div>
      <section className="im-int-card"><p style={{margin:0}}>Create private proposals linked to Sales leads, submit them for internal review and prepare contract drafts from approved proposals. No automatic signatures, activation or payments.</p></section>
+     <div className="im-int-heading"><h2>Client onboarding &amp; company preparation</h2><Link className="im-int-button" href="/app/billing/internal/onboarding">Open client onboarding</Link></div>
+     <section className="im-int-card"><p style={{margin:0}}>Prepare internal onboarding records only after contract signature. Collect client contacts, admin details, readiness checks and independent internal approval. Company provisioning and subscription activation remain disabled.</p></section>
      <div className="im-int-heading"><h2>Private commercial offers</h2><span className="im-int-chip">Not visible to clients</span></div>
     <section className="im-int-card">
      <div className="im-int-controls" style={{marginTop:0,marginBottom:13}}>
