@@ -134,8 +134,8 @@ begin
  if length(btrim(v.workspace_name))<2
   or length(btrim(v.country))<2
   or length(btrim(v.primary_contact_name))<2
-  or v.primary_contact_email !~* '^[^@[:space:]]+@[^@[:space:]]+\\.[^@[:space:]]+$'
-  or v.admin_email !~* '^[^@[:space:]]+@[^@[:space:]]+\\.[^@[:space:]]+$'
+  or v.primary_contact_email !~* '^[^@[:space:]]+@[^@[:space:]]+\.[^@[:space:]]+$'
+  or v.admin_email !~* '^[^@[:space:]]+@[^@[:space:]]+\.[^@[:space:]]+$'
   or not (v.contract_file_checked and v.company_details_checked and v.admin_contact_checked
   and v.security_requirements_checked and v.kickoff_checked) then
   raise exception 'Complete company details, valid contact emails and all onboarding checks first';
