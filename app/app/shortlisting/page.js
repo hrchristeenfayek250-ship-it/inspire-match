@@ -312,13 +312,26 @@ ${job.description || ""}
         }
       );
 
-      const data = await res.json();
-
-      if (!res.ok) {
+      const responseText = await res.text();
+      let data;
+      try {
+        data = JSON.parse(responseText);
+      } catch {
         throw new Error(
-          data.error ||
-            "Could not read the job description."
+          res.status === 413
+            ? "The JD file is too large. Please upload a smaller file (under 4 MB)."
+            : res.status === 504 || res.status === 502 || res.status === 503
+              ? "The AI service timed out or is temporarily unavailable. Please try again."
+              : "The JD analysis service returned an invalid response. Please try again or contact support."
         );
+      }
+
+      if (!res.ok || !data || typeof data !== "object" || Array.isArray(data)) {
+        throw new Error(data?.error || "Could not read the job description.");
+      }
+
+      if (!Array.isArray(data.criteria)) {
+        throw new Error("JD analysis did not return valid criteria. Please try again.");
       }
 
       setJd(data);
