@@ -220,6 +220,25 @@ export default function RecruitmentCapacityPage(){
   const records=slaResults.filter(x=>x.changed_by===p.uid);
   return {uid:p.uid,measured:records.length,onTime:records.filter(x=>x.onTime).length,late:records.filter(x=>!x.onTime).length};
  });
+ const taskById=new Map(tasks.map(t=>[t.id,t]));
+ const overdueBlocked=overdueTasks.filter(t=>t.status==="blocked");
+ const overdueInProgress=overdueTasks.filter(t=>t.status==="in_progress");
+ const overdueToDo=overdueTasks.filter(t=>t.status==="todo");
+ const overdueWithoutOwner=overdueTasks.filter(t=>!t.assigned_to);
+ const overdueHighPriority=overdueTasks.filter(t=>["high","urgent"].includes(String(t.priority||"").toLowerCase()));
+ const lateEventSignals=lateSla.map(event=>{
+  const events=(historyByTask.get(event.task_id)||[]).slice()
+   .filter(h=>new Date(h.changed_at).getTime()<=new Date(event.changed_at).getTime())
+   .sort((a,b)=>new Date(a.changed_at)-new Date(b.changed_at));
+  let start=0;
+  for(let i=0;i<events.length-1;i++)if(events[i].new_status==="completed")start=i+1;
+  const observedBlocked=events.slice(start).some(h=>h.new_status==="blocked");
+  return {...event,task:taskById.get(event.task_id),observedBlocked};
+ });
+ const lateWithBlockedSignal=lateEventSignals.filter(s=>s.observedBlocked).length;
+ const overdueDays=(date)=>Math.max(0,Math.round((Date.parse(today+"T12:00:00Z")-Date.parse(String(date).slice(0,10)+"T12:00:00Z"))/86400000));
+ const overdueWatchlist=overdueTasks.slice().sort((a,b)=>overdueDays(b.due_date)-overdueDays(a.due_date)).slice(0,6);
+ const lateCompletionWatchlist=lateEventSignals.slice().sort((a,b)=>b.lateDays-a.lateDays).slice(0,6);
  const overloadedIds=new Set(overloaded.map(p=>p.uid));
  const rebalanceTasks=tasks.filter(t=>t.status!=="completed"&&overloadedIds.has(t.assigned_to))
   .sort((a,b)=>String(a.due_date||"9999").localeCompare(String(b.due_date||"9999"))).slice(0,6);
@@ -278,7 +297,7 @@ export default function RecruitmentCapacityPage(){
      ["Due Within 3 Days",dueSoonTasks.length,"Includes tasks due today"],
      ["Open Deadline Compliance",deadlineCompliance===null?"N/A":deadlineCompliance+"%","Open dated tasks not yet overdue"]
     ].map(([title,value,desc])=><div className="cp-metric" key={title}><span>{title}</span><strong>{loading?"—":value}</strong><small>{desc}</small></div>)}</div>
-    <p className="cp-note">Completion rate is the share of currently visible tasks marked completed. Without a reliable completion timestamp, this page cannot measure on-time completion or historical SLA compliance.</p>
+    <p className="cp-note">Completion rate is the share of currently visible tasks marked completed. Historical on-time completion is measured separately below from recorded events with a deadline snapshot.</p>
    </section>
    {canManageCompany&&<section className="cp-panel" style={{marginBottom:17}}>
     <div className="cp-row" style={{flexWrap:"wrap"}}><h3>Task SLA Performance</h3><span className="cp-tag">Deadline captured at completion</span></div>
@@ -292,6 +311,39 @@ export default function RecruitmentCapacityPage(){
     ].map(([name,value,detail])=><div className="cp-metric" key={name}><span>{name}</span><strong>{loading?"—":value}</strong><small>{detail}</small></div>)}</div>
     <div className="cp-table-wrap"><table className="cp-table"><thead><tr><th>Completed by</th><th>Measured</th><th>On time</th><th>Late</th><th>On-time rate</th></tr></thead><tbody>{slaByMember.map(p=><tr key={p.uid}><td>{shortName(p.uid,uid)}</td><td>{p.measured}</td><td>{p.onTime}</td><td>{p.late}</td><td>{p.measured?Math.round(p.onTime/p.measured*100)+"%":"N/A"}</td></tr>)}</tbody></table></div>
     <p className="cp-note">Only completion events with a due-date snapshot are counted; undated and older events are excluded. Uses the viewer's local calendar date for completion and the recorded date-only deadline. The period filter below applies by completion date. Reopened tasks may count more than once. Completed-by identifies the status-changing user, not necessarily the assignee. Limited to the latest 5,000 history events and currently loaded tasks; this is not a contractual SLA audit.</p>
+   </section>}
+   {canManageCompany&&<section className="cp-panel" style={{marginBottom:17}}>
+    <div className="cp-row" style={{flexWrap:"wrap"}}><h3>SLA Breach Diagnostics &amp; Root-Cause Evidence</h3><Link href="/app/recruitment-operations/bottlenecks" className="cp-link">Recruitment bottlenecks →</Link></div>
+    <p className="cp-desc">Cross-check current overdue work with recorded status transitions. Signals highlight where to investigate; they do not prove what caused a delay.</p>
+    {historyError&&<p className="cp-error" role="alert">{historyError}</p>}
+    <div className="cp-metrics">{[
+     ["Overdue & Blocked",overdueBlocked.length,"Current overdue tasks marked Blocked"],
+     ["Overdue & In Progress",overdueInProgress.length,"Current overdue tasks being worked on"],
+     ["Overdue & Not Started",overdueToDo.length,"Current overdue tasks still To Do"],
+     ["Overdue & Unassigned",overdueWithoutOwner.length,"No team member assigned"]
+    ].map(([name,value,desc])=><div className="cp-metric" key={name}><span>{name}</span><strong>{loading?"—":value}</strong><small>{desc}</small></div>)}</div>
+    <div className="cp-row" style={{margin:"16px 0",flexWrap:"wrap"}}>
+     <span>High / urgent among overdue: <strong>{overdueHighPriority.length}</strong></span>
+     <span>Late completion events with observed Blocked transition: <strong>{lateWithBlockedSignal}</strong> / {lateSla.length}</span>
+    </div>
+    <div className="cp-grid">
+     <div style={{minWidth:0}}><h3 style={{fontSize:14}}>Open SLA Breach Watchlist</h3>
+      <p className="cp-desc">Oldest overdue commitments first, including current status and ownership.</p>
+      <div className="cp-table-wrap"><table className="cp-table"><thead><tr><th>Task</th><th>Days overdue</th><th>Status</th><th>Owner</th></tr></thead><tbody>
+       {overdueWatchlist.map(t=><tr key={t.id}><td>{t.title}</td><td>{overdueDays(t.due_date)}</td><td>{t.status==="in_progress"?"In Progress":t.status==="todo"?"To Do":t.status}</td><td>{t.assigned_to?shortName(t.assigned_to,uid):"Unassigned"}</td></tr>)}
+       {!overdueWatchlist.length&&<tr><td colSpan={4}>No current overdue tasks.</td></tr>}
+      </tbody></table></div>
+     </div>
+     <div style={{minWidth:0}}><h3 style={{fontSize:14}}>Historical Late Completion Evidence</h3>
+      <p className="cp-desc">Completed late against the captured deadline, sorted by days late.</p>
+      <div className="cp-table-wrap"><table className="cp-table"><thead><tr><th>Task</th><th>Days late</th><th>Blocked observed?</th></tr></thead><tbody>
+       {lateCompletionWatchlist.map((s,i)=><tr key={s.task_id+":"+s.changed_at+":"+i}><td>{s.task?.title||"Task record not available"}</td><td>{s.lateDays}</td><td>{s.observedBlocked?"Yes":"Not recorded"}</td></tr>)}
+       {!lateCompletionWatchlist.length&&<tr><td colSpan={3}>No recorded late completions in the selected reporting window.</td></tr>}
+      </tbody></table></div>
+     </div>
+    </div>
+    <p className="cp-note"><strong>Root-cause coverage:</strong> The task model does not yet capture structured delay reasons (such as manager feedback, scheduling, external dependencies or workload). A recorded Blocked transition is an observed warning, not a validated cause. "Not recorded" does not prove the task was never blocked. Historical reporting is limited to the latest 5,000 transitions and tasks currently available in the company. Current priority and assignee are not historical snapshots. Review task details before taking action.</p>
+    <Link className="cp-link" href="/app/recruitment-operations/tasks">Review task details and resolve blockers →</Link>
    </section>}
    {canManageCompany&&<section className="cp-panel" style={{marginBottom:17}}>
     <div className="cp-row" style={{flexWrap:"wrap"}}><h3>Measured Task Completion Time</h3><span className="cp-tag">Recorded transitions only</span></div>
@@ -309,7 +361,7 @@ export default function RecruitmentCapacityPage(){
    {canManageCompany&&<section className="cp-panel" style={{marginBottom:17}}>
     <div className="cp-row" style={{flexWrap:"wrap"}}>
      <h3>Team Task Progress Snapshot</h3>
-     <div className="cp-field"><label htmlFor="cp-progress-period">Tasks created</label><select id="cp-progress-period" value={progressPeriod} onChange={e=>setProgressPeriod(e.target.value)}><option value="30">Last 30 days</option><option value="90">Last 90 days</option><option value="all">All time</option></select></div>
+     <div className="cp-field"><label htmlFor="cp-progress-period">Report window</label><select id="cp-progress-period" value={progressPeriod} onChange={e=>setProgressPeriod(e.target.value)}><option value="30">Last 30 days</option><option value="90">Last 90 days</option><option value="all">All time</option></select></div>
     </div>
     <p className="cp-desc">Current status of tasks assigned to each team member. Use this to review workload follow-through and unresolved tasks, not to rank employee performance.</p>
     {loading?<div className="cp-empty">Loading team progress...</div>:<><div className="cp-row" style={{flexWrap:"wrap",marginBottom:14}}>
