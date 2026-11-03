@@ -186,7 +186,7 @@ export default function InternalContractsPage(){
   </aside>
   <section className="im-contracts-main"><div className="im-contracts-inner">
    <div className="im-contracts-top"><strong>Inspire Management / Contracts</strong><div className="im-contracts-actions">
-    <Link href="/app/billing/internal">Command Center</Link><Link href="/app/billing/internal/proposals">Proposals</Link></div></div>
+    <Link href="/app/billing/internal">Command Center</Link><Link href="/app/billing/internal/proposals">Proposals</Link><Link href="/app/billing/internal/onboarding">Onboarding</Link></div></div>
    <header className="im-contracts-hero"><small>PRIVATE / SALES &amp; LEGAL OPERATIONS</small>
     <h1>Contract Management</h1>
     <p>Prepare contracts, request independent legal approval and record verified external signatures. No built-in electronic signing, subscription activation or payments.</p>
