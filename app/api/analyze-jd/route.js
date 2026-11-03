@@ -1,3 +1,4 @@
+import { requireApprovedTenant } from "@/lib/server-tenant-gate";
 import { createClient } from "@supabase/supabase-js";
 
 async function requireCompanyMember(request) {
@@ -25,6 +26,13 @@ export const maxDuration = 60;
 
 export async function POST(req) {
   try {
+    if (!(await requireApprovedTenant(req))) {
+      return Response.json(
+        { error: "Your company workspace is not approved for ATS access." },
+        { status: 403 }
+      );
+    }
+
     if (!(await requireCompanyMember(req))) {
       return Response.json({ error: "Sign in with a company account to use AI tools." }, { status: 403 });
     }
