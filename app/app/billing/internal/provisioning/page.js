@@ -82,6 +82,8 @@ export default function CompanyProvisioningPage(){
  const [proposals,setProposals]=useState([]);
  const [records,setRecords]=useState([]);
  const [events,setEvents]=useState([]);
+ const [references,setReferences]=useState([]);
+ const [workspaces,setWorkspaces]=useState([]);
  const [loading,setLoading]=useState(true);
  const [saving,setSaving]=useState(false);
  const [acting,setActing]=useState("");
@@ -109,12 +111,14 @@ export default function CompanyProvisioningPage(){
     supabase.from("billing_sales_contracts").select("id,proposal_id,contract_reference,status,legal_entity_name").limit(500),
     supabase.from("billing_sales_proposals").select("id,reference,status").limit(500),
     supabase.from("billing_sales_provisioning_requests").select("id,onboarding_id,status,workspace_name,proposed_admin_email,country,timezone,implementation_owner_id,handover_notes,signed_contract_verified,admin_identity_verified,security_scope_confirmed,tenant_isolation_reviewed,activation_gate,linked_company_id,created_by,updated_by,reviewed_by,reviewed_at,created_at,updated_at").order("created_at",{ascending:false}).limit(500),
-    supabase.from("billing_sales_provisioning_events").select("id,provisioning_id,action,actor_id,comment,created_at").order("created_at",{ascending:false}).limit(500)
+    supabase.from("billing_sales_provisioning_events").select("id,provisioning_id,action,actor_id,comment,created_at").order("created_at",{ascending:false}).limit(500),
+    supabase.from("billing_sales_workspace_reconciliations").select("id,provisioning_id,candidate_company_id,status,justification,reviewer_note,proposed_by,reviewed_by,created_at").order("created_at",{ascending:false}).limit(500),
+    supabase.rpc("billing_internal_company_configurations")
    ]);
    for(const r of result)if(r.error)throw r.error;
    if(active){setRole(overview.data?.staff_role||"");setMe(auth.data.user.id);
     setOnboardings(result[0].data||[]);setContracts(result[1].data||[]);
-    setProposals(result[2].data||[]);setRecords(result[3].data||[]);setEvents(result[4].data||[]);
+    setProposals(result[2].data||[]);setRecords(result[3].data||[]);setEvents(result[4].data||[]);setReferences(result[5].data||[]);setWorkspaces(result[6].data?.companies||[]);
    }
   })().catch(e=>{if(active){setError(e.message||"Could not load provisioning.");setRole("");}})
    .finally(()=>{if(active)setLoading(false);});
@@ -199,6 +203,33 @@ export default function CompanyProvisioningPage(){
   }catch(err){setError(err.message||"Provisioning action failed.");}
   finally{setActing("");}
  }
+ async function proposeReference(request){
+  const eligibleWorkspaces=workspaces.filter(w=>!references.some(r=>r.candidate_company_id===w.company_id&&r.status==="approved_reference"));
+  if(!eligibleWorkspaces.length){setError("No available existing workspace references.");return;}
+  const id=(window.prompt("Existing company UUID to reference (select an ID from the list below):")||"").trim();
+  if(!eligibleWorkspaces.some(w=>w.company_id===id))return;
+  const justification=(window.prompt("Explain why this existing company belongs to the signed client (12+ characters):")||"").trim();
+  if(justification.length<12)return;
+  setActing(request.id);setError("");setNotice("");
+  const result=await supabase.rpc("billing_sales_propose_workspace_reference",{
+   p_provisioning_id:request.id,p_company_id:id,p_justification:justification
+  });
+  if(result.error)setError(result.error.message);
+  else{setNotice("Workspace reference proposed for independent review. No tenant linked or activated.");setRefresh(x=>x+1);}
+  setActing("");
+ }
+ async function reviewReference(reference,approve){
+  let comment="";
+  if(!approve){comment=(window.prompt("Reason for rejecting this workspace reference:")||"").trim();if(comment.length<3)return;}
+  if(approve&&!window.confirm("Approve a REFERENCE only? No workspace will be linked or activated."))return;
+  setActing(reference.id);setError("");setNotice("");
+  const result=await supabase.rpc("billing_sales_review_workspace_reference",{
+   p_reconciliation_id:reference.id,p_approve:approve,p_comment:comment
+  });
+  if(result.error)setError(result.error.message);
+  else{setNotice("Reference reviewed. Tenant linkage and activation remain disabled.");setRefresh(x=>x+1);}
+  setActing("");
+ }
  return <main className="im-pv"><style>{css}</style><div className="im-pv-shell">
   <aside className="im-pv-aside"><div className="im-pv-brand"><b>I</b><div>Inspire Match<small>TALENT INTELLIGENCE</small></div></div><ATSNavigation className="im-pv-nav"/></aside>
   <section className="im-pv-main"><div className="im-pv-inner">
@@ -274,6 +305,34 @@ export default function CompanyProvisioningPage(){
       })}</tbody>
      </table></div>
      {!filtered.length&&<div className="im-pv-note">{records.length?"No matching records.":"No provisioning requests yet. Start with approved onboarding."}</div>}
+    </div>
+    <div className="im-pv-card" style={{marginTop:20}}>
+     <div className="im-pv-toolbar" style={{marginTop:0}}><h2>Existing workspace references</h2><span className="im-pv-pill im-pv-locked">Review only · No linkage</span></div>
+     <p className="im-pv-muted">Match an approved provisioning request to an existing company ID. An independent Platform Admin can review the reference, but no company membership, billing access or activation is changed.</p>
+     <div className="im-pv-wrap"><table className="im-pv-table"><thead><tr><th>Provisioning</th><th>Existing company ID</th><th>Status</th><th>Reviewer note</th><th>Actions</th></tr></thead><tbody>
+      {references.map(ref=>{
+       const request=records.find(r=>r.id===ref.provisioning_id);
+       return <tr key={ref.id}><td><strong>{request?.workspace_name||"Workspace request"}</strong></td>
+        <td><code>{ref.candidate_company_id}</code></td><td><span className="im-pv-pill">{ref.status.replaceAll("_"," ")}</span></td>
+        <td>{ref.reviewer_note||"—"}</td><td><div className="im-pv-actions">
+         {canApprove&&ref.status==="proposed"&&ref.proposed_by!==me&&<>
+          <button type="button" className="im-pv-btn" disabled={!!acting} onClick={()=>reviewReference(ref,true)}>Approve reference</button>
+          <button type="button" className="im-pv-btn alt" disabled={!!acting} onClick={()=>reviewReference(ref,false)}>Reject</button>
+         </>}
+         {ref.status!=="proposed"&&<span className="im-pv-muted">Reviewed</span>}
+        </div></td></tr>;
+      })}
+      {!references.length&&<tr><td colSpan={5} className="im-pv-muted">No workspace references yet.</td></tr>}
+     </tbody></table></div>
+     {canManage&&records.some(r=>r.status==="approved_for_manual_setup"&&!references.some(ref=>ref.provisioning_id===r.id))&&
+      <div className="im-pv-toolbar"><h2>Propose a workspace reference</h2><div className="im-pv-actions">
+       {records.filter(r=>r.status==="approved_for_manual_setup"&&!references.some(ref=>ref.provisioning_id===r.id)).map(r=>
+        <button key={r.id} className="im-pv-btn alt" disabled={!!acting} type="button" onClick={()=>proposeReference(r)}>Reference: {r.workspace_name}</button>)}
+      </div></div>}
+     {workspaces.length>0&&<details><summary className="im-pv-muted" style={{cursor:"pointer"}}>View existing company IDs ({workspaces.length})</summary>
+      <div className="im-pv-wrap"><table className="im-pv-table"><thead><tr><th>Company UUID</th><th>Billing activation</th><th>Subscription</th></tr></thead>
+       <tbody>{workspaces.map(w=><tr key={w.company_id}><td><code>{w.company_id}</code></td><td>{w.activation_status}</td><td>{w.subscription_status}</td></tr>)}</tbody></table></div>
+     </details>}
     </div>
     <div className="im-pv-note"><strong>Activation stays off.</strong> This is a preparation and independent approval register only. It cannot create an ATS workspace, link tenants, send invitations, enable add-ons, issue invoices or collect payments. Production access controls and tenant-level enforcement require a separate audited rollout.</div>
    </>}
