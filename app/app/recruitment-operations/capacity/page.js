@@ -126,8 +126,8 @@ export default function RecruitmentCapacityPage(){
    setLoading(true);setError("");setHistoryError("");
    const [memberResult,taskResult,historyResult]=await Promise.all([
     supabase.from("company_members").select("user_id,role,company_id").eq("company_id",companyId),
-    supabase.from("recruitment_tasks").select("id,title,status,priority,due_date,assigned_to,company_id,job_id,created_at").eq("company_id",companyId).order("created_at",{ascending:false}).limit(5000),
-    supabase.from("recruitment_task_status_history").select("task_id,changed_by,old_status,new_status,changed_at,due_date_at_change").eq("company_id",companyId).order("changed_at",{ascending:false}).limit(5000)
+    supabase.from("recruitment_tasks").select("id,title,status,priority,due_date,assigned_to,company_id,job_id,created_at,blocker_reason").eq("company_id",companyId).order("created_at",{ascending:false}).limit(5000),
+    supabase.from("recruitment_task_status_history").select("task_id,changed_by,old_status,new_status,changed_at,due_date_at_change,blocker_reason_at_change").eq("company_id",companyId).order("changed_at",{ascending:false}).limit(5000)
    ]);
    if(!active)return;
    if(memberResult.error||taskResult.error)setError("Could not load capacity data: "+(memberResult.error?.message||taskResult.error?.message));
@@ -236,6 +236,11 @@ export default function RecruitmentCapacityPage(){
   return {...event,task:taskById.get(event.task_id),observedBlocked};
  });
  const lateWithBlockedSignal=lateEventSignals.filter(s=>s.observedBlocked).length;
+ const recordedBlockerEvents=taskHistory.filter(h=>h.new_status==="blocked"&&h.blocker_reason_at_change?.trim()&&(progressPeriod==="all"||new Date(h.changed_at).getTime()>=progressSince));
+ const reasonCounts=new Map();
+ for(const h of recordedBlockerEvents){const reason=h.blocker_reason_at_change.trim();reasonCounts.set(reason,(reasonCounts.get(reason)||0)+1);}
+ const commonBlockers=[...reasonCounts].sort((a,b)=>b[1]-a[1]).slice(0,8);
+ const overdueWithRecordedReason=overdueBlocked.filter(t=>t.blocker_reason?.trim()).length;
  const overdueDays=(date)=>Math.max(0,Math.round((Date.parse(today+"T12:00:00Z")-Date.parse(String(date).slice(0,10)+"T12:00:00Z"))/86400000));
  const overdueWatchlist=overdueTasks.slice().sort((a,b)=>overdueDays(b.due_date)-overdueDays(a.due_date)).slice(0,6);
  const lateCompletionWatchlist=lateEventSignals.slice().sort((a,b)=>b.lateDays-a.lateDays).slice(0,6);
@@ -325,6 +330,15 @@ export default function RecruitmentCapacityPage(){
     <div className="cp-row" style={{margin:"16px 0",flexWrap:"wrap"}}>
      <span>High / urgent among overdue: <strong>{overdueHighPriority.length}</strong></span>
      <span>Late completion events with observed Blocked transition: <strong>{lateWithBlockedSignal}</strong> / {lateSla.length}</span>
+     <span>Currently overdue and blocked with a stated reason: <strong>{overdueWithRecordedReason}</strong> / {overdueBlocked.length}</span>
+    </div>
+    <div style={{marginBottom:17}}>
+     <h3 style={{fontSize:14}}>Recorded Blocker Reasons</h3>
+     <p className="cp-desc">Reasons explicitly entered when a task became Blocked, counted by event in the selected reporting period. These are reported obstacles, not independently verified root causes.</p>
+     <div className="cp-table-wrap"><table className="cp-table"><thead><tr><th>Recorded reason</th><th>Blocked events</th></tr></thead><tbody>
+      {commonBlockers.map(([reason,count])=><tr key={reason}><td style={{whiteSpace:"normal",overflowWrap:"anywhere"}}>{reason}</td><td>{count}</td></tr>)}
+      {!commonBlockers.length&&<tr><td colSpan={2}>No recorded blocker reasons in this period.</td></tr>}
+     </tbody></table></div>
     </div>
     <div className="cp-grid">
      <div style={{minWidth:0}}><h3 style={{fontSize:14}}>Open SLA Breach Watchlist</h3>
@@ -342,7 +356,7 @@ export default function RecruitmentCapacityPage(){
       </tbody></table></div>
      </div>
     </div>
-    <p className="cp-note"><strong>Root-cause coverage:</strong> The task model does not yet capture structured delay reasons (such as manager feedback, scheduling, external dependencies or workload). A recorded Blocked transition is an observed warning, not a validated cause. "Not recorded" does not prove the task was never blocked. Historical reporting is limited to the latest 5,000 transitions and tasks currently available in the company. Current priority and assignee are not historical snapshots. Review task details before taking action.</p>
+    <p className="cp-note"><strong>Root-cause coverage:</strong> Task blocker reasons are now recorded as free text when supplied; these are self-reported obstacles, not a validated cause of lateness. Different wording for the same obstacle is counted separately. "Not recorded" does not prove the task was never blocked. Historical reporting is limited to the latest 5,000 transitions and tasks currently available in the company. Current priority and assignee are not historical snapshots. Review task details before taking action.</p>
     <Link className="cp-link" href="/app/recruitment-operations/tasks">Review task details and resolve blockers →</Link>
    </section>}
    {canManageCompany&&<section className="cp-panel" style={{marginBottom:17}}>
