@@ -82,6 +82,36 @@ export default function OperationsExecutiveReport(){
   const reasons=new Map();for(const h of blockerEvents){const key=h.blocker_reason_at_change.trim();if(key)reasons.set(key,(reasons.get(key)||0)+1);}
   return {open,overdue,blocked,unassigned,completed,measurable,onTime,reasons:[...reasons].sort((a,b)=>b[1]-a[1]).slice(0,5),priorityOverdue:overdue.filter(t=>["high","urgent"].includes(String(t.priority).toLowerCase())).length};
  },[tasks,history,windowDays]);
+ const exportCsv=()=>{
+  if(loading||error||!company)return;
+  const rows=[
+   ["Section","Metric","Value","Reporting window"],
+   ["Overview","Open tasks",metrics.open.length,"Current"],
+   ["Overview","Overdue tasks",metrics.overdue.length,"Current"],
+   ["Overview","Blocked tasks",metrics.blocked.length,"Current"],
+   ["Overview","Unassigned open tasks",metrics.unassigned.length,"Current"],
+   ["Overview","High-priority overdue",metrics.priorityOverdue,"Current"],
+   ["Overview","Open blocked with recorded reason",metrics.blocked.filter(t=>t.blocker_reason?.trim()).length,"Current"],
+   ["Overview","Team members",members.length,"Current"],
+   ["Delivery","Recorded completion events",metrics.completed.length,windowDays==="all"?"All recorded":windowDays+" days"],
+   ["Delivery","Measured deadline events",metrics.measurable.length,windowDays==="all"?"All recorded":windowDays+" days"],
+   ["Delivery","On-time completions",metrics.onTime.length,windowDays==="all"?"All recorded":windowDays+" days"],
+   ["Delivery","Late completions",metrics.measurable.length-metrics.onTime.length,windowDays==="all"?"All recorded":windowDays+" days"],
+   ["Delivery","On-time rate",rate(metrics.onTime.length,metrics.measurable.length),windowDays==="all"?"All recorded":windowDays+" days"],
+   ...metrics.reasons.map(([reason,count])=>["Reported blocker reason",reason,count,windowDays==="all"?"All recorded":windowDays+" days"]),
+   ["Metadata","Company ID",company,""],
+   ["Metadata","Export date",localDate(new Date()),""],
+   ["Metadata","Coverage",warning||"Up to 5,000 latest tasks and events; no history backfill",""]
+  ];
+  // Prevent spreadsheet formula injection in user-entered text.
+  const cell=v=>{let s=String(v??"");if(/^[\\s]*[=+@-]/.test(s))s="'"+s;return '"'+s.replaceAll('"','""')+'"';};
+  const csv="\\uFEFF"+rows.map(row=>row.map(cell).join(",")).join("\\r\\n");
+  const blob=new Blob([csv],{type:"text/csv;charset=utf-8"});
+  const url=URL.createObjectURL(blob);
+  const link=document.createElement("a");
+  link.href=url;link.download="inspire-operations-executive-"+localDate(new Date())+".csv";
+  document.body.appendChild(link);link.click();link.remove();URL.revokeObjectURL(url);
+ };
  return <main className="er-root"><style>{style}</style><div className="er-shell">
   <aside className="er-side"><div className="er-brand">◈ Inspire Match<small>TALENT INTELLIGENCE</small></div><ATSNavigation className="er-nav"/></aside>
   <div className="er-main"><div className="er-inner">
@@ -91,6 +121,7 @@ export default function OperationsExecutiveReport(){
     {companies.length>0&&<div className="er-filters">
      <label>Company<select value={company} onChange={e=>setCompany(e.target.value)}>{companies.map(c=><option key={c.company_id} value={c.company_id}>Company {c.company_id.slice(0,8)}</option>)}</select></label>
      <label>Completion period<select value={windowDays} onChange={e=>setWindowDays(e.target.value)}><option value="30">Last 30 days</option><option value="90">Last 90 days</option><option value="all">All recorded history</option></select></label>
+     <button type="button" disabled={loading||!!error} onClick={exportCsv}>Export CSV</button>
      <button type="button" onClick={()=>window.print()}>Print / Save PDF</button>
     </div>}
    </div>
