@@ -104,8 +104,8 @@ export default function OperationsExecutiveReport(){
    ["Metadata","Coverage",warning||"Up to 5,000 latest tasks and events; no history backfill",""]
   ];
   // Prevent spreadsheet formula injection in user-entered text.
-  const cell=v=>{let s=String(v??"");if(/^[\\s]*[=+@-]/.test(s))s="'"+s;return '"'+s.replaceAll('"','""')+'"';};
-  const csv="\\uFEFF"+rows.map(row=>row.map(cell).join(",")).join("\\r\\n");
+  const cell=v=>{let s=String(v??"");if(/^\s*[=+@-]/.test(s))s="'"+s;return '"'+s.replaceAll('"','""')+'"';};
+  const csv="\uFEFF"+rows.map(row=>row.map(cell).join(",")).join("\r\n");
   const blob=new Blob([csv],{type:"text/csv;charset=utf-8"});
   const url=URL.createObjectURL(blob);
   const link=document.createElement("a");
