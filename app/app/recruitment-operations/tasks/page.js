@@ -47,12 +47,12 @@ export default function RecruitmentTasksPage(){
   if(status===t.status)return;
   let reason=null;
   if(status==="blocked"){
-   if(t.assigned_to===uid&&t.created_by!==uid){setError("Ask your HR Manager to record a blocker reason until assignee permissions are updated.");return;}
    reason=window.prompt("Reason for blocking this task:",t.blocker_reason||"");
-   if(!reason?.trim()){setError("Blocker reason is required.");return;}
+   if(!reason?.trim()){if(reason!==null)setError("Blocker reason is required.");return;}
+   if(reason.trim().length>1000){setError("Blocker reason must be at most 1,000 characters.");return;}
   }
   if(t.assigned_to===uid&&t.created_by!==uid){
-   const {data:updated,error:e}=await supabase.rpc("update_my_recruitment_task_status",{p_task_id:t.id,p_status:status});
+   const {data:updated,error:e}=await supabase.rpc("update_my_recruitment_task_status_with_reason",{p_task_id:t.id,p_status:status,p_blocker_reason:status==="blocked"?reason.trim():null});
    if(e){setError(e.message);return;}
    if(updated!==true){setError("Task status could not be updated. Please check your permissions.");return;}
   }else{
