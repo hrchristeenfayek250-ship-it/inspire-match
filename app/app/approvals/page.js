@@ -11,6 +11,11 @@ export default function ApprovalCenterPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [filter, setFilter] = useState("all");
+  const [decisionDraft, setDecisionDraft] = useState(null);
+  const [decisionComments, setDecisionComments] = useState("");
+  const [decisionSaving, setDecisionSaving] = useState(false);
+  const [decisionError, setDecisionError] = useState("");
+  const [decisionSuccess, setDecisionSuccess] = useState("");
 
   useEffect(() => {
     let active = true;
@@ -46,23 +51,64 @@ export default function ApprovalCenterPage() {
     return () => { active = false; };
   }, []);
 
+  async function submitDecision() {
+    if (!decisionDraft || decisionSaving) return;
+    const { offerId, action } = decisionDraft;
+    const comments = decisionComments.trim();
+    if (!["approved", "rejected", "changes_requested"].includes(action)) return;
+    if (action !== "approved" && !comments) {
+      setDecisionError("Please add a reason for this decision.");
+      return;
+    }
+    setDecisionError("");
+    setDecisionSuccess("");
+    setDecisionSaving(true);
+    try {
+      const { data: result, error: rpcError } = await supabase.rpc(
+        "decide_offer_approval",
+        { p_offer_id: offerId, p_action: action, p_comments: comments || null }
+      );
+      if (rpcError) throw rpcError;
+
+      setItems((previous) =>
+        previous.filter((item) => String(item.offer_id) !== String(offerId))
+      );
+      setDecisionDraft(null);
+      setDecisionComments("");
+      setDecisionSuccess(
+        typeof result === "string" && result
+          ? result : "Your decision was saved successfully."
+      );
+
+      const { data: refreshed, error: refreshError } =
+        await supabase.rpc("get_my_hiring_decisions");
+      if (refreshError) {
+        setDecisionError("Decision saved, but the list could not be refreshed. Reload this page.");
+      } else {
+        setItems(Array.isArray(refreshed) ? refreshed : []);
+      }
+    } catch (err) {
+      setDecisionError(err.message || "Could not save the decision.");
+    } finally {
+      setDecisionSaving(false);
+    }
+  }
+
+  function openDecision(offerId, action) {
+    if (decisionSaving) return;
+    setDecisionDraft({ offerId, action });
+    setDecisionComments("");
+    setDecisionError("");
+    setDecisionSuccess("");
+  }
+
   const isPending = (item) =>
     ["pending", "pending approval", "awaiting approval"]
       .includes(String(item.step_status || "").toLowerCase());
 
   const pendingCount = items.filter(isPending).length;
-  const completedCount = items.filter(
-    (item) => ["approved", "rejected"].includes(
-      String(item.step_status || "").toLowerCase()
-    )
-  ).length;
-
-  const visibleItems = items.filter((item) =>
-    filter === "all" ? true :
-    filter === "pending" ? isPending(item) :
-    ["approved", "rejected"].includes(
-      String(item.step_status || "").toLowerCase()
-    )
+  const visibleItems = items.filter(
+    (item) => filter === "all" || isPending(item)
   );
 
   return (
@@ -280,6 +326,15 @@ export default function ApprovalCenterPage() {
           flex-wrap: wrap;
         }
         .ac-decision:last-child { border-bottom: 0; }
+        .ac-decision-actions { display:flex; flex-wrap:wrap; align-items:center; gap:8px; }
+        .ac-action { border-radius:9px; padding:10px 13px; font-size:12px; font-weight:700; cursor:pointer; }
+        .ac-action:disabled { opacity:0.55; cursor:not-allowed; }
+        .ac-action-approve { background:#176b4a; color:#fff; border:1px solid #176b4a; }
+        .ac-action-reject { background:#fff; color:#b42318; border:1px solid #efc4bd; }
+        .ac-action-changes { background:#fff; color:#754e18; border:1px solid #e7d4ad; }
+        .ac-decision-form { width:100%; display:grid; gap:11px; padding:16px; background:#f7faf8; border:1px solid #e2ebe5; border-radius:12px; }
+        .ac-decision-form textarea { width:100%; padding:10px; border-radius:8px; border:1px solid #d7e2db; font:inherit; min-height:70px; resize:vertical; }
+        .ac-feedback { margin:18px 28px 0; font-size:13px; font-weight:600; }
         .ac-decision h3 {
           margin: 0 0 8px;
           font-size: 16px;
@@ -363,7 +418,7 @@ export default function ApprovalCenterPage() {
             {[
               { label: "My Decisions", value: items.length, icon: "▤" },
               { label: "Pending Review", value: pendingCount, icon: "◷" },
-              { label: "Completed Decisions", value: completedCount, icon: "✓" }
+              { label: "Assigned Pending", value: pendingCount, icon: "✓" }
             ].map((stat) => (
               <div className="ac-stat" key={stat.label}>
                 <div className="ac-stat-top">
@@ -389,7 +444,7 @@ export default function ApprovalCenterPage() {
                 {[
                   ["all", "All"],
                   ["pending", "Pending"],
-                  ["completed", "Completed"]
+                  ["pending", "Pending"]
                 ].map(([value, label]) => (
                   <button
                     type="button"
