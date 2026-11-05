@@ -659,6 +659,11 @@ async function moveInterviewToPipeline(interview) {
       throw new Error("Application not found.");
     }
 
+    // Never move a different application if the selected interview is stale.
+    if (String(application.id) !== String(interview.application_id)) {
+      throw new Error("Interview and application do not match.");
+    }
+
     if (application.stage === targetStage) {
       throw new Error("Candidate is already in this stage.");
     }
@@ -676,10 +681,14 @@ async function moveInterviewToPipeline(interview) {
       .update({ stage: targetStage })
       .eq("id", application.id)
       .eq("company_id", companyId)
+      .eq("stage", application.stage)
       .select("id, stage")
-      .single();
+      .maybeSingle();
 
     if (updateError) throw updateError;
+    if (!data) {
+      throw new Error("The application stage changed or you no longer have access. Refresh before moving this candidate.");
+    }
 
     setApplications((previous) =>
       previous.map((item) =>
