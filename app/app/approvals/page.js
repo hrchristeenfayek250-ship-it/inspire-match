@@ -433,7 +433,7 @@ export default function ApprovalCenterPage() {
               <div>
                 <h2>My Hiring Decisions</h2>
                 <p>
-                  Active Hiring Manager approval steps assigned to you. Completed decisions remain in the approval history.
+                  Current approval steps assigned to you or to your company role. Completed decisions remain in the approval history.
                 </p>
               </div>
 
