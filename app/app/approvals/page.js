@@ -10,7 +10,6 @@ export default function ApprovalCenterPage() {
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const [filter, setFilter] = useState("all");
   const [decisionDraft, setDecisionDraft] = useState(null);
   const [decisionComments, setDecisionComments] = useState("");
   const [decisionSaving, setDecisionSaving] = useState(false);
@@ -107,9 +106,7 @@ export default function ApprovalCenterPage() {
       .includes(String(item.step_status || "").toLowerCase());
 
   const pendingCount = items.filter(isPending).length;
-  const visibleItems = items.filter(
-    (item) => filter === "all" || isPending(item)
-  );
+  const visibleItems = items;
 
   return (
     <div className="ac-shell">
@@ -212,7 +209,7 @@ export default function ApprovalCenterPage() {
         }
         .ac-stats {
           display: grid;
-          grid-template-columns: repeat(3, minmax(0, 1fr));
+          grid-template-columns: repeat(2, minmax(0, 1fr));
           gap: 17px;
           margin-top: 24px;
         }
@@ -416,9 +413,8 @@ export default function ApprovalCenterPage() {
 
           <section className="ac-stats">
             {[
-              { label: "My Decisions", value: items.length, icon: "▤" },
-              { label: "Pending Review", value: pendingCount, icon: "◷" },
-              { label: "Assigned Pending", value: pendingCount, icon: "✓" }
+              { label: "Assigned to Me", value: items.length, icon: "▤" },
+              { label: "Pending Review", value: pendingCount, icon: "◷" }
             ].map((stat) => (
               <div className="ac-stat" key={stat.label}>
                 <div className="ac-stat-top">
@@ -437,29 +433,22 @@ export default function ApprovalCenterPage() {
               <div>
                 <h2>My Hiring Decisions</h2>
                 <p>
-                  Assigned hiring decisions and their current status
+                  Active Hiring Manager approval steps assigned to you. Completed decisions remain in the approval history.
                 </p>
               </div>
-              <div className="ac-filters">
-                {[
-                  ["all", "All"],
-                  ["pending", "Pending"],
-                  ["pending", "Pending"]
-                ].map(([value, label]) => (
-                  <button
-                    type="button"
-                    key={value}
-                    className={
-                      "ac-filter" +
-                      (filter === value ? " selected" : "")
-                    }
-                    onClick={() => setFilter(value)}
-                  >
-                    {label}
-                  </button>
-                ))}
-              </div>
+
             </div>
+
+            {decisionSuccess && (
+              <p className="ac-feedback" role="status" style={{ color: "#176b4a" }}>
+                {decisionSuccess}
+              </p>
+            )}
+            {decisionError && (
+              <p className="ac-feedback" role="alert" style={{ color: "#b42318" }}>
+                {decisionError}
+              </p>
+            )}
 
             {loading && (
               <div className="ac-empty">
@@ -477,16 +466,10 @@ export default function ApprovalCenterPage() {
               <div className="ac-empty">
                 <div className="ac-empty-icon">✓</div>
                 <h3>
-                  {filter === "pending"
-                    ? "No Pending Decisions"
-                    : filter === "completed"
-                    ? "No Completed Decisions"
-                    : "You're All Caught Up"}
+                  No Pending Decisions
                 </h3>
                 <p>
-                  {filter === "all"
-                    ? "There are no hiring decisions assigned to your account at the moment. New decisions will appear here when available."
-                    : "No hiring decisions match this filter right now."}
+                  There are no active approval steps assigned to your account at the moment. New decisions will appear here when available.
                 </p>
               </div>
             )}
@@ -503,14 +486,64 @@ export default function ApprovalCenterPage() {
                 <span className="ac-status">
                   {item.step_status || "Pending"}
                 </span>
+                {isPending(item) && (
+                  <div className="ac-decision-actions">
+                    <button type="button" className="ac-action ac-action-approve"
+                      disabled={decisionSaving}
+                      onClick={() => openDecision(item.offer_id, "approved")}>
+                      Approve
+                    </button>
+                    <button type="button" className="ac-action ac-action-reject"
+                      disabled={decisionSaving}
+                      onClick={() => openDecision(item.offer_id, "rejected")}>
+                      Reject
+                    </button>
+                    <button type="button" className="ac-action ac-action-changes"
+                      disabled={decisionSaving}
+                      onClick={() => openDecision(item.offer_id, "changes_requested")}>
+                      Request Changes
+                    </button>
+                  </div>
+                )}
+                {decisionDraft?.offerId === item.offer_id && (
+                  <div className="ac-decision-form">
+                    <strong>
+                      Confirm {decisionDraft.action === "approved" ? "Approval"
+                        : decisionDraft.action === "rejected" ? "Rejection" : "Request for Changes"}
+                    </strong>
+                    <label htmlFor="approval-decision-comments">
+                      {decisionDraft.action === "approved" ? "Comment (optional)" : "Reason (required)"}
+                    </label>
+                    <textarea
+                      id="approval-decision-comments"
+                      value={decisionComments}
+                      onChange={(e) => setDecisionComments(e.target.value)}
+                      disabled={decisionSaving}
+                      placeholder="Add a clear note for the HR team..."
+                    />
+                    <div className="ac-decision-actions">
+                      <button type="button" className="ac-action ac-action-approve"
+                        onClick={submitDecision}
+                        disabled={decisionSaving ||
+                          (decisionDraft.action !== "approved" && !decisionComments.trim())}>
+                        {decisionSaving ? "Saving..." : "Confirm Decision"}
+                      </button>
+                      <button type="button" className="ac-action ac-action-reject"
+                        disabled={decisionSaving}
+                        onClick={() => { setDecisionDraft(null); setDecisionComments(""); setDecisionError(""); }}>
+                        Cancel
+                      </button>
+                    </div>
+                  </div>
+                )}
               </div>
             ))}
           </section>
 
           <p className="ac-note">
-            Hiring decision information only. Financial details are
-            not displayed. Approval actions will be enabled after
-            authorization and security checks are completed.
+            Hiring decisions only. Compensation details are not requested by
+            this page. Each action is authorized and recorded by the database
+            against the current approval step assigned to you.
           </p>
         </main>
       </div>
