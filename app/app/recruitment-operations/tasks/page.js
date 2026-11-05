@@ -43,13 +43,15 @@ export default function RecruitmentTasksPage(){
   if(form.status==="blocked"&&!form.blocker_reason.trim()){setSaving(false);setError("A blocker reason is required.");return;}
   const payload={blocker_reason:form.status==="blocked"?form.blocker_reason.trim():null,title:form.title.trim(),description:form.description.trim()||null,assignee_name:form.assignee_name.trim()||null,priority:form.priority,status:form.status,due_date:form.due_date||null,job_id:form.job_id?Number(form.job_id):null,candidate_id:form.candidate_id?Number(form.candidate_id):null,company_id:form.company_id||null,assigned_to:form.assigned_to||null,updated_at:new Date().toISOString()};
   const query=editing?supabase.from("recruitment_tasks").update(payload).eq("id",editing):supabase.from("recruitment_tasks").insert({...payload,created_by:uid});
-  const {error:e2}=await query;setSaving(false);
+  const {data:saved,error:e2}=await query.select("id");setSaving(false);
   if(e2){setError(e2.message);return;}
+  if(!saved?.length){setError("Task was not saved. Check your permissions and try again.");return;}
   setMessage(editing?"Task updated successfully.":"Task created successfully.");setShow(false);setEditing(null);setForm(empty);await load();
  }
  async function changeStatus(t,status){
   setError("");setMessage("");
   if(status===t.status)return;
+  if(!(t.created_by===uid||t.assigned_to===uid||manager(t.company_id))){setError("Only the task owner, assignee or company manager may change this status.");return;}
   let reason=null;
   if(status==="blocked"){
    reason=window.prompt("Reason for blocking this task:",t.blocker_reason||"");
@@ -120,7 +122,7 @@ export default function RecruitmentTasksPage(){
       {loading?<p style={{padding:30,color:"#74887c"}}>Loading tasks...</p>:visible.length===0?<p style={{padding:35,textAlign:"center",color:"#84978b"}}>{tasks.length?"No matching tasks.":"No tasks yet. Create your first task."}</p>:
        <div className="rt-tasks">{visible.map(t=><article key={t.id} style={{border:"1px solid #e5eee7",borderRadius:12,padding:18,display:"flex",justifyContent:"space-between",alignItems:"center",gap:15,flexWrap:"wrap"}}>
         <div style={{flex:1,minWidth:180}}><strong style={{fontSize:15}}>{t.title}</strong>{t.description&&<p style={{fontSize:12,color:"#73877b",whiteSpace:"pre-wrap",margin:"8px 0"}}>{t.description}</p>}{t.status==="blocked"&&t.blocker_reason&&<p style={{fontSize:12,color:"#9a6028",margin:"8px 0"}}><b>Blocker:</b> {t.blocker_reason}</p>}<div style={{fontSize:11,color:"#678374",marginTop:9}}>Priority: <b>{t.priority.toUpperCase()}</b> &nbsp; · &nbsp; Due: {t.due_date||"Not set"} {t.assigned_to&&" · Assigned: "+(t.assigned_to===uid?"You":"Member "+t.assigned_to.slice(0,8))}{t.job_id&&" · Job: "+(jobs.find(j=>String(j.id)===String(t.job_id))?.title||"#"+t.job_id)}{t.candidate_id&&" · Candidate: "+(candidates.find(c=>String(c.id)===String(t.candidate_id))?.full_name||"#"+t.candidate_id)}</div></div>
-        <div style={{display:"flex",gap:8,alignItems:"center",flexWrap:"wrap"}}><select aria-label={"Status for "+t.title} value={t.status} onChange={e=>changeStatus(t,e.target.value)} style={{...field,width:135,fontSize:11}}>{statuses.map(s=><option key={s} value={s}>{label(s)}</option>)}</select>{(t.created_by===uid||manager(t.company_id))&&<><button style={{...btn,background:"#e9f4ed",color:"#176b49",padding:10}} onClick={()=>edit(t)}>Edit</button><button style={{...btn,background:"#fff0ef",color:"#a44e43",padding:10}} onClick={()=>remove(t)}>Delete</button></>}</div>
+        <div style={{display:"flex",gap:8,alignItems:"center",flexWrap:"wrap"}}><select aria-label={"Status for "+t.title} value={t.status} disabled={!(t.created_by===uid||t.assigned_to===uid||manager(t.company_id))} title={t.created_by===uid||t.assigned_to===uid||manager(t.company_id)?"Change task status":"Read-only status"} onChange={e=>changeStatus(t,e.target.value)} style={{...field,width:135,fontSize:11}}>{statuses.map(s=><option key={s} value={s}>{label(s)}</option>)}</select>{(t.created_by===uid||manager(t.company_id))&&<><button style={{...btn,background:"#e9f4ed",color:"#176b49",padding:10}} onClick={()=>edit(t)}>Edit</button><button style={{...btn,background:"#fff0ef",color:"#a44e43",padding:10}} onClick={()=>remove(t)}>Delete</button></>}</div>
        </article>)}</div>}
      </section>
     </div>
