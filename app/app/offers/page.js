@@ -61,7 +61,7 @@ const [offerForm, setOfferForm] = useState({
         const { data: memberships, error: memberError } =
           await supabase
             .from("company_members")
-            .select("company_id")
+            .select("company_id,role")
             .eq("user_id", auth.user.id);
 
         if (memberError) throw memberError;
@@ -73,6 +73,9 @@ const [offerForm, setOfferForm] = useState({
         }
 
         const companyId = memberships[0].company_id;
+        if (!["admin","hr_manager","senior_recruiter","hr","recruiter","hr_specialist"].includes(String(memberships[0].role||"").toLowerCase())) {
+          throw new Error("Offer Management is restricted to authorized HR staff. Hiring managers must use their assigned approval workflow.");
+        }
 
      const [offerResult, candidateResult, jobResult, applicationResult] =
   await Promise.all([
@@ -151,13 +154,17 @@ async function handleSaveOffer() {
     const { data: memberships, error: memberError } =
       await supabase
         .from("company_members")
-        .select("company_id")
+        .select("company_id,role")
         .eq("user_id", auth.user.id);
 
     if (memberError) throw memberError;
 
     if (!memberships || memberships.length !== 1) {
       throw new Error("Your account must belong to exactly one company.");
+    }
+
+    if (!["admin","hr_manager","senior_recruiter","hr","recruiter","hr_specialist"].includes(String(memberships[0].role||"").toLowerCase())) {
+      throw new Error("Only authorized HR staff can create offers.");
     }
 
     const selectedJob = availableJobs.find(
