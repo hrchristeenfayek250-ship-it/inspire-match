@@ -34,6 +34,11 @@ export default function RecruitmentTasksPage(){
  async function save(e){
   e.preventDefault();if(!uid||saving||!form.title.trim())return;
   setSaving(true);setError("");setMessage("");
+  const linkedJob=form.job_id?jobs.find(j=>String(j.id)===String(form.job_id)):null;
+  const linkedCandidate=form.candidate_id?candidates.find(x=>String(x.id)===String(form.candidate_id)):null;
+  if(form.job_id&&(!linkedJob||!form.company_id||linkedJob.company_id!==form.company_id)){setSaving(false);setError("The linked job must belong to the selected company.");return;}
+  if(form.candidate_id&&(!linkedCandidate||!form.company_id||linkedCandidate.company_id!==form.company_id)){setSaving(false);setError("The linked candidate must belong to the selected company.");return;}
+  if(linkedJob&&linkedCandidate&&String(linkedCandidate.job_id)!==String(linkedJob.id)){setSaving(false);setError("The linked candidate must belong to the selected job.");return;}
   if(form.assigned_to&&!members.some(m=>m.company_id===form.company_id&&m.user_id===form.assigned_to)){setSaving(false);setError("Select a member from this company.");return;}
   if(form.status==="blocked"&&!form.blocker_reason.trim()){setSaving(false);setError("A blocker reason is required.");return;}
   const payload={blocker_reason:form.status==="blocked"?form.blocker_reason.trim():null,title:form.title.trim(),description:form.description.trim()||null,assignee_name:form.assignee_name.trim()||null,priority:form.priority,status:form.status,due_date:form.due_date||null,job_id:form.job_id?Number(form.job_id):null,candidate_id:form.candidate_id?Number(form.candidate_id):null,company_id:form.company_id||null,assigned_to:form.assigned_to||null,updated_at:new Date().toISOString()};
@@ -95,7 +100,7 @@ export default function RecruitmentTasksPage(){
       <div className="rt-form">
        <label style={{gridColumn:"1/-1"}}>Task Title *<input style={{...field,marginTop:7}} required maxLength={200} value={form.title} onChange={e=>setForm({...form,title:e.target.value})}/></label>
        <label style={{gridColumn:"1/-1"}}>Description<textarea style={{...field,marginTop:7,minHeight:85}} value={form.description} onChange={e=>setForm({...form,description:e.target.value})}/></label>
-       <label>Company<select style={{...field,marginTop:7}} value={form.company_id} onChange={e=>setForm({...form,company_id:e.target.value,assigned_to:""})}><option value="">Personal</option>{companyIds.map(id=><option key={id} value={id}>Company {id.slice(0,8)}</option>)}</select></label>
+       <label>Company<select style={{...field,marginTop:7}} value={form.company_id} onChange={e=>setForm({...form,company_id:e.target.value,assigned_to:"",job_id:"",candidate_id:""})}><option value="">Personal</option>{companyIds.map(id=><option key={id} value={id}>Company {id.slice(0,8)}</option>)}</select></label>
        <label>Assign Team Member<select style={{...field,marginTop:7}} value={form.assigned_to} disabled={!manager(form.company_id)} onChange={e=>setForm({...form,assigned_to:e.target.value})}><option value="">Unassigned</option>{members.filter(m=>m.company_id===form.company_id).map(m=><option key={m.user_id} value={m.user_id}>{m.user_id===uid?"You":`Member ${m.user_id.slice(0,8)}`} ({m.role})</option>)}</select></label>
        <label>Responsible person (name)<input style={{...field,marginTop:7}} value={form.assignee_name} onChange={e=>setForm({...form,assignee_name:e.target.value})}/></label>
        <label>Priority<select style={{...field,marginTop:7}} value={form.priority} onChange={e=>setForm({...form,priority:e.target.value})}>{["low","medium","high","urgent"].map(p=><option key={p} value={p}>{p}</option>)}</select></label>
