@@ -36,6 +36,7 @@ export default function OffersPage() {
 const [savingOffer, setSavingOffer] = useState(false);
 const [offerFormError, setOfferFormError] = useState("");
   const [availableJobs, setAvailableJobs] = useState([]);
+  const [candidateJobLinks, setCandidateJobLinks] = useState([]);
 const [offerForm, setOfferForm] = useState({
   candidate_id: "",
   job_id: "",
@@ -73,7 +74,7 @@ const [offerForm, setOfferForm] = useState({
 
         const companyId = memberships[0].company_id;
 
-     const [offerResult, candidateResult, jobResult] =
+     const [offerResult, candidateResult, jobResult, applicationResult] =
   await Promise.all([
     supabase
       .from("recruitment_offers")
@@ -83,18 +84,21 @@ const [offerForm, setOfferForm] = useState({
 
     supabase
       .from("candidates")
-      .select("id, full_name")
+      .select("id, full_name, job_id")
       .eq("company_id", companyId),
 
     supabase
       .from("jobs")
       .select("id, title")
       .eq("company_id", companyId),
+    supabase.from("applications").select("candidate_id,job_id").eq("company_id",companyId).limit(5000),
   ]);
 
 if (offerResult.error) throw offerResult.error;
 if (candidateResult.error) throw candidateResult.error;
 if (jobResult.error) throw jobResult.error;
+if (applicationResult.error) throw applicationResult.error;
+setCandidateJobLinks([...(candidateResult.data||[]).filter(x=>x.job_id!=null).map(x=>({candidate_id:x.id,job_id:x.job_id})),...(applicationResult.data||[])]);
 
 setAvailableJobs(jobResult.data || []);
 
@@ -164,6 +168,10 @@ async function handleSaveOffer() {
       throw new Error("Please select a valid job.");
     }
 
+    if (!candidateJobLinks.some(link=>String(link.candidate_id)===String(offerForm.candidate_id)&&String(link.job_id)===String(offerForm.job_id))) {
+      throw new Error("The selected candidate is not linked to this job. Choose a valid application.");
+    }
+
     const { data: newOffer, error: insertError } =
       await supabase
         .from("recruitment_offers")
@@ -188,6 +196,7 @@ async function handleSaveOffer() {
         .single();
 
     if (insertError) throw insertError;
+    if (!newOffer?.id) throw new Error("Offer was not saved. Check your permissions.");
 
     setOffers((previous) => [newOffer, ...previous]);
     setShowCreateOffer(false);
