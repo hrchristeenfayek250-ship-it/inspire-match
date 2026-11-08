@@ -1,3 +1,4 @@
+import { requireApprovedTenant } from "@/lib/server-tenant-gate";
 
 import { createClient } from "@supabase/supabase-js";
 import { askClaude } from "@/lib/claude";
@@ -39,6 +40,13 @@ export async function POST(request) {
       return Response.json(
         { error: "Invalid session." },
         { status: 401 }
+      );
+    }
+
+    if (!(await requireApprovedTenant(request))) {
+      return Response.json(
+        { error: "Workspace approval is required to use AI tools." },
+        { status: 403, headers: { "Cache-Control": "no-store" } }
       );
     }
 
