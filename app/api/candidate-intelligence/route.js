@@ -102,6 +102,7 @@ export async function POST(request) {
         .or(
           `company_id.eq.${companyId},and(company_id.is.null,user_id.eq.${authData.user.id})`
         )
+        .is("deleted_at", null)
         .maybeSingle();
 
     if (candidateError) throw candidateError;
