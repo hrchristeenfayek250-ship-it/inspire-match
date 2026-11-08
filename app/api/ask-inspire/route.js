@@ -90,6 +90,7 @@ export async function POST(request) {
         .from("candidates")
         .select("id, status, job_id, created_at")
         .or(companyFilter)
+        .is("deleted_at", null)
         .limit(1000),
       db
         .from("jobs")
