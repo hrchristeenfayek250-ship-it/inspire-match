@@ -232,7 +232,7 @@ confidence to "low", and explain why.
           const cvBlocks = await fileToBlocks(file);
           analysisContent.push(...cvBlocks);
         } catch (error) {
-          console.warn("CV could not be analyzed:", error.message);
+          console.warn("CV could not be analyzed:", { code: error?.code || "CV_ANALYSIS_FAILED" });
         }
       }
     }
@@ -318,7 +318,7 @@ confidence to "low", and explain why.
     return Response.json(matchResult);
 
   } catch (error) {
-    console.error("AI matching failed:", error);
+    console.error("AI matching failed:", { code: error?.code || "AI_MATCH_FAILED", providerStatus: Number(error?.status) || null });
 
     return Response.json(
       {
