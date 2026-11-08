@@ -33,6 +33,7 @@ export default function OffersPage() {
   const [error, setError] = useState("");
   const [filter, setFilter] = useState("all");
   const [showCreateOffer, setShowCreateOffer] = useState(false);
+  const [editingOfferId, setEditingOfferId] = useState(null);
 const [savingOffer, setSavingOffer] = useState(false);
 const [offerFormError, setOfferFormError] = useState("");
   const [availableJobs, setAvailableJobs] = useState([]);
@@ -124,6 +125,32 @@ setAvailableJobs(jobResult.data || []);
 
     loadOffers();
   }, []);
+function beginCreateOffer() {
+  setEditingOfferId(null);
+  setOfferFormError("");
+  setOfferForm({ candidate_id: "", job_id: "", base_salary: "", currency: "EGP",
+    start_date: "", benefits: "", internal_notes: "" });
+  setShowCreateOffer(true);
+}
+
+function beginReviseOffer(offer) {
+  if (savingOffer || submittingOfferId) return;
+  if (!["draft", "changes_requested"].includes(offer.status)) return;
+  setEditingOfferId(offer.id);
+  setOfferFormError("");
+  setSubmitError("");
+  setOfferForm({
+    candidate_id: String(offer.candidate_id),
+    job_id: String(offer.job_id),
+    base_salary: offer.base_salary == null ? "" : String(offer.base_salary),
+    currency: offer.currency || "EGP",
+    start_date: offer.proposed_start_date ? String(offer.proposed_start_date).slice(0, 10) : "",
+    benefits: offer.benefits || "",
+    internal_notes: offer.internal_notes || "",
+  });
+  setShowCreateOffer(true);
+}
+
 async function handleSaveOffer() {
   if (savingOffer) return;
 
@@ -165,6 +192,46 @@ async function handleSaveOffer() {
 
     if (!["admin","hr_manager","senior_recruiter","hr","recruiter","hr_specialist"].includes(String(memberships[0].role||"").toLowerCase())) {
       throw new Error("Only authorized HR staff can create offers.");
+    }
+
+    if (editingOfferId) {
+      const existing = offers.find((offer) => offer.id === editingOfferId);
+      if (!existing || !["draft", "changes_requested"].includes(existing.status)) {
+        throw new Error("This offer can no longer be revised.");
+      }
+
+      const { error: reviseError } = await supabase.rpc("revise_offer_draft", {
+        p_offer_id: editingOfferId,
+        p_base_salary: offerForm.base_salary === "" ? null : Number(offerForm.base_salary),
+        p_currency: offerForm.currency,
+        p_proposed_start_date: offerForm.start_date || null,
+        p_benefits: offerForm.benefits || null,
+        p_internal_notes: offerForm.internal_notes || null,
+      });
+      if (reviseError) throw reviseError;
+
+      const { data: updatedOffer } = await supabase
+        .from("recruitment_offers")
+        .select("*")
+        .eq("id", editingOfferId)
+        .maybeSingle();
+
+      setOffers((previous) => previous.map((offer) =>
+        offer.id !== editingOfferId ? offer :
+        (updatedOffer || {
+          ...offer,
+          base_salary: offerForm.base_salary === "" ? null : Number(offerForm.base_salary),
+          currency: offerForm.currency,
+          proposed_start_date: offerForm.start_date || null,
+          benefits: offerForm.benefits || null,
+          internal_notes: offerForm.internal_notes || null,
+        })
+      ));
+      setShowCreateOffer(false);
+      setEditingOfferId(null);
+      setOfferForm({ candidate_id: "", job_id: "", base_salary: "",
+        currency: "EGP", start_date: "", benefits: "", internal_notes: "" });
+      return;
     }
 
     const selectedJob = availableJobs.find(
@@ -225,15 +292,19 @@ async function handleSaveOffer() {
  const [submittingOfferId, setSubmittingOfferId] = useState(null);
 const [submitError, setSubmitError] = useState("");
 
-async function handleSubmitForApproval(offerId) {
-  if (submittingOfferId) return;
+async function handleSubmitForApproval(offer) {
+  if (submittingOfferId || savingOffer) return;
+  if (!["draft", "changes_requested"].includes(offer.status)) return;
 
+  const offerId = offer.id;
   setSubmittingOfferId(offerId);
   setSubmitError("");
 
   try {
+    const procedure = offer.status === "changes_requested"
+      ? "resubmit_revised_offer" : "submit_offer_for_approval";
     const { error } = await supabase.rpc(
-      "submit_offer_for_approval",
+      procedure,
       { p_offer_id: offerId }
     );
 
@@ -417,10 +488,7 @@ async function handleSubmitForApproval(offerId) {
 
   <button
     type="button"
-    onClick={() => {
-      setOfferFormError("");
-      setShowCreateOffer(true);
-    }}
+    onClick={beginCreateOffer}
     style={{
       background: "#176b4a",
       color: "#ffffff",
@@ -476,11 +544,14 @@ async function handleSubmitForApproval(offerId) {
         marginBottom: 20,
       }}
     >
-      <h3 style={{ margin: 0 }}>Create Employment Offer</h3>
+      <h3 style={{ margin: 0 }}>
+        {editingOfferId ? "Revise Employment Offer" : "Create Employment Offer"}
+      </h3>
 
       <button
         type="button"
-        onClick={() => setShowCreateOffer(false)}
+        onClick={() => { if (!savingOffer) { setShowCreateOffer(false); setEditingOfferId(null); } }}
+        disabled={savingOffer}
         style={{
           background: "transparent",
           border: "none",
@@ -503,6 +574,7 @@ async function handleSubmitForApproval(offerId) {
     Candidate
     <select
       value={offerForm.candidate_id}
+      disabled={!!editingOfferId}
       onChange={(e) =>
         setOfferForm({
           ...offerForm,
@@ -522,6 +594,7 @@ async function handleSubmitForApproval(offerId) {
     Job
     <select
       value={offerForm.job_id}
+      disabled={!!editingOfferId}
       onChange={(e) =>
         setOfferForm({
           ...offerForm,
@@ -647,7 +720,7 @@ async function handleSubmitForApproval(offerId) {
 >
   <button
     type="button"
-    onClick={() => setShowCreateOffer(false)}
+    onClick={() => { setShowCreateOffer(false); setEditingOfferId(null); }}
     disabled={savingOffer}
     style={{
       padding: "12px 24px",
@@ -674,7 +747,7 @@ async function handleSubmitForApproval(offerId) {
       cursor: "pointer",
     }}
   >
-    {savingOffer ? "Saving..." : "Save Draft"}
+    {savingOffer ? "Saving..." : editingOfferId ? "Save Revisions" : "Save Draft"}
   </button>
 </div>
       </div>
@@ -779,27 +852,39 @@ async function handleSubmitForApproval(offerId) {
                         ).toLocaleDateString()}
                       </td>
                         <td style={{ padding: 14 }}>
-  {offer.status === "draft" && (
-    <button
-      type="button"
-      onClick={() => handleSubmitForApproval(offer.id)}
-      disabled={submittingOfferId !== null}
-      style={{
-        padding: "10px 14px",
-        borderRadius: 9,
-        border: "none",
-        background: "#176b4a",
-        color: "#ffffff",
-        fontSize: 12,
-        fontWeight: 700,
-        cursor: submittingOfferId ? "wait" : "pointer",
-        opacity: submittingOfferId ? 0.65 : 1,
-      }}
-    >
-      {submittingOfferId === offer.id
-        ? "Submitting..."
-        : "Submit for Approval"}
-    </button>
+  {["draft", "changes_requested"].includes(offer.status) && (
+    <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+      <button
+        type="button"
+        disabled={submittingOfferId !== null || savingOffer}
+        onClick={() => beginReviseOffer(offer)}
+        style={{
+          padding: "10px 14px", borderRadius: 9,
+          border: "1px solid #bfd6c6", background: "#fff",
+          color: "#176b4a", fontSize: 12, fontWeight: 700, cursor: "pointer",
+        }}
+      >
+        {offer.status === "draft" ? "Edit Draft" : "Revise Offer"}
+      </button>
+      <button
+        type="button"
+        disabled={submittingOfferId !== null || savingOffer}
+        onClick={() => handleSubmitForApproval(offer)}
+        style={{
+          padding: "10px 14px", borderRadius: 9,
+          border: "none", background: "#176b4a", color: "#ffffff",
+          fontSize: 12, fontWeight: 700,
+          cursor: submittingOfferId ? "wait" : "pointer",
+          opacity: submittingOfferId ? 0.65 : 1,
+        }}
+      >
+        {submittingOfferId === offer.id
+          ? "Submitting..."
+          : offer.status === "changes_requested"
+          ? "Resubmit for Approval"
+          : "Submit for Approval"}
+      </button>
+    </div>
   )}
 </td>
                     </tr>
