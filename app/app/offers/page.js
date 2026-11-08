@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import { supabase } from "@/lib/supabase";
 import ATSNavigation from "@/components/ATSNavigation";
@@ -34,6 +34,10 @@ export default function OffersPage() {
   const [filter, setFilter] = useState("all");
   const [showCreateOffer, setShowCreateOffer] = useState(false);
   const [editingOfferId, setEditingOfferId] = useState(null);
+  const [historyOfferId, setHistoryOfferId] = useState(null);
+  const [approvalHistory, setApprovalHistory] = useState(null);
+  const [historyLoading, setHistoryLoading] = useState(false);
+  const [historyError, setHistoryError] = useState("");
 const [savingOffer, setSavingOffer] = useState(false);
 const [offerFormError, setOfferFormError] = useState("");
   const [availableJobs, setAvailableJobs] = useState([]);
@@ -125,6 +129,35 @@ setAvailableJobs(jobResult.data || []);
 
     loadOffers();
   }, []);
+async function toggleApprovalHistory(offerId) {
+  if (historyOfferId === offerId) {
+    setHistoryOfferId(null);
+    setApprovalHistory(null);
+    setHistoryError("");
+    return;
+  }
+
+  setHistoryOfferId(offerId);
+  setApprovalHistory(null);
+  setHistoryError("");
+  setHistoryLoading(true);
+  try {
+    const { data, error: rpcError } = await supabase.rpc(
+      "get_offer_approval_history_for_hr",
+      { p_offer_id: offerId }
+    );
+    if (rpcError) throw rpcError;
+    setApprovalHistory({
+      events: Array.isArray(data?.events) ? data.events : [],
+      steps: Array.isArray(data?.steps) ? data.steps : [],
+    });
+  } catch (err) {
+    setHistoryError(err.message || "Could not load approval history.");
+  } finally {
+    setHistoryLoading(false);
+  }
+}
+
 function beginCreateOffer() {
   setEditingOfferId(null);
   setOfferFormError("");
@@ -817,7 +850,8 @@ async function handleSubmitForApproval(offer) {
                 </thead>
                 <tbody>
                   {filteredOffers.map((offer) => (
-                    <tr key={offer.id}>
+                    <React.Fragment key={offer.id}>
+                    <tr>
                       <td style={{ padding: 14 }}>
                         {candidates[offer.candidate_id] ||
                           "Candidate"}
@@ -852,6 +886,7 @@ async function handleSubmitForApproval(offer) {
                         ).toLocaleDateString()}
                       </td>
                         <td style={{ padding: 14 }}>
+  <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
   {["draft", "changes_requested"].includes(offer.status) && (
     <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
       <button
@@ -886,9 +921,70 @@ async function handleSubmitForApproval(offer) {
       </button>
     </div>
   )}
+    <button type="button"
+      onClick={() => toggleApprovalHistory(offer.id)}
+      disabled={historyLoading}
+      style={{
+        padding: "10px 14px", borderRadius: 9,
+        border: "1px solid #dce9e1", background: "#fff",
+        color: "#176b4a", fontSize: 12, fontWeight: 700,
+        cursor: "pointer",
+      }}>
+      {historyOfferId === offer.id ? "Hide History" : "Approval History"}
+    </button>
+  </div>
 </td>
                     </tr>
-                  ))}
+                    {historyOfferId === offer.id && (
+                      <tr key={`history-${offer.id}`}>
+                        <td colSpan={6} style={{
+                          padding: 18, background: "#f8fbf9",
+                          borderBottom: "1px solid #dce9e1",
+                        }}>
+                          <strong>Approval Timeline</strong>
+                          {historyLoading && <p>Loading approval history...</p>}
+                          {historyError && <p role="alert" style={{ color: "#b42318" }}>{historyError}</p>}
+                          {approvalHistory && (
+                            <div style={{ display: "grid", gap: 14, marginTop: 12 }}>
+                              <div>
+                                <strong>Approval Steps</strong>
+                                {approvalHistory.steps.length === 0
+                                  ? <p>No approval steps recorded.</p>
+                                  : <ol style={{ paddingLeft: 22 }}>
+                                      {approvalHistory.steps.map((step, index) => (
+                                        <li key={`step-${index}`}>
+                                          {step.step_name || "Approval Step"} — {formatStatus(String(step.status || "pending"))}
+                                          {step.approver_role ? ` (${step.approver_role})` : ""}
+                                        </li>
+                                      ))}
+                                    </ol>}
+                              </div>
+                              <div>
+                                <strong>Decision & Submission History</strong>
+                                {approvalHistory.events.length === 0
+                                  ? <p>No approval events recorded.</p>
+                                  : <ol style={{ paddingLeft: 22 }}>
+                                      {approvalHistory.events.map((event, index) => (
+                                        <li key={`event-${index}`} style={{ marginBottom: 9 }}>
+                                          <strong>{formatStatus(String(event.action || "event"))}</strong>
+                                          {event.occurred_at
+                                            ? ` — ${new Date(event.occurred_at).toLocaleString()}`
+                                            : ""}
+                                          {event.comments && (
+                                            <p style={{ margin: "4px 0 0", whiteSpace: "pre-wrap" }}>
+                                              {event.comments}
+                                            </p>
+                                          )}
+                                        </li>
+                                      ))}
+                                    </ol>}
+                              </div>
+                            </div>
+                          )}
+                        </td>
+                      </tr>
+                    )}
+                  </>)}
                 </tbody>
               </table>
             </div>
