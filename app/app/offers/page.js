@@ -630,6 +630,7 @@ async function handleSubmitForApproval(offerId) {
       }}
     />
   </label>
+</div>
 {offerFormError && (
   <p role="alert" style={{ color: "#b42318", marginTop: 16 }}>
     {offerFormError}
