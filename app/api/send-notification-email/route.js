@@ -197,6 +197,7 @@ export async function POST(request) {
         headers: {
           Authorization: `Bearer ${process.env.RESEND_API_KEY}`,
           "Content-Type": "application/json",
+          "Idempotency-Key": `inspire-notification-${notificationId}`,
         },
         body: JSON.stringify({
           from: FROM_EMAIL,
