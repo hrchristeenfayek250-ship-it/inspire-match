@@ -984,7 +984,7 @@ async function handleSubmitForApproval(offer) {
                         </td>
                       </tr>
                     )}
-                  </>)}
+                  </React.Fragment>)}
                 </tbody>
               </table>
             </div>
