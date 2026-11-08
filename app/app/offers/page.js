@@ -1,7 +1,7 @@
 
 "use client";
 
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { supabase } from "@/lib/supabase";
 import ATSNavigation from "@/components/ATSNavigation";
@@ -141,18 +141,19 @@ async function toggleApprovalHistory(offerId) {
   setApprovalHistory(null);
   setHistoryError("");
   setHistoryLoading(true);
+
   try {
-    const { data, error: rpcError } = await supabase.rpc(
+    const { data, error: historyRpcError } = await supabase.rpc(
       "get_offer_approval_history_for_hr",
       { p_offer_id: offerId }
     );
-    if (rpcError) throw rpcError;
+    if (historyRpcError) throw historyRpcError;
     setApprovalHistory({
       events: Array.isArray(data?.events) ? data.events : [],
       steps: Array.isArray(data?.steps) ? data.steps : [],
     });
-  } catch (err) {
-    setHistoryError(err.message || "Could not load approval history.");
+  } catch (historyErr) {
+    setHistoryError(historyErr.message || "Could not load approval history.");
   } finally {
     setHistoryLoading(false);
   }
@@ -850,8 +851,7 @@ async function handleSubmitForApproval(offer) {
                 </thead>
                 <tbody>
                   {filteredOffers.map((offer) => (
-                    <React.Fragment key={offer.id}>
-                    <tr>
+                    <tr key={offer.id}>
                       <td style={{ padding: 14 }}>
                         {candidates[offer.candidate_id] ||
                           "Candidate"}
@@ -921,72 +921,87 @@ async function handleSubmitForApproval(offer) {
       </button>
     </div>
   )}
-    <button type="button"
+    <button
+      type="button"
       onClick={() => toggleApprovalHistory(offer.id)}
-      disabled={historyLoading}
       style={{
-        padding: "10px 14px", borderRadius: 9,
-        border: "1px solid #dce9e1", background: "#fff",
-        color: "#176b4a", fontSize: 12, fontWeight: 700,
+        padding: "10px 14px",
+        borderRadius: 9,
+        border: "1px solid #dce9e1",
+        background: "#ffffff",
+        color: "#176b4a",
+        fontSize: 12,
+        fontWeight: 700,
         cursor: "pointer",
-      }}>
+      }}
+    >
       {historyOfferId === offer.id ? "Hide History" : "Approval History"}
     </button>
   </div>
 </td>
                     </tr>
-                    {historyOfferId === offer.id && (
-                      <tr key={`history-${offer.id}`}>
-                        <td colSpan={6} style={{
-                          padding: 18, background: "#f8fbf9",
-                          borderBottom: "1px solid #dce9e1",
-                        }}>
-                          <strong>Approval Timeline</strong>
-                          {historyLoading && <p>Loading approval history...</p>}
-                          {historyError && <p role="alert" style={{ color: "#b42318" }}>{historyError}</p>}
-                          {approvalHistory && (
-                            <div style={{ display: "grid", gap: 14, marginTop: 12 }}>
-                              <div>
-                                <strong>Approval Steps</strong>
-                                {approvalHistory.steps.length === 0
-                                  ? <p>No approval steps recorded.</p>
-                                  : <ol style={{ paddingLeft: 22 }}>
-                                      {approvalHistory.steps.map((step, index) => (
-                                        <li key={`step-${index}`}>
-                                          {step.step_name || "Approval Step"} — {formatStatus(String(step.status || "pending"))}
-                                          {step.approver_role ? ` (${step.approver_role})` : ""}
-                                        </li>
-                                      ))}
-                                    </ol>}
-                              </div>
-                              <div>
-                                <strong>Decision & Submission History</strong>
-                                {approvalHistory.events.length === 0
-                                  ? <p>No approval events recorded.</p>
-                                  : <ol style={{ paddingLeft: 22 }}>
-                                      {approvalHistory.events.map((event, index) => (
-                                        <li key={`event-${index}`} style={{ marginBottom: 9 }}>
-                                          <strong>{formatStatus(String(event.action || "event"))}</strong>
-                                          {event.occurred_at
-                                            ? ` — ${new Date(event.occurred_at).toLocaleString()}`
-                                            : ""}
-                                          {event.comments && (
-                                            <p style={{ margin: "4px 0 0", whiteSpace: "pre-wrap" }}>
-                                              {event.comments}
-                                            </p>
-                                          )}
-                                        </li>
-                                      ))}
-                                    </ol>}
-                              </div>
-                            </div>
-                          )}
-                        </td>
-                      </tr>
-                    )}
-                  </React.Fragment>)}
+                  ))}
                 </tbody>
               </table>
+            </div>
+          )}
+          {historyOfferId && !loading && !error && (
+            <div style={{
+              marginTop: 18,
+              padding: 20,
+              border: "1px solid #dce9e1",
+              borderRadius: 12,
+              background: "#f8fbf9",
+            }}>
+              <div style={{
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+                gap: 12,
+              }}>
+                <strong>Approval Timeline</strong>
+                <button type="button" onClick={() => toggleApprovalHistory(historyOfferId)}
+                  style={{ border: "none", background: "transparent", color: green, cursor: "pointer" }}>
+                  Close
+                </button>
+              </div>
+              {historyLoading && <p>Loading approval history...</p>}
+              {historyError && <p role="alert" style={{ color: "#b42318" }}>{historyError}</p>}
+              {approvalHistory && (
+                <div style={{ display: "grid", gap: 18, marginTop: 16 }}>
+                  <div>
+                    <strong>Approval Steps</strong>
+                    {approvalHistory.steps.length === 0 ? <p>No approval steps recorded.</p> : (
+                      <ol style={{ paddingLeft: 23 }}>
+                        {approvalHistory.steps.map((step, index) => (
+                          <li key={index} style={{ marginTop: 7 }}>
+                            {step.step_name || "Approval Step"} — {formatStatus(String(step.status || "pending"))}
+                            {step.approver_role ? ` (${step.approver_role})` : ""}
+                          </li>
+                        ))}
+                      </ol>
+                    )}
+                  </div>
+                  <div>
+                    <strong>Decision &amp; Submission History</strong>
+                    {approvalHistory.events.length === 0 ? <p>No events recorded.</p> : (
+                      <ol style={{ paddingLeft: 23 }}>
+                        {approvalHistory.events.map((event, index) => (
+                          <li key={index} style={{ marginTop: 10 }}>
+                            <strong>{formatStatus(String(event.action || "event"))}</strong>
+                            {event.occurred_at && (
+                              <span> — {new Date(event.occurred_at).toLocaleString()}</span>
+                            )}
+                            {event.comments && (
+                              <p style={{ margin: "4px 0 0", whiteSpace: "pre-wrap" }}>{event.comments}</p>
+                            )}
+                          </li>
+                        ))}
+                      </ol>
+                    )}
+                  </div>
+                </div>
+              )}
             </div>
           )}
         </section>
