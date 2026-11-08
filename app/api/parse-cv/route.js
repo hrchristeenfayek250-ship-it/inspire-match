@@ -50,11 +50,11 @@ export async function POST(request) {
         .from("company_members")
         .select("company_id")
         .eq("user_id", data.user.id)
-        .limit(1);
+        .limit(2);
 
-    if (memberError || !membership?.length) {
+    if (memberError || membership?.length !== 1) {
       return Response.json(
-        { error: "Company membership required." },
+        { error: "Exactly one company workspace is required." },
         { status: 403 }
       );
     }
