@@ -95,6 +95,7 @@ export async function POST(request) {
         .select("*")
         .eq("id", candidateId)
         .eq("company_id", companyId)
+        .is("deleted_at", null)
         .maybeSingle();
 
     if (candidateError) throw candidateError;
@@ -305,15 +306,14 @@ confidence to "low", and explain why.
 
 
     if (saveError) {
-  console.error("Could not save AI match:", saveError);
-
-  return Response.json(
-    {
-      error: `AI save failed: ${saveError.message}`,
-    },
-    { status: 500 }
-  );
-}
+      console.error("AI matching result could not be saved:", {
+        code: saveError.code || "SAVE_FAILED",
+      });
+      return Response.json(
+        { error: "Could not save AI matching result. Please try again." },
+        { status: 500, headers: { "Cache-Control": "no-store" } }
+      );
+    }
 
     return Response.json(matchResult);
 
