@@ -44,7 +44,13 @@ export async function POST(request) {
     }
 
     const user = authData.user;
-    const body = await request.json();
+    const body = await request.json().catch(() => null);
+    if (!body || typeof body !== "object" || Array.isArray(body)) {
+      return NextResponse.json(
+        { error: "Invalid invitation request." },
+        { status: 400, headers: { "Cache-Control": "no-store" } }
+      );
+    }
     const email = String(body.email || "")
       .trim()
       .toLowerCase();
@@ -163,6 +169,7 @@ export async function POST(request) {
         headers: {
           Authorization: `Bearer ${process.env.RESEND_API_KEY}`,
           "Content-Type": "application/json",
+          "Idempotency-Key": `inspire-invitation-${invitation.token}`,
         },
         body: JSON.stringify({
           from:
@@ -198,11 +205,14 @@ export async function POST(request) {
       );
     }
 
-    return NextResponse.json({
-      success: true,
-      message: "HR invitation email sent successfully!",
-      inviteLink,
-    });
+    return NextResponse.json(
+      {
+        success: true,
+        message: "HR invitation email sent successfully!",
+        inviteLink,
+      },
+      { headers: { "Cache-Control": "no-store" } }
+    );
   } catch (error) {
     console.error("HR invitation error:", error.message);
 
