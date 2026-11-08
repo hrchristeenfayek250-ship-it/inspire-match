@@ -402,10 +402,10 @@ Rules:
     });
 
   } catch (error) {
-    console.error(
-      "Candidate intelligence failed:",
-      error.message
-    );
+    console.error("Candidate intelligence failed:", {
+      code: error?.code || "INTELLIGENCE_FAILED",
+      providerStatus: Number(error?.status) || null,
+    });
 
     return Response.json(
       { error: "Could not generate candidate intelligence." },
