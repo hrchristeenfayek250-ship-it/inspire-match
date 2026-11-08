@@ -52,8 +52,7 @@ BEGIN
             to_jsonb(h)->>'occurred_at',
             to_jsonb(h)->>'decided_at'
           )
-        )
-        ORDER BY coalesce(
+        ) ORDER BY coalesce(
           to_jsonb(h)->>'created_at',
           to_jsonb(h)->>'action_at',
           to_jsonb(h)->>'occurred_at',
