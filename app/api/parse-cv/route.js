@@ -165,11 +165,30 @@ EXTRACTION RULES:
       fileName: cv.name,
     });
   } catch (error) {
-    console.error("CV parsing failed:", error.message);
+    const message = String(error?.message || "");
+    const providerStatus = Number(error?.status) || 0;
+    const tooLarge = /larger than 4 MB/i.test(message);
+    const invalidFile = /not supported|no readable text|No file received/i.test(message);
+    const code = tooLarge ? "CV_FILE_TOO_LARGE"
+      : invalidFile ? "CV_FILE_UNREADABLE"
+      : providerStatus === 429 ? "AI_QUOTA_REACHED"
+      : providerStatus === 404 ? "AI_MODEL_UNAVAILABLE"
+      : /TimeoutError|AbortError|timeout/i.test(message) ? "AI_TIMEOUT"
+      : "CV_PARSING_FAILED";
 
+    console.error("CV parsing failed:", { code, providerStatus: providerStatus || null });
+    const messages = {
+      CV_FILE_TOO_LARGE: "The CV is larger than 4 MB. Compress it and try again.",
+      CV_FILE_UNREADABLE: "This CV could not be read. Upload a readable PDF, DOCX or TXT file.",
+      AI_QUOTA_REACHED: "AI usage limit reached. Please try again later.",
+      AI_MODEL_UNAVAILABLE: "The configured AI model is unavailable. Contact the administrator.",
+      AI_TIMEOUT: "CV parsing timed out. Try again with a smaller file.",
+      CV_PARSING_FAILED: "Could not parse this CV. Please try again.",
+    };
     return Response.json(
-      { error: "Could not parse this CV." },
-      { status: 500 }
+      { error: messages[code], code },
+      { status: tooLarge ? 413 : invalidFile ? 422 : providerStatus === 429 ? 503 : 500,
+        headers: { "Cache-Control": "no-store" } }
     );
   }
 }
