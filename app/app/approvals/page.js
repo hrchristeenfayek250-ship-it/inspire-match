@@ -9,6 +9,7 @@ import ATSNavigation from "@/components/ATSNavigation";
 export default function ApprovalCenterPage() {
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState("");
   const [decisionDraft, setDecisionDraft] = useState(null);
   const [decisionComments, setDecisionComments] = useState("");
@@ -49,6 +50,29 @@ export default function ApprovalCenterPage() {
     loadApprovals();
     return () => { active = false; };
   }, []);
+
+  async function refreshApprovals() {
+    if (refreshing || decisionSaving) return;
+
+    setRefreshing(true);
+    setError("");
+    try {
+      const { data: auth, error: authError } = await supabase.auth.getUser();
+      if (authError) throw authError;
+      if (!auth.user) throw new Error("Please sign in to continue.");
+
+      const { data, error: rpcError } =
+        await supabase.rpc("get_my_hiring_decisions");
+      if (rpcError) throw rpcError;
+
+      setItems(Array.isArray(data) ? data : []);
+      setDecisionError("");
+    } catch (err) {
+      setError(err.message || "Could not refresh your hiring decisions.");
+    } finally {
+      setRefreshing(false);
+    }
+  }
 
   async function submitDecision() {
     if (!decisionDraft || decisionSaving) return;
@@ -436,7 +460,15 @@ export default function ApprovalCenterPage() {
                   Current approval steps assigned to you or to your company role. Completed decisions remain in the approval history.
                 </p>
               </div>
-
+              <button
+                type="button"
+                className="ac-action ac-action-approve"
+                onClick={refreshApprovals}
+                disabled={loading || refreshing || decisionSaving}
+                aria-label="Refresh assigned approval decisions"
+              >
+                {refreshing ? "Refreshing..." : "Refresh Decisions"}
+              </button>
             </div>
 
             {decisionSuccess && (
