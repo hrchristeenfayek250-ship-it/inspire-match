@@ -65,7 +65,7 @@ export default function RecruitmentTasksPage(){
    setEditing(null);
    setForm({...empty,
     title:`Candidate experience follow-up — ${String(record.category).slice(0,70)}`,
-    description:`Feedback recorded ${date} (rating ${record.rating}/5):\\n${String(record.feedback).slice(0,2000)}\\n\\nReview the issue and record the next action.`,
+    description:`Feedback recorded ${date} (rating ${record.rating}/5):\\n${String(record.feedback).slice(0,2000)}\\n\\nReview the issue and record the next action.\\n\\nInspire Feedback Ref: ${feedbackId}`,
     priority:Number(record.rating)<=2||record.action_required?"high":"medium",
     company_id:companyId,
     candidate_id:candidateId
@@ -88,6 +88,16 @@ export default function RecruitmentTasksPage(){
   if(linkedJob&&linkedCandidate&&String(linkedCandidate.job_id)!==String(linkedJob.id)&&!applicationLinks.some(a=>a.company_id===form.company_id&&String(a.job_id)===String(linkedJob.id)&&String(a.candidate_id)===String(linkedCandidate.id))){setSaving(false);setError("Candidate is not linked to this job. Check the candidate application.");return;}
   if(form.assigned_to&&!members.some(m=>m.company_id===form.company_id&&m.user_id===form.assigned_to)){setSaving(false);setError("Select a member from this company.");return;}
   if(form.status==="blocked"&&!form.blocker_reason.trim()){setSaving(false);setError("A blocker reason is required.");return;}
+  if(!editing && form.company_id) {
+    const feedbackRef=String(form.description||"").match(/Inspire Feedback Ref: ([0-9a-f-]{36})/i);
+    if(feedbackRef) {
+      const existing=await supabase.from("recruitment_tasks")
+        .select("id").eq("company_id",form.company_id)
+        .ilike("description",`%Inspire Feedback Ref: ${feedbackRef[1]}%`).limit(1);
+      if(existing.error){setSaving(false);setError("Could not check existing recovery tasks.");return;}
+      if(existing.data?.length){setSaving(false);setError("A recovery task already exists for this feedback. Open the existing task instead.");return;}
+    }
+  }
   const payload={blocker_reason:form.status==="blocked"?form.blocker_reason.trim():null,title:form.title.trim(),description:form.description.trim()||null,assignee_name:form.assignee_name.trim()||null,priority:form.priority,status:form.status,due_date:form.due_date||null,job_id:form.job_id?Number(form.job_id):null,candidate_id:form.candidate_id?Number(form.candidate_id):null,company_id:form.company_id||null,assigned_to:form.assigned_to||null,updated_at:new Date().toISOString()};
   const query=editing?supabase.from("recruitment_tasks").update(payload).eq("id",editing):supabase.from("recruitment_tasks").insert({...payload,created_by:uid});
   const {data:saved,error:e2}=await query.select("id");setSaving(false);
