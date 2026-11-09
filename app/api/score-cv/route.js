@@ -15,20 +15,44 @@ export async function POST(req) {
     const form = await req.formData();
 
     const cv = form.get("cv");
-    const jd = JSON.parse(form.get("jd") || "null");
+    const rawJd = form.get("jd");
+    if (typeof rawJd !== "string" || rawJd.length > 100000) {
+      return Response.json(
+        { error: "Invalid job description data." },
+        { status: 400, headers: { "Cache-Control": "no-store" } }
+      );
+    }
+
+    let jd;
+    try {
+      jd = JSON.parse(rawJd);
+    } catch {
+      return Response.json(
+        { error: "Invalid job description data." },
+        { status: 400, headers: { "Cache-Control": "no-store" } }
+      );
+    }
     const blind = false;
 
-    if (!jd?.criteria?.length) {
+    if (
+      !jd || typeof jd !== "object" || !Array.isArray(jd.criteria) ||
+      jd.criteria.length < 1 || jd.criteria.length > 100 ||
+      jd.criteria.some((criterion) =>
+        !criterion || typeof criterion !== "object" ||
+        typeof criterion.name !== "string" ||
+        typeof criterion.detail !== "string"
+      )
+    ) {
       return Response.json(
         { error: "Read the job description before scoring CVs." },
         { status: 400 }
       );
     }
 
-    if (!cv) {
+    if (!cv || typeof cv === "string" || typeof cv.arrayBuffer !== "function") {
       return Response.json(
         { error: "CV file is required." },
-        { status: 400 }
+        { status: 400, headers: { "Cache-Control": "no-store" } }
       );
     }
 
