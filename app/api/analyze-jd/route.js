@@ -19,6 +19,14 @@ export async function POST(req) {
     const file = form.get("file");
     const text = (form.get("text") || "").toString().trim();
 
+    // Bound pasted JD input before passing it to the paid AI provider.
+    if (text.length > 50000) {
+      return Response.json(
+        { error: "Job description is too long. Please shorten it to 50,000 characters or upload a file." },
+        { status: 413, headers: { "Cache-Control": "no-store" } }
+      );
+    }
+
     let content;
     if (file && typeof file !== "string" && file.size > 0) {
       content = [...(await fileToBlocks(file)), { type: "text", text: "Analyse this job description." }];
@@ -50,7 +58,8 @@ export async function POST(req) {
                 : [500, 502, 503, 504].includes(status)
                   ? "AI_PROVIDER_UNAVAILABLE"
                   : "JD_ANALYSIS_FAILED";
-    console.error("JD analysis failed:", { code, providerStatus: status || null, message });
+    // Do not log raw AI-provider messages: they may contain JD content.
+    console.error("JD analysis failed:", { code, providerStatus: status || null });
     const messages = {
       AI_CONFIGURATION_MISSING: "AI service configuration is missing. Contact the administrator.",
       AI_CREDENTIALS_REJECTED: "AI provider credentials were rejected. Contact the administrator.",
