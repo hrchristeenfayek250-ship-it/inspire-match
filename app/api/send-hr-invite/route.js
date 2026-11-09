@@ -153,7 +153,7 @@ export async function POST(request) {
 
           created_by: user.id,
         })
-        .select("token")
+        .select("id, token")
         .single();
 
     if (inviteError) throw inviteError;
@@ -169,7 +169,7 @@ export async function POST(request) {
         headers: {
           Authorization: `Bearer ${process.env.RESEND_API_KEY}`,
           "Content-Type": "application/json",
-          "Idempotency-Key": `inspire-invitation-${invitation.token}`,
+          "Idempotency-Key": `inspire-invitation-${invitation.id}`,
         },
         body: JSON.stringify({
           from:
@@ -214,7 +214,7 @@ export async function POST(request) {
       { headers: { "Cache-Control": "no-store" } }
     );
   } catch (error) {
-    console.error("HR invitation error:", error.message);
+    console.error("HR invitation error:", { code: error?.code || "INVITATION_FAILED" });
 
     return NextResponse.json(
       { error: "Could not process the invitation." },
