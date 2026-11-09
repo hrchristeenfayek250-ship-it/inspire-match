@@ -52,11 +52,21 @@ export async function POST(request) {
     }
 
     const user = authData.user;
-    const body = await request.json();
-    const jobId = body?.jobId;
-    const candidateId = body?.candidateId;
+    const body = await request.json().catch(() => null);
+    if (!body || typeof body !== "object" || Array.isArray(body)) {
+      return Response.json(
+        { error: "Invalid matching request." },
+        { status: 400, headers: { "Cache-Control": "no-store" } }
+      );
+    }
 
-    if (!jobId || !candidateId) {
+    const jobId = body.jobId;
+    const candidateId = body.candidateId;
+    const isUuid = (value) =>
+      typeof value === "string" &&
+      /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(value);
+
+    if (!isUuid(jobId) || !isUuid(candidateId)) {
       return Response.json(
         { error: "Job and candidate are required." },
         { status: 400 }
@@ -218,9 +228,15 @@ confidence to "low", and explain why.
           .download(candidate.cv_file_url);
 
       if (cvError) {
-        console.warn("CV unavailable for matching:", cvError.message);
+        console.warn("CV unavailable for matching:", { code: cvError.code || "CV_DOWNLOAD_FAILED" });
       } else if (cvFile) {
         try {
+          if (cvFile.size > 4 * 1024 * 1024) {
+            throw Object.assign(new Error("CV exceeds analysis limit"), {
+              code: "CV_FILE_TOO_LARGE",
+            });
+          }
+
           const fileName =
             candidate.cv_file_name ||
             candidate.cv_file_url.split("/").pop();
