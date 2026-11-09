@@ -38,7 +38,7 @@ export default function RecruitmentTasksPage(){
   const feedbackId=params.get("feedback")||"";
   if(!feedbackId)return;
   const uuid=/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-  if(!uuid.test(companyId)||!uuid.test(feedbackId)||!/^\\d{1,20}$/.test(candidateId)||!companyIds.includes(companyId)){
+  if(!uuid.test(companyId)||!uuid.test(feedbackId)||!/^\d{1,20}$/.test(candidateId)||!companyIds.includes(companyId)){
    recoveryHandled.current=true;
    setError("This feedback follow-up cannot be opened in your workspace.");
    return;
