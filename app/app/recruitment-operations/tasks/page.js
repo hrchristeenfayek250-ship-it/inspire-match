@@ -18,7 +18,16 @@ export default function RecruitmentTasksPage(){
  const [jobs,setJobs]=useState([]),[candidates,setCandidates]=useState([]),[applicationLinks,setApplicationLinks]=useState([]);
  const [members,setMembers]=useState([]),[companyIds,setCompanyIds]=useState([]),[roles,setRoles]=useState({});
  const manager=id=>["admin","hr_manager"].includes(roles[id]);
- const recoveryHandled=useRef(false);
+ const recoveryHandled=useRef(false),taskFocusHandled=useRef(false);
+ useEffect(()=>{
+   if(loading||taskFocusHandled.current)return;
+   const taskId=new URLSearchParams(window.location.search).get("task")||"";
+   if(!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(taskId))return;
+   taskFocusHandled.current=true;
+   const task=tasks.find(t=>String(t.id)===taskId);
+   if(task)edit(task);
+   else setError("This recovery task is not available with your current access.");
+ },[loading,tasks]);
  async function load(){
   setLoading(true);setError("");
   const {data:auth,error:authError}=await supabase.auth.getUser();
