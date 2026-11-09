@@ -11,6 +11,7 @@ const NAV = [
   ["Candidates", "/app/candidates", "♙"],
   ["Pipeline", "/app/pipeline", "⇄"],
   ["AI Matching", "/app/matching", "✧"],
+  ["Candidate Comparison", "/app/candidate-comparison", "⇋"],
   ["Reports", "/app/reports", "▥"],
   ["Executive", "/app/executive", "◈"],
   ["Team", "/app/team", "♧"],
@@ -281,6 +282,9 @@ export default function MatchingPage() {
     }
   }
 
+  const compareHref = "/app/candidate-comparison" +
+    (selectedJobId ? "?job=" + encodeURIComponent(selectedJobId) : "");
+
   const selectedJob = jobs.find(
     (job) => String(job.id) === selectedJobId
   );
@@ -386,6 +390,7 @@ export default function MatchingPage() {
 
   return (
     <main className="am-root">
+      <div style={{position:"fixed",bottom:20,right:22,zIndex:30}}><Link href={compareHref} className="am-primary" style={{background:"#176448",color:"#fff",borderRadius:12,boxShadow:"0 8px 24px #143d3050"}}>⇋ Compare Candidates</Link></div>
       <style>{`
         .am-root{width:100%;max-width:none;min-height:100vh;margin:0;padding:0;background:#f6f8fb;color:#1e293b;font-family:Arial,sans-serif;font-size:14px}
         .am-root *{box-sizing:border-box}
