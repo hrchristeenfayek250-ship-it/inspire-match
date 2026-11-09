@@ -52,7 +52,10 @@ export async function POST(request) {
 
     const userId = authData.user.id;
 
-    const { question } = await request.json();
+    const body = await request.json().catch(() => null);
+    const question = body && typeof body === "object" && !Array.isArray(body)
+      ? body.question
+      : null;
 
     if (
       typeof question !== "string" ||
@@ -168,9 +171,13 @@ Return valid JSON only:
     });
  
   } catch (error) {
-    console.error("Ask Inspire AI failed:", error);
-
+    // Never log full provider error objects: they can include recruitment data.
+    const providerStatus = Number(error?.status) || null;
     const message = String(error?.message || "");
+    console.error("Ask Inspire AI failed:", {
+      code: error?.code || "AI_REQUEST_FAILED",
+      providerStatus,
+    });
 
     let errorCode = "AI_REQUEST_FAILED";
 
