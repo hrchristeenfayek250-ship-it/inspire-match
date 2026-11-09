@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { supabase } from "@/lib/supabase";
 import ATSNavigation from "@/components/ATSNavigation";
@@ -18,6 +18,7 @@ export default function RecruitmentTasksPage(){
  const [jobs,setJobs]=useState([]),[candidates,setCandidates]=useState([]),[applicationLinks,setApplicationLinks]=useState([]);
  const [members,setMembers]=useState([]),[companyIds,setCompanyIds]=useState([]),[roles,setRoles]=useState({});
  const manager=id=>["admin","hr_manager"].includes(roles[id]);
+ const recoveryHandled=useRef(false);
  async function load(){
   setLoading(true);setError("");
   const {data:auth,error:authError}=await supabase.auth.getUser();
@@ -29,6 +30,52 @@ export default function RecruitmentTasksPage(){
  }
  useEffect(()=>{load();},[]);
  useEffect(()=>{let active=true;(async()=>{const {data:auth}=await supabase.auth.getUser();if(!auth?.user)return;const member=await supabase.from("company_members").select("company_id,role").eq("user_id",auth.user.id);if(!active||member.error)return;const companyIds=[...new Set((member.data||[]).map(x=>x.company_id).filter(Boolean))];if(!companyIds.length)return;const [j,c,m,a]=await Promise.all([supabase.from("jobs").select("id,title,company_id").in("company_id",companyIds).limit(500),supabase.from("candidates").select("id,full_name,job_id,company_id").in("company_id",companyIds).is("deleted_at",null).limit(500),supabase.from("company_members").select("company_id,user_id,role").in("company_id",companyIds),supabase.from("applications").select("candidate_id,job_id,company_id").in("company_id",companyIds).limit(5000)]);if(active){if(!j.error)setJobs(j.data||[]);if(!c.error)setCandidates(c.data||[]);if(!m.error)setMembers(m.data||[]);if(!a.error)setApplicationLinks(a.data||[]);setCompanyIds(companyIds);setRoles(Object.fromEntries((member.data||[]).map(x=>[x.company_id,x.role])));}})();return()=>{active=false;};},[]);
+ useEffect(()=>{
+  if(!companyIds.length||recoveryHandled.current)return;
+  const params=new URLSearchParams(window.location.search);
+  const companyId=params.get("company")||"";
+  const candidateId=params.get("candidate")||"";
+  const feedbackId=params.get("feedback")||"";
+  if(!feedbackId)return;
+  const uuid=/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+  if(!uuid.test(companyId)||!uuid.test(feedbackId)||!/^\\d{1,20}$/.test(candidateId)||!companyIds.includes(companyId)){
+   recoveryHandled.current=true;
+   setError("This feedback follow-up cannot be opened in your workspace.");
+   return;
+  }
+  let active=true;
+  (async()=>{
+   const [f,c]=await Promise.all([
+    supabase.from("candidate_experience_feedback")
+     .select("id,company_id,candidate_id,category,rating,feedback,action_required,created_at")
+     .eq("id",feedbackId).eq("candidate_id",candidateId).eq("company_id",companyId).maybeSingle(),
+    supabase.from("candidates")
+     .select("id,full_name,job_id,company_id")
+     .eq("id",candidateId).eq("company_id",companyId).is("deleted_at",null).maybeSingle()
+   ]);
+   if(!active||recoveryHandled.current)return;
+   recoveryHandled.current=true;
+   if(f.error||c.error||!f.data||!c.data){
+    setError("Feedback or candidate could not be loaded in your workspace.");
+    return;
+   }
+   const record=f.data;
+   const date=new Date(record.created_at).toLocaleDateString("en-GB");
+   setCandidates(old=>old.some(x=>String(x.id)===candidateId)?old:[...old,c.data]);
+   setEditing(null);
+   setForm({...empty,
+    title:`Candidate experience follow-up — ${String(record.category).slice(0,70)}`,
+    description:`Feedback recorded ${date} (rating ${record.rating}/5):\\n${String(record.feedback).slice(0,2000)}\\n\\nReview the issue and record the next action.`,
+    priority:Number(record.rating)<=2||record.action_required?"high":"medium",
+    company_id:companyId,
+    candidate_id:candidateId
+   });
+   setShow(true);
+   setMessage("Recovery task prepared. Choose a due date and owner, then save it.");
+   window.scrollTo({top:0,behavior:"smooth"});
+  })();
+  return()=>{active=false;};
+ },[companyIds]);
  function create(){setEditing(null);setForm({...empty,company_id:companyIds.length===1?companyIds[0]:""});setShow(true);setMessage("");}
  function edit(t){setEditing(t.id);setForm({title:t.title||"",description:t.description||"",assignee_name:t.assignee_name||"",priority:t.priority,status:t.status,due_date:t.due_date||"",job_id:t.job_id==null?"":String(t.job_id),candidate_id:t.candidate_id==null?"":String(t.candidate_id),company_id:t.company_id||"",assigned_to:t.assigned_to||"",blocker_reason:t.blocker_reason||""});setShow(true);window.scrollTo({top:0,behavior:"smooth"});}
  async function save(e){
