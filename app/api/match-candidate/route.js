@@ -147,21 +147,11 @@ export async function POST(request) {
         null,
     };
 
-    const usableEvidence = Object.values(candidateEvidence)
-      .filter((value) => value !== null && value !== undefined)
-      .map((value) => String(value))
-      .join(" ")
-      .trim();
-
-    if (!usableEvidence) {
-      return Response.json(
-        {
-          error:
-            "Candidate profile needs more professional information before matching.",
-        },
-        { status: 422 }
-      );
-    }
+    const usableEvidence = Object.values(candidateEvidence).some((value) => {
+      if (Array.isArray(value)) return value.length > 0;
+      if (value && typeof value === "object") return Object.keys(value).length > 0;
+      return value !== null && value !== undefined && String(value).trim() !== "";
+    });
 
     if (
       !job.description &&
@@ -221,6 +211,9 @@ confidence to "low", and explain why.
       },
     ];
 
+    // A CV can be the only professional evidence on a newly uploaded candidate.
+    // Do not reject the profile until both the structured data and CV are checked.
+    let hasReadableCv = false;
     if (candidate.cv_file_url) {
       const { data: cvFile, error: cvError } =
         await db.storage
@@ -228,7 +221,9 @@ confidence to "low", and explain why.
           .download(candidate.cv_file_url);
 
       if (cvError) {
-        console.warn("CV unavailable for matching:", { code: cvError.code || "CV_DOWNLOAD_FAILED" });
+        console.warn("CV unavailable for matching:", {
+          code: cvError.code || "CV_DOWNLOAD_FAILED",
+        });
       } else if (cvFile) {
         try {
           if (cvFile.size > 4 * 1024 * 1024) {
@@ -246,11 +241,25 @@ confidence to "low", and explain why.
           });
 
           const cvBlocks = await fileToBlocks(file);
-          analysisContent.push(...cvBlocks);
+          if (cvBlocks.length > 0) {
+            analysisContent.push(...cvBlocks);
+            hasReadableCv = true;
+          }
         } catch (error) {
-          console.warn("CV could not be analyzed:", { code: error?.code || "CV_ANALYSIS_FAILED" });
+          console.warn("CV could not be analyzed:", {
+            code: error?.code || "CV_ANALYSIS_FAILED",
+          });
         }
       }
+    }
+
+    if (!usableEvidence && !hasReadableCv) {
+      return Response.json(
+        {
+          error: "Add candidate professional information or a readable CV before matching.",
+        },
+        { status: 422, headers: { "Cache-Control": "no-store" } }
+      );
     }
 
     const result = await askClaude({
