@@ -30,7 +30,7 @@ const dateKey = v => { if(!v)return ""; const d=new Date(v);return Number.isFini
 const pretty = v => v ? new Date(v).toLocaleString("en-GB",{dateStyle:"medium",timeStyle:"short"}) : "Not scheduled";
 const todayKey = () => dateKey(new Date());
 export default function TodayPage(){
- const [user,setUser]=useState(null),[companies,setCompanies]=useState([]),[company,setCompany]=useState(""),[interviews,setInterviews]=useState([]),[evaluations,setEvaluations]=useState([]),[tasks,setTasks]=useState([]),[approvals,setApprovals]=useState([]),[candidates,setCandidates]=useState([]),[jobs,setJobs]=useState([]),[loading,setLoading]=useState(true),[error,setError]=useState(""),[notice,setNotice]=useState("");
+ const [user,setUser]=useState(null),[applications,setApplications]=useState([]),[companies,setCompanies]=useState([]),[company,setCompany]=useState(""),[interviews,setInterviews]=useState([]),[evaluations,setEvaluations]=useState([]),[tasks,setTasks]=useState([]),[approvals,setApprovals]=useState([]),[candidates,setCandidates]=useState([]),[jobs,setJobs]=useState([]),[loading,setLoading]=useState(true),[error,setError]=useState(""),[notice,setNotice]=useState("");
  const load=useCallback(async()=>{
   setLoading(true);setError("");setNotice("");
   try{
@@ -41,18 +41,19 @@ export default function TodayPage(){
    if(members.error)throw members.error;
    const ids=[...new Set((members.data||[]).map(x=>x.company_id).filter(Boolean))];
    setCompanies(ids);setCompany(current=>ids.includes(current)?current:ids[0]||"");
-   if(!ids.length){setInterviews([]);setEvaluations([]);setTasks([]);setApprovals([]);setCandidates([]);setJobs([]);return;}
+   if(!ids.length){setInterviews([]);setEvaluations([]);setTasks([]);setApprovals([]);setCandidates([]);setJobs([]);setApplications([]);return;}
    const results=await Promise.all([
     supabase.from("interviews").select("*").in("company_id",ids).order("scheduled_at",{ascending:true}).limit(1000),
     supabase.from("interview_evaluations").select("*").limit(2000),
     supabase.from("recruitment_tasks").select("id,title,status,priority,due_date,company_id,assigned_to,created_by").in("company_id",ids).limit(2000),
     supabase.rpc("get_my_hiring_decisions"),
     supabase.from("candidates").select("id,full_name,company_id").in("company_id",ids).limit(5000),
-    supabase.from("jobs").select("id,title,company_id").in("company_id",ids).limit(1000)
+    supabase.from("jobs").select("id,title,company_id").in("company_id",ids).limit(1000),
+    supabase.from("applications").select("id,candidate_id,job_id,company_id").in("company_id",ids).limit(5000)
    ]);
-   const setters=[setInterviews,setEvaluations,setTasks,setApprovals,setCandidates,setJobs];
+   const setters=[setInterviews,setEvaluations,setTasks,setApprovals,setCandidates,setJobs,setApplications];
    results.forEach((r,i)=>{setters[i](!r.error&&Array.isArray(r.data)?r.data:[]);});
-   const failures=results.map((r,i)=>r.error?["interviews","evaluations","tasks","approvals","candidates","jobs"][i]:null).filter(Boolean);
+   const failures=results.map((r,i)=>r.error?["interviews","evaluations","tasks","approvals","candidates","jobs","applications"][i]:null).filter(Boolean);
    if(failures.length)setNotice("Some sections are unavailable with your current access: "+failures.join(", ")+".");
   }catch(e){setError(e.message||"Unable to load today's activity.");}
   finally{setLoading(false);}
@@ -60,6 +61,8 @@ export default function TodayPage(){
  useEffect(()=>{load();},[load]);
  const names=useMemo(()=>new Map(candidates.map(c=>[String(c.id),c.full_name])),[candidates]);
  const jobNames=useMemo(()=>new Map(jobs.map(j=>[String(j.id),j.title])),[jobs]);
+ const applicationMap=useMemo(()=>new Map(applications.map(a=>[String(a.id),a])),[applications]);
+ const interviewLabel=i=>{const a=applicationMap.get(String(i.application_id));return (names.get(String(a?.candidate_id))||"Candidate")+" · "+(jobNames.get(String(a?.job_id))||i.type||"Interview");};
  const date=todayKey();
  const scopedInterviews=interviews.filter(i=>i.company_id===company);
  const todays=scopedInterviews.filter(i=>dateKey(i.scheduled_at)===date&&!["cancelled","canceled","no_show","no-show"].includes(String(i.status||"").toLowerCase()));
@@ -69,8 +72,8 @@ export default function TodayPage(){
  const dueTasks=scopedTasks.filter(t=>t.due_date&&t.due_date<=date).sort((a,b)=>String(a.due_date).localeCompare(String(b.due_date)));
  const scopedApprovals=approvals.filter(a=>!a.company_id||a.company_id===company).filter(a=>!["approved","rejected","completed"].includes(String(a.status||a.decision_status||"").toLowerCase()));
  const sections=[
-  {title:"Today's Interviews",subtitle:"Scheduled interviews for this workday",items:todays,href:"/app/interviews",action:"Open Interviews",render:i=><><strong>{names.get(String(i.candidate_id))||"Candidate"} · {jobNames.get(String(i.job_id))||i.type||"Interview"}</strong><small>{pretty(i.scheduled_at)} · {i.status||"Scheduled"}</small></>},
-  {title:"Evaluations to Review",subtitle:"Past interview slots with no visible evaluation; review status before following up",items:overdueEvaluations,href:"/app/interviews",action:"Review Evaluations",render:i=><><strong>{names.get(String(i.candidate_id))||"Candidate"} · {jobNames.get(String(i.job_id))||"Interview"}</strong><small>{pretty(i.scheduled_at)} · Evaluation not found in accessible records</small></>},
+  {title:"Today's Interviews",subtitle:"Scheduled interviews for this workday",items:todays,href:"/app/interviews",action:"Open Interviews",render:i=><><strong>{interviewLabel(i)}</strong><small>{pretty(i.scheduled_at)} · {i.status||"Scheduled"}</small></>},
+  {title:"Evaluations to Review",subtitle:"Past interview slots with no visible evaluation; review status before following up",items:overdueEvaluations,href:"/app/interviews",action:"Review Evaluations",render:i=><><strong>{interviewLabel(i)}</strong><small>{pretty(i.scheduled_at)} · Evaluation not found in accessible records</small></>},
   {title:"Tasks Due or Overdue",subtitle:"Outstanding assigned or unassigned work",items:dueTasks,href:"/app/recruitment-operations/tasks",action:"Open Tasks",render:t=><><strong>{t.title}</strong><small>{t.due_date} · {t.priority||"Normal"} priority · {t.status||"To do"}</small></>},
   {title:"Pending Hiring Approvals",subtitle:"Decisions available to your account",items:scopedApprovals,href:"/app/approvals",action:"Open Approval Center",render:a=><><strong>{a.candidate_name||a.job_title||"Hiring decision"}</strong><small>{a.status||a.decision_status||"Review required"}</small></>}
  ];
