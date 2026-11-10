@@ -117,8 +117,8 @@ export default function HiringDebriefPage(){
  const exportCsv=()=>{
   const rows=[["Candidate","Job","Interview Date","Interview Status","Evaluators","Average Score","Score Gap","Scorecards Visible","Final Decision","Decision Rationale"]];
   filtered.forEach(i=>rows.push([i.candidateName,i.jobName,dateLabel(i.scheduled_at),i.status||"",i.evals.length,i.score===null?"":i.score.toFixed(2),i.gap===null?"":i.gap.toFixed(2),i.evals.length?"Yes":"No",i.decision?.decision||"",i.decision?.decision_reason||""]));
-  const csv=rows.map(row=>row.map(value=>{const v=String(value??"");const safe=/^[=+@\\t\\r-]/.test(v)?"'"+v:v;return '"'+safe.replace(/"/g,'""')+'"';}).join(",")).join("\r\n");
-  const blob=new Blob(["\\uFEFF"+csv],{type:"text/csv;charset=utf-8"});
+  const csv=rows.map(row=>row.map(value=>{const v=String(value??"");const safe=/^[=+@\t\r-]/.test(v)?"'"+v:v;return '"'+safe.replace(/"/g,'""')+'"';}).join(",")).join("\r\n");
+  const blob=new Blob([String.fromCharCode(0xFEFF)+csv],{type:"text/csv;charset=utf-8"});
   const url=URL.createObjectURL(blob);const link=document.createElement("a");link.href=url;link.download="inspire-match-hiring-debrief.csv";document.body.appendChild(link);link.click();link.remove();URL.revokeObjectURL(url);
  };
  const dataNotice="Metrics reflect evaluations visible to your account. A missing evaluation does not prove a team member failed to submit it. The system does not yet track assigned reviewers or scorecard due dates.";
