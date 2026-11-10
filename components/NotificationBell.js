@@ -21,7 +21,7 @@ export default function NotificationBell() {
       const { data, error: fetchError } = await supabase
         .from("notifications")
         .select(
-          "id, title, message, priority, action_url, is_read, created_at"
+          "id, title, message, type, priority, action_url, is_read, created_at"
         )
         .eq("recipient_id", id)
         .order("created_at", { ascending: false })
