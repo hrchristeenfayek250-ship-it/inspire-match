@@ -1,6 +1,7 @@
 
 import { NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
+import { notificationPreview } from "@/lib/notificationNavigation";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -145,6 +146,7 @@ export async function POST(request) {
     }
 
     const type = String(notification.type || "").toLowerCase();
+    const safePreview = notificationPreview(notification);
 
     const categoryField = {
       ai_matching: "ai_matching_enabled",
@@ -202,7 +204,7 @@ export async function POST(request) {
         body: JSON.stringify({
           from: FROM_EMAIL,
           to: [user.email],
-          subject: notification.title,
+          subject: safePreview.title,
           html: `
             <div style="font-family:Arial,sans-serif;
                         max-width:580px;margin:auto;
@@ -217,9 +219,9 @@ export async function POST(request) {
                           border:1px solid #e1e8e2;
                           border-radius:12px;
                           background:#f7faf7">
-                <h3>${escapeHtml(notification.title)}</h3>
+                <h3>${escapeHtml(safePreview.title)}</h3>
                 <p style="white-space:pre-wrap">
-                  ${escapeHtml(notification.message)}
+                  ${escapeHtml(safePreview.message)}
                 </p>
               </div>
               <p style="margin-top:24px">
