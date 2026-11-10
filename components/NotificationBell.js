@@ -117,7 +117,8 @@ export default function NotificationBell() {
   ).length;
 
   async function markAsRead(item) {
-    if (!userId || item.is_read) return;
+    if (!userId) return false;
+    if (item.is_read) return true;
 
     const { error: updateError } = await supabase
       .from("notifications")
@@ -130,7 +131,7 @@ export default function NotificationBell() {
 
     if (updateError) {
       setError("Could not update notification.");
-      return;
+      return false;
     }
 
     setNotifications((current) =>
@@ -140,6 +141,7 @@ export default function NotificationBell() {
           : notification
       )
     );
+    return true;
   }
 
   async function markAllAsRead() {
@@ -169,8 +171,8 @@ export default function NotificationBell() {
 
   async function openNotification(item) {
     const destination = notificationDestination(item);
-    await markAsRead(item);
-    window.location.assign(destination.href);
+    const marked = await markAsRead(item);
+    if (marked) window.location.assign(destination.href);
   }
 
   return (
