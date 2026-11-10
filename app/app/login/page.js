@@ -62,7 +62,34 @@ export default function LoginPage() {
       router.replace(inviteDestination);
       router.refresh();
     } catch (err) {
-      setError(err?.message || "Could not complete your request. Please try again.");
+      const rawMessage = String(err?.message || "").toLowerCase();
+      const networkFailure = err?.name === "TypeError" ||
+        /failed to fetch|networkerror|network request failed|load failed|fetch failed|network failed/.test(rawMessage);
+      if (networkFailure) {
+        // Check the provider from our server, without sending passwords or email.
+        // A reachable provider here points to a browser-specific connection issue.
+        let serviceReachable = null;
+        try {
+          const response = await fetch("/api/auth/connectivity", { cache: "no-store" });
+          if (response.ok) {
+            const result = await response.json();
+            serviceReachable = result.reachable === true;
+          }
+        } catch {
+          // Keep the fallback message when the check itself is unavailable.
+        }
+        setError(serviceReachable === true
+          ? "This browser could not connect to our secure sign-in service. Check your internet connection, browser privacy settings or blockers, then retry. You can also try signing in from your usual browser."
+          : serviceReachable === false
+            ? "Our sign-in service is temporarily unreachable. Please try again shortly. If this continues, contact your workspace administrator."
+            : "Unable to connect to the sign-in service. Please check your connection and retry, or try another browser.");
+      } else if (/invalid login credentials|invalid email or password/.test(rawMessage)) {
+        setError("The email or password is incorrect. Please check your details and try again.");
+      } else if (/email not confirmed/.test(rawMessage)) {
+        setError("Please confirm your email address before signing in.");
+      } else {
+        setError(err?.message || "Could not complete your request. Please try again.");
+      }
     } finally {
       setLoading(false);
     }
