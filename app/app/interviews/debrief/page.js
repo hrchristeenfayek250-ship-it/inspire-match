@@ -20,6 +20,23 @@ const scoreOf = (value) => value!==null && value!==undefined && value!=="" && Nu
 const average = values => values.length ? values.reduce((sum,n)=>sum+n,0)/values.length : null;
 const scoreLabel = n => n===null ? "—" : n.toFixed(1)+"/5";
 const isCompleted = interview => String(interview.status||"").toLowerCase()==="completed";
+const parseEvidence = value => {
+  const raw=String(value||"");
+  const marker="\n\n--- COMPETENCY EVIDENCE ---\n";
+  const index=raw.indexOf(marker);
+  const evidence={};
+  if(index<0)return {feedback:raw,evidence};
+  const lines=raw.slice(index+marker.length).split("\n");
+  competencies.forEach(([field])=>{
+    const line=lines.find(x=>x.startsWith(field+": "));
+    if(line)evidence[field]=line.slice(field.length+2).trim();
+  });
+  return {feedback:raw.slice(0,index),evidence};
+};
+const hasCompleteEvidence = evaluation => {
+  const parsed=parseEvidence(evaluation.overall_feedback);
+  return competencies.every(([field])=>Boolean(parsed.evidence[field]));
+};
 
 const styles=`
 .im-debrief{background:#f4f8f5;color:#173e2e;min-height:100vh;font:14px Arial,Helvetica,sans-serif}
@@ -111,12 +128,12 @@ export default function HiringDebriefPage(){
  const needsAttention=completed.filter(i=>!i.evals.length||!i.decision);
  const aligned=completed.filter(i=>i.gap!==null);
  const scorecardQuality = scored.length ? Math.round(scored.filter(i=>i.evals.some(e=>competencies.every(([field])=>scoreOf(e[field])!==null))).length/scored.length*100) : null;
- const evidenceCoverage = scored.length ? Math.round(scored.filter(i=>i.evals.some(e=>String(e.overall_feedback||"").trim()||String(e.strengths||"").trim()||String(e.areas_for_improvement||"").trim())).length/scored.length*100) : null;
+ const evidenceCoverage = scored.length ? Math.round(scored.filter(i=>i.evals.some(hasCompleteEvidence)).length/scored.length*100) : null;
  const recommendationDisagreements = completed.filter(i=>new Set(i.evals.map(e=>String(e.recommendation||"").trim()).filter(Boolean)).size>1);
  const lowAlignment = aligned.filter(i=>i.gap>1);
  const exportCsv=()=>{
-  const rows=[["Candidate","Job","Interview Date","Interview Status","Evaluators","Average Score","Score Gap","Scorecards Visible","Final Decision","Decision Rationale"]];
-  filtered.forEach(i=>rows.push([i.candidateName,i.jobName,dateLabel(i.scheduled_at),i.status||"",i.evals.length,i.score===null?"":i.score.toFixed(2),i.gap===null?"":i.gap.toFixed(2),i.evals.length?"Yes":"No",i.decision?.decision||"",i.decision?.decision_reason||""]));
+  const rows=[["Candidate","Job","Interview Date","Interview Status","Evaluators","Average Score","Score Gap","Scorecards Visible","Complete Competency Evidence","Final Decision","Decision Rationale"]];
+  filtered.forEach(i=>rows.push([i.candidateName,i.jobName,dateLabel(i.scheduled_at),i.status||"",i.evals.length,i.score===null?"":i.score.toFixed(2),i.gap===null?"":i.gap.toFixed(2),i.evals.length?"Yes":"No",i.evals.some(hasCompleteEvidence)?"Yes":"No",i.decision?.decision||"",i.decision?.decision_reason||""]));
   const csv=rows.map(row=>row.map(value=>{const v=String(value??"");const safe=/^[=+@\t\r-]/.test(v)?"'"+v:v;return '"'+safe.replace(/"/g,'""')+'"';}).join(",")).join("\r\n");
   const blob=new Blob([String.fromCharCode(0xFEFF)+csv],{type:"text/csv;charset=utf-8"});
   const url=URL.createObjectURL(blob);const link=document.createElement("a");link.href=url;link.download="inspire-match-hiring-debrief.csv";document.body.appendChild(link);link.click();link.remove();URL.revokeObjectURL(url);
@@ -129,7 +146,7 @@ export default function HiringDebriefPage(){
  <div className="im-debrief-summary"><div className="im-debrief-kpi"><span>Completed interviews</span><strong>{loading?"—":completed.length}</strong><div className="im-debrief-muted">In selected workspace</div></div><div className="im-debrief-kpi"><span>With visible scorecard</span><strong>{loading?"—":scored.length}</strong><div className="im-debrief-muted">{completed.length?Math.round(scored.length/completed.length*100)+"% coverage":"No completed interviews"}</div></div><div className="im-debrief-kpi"><span>With final decision</span><strong>{loading?"—":decided.length}</strong><div className="im-debrief-muted">{completed.length?Math.round(decided.length/completed.length*100)+"% coverage":"No completed interviews"}</div></div><div className="im-debrief-kpi"><span>Review queue</span><strong>{loading?"—":needsAttention.length}</strong><div className="im-debrief-muted">{aligned.length} multi-evaluator comparison{aligned.length===1?"":"s"}</div></div></div>
  <section className="im-debrief-card" aria-label="Interview quality insights"><div className="im-debrief-eyebrow">INT-05 / INTERVIEW QUALITY ANALYTICS</div><h2 style={{marginTop:10}}>Scorecard Quality & Interviewer Alignment</h2><p className="im-debrief-muted">Evidence-based operational indicators calculated from completed interviews and visible scorecards in the selected workspace. Percentages use only the relevant records described below.</p><div className="im-debrief-grid">
  <div className="im-debrief-metric"><span className="im-debrief-muted">Complete competency ratings</span><strong>{scorecardQuality===null?"—":scorecardQuality+"%"}</strong><small className="im-debrief-muted">Completed interviews with scorecards; all four competencies rated in at least one visible scorecard (n={scored.length})</small></div>
- <div className="im-debrief-metric"><span className="im-debrief-muted">Written evidence coverage</span><strong>{evidenceCoverage===null?"—":evidenceCoverage+"%"}</strong><small className="im-debrief-muted">Completed interviews with scorecards; at least one evaluator added written feedback (n={scored.length})</small></div>
+ <div className="im-debrief-metric"><span className="im-debrief-muted">Competency evidence coverage</span><strong>{evidenceCoverage===null?"—":evidenceCoverage+"%"}</strong><small className="im-debrief-muted">Completed interviews with scorecards; at least one visible evaluation has evidence for all four competencies (n={scored.length})</small></div>
  <div className="im-debrief-metric"><span className="im-debrief-muted">Recommendation disagreement</span><strong>{recommendationDisagreements.length}</strong><small className="im-debrief-muted">Completed interviews with conflicting visible recommendations</small></div>
  <div className="im-debrief-metric"><span className="im-debrief-muted">Low alignment</span><strong>{lowAlignment.length}</strong><small className="im-debrief-muted">Gap above 1.0 point between evaluator averages (n={aligned.length} comparable interviews)</small></div>
  <div className="im-debrief-metric"><span className="im-debrief-muted">Awaiting visible scorecard</span><strong>{completed.length-scored.length}</strong><small className="im-debrief-muted">Completed interviews with no accessible scorecard</small></div>
@@ -142,7 +159,7 @@ export default function HiringDebriefPage(){
  {isCompleted(selected)&&(!selected.evals.length||!selected.decision)&&<div className="im-debrief-warning">{!selected.evals.length?"No evaluation is visible for this completed interview. ":""}{!selected.decision?"No final decision is visible. ":""}Review these items in Interview Management.</div>}
  <h3>Competency overview</h3><div className="im-debrief-scroll"><table className="im-debrief-table"><thead><tr><th>Competency</th><th>Average rating</th><th>Available ratings</th></tr></thead><tbody>{selected.skills.map(s=><tr key={s.field}><td><strong>{s.title}</strong></td><td>{scoreLabel(s.score)}</td><td>{selected.evals.filter(e=>scoreOf(e[s.field])!==null).length}</td></tr>)}</tbody></table></div>
  <h3>Evaluator scorecards and recommendations</h3><div className="im-debrief-scroll"><table className="im-debrief-table"><thead><tr><th>Evaluator</th>{competencies.map(([field,name])=><th key={field}>{name}</th>)}<th>Recommendation</th></tr></thead><tbody>{selected.evals.map((e,index)=><tr key={String(e.evaluator_id||index)}><td>Evaluator {index+1}<div className="im-debrief-muted">{dateLabel(e.updated_at)}</div></td>{competencies.map(([field])=><td key={field}>{scoreOf(e[field])??"—"}</td>)}<td>{e.recommendation||"Not recorded"}</td></tr>)}</tbody></table>{!selected.evals.length&&<p className="im-debrief-muted">No accessible scorecards yet.</p>}</div>
- <h3>Evaluation notes and supporting evidence</h3>{selected.evals.map((e,index)=><div key={String(e.evaluator_id||index)} className="im-debrief-note" style={{marginBottom:10}}><strong>Evaluator {index+1} · {e.recommendation||"Recommendation not recorded"}</strong><div className="im-debrief-notes"><div><strong>Strengths</strong><p>{e.strengths||"Not recorded"}</p></div><div><strong>Areas for improvement</strong><p>{e.areas_for_improvement||"Not recorded"}</p></div></div><strong>Overall feedback</strong><p>{e.overall_feedback||"Not recorded"}</p></div>)}{!selected.evals.length&&<p className="im-debrief-muted">Evidence notes appear when interviewers submit them through Interview Management.</p>}
+ <h3>Evaluation notes and supporting evidence</h3>{selected.evals.map((e,index)=><div key={String(e.evaluator_id||index)} className="im-debrief-note" style={{marginBottom:10}}><strong>Evaluator {index+1} · {e.recommendation||"Recommendation not recorded"}</strong><div className="im-debrief-notes"><div><strong>Strengths</strong><p>{e.strengths||"Not recorded"}</p></div><div><strong>Areas for improvement</strong><p>{e.areas_for_improvement||"Not recorded"}</p></div></div><strong>Overall feedback</strong><p>{parseEvidence(e.overall_feedback).feedback||"Not recorded"}</p><strong>Competency evidence</strong><div className="im-debrief-notes">{competencies.map(([field,label])=><div key={field}><strong>{label}</strong><p>{parseEvidence(e.overall_feedback).evidence[field]||"No structured evidence recorded"}</p></div>)}</div></div>)}{!selected.evals.length&&<p className="im-debrief-muted">Evidence notes appear when interviewers submit them through Interview Management.</p>}
  <h3>Final hiring decision</h3><div className="im-debrief-note"><strong>{selected.decision?.decision||"Decision not recorded"}</strong><p>{selected.decision?.decision_reason||"No decision rationale is available."}</p>{selected.decision&&<small className="im-debrief-muted">Last updated: {dateLabel(selected.decision.updated_at)}</small>}</div>
  <p className="im-debrief-muted">To submit or edit scorecards and decisions, open Interview Management. This page is read-only and does not change candidate stages or hiring outcomes.</p><Link href="/app/interviews" className="im-debrief-btn" style={{display:"inline-block",marginTop:8}}>Open Interview Management</Link>
  </>}</section></div><p className="im-debrief-muted">{dataNotice}</p>
