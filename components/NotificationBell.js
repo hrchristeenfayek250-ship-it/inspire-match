@@ -4,6 +4,7 @@
 import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import { supabase } from "@/lib/supabase";
+import { notificationDestination, notificationPreview } from "@/lib/notificationNavigation";
 
 export default function NotificationBell() {
   const [notifications, setNotifications] = useState([]);
@@ -167,15 +168,9 @@ export default function NotificationBell() {
   }
 
   async function openNotification(item) {
+    const destination = notificationDestination(item);
     await markAsRead(item);
-
-    if (
-      item.action_url &&
-      item.action_url.startsWith("/") &&
-      !item.action_url.startsWith("//")
-    ) {
-      window.location.assign(item.action_url);
-    }
+    window.location.assign(destination.href);
   }
 
   return (
@@ -330,6 +325,7 @@ export default function NotificationBell() {
             >
               Mark all as read
             </button>
+            <a href="/app/notifications" style={{fontSize:12,color:"#176a48",fontWeight:800,whiteSpace:"nowrap"}}>View all →</a>
           </div>
           
           {error && (
@@ -392,7 +388,7 @@ style={{
                       color: "#1e3b32",
                     }}
                   >
-                    {item.title}
+                    {notificationPreview(item).title}
                   </strong>
 
                   {!item.is_read && (
@@ -409,7 +405,7 @@ style={{
                     margin: "6px 0",
                   }}
                 >
-                  {item.message}
+                  {notificationPreview(item).message}
                 </p>
 
                 <small style={{ color: "#999" }}>
