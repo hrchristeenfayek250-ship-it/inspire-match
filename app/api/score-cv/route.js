@@ -108,6 +108,10 @@ Extraction rules:
 - linkedinUrl must be null if no LinkedIn URL is found.
 - email and phone must be null if they are not present.
 - Do not use any protected characteristic in scoring or recommendation.
+- For every criterion, include a concise evidence statement grounded in the CV. Do not invent experience, employers, achievements, certifications or quotations.
+- If no relevant experience or skill is stated or reliably supported in the CV, set evidence to exactly "Not stated in CV" and score that criterion from 0 to 24. Missing CV evidence is not proof a candidate lacks the competency.
+- If evidence is indirect or partial, say so plainly in the evidence field rather than treating it as verified.
+- Do not reference protected or sensitive personal characteristics in evidence, summaries or interview questions.
 - Return JSON only.`;
 
     const result = await askClaude({
