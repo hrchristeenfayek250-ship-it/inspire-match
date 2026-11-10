@@ -68,6 +68,16 @@ const [newInterviewDate, setNewInterviewDate] = useState("");
     recommendation: "",
   });
 
+  const evidenceFields=["technical_skills","communication_skills","problem_solving","culture_fit"];
+  const [competencyEvidence,setCompetencyEvidence]=useState({technical_skills:"",communication_skills:"",problem_solving:"",culture_fit:""});
+  function parseEvidence(raw){
+    const marker="\n\n--- COMPETENCY EVIDENCE ---\n",index=String(raw||"").indexOf(marker);
+    const evidence={technical_skills:"",communication_skills:"",problem_solving:"",culture_fit:""};
+    if(index<0)return {feedback:String(raw||""),evidence};
+    const lines=raw.slice(index+marker.length).split("\n");
+    for(const field of evidenceFields){const line=lines.find(x=>x.startsWith(field+": "));if(line)evidence[field]=line.slice(field.length+2);}
+    return {feedback:raw.slice(0,index),evidence};
+  }
   const [interviewDecisions, setInterviewDecisions] = useState([]);
   const [decidingInterviewId, setDecidingInterviewId] = useState(null);
   const [savingDecision, setSavingDecision] = useState(false);
@@ -485,6 +495,7 @@ item.full_name,
       return;
     }
 
+    if(evidenceFields.some(field=>!competencyEvidence[field].trim())){setError("Add supporting evidence for each competency.");return;}
     setSavingEvaluation(true);
     setError("");
     setSuccess("");
@@ -501,7 +512,7 @@ item.full_name,
             strengths: evaluationForm.strengths.trim(),
             areas_for_improvement:
               evaluationForm.areas_for_improvement.trim(),
-            overall_feedback: evaluationForm.overall_feedback.trim(),
+            overall_feedback: evaluationForm.overall_feedback.trim()+"\n\n--- COMPETENCY EVIDENCE ---\n"+evidenceFields.map(field=>field+": "+competencyEvidence[field].trim().replace(/\r?\n/g," ")).join("\n"),
             recommendation: evaluationForm.recommendation,
             updated_at: new Date().toISOString(),
           },
@@ -4466,7 +4477,9 @@ jobTitle: jobs[jobId] || "Unknown Job",
                                 item.evaluator_id === userId
                             );
 
-                            setEvaluatingInterviewId(interview.id);
+                            const parsedFeedback=parseEvidence(savedEvaluation?.overall_feedback);
+                             setCompetencyEvidence(parsedFeedback.evidence);
+                             setEvaluatingInterviewId(interview.id);
 
                             setEvaluationForm({
                               technical_skills:
@@ -4482,7 +4495,7 @@ jobTitle: jobs[jobId] || "Unknown Job",
                               areas_for_improvement:
                                 savedEvaluation?.areas_for_improvement ?? "",
                               overall_feedback:
-                                savedEvaluation?.overall_feedback ?? "",
+                                parsedFeedback.feedback,
                               recommendation:
                                 savedEvaluation?.recommendation ?? "",
                             });
@@ -4530,6 +4543,14 @@ jobTitle: jobs[jobId] || "Unknown Job",
                               </label>
                             ))}
 
+                            <div style={{padding:14,background:"#eef7f0",borderRadius:12}}>
+                              <strong>Competency Evidence (Required)</strong>
+                              <p>Support each 1–5 score with an observed example or note that evidence was missing.</p>
+                              {evidenceFields.map(field=><label key={field} style={{display:"block",marginTop:10}}>
+                                {field.replaceAll("_"," ")} — Evidence
+                                <textarea style={inputStyle} rows={2} maxLength={700} value={competencyEvidence[field]} onChange={e=>setCompetencyEvidence(prev=>({...prev,[field]:e.target.value}))}/>
+                              </label>)}
+                            </div>
                             {[
                               ["strengths", "Strengths"],
                               ["areas_for_improvement", "Areas for Improvement"],
