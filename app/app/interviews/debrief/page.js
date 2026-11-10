@@ -81,7 +81,7 @@ export default function HiringDebriefPage(){
     supabase.from("applications").select("id,candidate_id,job_id,company_id").in("company_id",ids).limit(5000),
     supabase.from("interviews").select("id,company_id,application_id,scheduled_at,status,type,interviewer,created_at").in("company_id",ids).order("scheduled_at",{ascending:false}).limit(2500),
     supabase.from("interview_evaluations").select("interview_id,company_id,evaluator_id,technical_skills,communication_skills,problem_solving,culture_fit,strengths,areas_for_improvement,overall_feedback,recommendation,created_at,updated_at").in("company_id",ids).limit(5000),
-    supabase.from("interview_decisions").select("interview_id,company_id,decision,decision_reason,decided_by,created_at,updated_at").in("company_id",ids).limit(2500)
+    supabase.from("interview_decisions").select("interview_id,company_id,decision,decision_reason,decided_by,updated_at").in("company_id",ids).limit(2500)
    ]);
    for(const result of results){if(result.error)throw result.error;}
    [setJobs,setCandidates,setApplications,setInterviews,setEvaluations,setDecisions].forEach((setter,i)=>setter(results[i].data||[]));
@@ -97,7 +97,7 @@ export default function HiringDebriefPage(){
    const ownEvals=evaluations.filter(e=>e.company_id===company&&String(e.interview_id)===String(i.id));
    const unique=new Map(ownEvals.map(e=>[String(e.evaluator_id),e]));
    const evals=[...unique.values()];
-   const decision=decisions.filter(d=>d.company_id===company&&String(d.interview_id)===String(i.id)).sort((a,b)=>Date.parse(b.updated_at||b.created_at||0)-Date.parse(a.updated_at||a.created_at||0))[0]||null;
+   const decision=decisions.filter(d=>d.company_id===company&&String(d.interview_id)===String(i.id)).sort((a,b)=>Date.parse(b.updated_at||0)-Date.parse(a.updated_at||0))[0]||null;
    const averages=evals.map(e=>average(competencies.map(([field])=>scoreOf(e[field])).filter(n=>n!==null))).filter(n=>n!==null);
    const gap=averages.length>1?Math.max(...averages)-Math.min(...averages):null;
    const skills=competencies.map(([field,title])=>({field,title,score:average(evals.map(e=>scoreOf(e[field])).filter(n=>n!==null))}));
@@ -124,7 +124,7 @@ export default function HiringDebriefPage(){
  <h3>Competency overview</h3><div className="im-debrief-scroll"><table className="im-debrief-table"><thead><tr><th>Competency</th><th>Average rating</th><th>Available ratings</th></tr></thead><tbody>{selected.skills.map(s=><tr key={s.field}><td><strong>{s.title}</strong></td><td>{scoreLabel(s.score)}</td><td>{selected.evals.filter(e=>scoreOf(e[s.field])!==null).length}</td></tr>)}</tbody></table></div>
  <h3>Evaluator scorecards and recommendations</h3><div className="im-debrief-scroll"><table className="im-debrief-table"><thead><tr><th>Evaluator</th>{competencies.map(([field,name])=><th key={field}>{name}</th>)}<th>Recommendation</th></tr></thead><tbody>{selected.evals.map((e,index)=><tr key={String(e.evaluator_id||index)}><td>Evaluator {index+1}<div className="im-debrief-muted">{dateLabel(e.updated_at||e.created_at)}</div></td>{competencies.map(([field])=><td key={field}>{scoreOf(e[field])??"—"}</td>)}<td>{e.recommendation||"Not recorded"}</td></tr>)}</tbody></table>{!selected.evals.length&&<p className="im-debrief-muted">No accessible scorecards yet.</p>}</div>
  <h3>Evaluation notes and supporting evidence</h3>{selected.evals.map((e,index)=><div key={String(e.evaluator_id||index)} className="im-debrief-note" style={{marginBottom:10}}><strong>Evaluator {index+1} · {e.recommendation||"Recommendation not recorded"}</strong><div className="im-debrief-notes"><div><strong>Strengths</strong><p>{e.strengths||"Not recorded"}</p></div><div><strong>Areas for improvement</strong><p>{e.areas_for_improvement||"Not recorded"}</p></div></div><strong>Overall feedback</strong><p>{e.overall_feedback||"Not recorded"}</p></div>)}{!selected.evals.length&&<p className="im-debrief-muted">Evidence notes appear when interviewers submit them through Interview Management.</p>}
- <h3>Final hiring decision</h3><div className="im-debrief-note"><strong>{selected.decision?.decision||"Decision not recorded"}</strong><p>{selected.decision?.decision_reason||"No decision rationale is available."}</p>{selected.decision&&<small className="im-debrief-muted">Last updated: {dateLabel(selected.decision.updated_at||selected.decision.created_at)}</small>}</div>
+ <h3>Final hiring decision</h3><div className="im-debrief-note"><strong>{selected.decision?.decision||"Decision not recorded"}</strong><p>{selected.decision?.decision_reason||"No decision rationale is available."}</p>{selected.decision&&<small className="im-debrief-muted">Last updated: {dateLabel(selected.decision.updated_at)}</small>}</div>
  <p className="im-debrief-muted">To submit or edit scorecards and decisions, open Interview Management. This page is read-only and does not change candidate stages or hiring outcomes.</p><Link href="/app/interviews" className="im-debrief-btn" style={{display:"inline-block",marginTop:8}}>Open Interview Management</Link>
  </>}</section></div><p className="im-debrief-muted">{dataNotice}</p>
  </main></div></div>;
