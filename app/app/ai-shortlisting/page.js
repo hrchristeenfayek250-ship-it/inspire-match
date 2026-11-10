@@ -53,6 +53,84 @@ function computeOverall(scores = [], criteria = []) {
 function candidateLabel(result) {
   return String(result.candidate?.name || "").trim() || "Name Not Available";
 }
+function evidenceState(entry) {
+  const evidence = typeof entry?.evidence === "string" ? entry.evidence.trim() : "";
+  const score = Number(entry?.score);
+  const missing = !evidence || /^(not stated|not mentioned|no evidence|not provided|unknown|not found|no explicit)/i.test(evidence);
+  if (missing) return { label: "Not stated / no evidence cited", color: "#976021", background: "#fff3df", evidence: "Not stated in CV or no specific evidence provided by AI." };
+  if (Number.isFinite(score) && score < 50) return { label: "Limited evidence — verify", color: "#875a2d", background: "#fff3e8", evidence };
+  return { label: "Evidence cited — verify", color: "#276647", background: "#e9f5ed", evidence };
+}
+
+function EvidenceVerificationMap({ criteria = [], scores = [], candidateName }) {
+  const [copied, setCopied] = useState(false);
+  const items = criteria.map((criterion) => {
+    const scoreEntry = scores.find((entry) => String(entry.id) === String(criterion.id));
+    const state = evidenceState(scoreEntry);
+    const followUp = `Can you walk us through a specific example demonstrating ${criterion.name || "this requirement"}? What did you personally do, and what was the result?`;
+    return { criterion, score: scoreEntry?.score, state, followUp };
+  });
+  async function copyEvidence() {
+    const text = [
+      "INSPIRE MATCH / EVIDENCE & VERIFICATION MAP",
+      "Candidate: " + candidateName,
+      ...items.map((item, index) => [
+        `${index + 1}. ${item.criterion.name} (${item.criterion.importance === "must" ? "Must-have" : "Nice-to-have"})`,
+        "AI score: " + (Number.isFinite(Number(item.score)) ? item.score + "/100" : "Not scored"),
+        "Evidence status: " + item.state.label,
+        "Evidence: " + item.state.evidence,
+        "Verify: " + item.followUp
+      ].join("\\n"))
+    ].join("\\n\\n");
+    try {
+      await navigator.clipboard.writeText(text);
+      setCopied(true);
+    } catch {
+      setCopied(false);
+    }
+  }
+
+  return (
+    <div style={{ marginTop: 20, border: "1px solid #dce9dd", borderRadius: 14, padding: 18, background: "#f8fbf8" }}>
+      <div style={{ display: "flex", flexWrap: "wrap", justifyContent: "space-between", alignItems: "center", gap: 12 }}>
+        <div>
+          <h4 style={{ margin: 0, fontSize: 15, color: "#1b583e" }}>Evidence & Verification Map</h4>
+          <p style={{ margin: "6px 0 0", fontSize: 12, color: "#597969", lineHeight: 1.6 }}>
+            Each job requirement linked to the AI-cited CV evidence and an interview follow-up.
+          </p>
+        </div>
+        <button type="button" className="btn ghost" onClick={copyEvidence} style={{ fontSize: 12, padding: "9px 13px" }}>
+          {copied ? "✓ Copied" : "Copy Evidence Map"}
+        </button>
+      </div>
+      <div style={{ display: "grid", gap: 10, marginTop: 16 }}>
+        {items.map((item, index) => (
+          <div key={item.criterion.id || index} style={{ border: "1px solid #e0e9e2", background: "#fff", borderRadius: 11, padding: 14 }}>
+            <div style={{ display: "flex", gap: 8, flexWrap: "wrap", justifyContent: "space-between", alignItems: "center" }}>
+              <strong style={{ fontSize: 13, color: "#1a4934" }}>{item.criterion.name || "Unnamed requirement"}</strong>
+              <span style={{ padding: "5px 9px", background: item.state.background, color: item.state.color, borderRadius: 8, fontSize: 11, fontWeight: 800 }}>
+                {item.state.label}
+              </span>
+            </div>
+            <div style={{ marginTop: 7, color: "#789080", fontSize: 11 }}>
+              {item.criterion.importance === "must" ? "Must-have" : "Nice-to-have"} · {item.score == null ? "No score" : item.score + "/100"}
+            </div>
+            <div style={{ fontSize: 12, color: "#405d4d", lineHeight: 1.65, marginTop: 10 }}>
+              <strong>Evidence from AI analysis:</strong> {item.state.evidence}
+            </div>
+            <div style={{ fontSize: 12, color: "#245740", lineHeight: 1.65, marginTop: 8 }}>
+              <strong>Verify in interview:</strong> {item.followUp}
+            </div>
+          </div>
+        ))}
+      </div>
+      <p style={{ fontSize: 11, color: "#73887b", margin: "13px 0 0", lineHeight: 1.6 }}>
+        AI interpretation may be incomplete or inaccurate. A missing mention in a CV is not proof the candidate lacks the skill. Check the original CV and verify with the candidate. Match scores and hiring decisions are unchanged.
+      </p>
+    </div>
+  );
+}
+
 function ScoreRing({ value }) {
   const radius = 32;
   const circumference = 2 * Math.PI * radius;
@@ -1816,6 +1894,8 @@ job_id: selectedJobId ? Number(selectedJobId) : null,
                                 </div>
 
                               </div>
+
+                              <EvidenceVerificationMap criteria={criteria} scores={result.scores || []} candidateName={candidateLabel(result)} />
 
                               <div className="cols">
 
