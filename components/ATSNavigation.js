@@ -16,6 +16,7 @@ export const ATS_NAVIGATION = [
   
    ["Recruitment Operations", "/app/recruitment-operations", "◈"],
   ["Interviews", "/app/interviews", "▤"],
+  ["Interview Kits", "/app/interviews/kits", "▤"],
   ["Hiring Debrief", "/app/interviews/debrief", "◉"],
   ["Offer Management", "/app/offers", "▦"],
 ["Approval Center", "/app/approvals", "✓"],
