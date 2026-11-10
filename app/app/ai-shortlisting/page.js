@@ -56,7 +56,7 @@ function candidateLabel(result) {
 function evidenceState(entry) {
   const evidence = typeof entry?.evidence === "string" ? entry.evidence.trim() : "";
   const score = Number(entry?.score);
-  const missing = !evidence || /^(not stated|not mentioned|no evidence|not provided|unknown|not found|no explicit)/i.test(evidence);
+  const missing = !evidence || /^(not stated|not mentioned|no evidence|no relevant evidence|not provided|unknown|not found|no explicit)/i.test(evidence);
   if (missing) return { label: "Not stated / no evidence cited", color: "#976021", background: "#fff3df", evidence: "Not stated in CV or no specific evidence provided by AI." };
   if (Number.isFinite(score) && score < 50) return { label: "Limited evidence — verify", color: "#875a2d", background: "#fff3e8", evidence };
   return { label: "Evidence cited — verify", color: "#276647", background: "#e9f5ed", evidence };
@@ -76,12 +76,12 @@ function EvidenceVerificationMap({ criteria = [], scores = [], candidateName }) 
       "Candidate: " + candidateName,
       ...items.map((item, index) => [
         `${index + 1}. ${item.criterion.name} (${item.criterion.importance === "must" ? "Must-have" : "Nice-to-have"})`,
-        "AI score: " + (Number.isFinite(Number(item.score)) ? item.score + "/100" : "Not scored"),
+        "AI score: " + ((item.score != null && Number.isFinite(Number(item.score))) ? item.score + "/100" : "Not scored"),
         "Evidence status: " + item.state.label,
         "Evidence: " + item.state.evidence,
         "Verify: " + item.followUp
-      ].join("\\n"))
-    ].join("\\n\\n");
+      ].join("\n"))
+    ].join("\n\n");
     try {
       await navigator.clipboard.writeText(text);
       setCopied(true);
