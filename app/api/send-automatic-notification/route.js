@@ -200,7 +200,7 @@ export async function POST(request) {
                   </p>
                 </div>
                 <p style="margin-top:24px">
-                  <a href="https://inspire-match-ats.vercel.app/app/dashboard"
+                  <a href="https://inspire-match-ats.vercel.app/app/notifications"
                      style="color:#245c4a;font-weight:bold">
                     Open Inspire Match
                   </a>
