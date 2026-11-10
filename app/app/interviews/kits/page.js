@@ -91,12 +91,52 @@ export default function InterviewKitBuilderPage(){
   const [loading,setLoading] = useState(true);
   const [error,setError] = useState("");
   const [notice,setNotice] = useState("");
+  const [userId,setUserId]=useState("");
+  const [drafts,setDrafts]=useState([]);
+  const [draftName,setDraftName]=useState("");
+  const [draftId,setDraftId]=useState("");
+  const draftKey=userId&&company?"inspire-match:kits:v1:"+userId+":"+company:"";
+  useEffect(()=>{
+    if(!draftKey){setDrafts([]);setDraftId("");return;}
+    try{const list=JSON.parse(localStorage.getItem(draftKey)||"[]");setDrafts(Array.isArray(list)?list.filter(x=>x&&Array.isArray(x.questions)).slice(0,25):[]);}
+    catch{setDrafts([]);}
+    setDraftId("");
+  },[draftKey]);
+  function persistDrafts(items){
+    try{localStorage.setItem(draftKey,JSON.stringify(items));setDrafts(items);return true;}
+    catch{setError("Browser storage unavailable. Use Copy Kit or Print PDF.");return false;}
+  }
+  function saveDraft(){
+    if(!draftKey)return setError("Select a workspace first.");
+    if(!questions.length||questions.some(q=>!q.question.trim()||!q.competency.trim()))return setError("Complete all questions first.");
+    const name=draftName.trim()||selectedJob?.title||template;
+    const id=draftId||"kit-"+Date.now();
+    const entry={id,name,jobId,template,interviewer,questions:questions.map(q=>({...q})),updatedAt:new Date().toISOString()};
+    if(persistDrafts([entry,...drafts.filter(x=>x.id!==id)].slice(0,25))){
+      setDraftId(id);setDraftName(name);setNotice("Draft saved locally in this browser for your account and company.");
+    }
+  }
+  function openDraft(id){
+    const item=drafts.find(x=>x.id===id);if(!item)return;
+    setDraftId(id);setDraftName(item.name);
+    setTemplate(TEMPLATES[item.template]?item.template:"Structured Interview");
+    setQuestions(item.questions.map((q,i)=>({id:String(q.id||"saved-"+i),competency:String(q.competency||""),question:String(q.question||""),followUp:String(q.followUp||"")})));
+    setJobId(jobs.some(j=>j.company_id===company&&String(j.id)===String(item.jobId))?String(item.jobId):"");
+    setApplicationId("");setInterviewer(item.interviewer||"");
+    setNotice("Draft loaded. Select the candidate for your session if required.");
+  }
+  function deleteDraft(){
+    if(draftId&&persistDrafts(drafts.filter(x=>x.id!==draftId))){
+      setDraftId("");setDraftName("");setNotice("Draft removed from this browser.");
+    }
+  }
 
   const load = useCallback(async () => {
     setLoading(true); setError("");
     try {
       const {data:auth,error:authError} = await supabase.auth.getUser();
       if(authError || !auth?.user) throw new Error("Please sign in to build an interview kit.");
+      setUserId(auth.user.id);
       const memberships=await supabase.from("company_members").select("company_id").eq("user_id",auth.user.id);
       if(memberships.error)throw memberships.error;
       const ids=[...new Set((memberships.data||[]).map(m=>m.company_id).filter(Boolean))];
@@ -126,6 +166,7 @@ export default function InterviewKitBuilderPage(){
   const focusAreas=[...new Set(questions.map(q=>q.competency.trim()).filter(Boolean))];
   const kitTitle=(selectedJob?.title||"Role not selected")+" / "+(selectedCandidate?.full_name||"General interview");
   const changeTemplate = value => {
+    setDraftId("");setDraftName("");
     setTemplate(value);
     setQuestions(questionsFor(value));
     setNotice("Template loaded. You can customize questions before printing or copying.");
@@ -166,6 +207,21 @@ export default function InterviewKitBuilderPage(){
       {notice&&<div className="ik-note ik-notice" role="status">{notice}</div>}
       <div className="ik-grid">
         <section className="ik-panel ik-form-panel"><h2>Kit setup</h2><p className="ik-muted">Select an existing job and optionally link a candidate application. Interview kits do not change application or interview data.</p>
+          <section className="ik-note ik-edit-only" style={{marginTop:0}}>
+            <strong>Saved Interview Kits</strong>
+            <p>Save and reopen a reusable question set. These drafts stay in this browser and are not shared with other devices.</p>
+            <label className="ik-label" htmlFor="ik-draft-name">Draft name</label>
+            <input id="ik-draft-name" className="ik-input" value={draftName} maxLength={90} placeholder="e.g. Senior developer interview" onChange={e=>setDraftName(e.target.value)}/>
+            <div className="ik-row" style={{marginTop:10}}>
+              <button type="button" className="ik-button" onClick={saveDraft} disabled={!draftKey}>Save Draft</button>
+              <button type="button" className="ik-button ghost" onClick={deleteDraft} disabled={!draftId}>Delete Draft</button>
+            </div>
+            <label className="ik-label" htmlFor="ik-saved-drafts" style={{marginTop:14}}>Open saved draft ({drafts.length})</label>
+            <select className="ik-input" id="ik-saved-drafts" value={draftId} onChange={e=>openDraft(e.target.value)}>
+              <option value="">Choose draft</option>
+              {drafts.map(d=><option key={d.id} value={d.id}>{d.name}</option>)}
+            </select>
+          </section>
           <div className="ik-form">
             <div><label className="ik-label" htmlFor="ik-company">Workspace</label><select id="ik-company" className="ik-input" value={company} onChange={e=>{setCompany(e.target.value);setJobId("");setApplicationId("");}}>{companies.length===0&&<option value="">No company available</option>}{companies.map(id=><option key={id} value={id}>Workspace {id.slice(0,8)}</option>)}</select></div>
             <div><label className="ik-label" htmlFor="ik-job">Job</label><select id="ik-job" className="ik-input" value={jobId} onChange={e=>{setJobId(e.target.value);setApplicationId("");}}><option value="">General kit / choose job</option>{companyJobs.map(j=><option value={String(j.id)} key={String(j.id)}>{j.title}</option>)}</select></div>
@@ -175,7 +231,7 @@ export default function InterviewKitBuilderPage(){
             <div><label className="ik-label" htmlFor="ik-date">Session date and time</label><input id="ik-date" type="datetime-local" className="ik-input" value={date} onChange={e=>setDate(e.target.value)}/></div>
             <button type="button" className="ik-button ghost" onClick={load} disabled={loading}>{loading?"Loading...":"Refresh Jobs & Candidates"}</button>
           </div>
-          <div className="ik-note">Current release: editable templates and printable kits. Draft questions are <strong>not saved to the company database</strong>; use Copy Kit or Print / Save PDF to keep a version. Persistent job-level interview plans and reviewer assignment remain future work.</div>
+          <div className="ik-note">Current release: editable templates, printable kits, and browser-only saved drafts. Drafts are <strong>not saved to the company database</strong> and do not sync across devices. Shared job-level interview plans and reviewer assignment remain future work.</div>
         </section>
         <section className="ik-panel"><div className="ik-eyebrow">PREVIEW / READY TO PRINT</div><h2 style={{marginTop:9}}>{kitTitle}</h2><p className="ik-muted">{template} · {interviewer||"Interviewer not set"} · {date?new Date(date).toLocaleString("en-GB",{dateStyle:"medium",timeStyle:"short"}):"Session not set"}</p>
           <div className="ik-kpi"><div><span className="ik-muted">Questions</span><strong>{questions.length}</strong></div><div><span className="ik-muted">Focus areas</span><strong>{focusAreas.length}</strong></div><div><span className="ik-muted">Total score</span><strong>{questions.length*5}</strong></div></div>
