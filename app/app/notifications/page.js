@@ -63,6 +63,21 @@ export default function NotificationsCenter() {
     finally{setLoading(false);}
   },[]);
   useEffect(()=>{load();},[load]);
+  useEffect(()=>{
+    let active=true;
+    let channel=null;
+    (async()=>{
+      const {data:{user},error:authError}=await supabase.auth.getUser();
+      if(!active||authError||!user)return;
+      channel=supabase.channel("notification-center-"+user.id)
+        .on("postgres_changes",{
+          event:"*",schema:"public",table:"notifications",filter:"recipient_id=eq."+user.id
+        },()=>{
+          if(active)load();
+        }).subscribe();
+    })();
+    return ()=>{active=false;if(channel)supabase.removeChannel(channel);};
+  },[load]);
 
   const unread=notifications.filter(n=>!n.is_read).length;
   const high=notifications.filter(n=>!n.is_read&&["high","urgent","critical"].includes(String(n.priority||"").toLowerCase())).length;
