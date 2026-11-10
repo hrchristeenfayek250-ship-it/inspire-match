@@ -98,7 +98,8 @@ export default function NotificationsCenter() {
     if(working)return;
     setWorking(String(item.id));setError("");
     const destination=notificationDestination(item);
-    await markRead(item);
+    const updated = await markRead(item);
+    if (!updated) { setWorking(""); return; }
     window.location.assign(destination.href);
   }
   return <main className="nc"><style>{styles}</style><div className="nc-layout"><aside className="nc-sidebar"><div className="nc-brand">✳ Inspire Match<small>HIRE BETTER. INSPIRE MORE.</small></div><ATSNavigation className="nc-nav"/></aside>
