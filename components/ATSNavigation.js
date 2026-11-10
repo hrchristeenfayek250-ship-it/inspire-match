@@ -8,6 +8,7 @@ import { supabase } from "@/lib/supabase";
 
 export const ATS_NAVIGATION = [
   ["Overview", "/app/dashboard", "◫"],
+  ["Today", "/app/today", "◷"],
   ["Jobs", "/app/jobs", "▣"],
   ["Candidates", "/app/candidates", "♙"],
   ["Recycle Bin", "/app/recycle-bin", "♻"],
