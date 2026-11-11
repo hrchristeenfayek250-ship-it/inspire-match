@@ -3793,6 +3793,23 @@ jobTitle: jobs[jobId] || "Unknown Job",
         >
           <h2>Schedule New Interview</h2>
 
+          <div style={{padding:"12px 15px",marginBottom:16,background:"#edf7f0",border:"1px solid #cbe6d2",borderRadius:10,color:"#205b3e",fontSize:13}}>
+            <strong>INT-04 · Smart Scheduling</strong>
+            <div style={{marginTop:5}}>Candidate and interviewer conflicts are checked before scheduling or rescheduling. A 60-minute buffer applies to interviews visible to your workspace.</div>
+            {form.scheduled_at && form.application_id && form.interviewer.trim() && (() => {
+              const proposed=new Date(form.scheduled_at).getTime();
+              if(!Number.isFinite(proposed))return null;
+              const conflict=interviews.find(i=>
+                String(i.status||"").toLowerCase()==="scheduled" &&
+                Math.abs(new Date(i.scheduled_at).getTime()-proposed)<3600000 &&
+                (String(i.application_id)===String(form.application_id)||
+                 String(i.interviewer||"").trim().toLowerCase()===form.interviewer.trim().toLowerCase())
+              );
+              return <p role="status" style={{margin:"9px 0 0",fontWeight:700,color:conflict?"#9a442c":"#176747"}}>
+                {conflict?"⚠ Scheduling conflict detected — choose another date or interviewer.":"✓ No conflict found in currently loaded interviews. Final check runs on Save."}
+              </p>;
+            })()}
+          </div>
           <form onSubmit={scheduleInterview}>
             <div
               style={{
