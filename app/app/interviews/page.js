@@ -227,6 +227,24 @@ item.full_name,
     }
   }
 
+  async function checkInterviewConflict(date, interviewer, applicationId, excludeId=null) {
+    const time=date.getTime();
+    const {data,error:lookupError}=await supabase.from("interviews")
+      .select("id,scheduled_at,interviewer,application_id")
+      .eq("company_id",companyId).eq("status","scheduled")
+      .gte("scheduled_at",new Date(time-3600000).toISOString())
+      .lte("scheduled_at",new Date(time+3600000).toISOString()).limit(200);
+    if(lookupError)throw new Error("Availability check failed: "+lookupError.message);
+    const name=String(interviewer||"").trim().toLowerCase();
+    const collision=(data||[]).find(item=>
+      String(item.id)!==String(excludeId)&&
+      Math.abs(new Date(item.scheduled_at).getTime()-time)<3600000&&
+      (String(item.application_id)===String(applicationId)||
+       (name&&String(item.interviewer||"").trim().toLowerCase()===name))
+    );
+    if(collision)throw new Error("Scheduling conflict: this interviewer or candidate has another interview within 60 minutes. Choose a different slot.");
+  }
+
   async function scheduleInterview(event) {
     event.preventDefault();
     setError("");
@@ -271,6 +289,7 @@ item.full_name,
 
     try {
      
+      await checkInterviewConflict(date,form.interviewer,selectedApplication.id);
       const { error: insertError } = await supabase
         .from("interviews")
         .insert({
@@ -434,6 +453,7 @@ item.full_name,
     setUpdatingInterviewId(interview.id);
 
     try {
+      await checkInterviewConflict(date,interview.interviewer,interview.application_id,interview.id);
       const { data, error: updateError } = await supabase
         .from("interviews")
         .update({ scheduled_at: date.toISOString() })
