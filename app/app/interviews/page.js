@@ -2162,6 +2162,10 @@ jobTitle: jobs[jobId] || "Unknown Job",
           Schedule interviews and manage your recruitment
           process.
         </p>
+        <a href="#smart-scheduling" style={{display:"inline-flex",alignItems:"center",gap:10,padding:"13px 19px",background:"#176848",color:"#fff",fontWeight:800,borderRadius:10,textDecoration:"none",marginBottom:22}}>
+          📅 Open Smart Scheduling · INT-04
+        </a>
+        <p style={{fontSize:12,color:"#627d6b",margin:"-10px 0 22px"}}>Jump directly to scheduling, conflict warnings and the interview booking form.</p>
 
         {error && (
           <div
@@ -3791,7 +3795,7 @@ jobTitle: jobs[jobId] || "Unknown Job",
             marginBottom: 25,
           }}
         >
-          <h2>Schedule New Interview</h2>
+          <h2 id="smart-scheduling" style={{scrollMarginTop:20}}>Schedule New Interview · Smart Scheduling (INT-04)</h2>
 
           <div style={{padding:"12px 15px",marginBottom:16,background:"#edf7f0",border:"1px solid #cbe6d2",borderRadius:10,color:"#205b3e",fontSize:13}}>
             <strong>INT-04 · Smart Scheduling</strong>
