@@ -42,6 +42,7 @@ export default function ATSNavigation({
   const pathname = usePathname();
   const [canViewCompanyBilling, setCanViewCompanyBilling] = useState(false);
   const [isInternalStaff, setIsInternalStaff] = useState(false);
+  const [memberRole, setMemberRole] = useState(null);
 
   useEffect(() => {
     let active = true;
@@ -49,20 +50,29 @@ export default function ATSNavigation({
       const { data: { user }, error } = await supabase.auth.getUser();
       if (error || !user || !active) return;
       const [membership, internal] = await Promise.all([
-        supabase.from("company_members").select("company_id")
-          .eq("user_id", user.id).eq("role", "admin").limit(1),
+        supabase.from("company_members").select("company_id, role")
+          .eq("user_id", user.id),
         supabase.rpc("billing_is_internal_staff")
       ]);
       if (!active) return;
-      setCanViewCompanyBilling(!membership.error && (membership.data || []).length > 0);
+      const memberships = membership.error ? [] : (membership.data || []);
+      // A user with ambiguous company memberships is not treated as a manager.
+      setMemberRole(memberships.length === 1 ? String(memberships[0].role || "").toLowerCase() : "restricted");
+      setCanViewCompanyBilling(memberships.some((m) => m.role === "admin"));
       setIsInternalStaff(!internal.error && internal.data === true);
     })().catch(() => {
-      if (active) { setCanViewCompanyBilling(false); setIsInternalStaff(false); }
+      if (active) { setCanViewCompanyBilling(false); setIsInternalStaff(false); setMemberRole("restricted"); }
     });
     return () => { active = false; };
   }, []);
 
-  const visibleNavigation = [
+  const isHiringManager = memberRole === "hiring_manager";
+  const visibleNavigation = memberRole === null ? [] : isHiringManager
+    ? [
+        ["My Hiring Workspace", "/app/hiring-manager", "◫"],
+        ["Approval Center", "/app/approvals", "✓"],
+      ]
+    : [
     ...ATS_NAVIGATION.filter(([label]) =>
       label !== "Billing & Subscriptions" || canViewCompanyBilling
     ),
