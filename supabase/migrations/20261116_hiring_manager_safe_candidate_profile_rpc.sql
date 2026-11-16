@@ -11,7 +11,7 @@ AS $function$
         c.professional_summary::text,c.skills::text,j.title::text,a.stage::text
  FROM public.hiring_manager_candidate_shares s
  JOIN public.jobs j ON j.id=s.job_id AND j.company_id=s.company_id
- JOIN public.applications a ON a.id=s.application_id AND a.job_id=j.id
+ JOIN public.applications a ON a.id=s.application_id AND a.job_id=j.id AND a.company_id=s.company_id
  JOIN public.candidates c ON c.id=a.candidate_id AND c.company_id=s.company_id
  WHERE s.id=p_share_id AND s.revoked_at IS NULL
    AND s.hiring_manager_id=(SELECT auth.uid())
