@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 import ATSNavigation from "@/components/ATSNavigation";
 import HiringCandidateReviews from "@/components/HiringCandidateReviews";
+import HiringOfferApprovals from "@/components/HiringOfferApprovals";
 
 const pending = (item) => ["pending","pending approval","awaiting approval"].includes(String(item.step_status || "").toLowerCase());
 const sampleJobs = [
@@ -159,17 +160,7 @@ export default function HiringManagerPage() {
               <p className="hm-muted">Candidate reviews need secure recruiter-sharing permissions. Job details with salary are not linked here.</p>
             </section>
             <HiringCandidateReviews designPreview={designPreview} enabled={role === "hiring_manager"} />
-            <section className="hm-panel">
-              <div className="hm-panel-head"><h2>Job Offers Awaiting My Approval</h2>
-                {!designPreview && <Link className="hm-link" href="/app/approvals">Open Approval Center →</Link>}
-              </div>
-              {visibleOffers.length === 0 ? <div className="hm-empty">No pending job offer approvals assigned to your account.</div> :
-              visibleOffers.map((offer,i)=><div className="hm-row" key={offer.offer_id || i}>
-                <div><strong>{offer.job_title || "Hiring approval"}</strong>{designPreview && <span className="hm-sample">SAMPLE</span>}
-                  <p className="hm-muted" style={{margin:"7px 0 0"}}>{offer.step_name || "Approval step"}</p></div>
-                <span className="hm-pill">Pending review</span></div>)}
-              <p className="hm-muted">Approvals are processed in the existing Approval Center. Salary and offer compensation are never requested by this workspace.</p>
-            </section>
+            <HiringOfferApprovals offers={visibleOffers} designPreview={designPreview} onDecided={refresh} />
           </> : null}
         </div>
       </div>
