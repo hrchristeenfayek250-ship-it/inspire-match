@@ -25,6 +25,9 @@ export default function HiringManagerPage() {
   const [offers,setOffers] = useState([]);
   const [designPreview,setDesignPreview] = useState(false);
   const [role,setRole] = useState("");
+  const [search,setSearch] = useState("");
+  const [statusFilter,setStatusFilter] = useState("all");
+  const [jobFilter,setJobFilter] = useState("all");
 
   useEffect(() => {
     let active = true;
@@ -82,6 +85,7 @@ export default function HiringManagerPage() {
   }
 
   const visibleJobs = designPreview ? sampleJobs : jobs;
+  const filteredJobs = visibleJobs.filter(j => (jobFilter === "all" || j.job_id === jobFilter) && (statusFilter === "all" || String(j.job_status || "").toLowerCase() === statusFilter) && [j.job_title,j.department,j.location].join(" ").toLowerCase().includes(search.toLowerCase()));
   const visibleOffers = designPreview ? sampleOffers : offers.filter(pending);
   return (
     <main className="hm-shell">
@@ -114,7 +118,7 @@ export default function HiringManagerPage() {
         .hm-empty{text-align:center;padding:34px 15px;background:#fafcfa;color:#75887d;border:1px dashed #d8e7da;border-radius:12px;font-size:13px}
         .hm-note{background:#eaf5ed;padding:15px;color:#145b3e;border-radius:11px;font-size:13px;margin:20px 0}
         .hm-error{background:#fff2f0;border:1px solid #efbab5;color:#972a22;border-radius:11px;padding:15px;margin:20px 0;font-size:13px}
-        .hm-sample{display:inline-block;background:#fff0db;color:#966222;border-radius:6px;font-size:10px;font-weight:800;padding:4px 8px;margin-left:9px}
+.hm-filters{display:flex;gap:10px;flex-wrap:wrap;margin:15px 0}.hm-filters input,.hm-filters select{border:1px solid #d7e5da;border-radius:9px;padding:11px;color:#24533b;background:white;font:inherit}.hm-filters input{flex:1;min-width:160px}.hm-sample{display:inline-block;background:#fff0db;color:#966222;border-radius:6px;font-size:10px;font-weight:800;padding:4px 8px;margin-left:9px}
         @media(max-width:850px){.hm-layout{grid-template-columns:1fr}.hm-sidebar{border-right:0;border-bottom:1px solid #e2eae4;padding:15px}.hm-brand{margin-bottom:12px;padding-bottom:12px}.hm-nav{display:flex;flex-wrap:wrap}.hm-main{padding:25px 16px}.hm-stats{grid-template-columns:1fr}}
       `}</style>
       <div className="hm-layout">
@@ -144,9 +148,10 @@ export default function HiringManagerPage() {
             </div>
             <section className="hm-panel">
               <div className="hm-panel-head"><h2>My Assigned Jobs</h2>{designPreview && <span className="hm-sample">SAMPLE</span>}</div>
+              <div className="hm-filters"><input aria-label="Search jobs" placeholder="Search job title, department or location" value={search} onChange={e=>setSearch(e.target.value)}/><select aria-label="Filter by job" value={jobFilter} onChange={e=>setJobFilter(e.target.value)}><option value="all">All jobs</option>{visibleJobs.map(j=><option key={j.job_id} value={j.job_id}>{j.job_title}</option>)}</select><select aria-label="Filter by status" value={statusFilter} onChange={e=>setStatusFilter(e.target.value)}><option value="all">All statuses</option><option value="active">Active</option><option value="paused">Paused</option><option value="closed">Closed</option></select></div>
               {jobsError && !designPreview ? <div className="hm-empty">Secure Assigned Jobs access has not yet been activated in Supabase.</div> :
-               visibleJobs.length === 0 ? <div className="hm-empty">{role === "admin" || role === "hr_manager" ? "This manager overview does not display other users' job assignments." : "No jobs are assigned to this Hiring Manager account yet."}</div> :
-               visibleJobs.map(job => <div className="hm-row" key={job.job_id}><div><strong>{job.job_title || "Untitled job"}</strong>
+               filteredJobs.length === 0 ? <div className="hm-empty">{role === "admin" || role === "hr_manager" ? "This manager overview does not display other users' job assignments." : "No jobs are assigned to this Hiring Manager account yet."}</div> :
+               filteredJobs.map(job => <div className="hm-row" key={job.job_id}><div><strong>{job.job_title || "Untitled job"}</strong>
                  {designPreview && <span className="hm-sample">SAMPLE</span>}
                  <div className="hm-detail">{[job.department,job.location,job.job_status,job.priority && job.priority+" priority"].filter(Boolean).map((v,i)=><span key={i}>{v}</span>)}</div>
                  </div><span className="hm-pill">Assigned to me</span></div>)}
