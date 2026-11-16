@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 import ATSNavigation from "@/components/ATSNavigation";
+import HiringCandidateReviews from "@/components/HiringCandidateReviews";
 
 const pending = (item) => ["pending","pending approval","awaiting approval"].includes(String(item.step_status || "").toLowerCase());
 const sampleJobs = [
@@ -157,6 +158,7 @@ export default function HiringManagerPage() {
                  </div><span className="hm-pill">Assigned to me</span></div>)}
               <p className="hm-muted">Candidate reviews need secure recruiter-sharing permissions. Job details with salary are not linked here.</p>
             </section>
+            <HiringCandidateReviews designPreview={designPreview} enabled={role === "hiring_manager"} />
             <section className="hm-panel">
               <div className="hm-panel-head"><h2>Job Offers Awaiting My Approval</h2>
                 {!designPreview && <Link className="hm-link" href="/app/approvals">Open Approval Center →</Link>}
