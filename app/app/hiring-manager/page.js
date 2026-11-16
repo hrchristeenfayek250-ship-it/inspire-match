@@ -1,175 +1,169 @@
 "use client";
-
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 import ATSNavigation from "@/components/ATSNavigation";
 
-const isPending = (row) =>
-  ["pending", "pending approval", "awaiting approval"].includes(
-    String(row.step_status || "").trim().toLowerCase()
-  );
+const pending = (item) => ["pending","pending approval","awaiting approval"].includes(String(item.step_status || "").toLowerCase());
+const sampleJobs = [
+  { job_id:"demo-job-1",job_title:"Senior Product Designer",department:"Design",location:"Cairo",job_status:"Active",priority:"High" },
+  { job_id:"demo-job-2",job_title:"React Native Developer",department:"Technology",location:"Remote",job_status:"Active",priority:"Medium" },
+];
+const sampleOffers = [
+  {offer_id:"demo-offer-1",job_title:"Senior Product Designer",step_name:"Hiring Manager Approval",step_status:"pending"}
+];
+const roles = ["hiring_manager","admin","hr_manager"];
 
 export default function HiringManagerPage() {
   const router = useRouter();
-  const [loading, setLoading] = useState(true);
-  const [refreshing, setRefreshing] = useState(false);
-  const [error, setError] = useState("");
-  const [decisions, setDecisions] = useState([]);
-  const [designPreview, setDesignPreview] = useState(false);
-
-  async function loadDecisions() {
-    const { data, error: rpcError } = await supabase.rpc("get_my_hiring_decisions");
-    if (rpcError) throw rpcError;
-    setDecisions(Array.isArray(data) ? data : []);
-  }
+  const [loading,setLoading] = useState(true);
+  const [refreshing,setRefreshing] = useState(false);
+  const [error,setError] = useState("");
+  const [jobsError,setJobsError] = useState("");
+  const [jobs,setJobs] = useState([]);
+  const [offers,setOffers] = useState([]);
+  const [designPreview,setDesignPreview] = useState(false);
+  const [role,setRole] = useState("");
 
   useEffect(() => {
     let active = true;
     (async () => {
       try {
-        const { data: auth, error: authError } = await supabase.auth.getUser();
+        const {data:auth,error:authError} = await supabase.auth.getUser();
         if (authError) throw authError;
-        if (!auth?.user) {
-          router.replace("/app/login");
+        if (!auth?.user) { router.replace("/app/login"); return; }
+
+        // For visual inspection only: zero real data queries, no authorization bypass for backend RPCs.
+        if (new URLSearchParams(window.location.search).get("designPreview") === "1") {
+          if (active) setDesignPreview(true);
           return;
         }
-        // Design-only preview shows no live hiring decisions or candidate data.
-        // Authentication still applies, and this switch never authorizes data access.
-        const requestedPreview = new URLSearchParams(window.location.search).get("designPreview") === "1";
-        if (requestedPreview) {
-          if (active) { setDesignPreview(true); setDecisions([]); }
-          return;
-        }
-        const { data: memberships, error: membershipError } = await supabase
-          .from("company_members")
-          .select("company_id,role")
-          .eq("user_id", auth.user.id)
-          .limit(2);
-        if (membershipError) throw membershipError;
-        const memberRole = memberships?.length === 1 && memberships[0].company_id
+        const {data:memberships,error:memberError} = await supabase.from("company_members")
+          .select("company_id,role").eq("user_id",auth.user.id).limit(2);
+        if (memberError) throw memberError;
+        const resolvedRole = memberships?.length === 1 && memberships[0].company_id
           ? String(memberships[0].role || "").toLowerCase() : "";
-        if (!["hiring_manager", "admin", "hr_manager"].includes(memberRole)) {
-          throw new Error("This page requires a Hiring Manager role. To review the design without changing your role, open the Design Preview link.");
+        if (!roles.includes(resolvedRole)) throw new Error("This workspace requires an authorized Hiring Manager, HR Manager, or Admin account.");
+        const [offerResult,jobResult] = await Promise.all([
+          supabase.rpc("get_my_hiring_decisions"),
+          resolvedRole === "hiring_manager"
+            ? supabase.rpc("get_my_hiring_manager_jobs")
+            : Promise.resolve({data:[],error:null}),
+        ]);
+        if (offerResult.error) throw offerResult.error;
+        if (active) {
+          setRole(resolvedRole);
+          setOffers(Array.isArray(offerResult.data) ? offerResult.data : []);
+          setJobs(jobResult.error ? [] : Array.isArray(jobResult.data) ? jobResult.data : []);
+          setJobsError(jobResult.error ? "Assigned Jobs requires the new secure Supabase migration. No job records were loaded." : "");
         }
-        const { data, error: rpcError } = await supabase.rpc("get_my_hiring_decisions");
-        if (rpcError) throw rpcError;
-        if (active) setDecisions(Array.isArray(data) ? data : []);
-      } catch (e) {
-        if (active) setError(e?.message || "Could not load your workspace.");
-      } finally {
-        if (active) setLoading(false);
-      }
+      } catch(e) { if (active) setError(e?.message || "Unable to load workspace."); }
+      finally { if (active) setLoading(false); }
     })();
     return () => { active = false; };
-  }, [router]);
+  },[router]);
 
   async function refresh() {
-    if (refreshing || designPreview) return;
+    if (refreshing || designPreview || !roles.includes(role)) return;
     setRefreshing(true);
     setError("");
     try {
-      await loadDecisions();
-    } catch (e) {
-      setError(e?.message || "Could not refresh your decisions.");
-    } finally {
-      setRefreshing(false);
-    }
+      const [offerResult,jobResult] = await Promise.all([
+        supabase.rpc("get_my_hiring_decisions"),
+        role === "hiring_manager" ? supabase.rpc("get_my_hiring_manager_jobs") : Promise.resolve({data:[],error:null})
+      ]);
+      if (offerResult.error) throw offerResult.error;
+      setOffers(Array.isArray(offerResult.data) ? offerResult.data : []);
+      setJobs(jobResult.error ? [] : Array.isArray(jobResult.data) ? jobResult.data : []);
+      setJobsError(jobResult.error ? "Assigned Jobs requires the secure Supabase migration." : "");
+    } catch(e) { setError(e?.message || "Could not refresh workspace."); }
+    finally { setRefreshing(false); }
   }
 
-  const pending = decisions.filter(isPending);
-  const completed = decisions.filter((item) => !isPending(item));
-
+  const visibleJobs = designPreview ? sampleJobs : jobs;
+  const visibleOffers = designPreview ? sampleOffers : offers.filter(pending);
   return (
     <main className="hm-shell">
       <style>{`
-        .hm-shell { min-height:100vh; background:#f5f8f6; color:#1e352c; font-family:Arial,sans-serif; }
-        .hm-layout { display:grid; grid-template-columns:250px minmax(0,1fr); min-height:100vh; }
-        .hm-aside { background:white; border-right:1px solid #e1e9e4; padding:28px 15px; }
-        .hm-brand { padding:8px 12px 30px; border-bottom:1px solid #edf1ed; margin-bottom:22px; }
-        .hm-mark { display:inline-grid; place-items:center; height:40px; width:40px; border-radius:12px; background:#1c6048; color:#fff; font-size:22px; font-weight:900; vertical-align:middle; margin-right:9px; }
-        .hm-brand strong { color:#17412f; font-size:19px; }
-        .hm-brand p { margin:10px 0 0; font-size:10px; color:#829188; letter-spacing:1.3px; font-weight:800; }
-        .hm-nav { display:grid; gap:7px; }
-        .hm-nav a { display:flex; gap:12px; align-items:center; padding:14px 15px; text-decoration:none; border-radius:11px; font-size:13px; font-weight:700; color:#52665c; }
-        .hm-nav a.active,.hm-nav a:hover { color:#155e41; background:#e8f4ed; }
-        .hm-nav a span { font-size:19px; width:22px; }
-        .hm-aside-note { color:#8a9990; font-size:11px; line-height:1.7; padding:20px 12px; }
-        .hm-content { width:100%; min-width:0; max-width:1450px; padding:42px clamp(20px,4vw,64px) 70px; margin:0 auto; }
-        .hm-eyebrow { color:#178254; letter-spacing:1.7px; text-transform:uppercase; font-size:11px; font-weight:900; }
-        .hm-header { display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:20px; }
-        .hm-header h1 { font-size:clamp(29px,3vw,40px); line-height:1.2; letter-spacing:-1.2px; margin:10px 0 12px; }
-        .hm-muted { color:#7b8c83; font-size:14px; line-height:1.7; margin:0; }
-        .hm-button { background:#196646; border:0; color:white; border-radius:11px; padding:14px 20px; font-weight:800; cursor:pointer; text-decoration:none; font-size:13px; }
-        .hm-button:disabled { opacity:.6; cursor:not-allowed; }
-        .hm-hero { background:linear-gradient(115deg,#104832,#207450); color:white; border-radius:20px; padding:30px; margin-top:30px; }
-        .hm-hero h2 { color:white; font-size:24px; margin:0 0 10px; }
-        .hm-hero p { color:#d8f0e2; margin:0; font-size:13px; line-height:1.7; }
-        .hm-grid { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:16px; margin-top:22px; }
-        .hm-card { background:white; border:1px solid #e4ece6; border-radius:16px; padding:24px; }
-        .hm-card-label { font-size:12px; font-weight:700; color:#7a8c81; }
-        .hm-number { display:block; font-size:35px; font-weight:900; letter-spacing:-1px; margin-top:12px; }
-        .hm-section { background:white; border:1px solid #e4ece6; border-radius:18px; padding:26px; margin-top:24px; }
-        .hm-section-head { display:flex; justify-content:space-between; flex-wrap:wrap; gap:12px; align-items:center; margin-bottom:20px; }
-        .hm-section h2 { margin:0; font-size:20px; }
-        .hm-link { color:#176a49; font-weight:800; text-decoration:none; font-size:13px; }
-        .hm-row { display:flex; justify-content:space-between; align-items:center; gap:18px; padding:18px 0; border-top:1px solid #edf1ee; }
-        .hm-row strong { font-size:15px; }
-        .hm-row small { display:block; color:#7a8c81; margin-top:8px; }
-        .hm-pill { background:#fff5e4; color:#a2611d; border-radius:100px; font-size:11px; font-weight:800; padding:7px 12px; white-space:nowrap; }
-        .hm-empty { border:1px dashed #d4e4d9; text-align:center; background:#fafdfa; border-radius:12px; padding:34px 20px; color:#6f8275; }
-        .hm-error { background:#fff0ee; border:1px solid #f1b6b0; padding:16px; border-radius:10px; color:#9b2920; margin-top:18px; }
-        @media(max-width:850px) { .hm-layout { grid-template-columns:1fr; } .hm-aside { border-right:0; border-bottom:1px solid #e1e9e4; padding:15px; } .hm-brand { padding:5px 0 12px; margin-bottom:12px; } .hm-nav { display:flex; flex-wrap:wrap; } .hm-content { padding:26px 16px 60px; } .hm-grid { grid-template-columns:1fr; } }
+        .hm-shell{min-height:100vh;background:#f5f8f6;color:#19392b;font-family:Arial,sans-serif}
+        .hm-layout{display:grid;grid-template-columns:250px minmax(0,1fr);min-height:100vh}
+        .hm-sidebar{background:white;border-right:1px solid #e2eae4;padding:26px 16px}
+        .hm-brand{display:flex;align-items:center;gap:12px;margin-bottom:30px;padding-bottom:22px;border-bottom:1px solid #e5ebe7;font-size:19px;font-weight:800;color:#18553a}
+        .hm-logo{background:#1d6247;color:white;border-radius:12px;padding:11px 16px}
+        .hm-nav{display:grid;gap:7px}.hm-nav a{color:#466352;display:flex;align-items:center;gap:12px;text-decoration:none;padding:13px;border-radius:10px;font-weight:700;font-size:13px}
+        .hm-nav a.active,.hm-nav a:hover{background:#e9f4ed;color:#145c3b}
+        .hm-main{padding:42px clamp(18px,4vw,64px);min-width:0;max-width:1400px;width:100%;margin:auto}
+        .hm-top{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:16px}
+        .hm-eyebrow{color:#168253;font-weight:800;letter-spacing:1.5px;font-size:11px;text-transform:uppercase}
+        .hm-main h1{font-size:clamp(28px,3vw,40px);margin:12px 0;letter-spacing:-1px}
+        .hm-muted{color:#75887d;font-size:13px;line-height:1.7}
+        .hm-button{background:#176846;color:#fff;border:0;padding:13px 20px;border-radius:10px;font-weight:800;cursor:pointer}
+        .hm-button:disabled{opacity:.5}
+        .hm-hero{background:linear-gradient(120deg,#104730,#228156);color:white;border-radius:18px;padding:27px;margin:28px 0}
+        .hm-hero h2{margin:0 0 9px;font-size:24px;color:white}.hm-hero p{margin:0;color:#dcefe4;font-size:13px}
+        .hm-stats{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:15px}
+        .hm-stat,.hm-panel{background:white;border:1px solid #deebe2;border-radius:16px;padding:24px}
+        .hm-stat span{color:#738579;font-size:12px;font-weight:700}.hm-stat strong{display:block;font-size:35px;margin-top:12px}
+        .hm-panel{margin-top:23px}.hm-panel-head{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:18px}
+        .hm-panel h2{margin:0;font-size:20px}.hm-row{display:flex;justify-content:space-between;align-items:center;gap:14px;border-top:1px solid #eaf0eb;padding:18px 0}
+        .hm-row strong{font-size:15px}.hm-detail{display:flex;gap:7px;flex-wrap:wrap;margin-top:11px}
+        .hm-detail span{font-size:11px;color:#577365;background:#eff5f0;padding:6px 9px;border-radius:7px}
+        .hm-pill{font-size:11px;font-weight:800;color:#865c22;background:#fff3dc;border-radius:30px;padding:9px 12px}
+        .hm-link{color:#186e4c;text-decoration:none;font-size:13px;font-weight:800}
+        .hm-empty{text-align:center;padding:34px 15px;background:#fafcfa;color:#75887d;border:1px dashed #d8e7da;border-radius:12px;font-size:13px}
+        .hm-note{background:#eaf5ed;padding:15px;color:#145b3e;border-radius:11px;font-size:13px;margin:20px 0}
+        .hm-error{background:#fff2f0;border:1px solid #efbab5;color:#972a22;border-radius:11px;padding:15px;margin:20px 0;font-size:13px}
+        .hm-sample{display:inline-block;background:#fff0db;color:#966222;border-radius:6px;font-size:10px;font-weight:800;padding:4px 8px;margin-left:9px}
+        @media(max-width:850px){.hm-layout{grid-template-columns:1fr}.hm-sidebar{border-right:0;border-bottom:1px solid #e2eae4;padding:15px}.hm-brand{margin-bottom:12px;padding-bottom:12px}.hm-nav{display:flex;flex-wrap:wrap}.hm-main{padding:25px 16px}.hm-stats{grid-template-columns:1fr}}
       `}</style>
       <div className="hm-layout">
-        <aside className="hm-aside">
-          <div className="hm-brand">
-            <span className="hm-mark">I</span><strong>Inspire Match</strong>
-            <p>HIRING MANAGER WORKSPACE</p>
-          </div>
+        <aside className="hm-sidebar">
+          <div className="hm-brand"><span className="hm-logo">I</span> Inspire Match</div>
           <ATSNavigation className="hm-nav" />
-          <div className="hm-aside-note">Access to candidate details and job assignments requires an approved, job-scoped permissions policy.</div>
+          <p className="hm-muted">Hiring Manager · Restricted Workspace</p>
         </aside>
-        <div className="hm-content">
-          <div className="hm-header">
-            <div>
-              <div className="hm-eyebrow">Your hiring workspace</div>
-              <h1>Welcome back</h1>
-              <p className="hm-muted">Review decisions assigned to you, without exposure to compensation data.</p>
-            </div>
-            <button className="hm-button" onClick={refresh} disabled={loading || refreshing || designPreview}>
-              {refreshing ? "Refreshing…" : "↻ Refresh decisions"}
+        <div className="hm-main">
+          <div className="hm-top">
+            <div><div className="hm-eyebrow">Hiring manager workspace</div>
+              <h1>My Hiring Reviews</h1>
+              <p className="hm-muted">Assigned jobs and offer decisions in one place. No compensation details.</p></div>
+            <button className="hm-button" disabled={loading || refreshing || designPreview} onClick={refresh}>
+              {refreshing ? "Refreshing…" : "↻ Refresh"}
             </button>
           </div>
-          {designPreview && <div role="status" style={{ background:"#e8f4ed", color:"#14553c", padding:"14px 18px", borderRadius:12, marginTop:22, fontSize:13, fontWeight:700 }}>Design preview only — no live recruitment records, approvals, or permissions are being displayed.</div>}
+          {designPreview && <div role="status" className="hm-note"><strong>Design preview · Sample data only.</strong> No live job or offer records have been loaded or modified.</div>}
           {error && <div className="hm-error" role="alert">{error}</div>}
-          {loading ? <p className="hm-muted" style={{ marginTop:28 }}>Loading your permissions and decisions…</p> :
-            !error || decisions.length > 0 ? <>
-              <div className="hm-hero">
-                <h2>Every hiring decision matters.</h2>
-                <p>See your assigned approval steps in one focused workspace.</p>
+          {jobsError && !designPreview && <div className="hm-error" role="alert">{jobsError}</div>}
+          {loading ? <p className="hm-muted" style={{marginTop:30}}>Checking your access and assigned decisions…</p> :
+           !error ? <>
+            <div className="hm-hero"><h2>Focused hiring. Better decisions.</h2><p>See work assigned to you and action pending offer approvals.</p></div>
+            <div className="hm-stats">
+              <div className="hm-stat"><span>Jobs assigned to me</span><strong>{jobsError ? "—" : visibleJobs.length}</strong></div>
+              <div className="hm-stat"><span>Job offers awaiting approval</span><strong>{visibleOffers.length}</strong></div>
+            </div>
+            <section className="hm-panel">
+              <div className="hm-panel-head"><h2>My Assigned Jobs</h2>{designPreview && <span className="hm-sample">SAMPLE</span>}</div>
+              {jobsError && !designPreview ? <div className="hm-empty">Secure Assigned Jobs access has not yet been activated in Supabase.</div> :
+               visibleJobs.length === 0 ? <div className="hm-empty">{role === "admin" || role === "hr_manager" ? "This manager overview does not display other users' job assignments." : "No jobs are assigned to this Hiring Manager account yet."}</div> :
+               visibleJobs.map(job => <div className="hm-row" key={job.job_id}><div><strong>{job.job_title || "Untitled job"}</strong>
+                 {designPreview && <span className="hm-sample">SAMPLE</span>}
+                 <div className="hm-detail">{[job.department,job.location,job.job_status,job.priority && job.priority+" priority"].filter(Boolean).map((v,i)=><span key={i}>{v}</span>)}</div>
+                 </div><span className="hm-pill">Assigned to me</span></div>)}
+              <p className="hm-muted">Candidate reviews need secure recruiter-sharing permissions. Job details with salary are not linked here.</p>
+            </section>
+            <section className="hm-panel">
+              <div className="hm-panel-head"><h2>Job Offers Awaiting My Approval</h2>
+                {!designPreview && <Link className="hm-link" href="/app/approvals">Open Approval Center →</Link>}
               </div>
-              <div className="hm-grid">
-                <div className="hm-card"><div className="hm-card-label">Pending decisions</div><span className="hm-number">{pending.length}</span></div>
-                <div className="hm-card"><div className="hm-card-label">Other assigned steps</div><span className="hm-number">{completed.length}</span></div>
-                <div className="hm-card"><div className="hm-card-label">Total assigned steps</div><span className="hm-number">{decisions.length}</span></div>
-              </div>
-              <section className="hm-section">
-                <div className="hm-section-head">
-                  <h2>Decisions awaiting your review</h2>
-                  {!designPreview && <Link href="/app/approvals" className="hm-link">Go to Approval Center →</Link>}
-                </div>
-                {!pending.length ? <div className="hm-empty">You're all caught up. No pending decisions are assigned to you.</div> :
-                  pending.map((item, index) =>
-                    <div className="hm-row" key={String(item.offer_id || index) + ":" + String(item.step_name || "")}>
-                      <div><strong>{item.job_title || "Assigned recruitment decision"}</strong>
-                        <small>{item.step_name || "Approval step"}</small></div>
-                      <span className="hm-pill">Pending review</span>
-                    </div>
-                  )}
-              </section>
-            </> : null}
+              {visibleOffers.length === 0 ? <div className="hm-empty">No pending job offer approvals assigned to your account.</div> :
+              visibleOffers.map((offer,i)=><div className="hm-row" key={offer.offer_id || i}>
+                <div><strong>{offer.job_title || "Hiring approval"}</strong>{designPreview && <span className="hm-sample">SAMPLE</span>}
+                  <p className="hm-muted" style={{margin:"7px 0 0"}}>{offer.step_name || "Approval step"}</p></div>
+                <span className="hm-pill">Pending review</span></div>)}
+              <p className="hm-muted">Approvals are processed in the existing Approval Center. Salary and offer compensation are never requested by this workspace.</p>
+            </section>
+          </> : null}
         </div>
       </div>
     </main>
