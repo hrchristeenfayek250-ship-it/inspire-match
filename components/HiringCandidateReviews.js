@@ -32,10 +32,14 @@ export default function HiringCandidateReviews({designPreview=false,enabled=fals
  async function load(){
    if(designPreview||!enabled)return;
    setLoading(true);setError("");
-   const {data,error:rpcError}=await supabase.rpc("get_my_hiring_candidate_reviews");
-   if(rpcError){setRows([]);setError("Candidate reviews are unavailable until the secure database migration is applied.");}
-   else setRows(Array.isArray(data)?data:[]);
-   setLoading(false);
+   try {
+     const {data,error:rpcError}=await supabase.rpc("get_my_hiring_candidate_reviews");
+     if(rpcError)throw rpcError;
+     setRows(Array.isArray(data)?data:[]);
+   } catch(e) {
+     setRows([]);
+     setError(e?.message||"Candidate reviews are unavailable. Check the secure database migration and permissions.");
+   } finally {setLoading(false);}
  }
  useEffect(()=>{if(enabled&&!designPreview)load();},[enabled,designPreview,refreshToken]);
  const visible=designPreview?examples.map(item=>({...item,...(sampleReviews[item.share_id]||{})})):rows;
