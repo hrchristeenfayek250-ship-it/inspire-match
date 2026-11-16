@@ -52,7 +52,7 @@ export default function RecruiterHiringManagerShare({candidateId}) {
   {message&&<p role="status" style={{color:"#176846"}}>{message}</p>}
   {!applications.length?<p style={{color:"#718477"}}>Assign this candidate to a job first, then share them with its Hiring Manager.</p>:applications.map(a=><div key={a.id} style={{display:"flex",justifyContent:"space-between",alignItems:"center",gap:14,padding:"15px 0",borderTop:"1px solid #e7eee9",flexWrap:"wrap"}}>
    <div><strong>{a.job?.title||"Job"}</strong><p style={{margin:"5px 0",fontSize:12,color:"#718477"}}>Stage: {a.stage||"Applied"} · {a.job?.hiring_manager_user_id?"Hiring Manager assigned":"No Hiring Manager assigned"}</p></div>
-   <button type="button" disabled={!!busy||!a.job?.hiring_manager_user_id} onClick={()=>share(a)} style={{background:"#176846",color:"#fff",border:0,borderRadius:9,padding:"11px 16px",cursor:"pointer",opacity:busy||!a.job?.hiring_manager_user_id?.5:1}}>{busy===a.id?"Sharing…":"Share Candidate"}</button>
+   <button type="button" disabled={!!busy||!a.job?.hiring_manager_user_id} onClick={()=>share(a)} style={{background:"#176846",color:"#fff",border:0,borderRadius:9,padding:"11px 16px",cursor:"pointer",opacity:(busy||!a.job?.hiring_manager_user_id)?0.5:1}}>{busy===a.id?"Sharing…":"Share Candidate"}</button>
   </div>)}
  </section>;
 }
