@@ -43,7 +43,7 @@ AS $function$
    s.shared_at,r.recommendation::text,r.rating,r.comments::text,r.created_at
  FROM public.hiring_manager_candidate_shares s
  JOIN public.jobs j ON j.id=s.job_id AND j.company_id=s.company_id
- JOIN public.applications a ON a.id=s.application_id AND a.job_id=j.id
+ JOIN public.applications a ON a.id=s.application_id AND a.job_id=j.id AND a.company_id=s.company_id
  JOIN public.candidates c ON c.id=a.candidate_id AND c.company_id=s.company_id
  JOIN public.company_members cm ON cm.company_id=s.company_id
   AND cm.user_id=(SELECT auth.uid()) AND lower(cm.role::text)='hiring_manager'
@@ -91,7 +91,7 @@ AS $function$
 DECLARE v_id uuid; v_company uuid; v_job uuid; v_manager uuid;
 BEGIN
  SELECT j.company_id,j.id,j.hiring_manager_user_id INTO v_company,v_job,v_manager
- FROM public.applications a JOIN public.jobs j ON j.id=a.job_id
+ FROM public.applications a JOIN public.jobs j ON j.id=a.job_id AND j.company_id=a.company_id
  JOIN public.candidates c ON c.id=a.candidate_id AND c.company_id=j.company_id
  WHERE a.id=p_application_id;
  IF v_company IS NULL OR v_manager IS NULL THEN RAISE EXCEPTION 'Job, application or assigned hiring manager not found'; END IF;
