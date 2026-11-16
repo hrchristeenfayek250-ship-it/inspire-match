@@ -37,12 +37,14 @@ export default function HiringCandidateReviews({designPreview=false,enabled=fals
  async function save(){
    if(!active||saving)return;
    if(comments.trim().length<10){setError("Please enter at least 10 characters of feedback before submitting.");return;}
-   if(designPreview){setSampleReviews(prev=>({...prev,[active.share_id]:{latest_recommendation:decision,latest_rating:Number(rating),latest_comments:comments.trim()}}));setActive(null);setError("");setMessage("Sample feedback saved successfully. Check Reviewed filter to see the updated candidate. No live data changed.");return;}
+   if(designPreview){setSampleReviews(prev=>({...prev,[active.share_id]:{latest_recommendation:decision,latest_rating:Number(rating),latest_comments:comments.trim(),reviewed_at:new Date().toISOString()}}));setActive(null);setError("");setMessage("Sample feedback saved successfully. You can see the decision and comments under the candidate. No live data changed.");return;}
    setSaving(true);setError("");setMessage("");
-   const {error:rpcError}=await supabase.rpc("submit_hiring_candidate_review",{p_share_id:active.share_id,p_recommendation:decision,p_rating:Number(rating),p_comments:comments.trim()});
-   if(rpcError)setError(rpcError.message||"Could not save feedback");
-   else {setActive(null);setMessage("Feedback saved successfully.");await load();}
-   setSaving(false);
+   try {
+    const {error:rpcError}=await supabase.rpc("submit_hiring_candidate_review",{p_share_id:active.share_id,p_recommendation:decision,p_rating:Number(rating),p_comments:comments.trim()});
+    if(rpcError)throw rpcError;
+    setActive(null);setMessage("Feedback saved successfully.");await load();
+   } catch(e){setError(e?.message||"Could not save feedback. Please retry.");}
+   finally {setSaving(false);}
  }
  return <section className="hm-panel">
   <div className="hm-panel-head"><h2>Candidate Reviews &amp; Feedback</h2>{designPreview&&<span className="hm-sample">SAMPLE</span>}</div>
@@ -63,6 +65,7 @@ export default function HiringCandidateReviews({designPreview=false,enabled=fals
      {designPreview&&<button type="button" className="hm-button hm-button-secondary" aria-expanded={expandedProfile===r.share_id} onClick={()=>setExpandedProfile(v=>v===r.share_id?null:r.share_id)}>{expandedProfile===r.share_id?"Hide profile":"View CV profile"}</button>}
      <button className="hm-button" disabled={!designPreview&&!enabled} onClick={()=>{open(r);setExpandedProfile(r.share_id);}}>{r.latest_recommendation?"Update feedback":"Review candidate"}</button>
    </div></div>
+   {r.latest_recommendation&&<div className="hm-job-expanded" style={{marginTop:8}}><div className="hm-panel-head"><strong>Latest Hiring Manager Feedback</strong><span className="hm-pill">{String(r.latest_recommendation).toUpperCase()}</span></div><div className="hm-detail"><span>Rating: {r.latest_rating||"—"} / 5</span>{r.reviewed_at&&<span>Reviewed: {new Date(r.reviewed_at).toLocaleDateString()}</span>}</div><p className="hm-muted" style={{whiteSpace:"pre-wrap",marginBottom:0}}>{r.latest_comments||"No comments recorded."}</p></div>}
    {designPreview&&expandedProfile===r.share_id&&<div className="hm-job-expanded" style={{marginTop:8}}>
      <div className="hm-panel-head"><div><strong style={{fontSize:17}}>{r.candidate_name}</strong><p className="hm-muted">{r.candidate_title} · {r.experience_years} years · {r.location}</p></div><span className="hm-sample">FICTIONAL CV</span></div>
      <p className="hm-muted">{r.summary}</p>
