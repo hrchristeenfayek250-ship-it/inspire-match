@@ -73,6 +73,8 @@ BEGIN
   JOIN public.jobs j ON j.id=s.job_id AND j.company_id=s.company_id
   JOIN public.company_members cm ON cm.company_id=s.company_id
    AND cm.user_id=(SELECT auth.uid()) AND lower(cm.role::text)='hiring_manager'
+  JOIN public.applications a ON a.id=s.application_id AND a.job_id=s.job_id AND a.company_id=s.company_id
+  JOIN public.candidates c ON c.id=a.candidate_id AND c.company_id=s.company_id
   WHERE s.id=p_share_id AND s.revoked_at IS NULL
     AND s.hiring_manager_id=(SELECT auth.uid())
     AND j.hiring_manager_user_id=(SELECT auth.uid())
