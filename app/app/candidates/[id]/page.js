@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useParams } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 import RecruiterHiringManagerShare from "@/components/RecruiterHiringManagerShare";
+import RecruiterHiringManagerFeedback from "@/components/RecruiterHiringManagerFeedback";
 
 const stages = [
   "Applied",
@@ -2450,6 +2451,7 @@ company_id: candidate.company_id,
 </section>
 
         <RecruiterHiringManagerShare candidateId={candidateId} />
+        <RecruiterHiringManagerFeedback candidateId={candidateId} />
 
         {/* RECRUITMENT NOTES */}
 
