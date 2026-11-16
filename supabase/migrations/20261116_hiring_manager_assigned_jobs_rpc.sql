@@ -5,7 +5,7 @@ BEGIN;
 
 CREATE OR REPLACE FUNCTION public.get_my_hiring_manager_jobs()
 RETURNS TABLE (
-  job_id uuid,
+  job_id bigint,
   job_title text,
   department text,
   job_status text,
