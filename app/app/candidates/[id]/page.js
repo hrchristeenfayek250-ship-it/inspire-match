@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { supabase } from "@/lib/supabase";
+import RecruiterHiringManagerShare from "@/components/RecruiterHiringManagerShare";
 
 const stages = [
   "Applied",
@@ -2447,6 +2448,8 @@ company_id: candidate.company_id,
       "No skills available yet."}
   </div>
 </section>
+
+        <RecruiterHiringManagerShare candidateId={candidateId} />
 
         {/* RECRUITMENT NOTES */}
 
