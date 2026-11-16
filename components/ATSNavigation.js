@@ -61,9 +61,10 @@ export default function ATSNavigation({
       const memberships = membership.error ? [] : membership.data || [];
       const validMembership = memberships.length === 1 && Boolean(memberships[0].company_id);
       const role = validMembership ? String(memberships[0].role || "").toLowerCase() : "";
+      const hrRoles = ["admin", "hr_manager", "senior_recruiter", "hr", "recruiter", "hr_specialist"];
       setCanViewCompanyBilling(validMembership && role === "admin");
       setIsInternalStaff(!internal.error && internal.data === true);
-      setAccessState(!validMembership ? "denied" : role === "hiring_manager" ? "hiring_manager" : "hr");
+      setAccessState(!validMembership ? "denied" : role === "hiring_manager" ? "hiring_manager" : hrRoles.includes(role) ? "hr" : "denied");
     })().catch(() => {
       if (active) { setCanViewCompanyBilling(false); setIsInternalStaff(false); setAccessState("denied"); }
     });
