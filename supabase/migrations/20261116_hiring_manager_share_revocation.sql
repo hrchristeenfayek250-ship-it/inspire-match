@@ -4,7 +4,7 @@
 BEGIN;
 CREATE OR REPLACE FUNCTION public.get_candidate_hiring_manager_shares(p_candidate_id uuid)
 RETURNS TABLE (
- share_id uuid, application_id uuid, job_id uuid, hiring_manager_id uuid,
+ share_id uuid, application_id bigint, job_id bigint, hiring_manager_id uuid,
  shared_at timestamptz, revoked_at timestamptz
 )
 LANGUAGE sql STABLE SECURITY DEFINER SET search_path=''
