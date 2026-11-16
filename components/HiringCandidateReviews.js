@@ -29,10 +29,15 @@ export default function HiringCandidateReviews({designPreview=false,enabled=fals
  const visible=designPreview?examples.map(item=>({...item,...(sampleReviews[item.share_id]||{})})):rows;
  const jobs=useMemo(()=>Array.from(new Map(visible.map(r=>[r.job_id,r.job_title])).entries()),[visible]);
  const filtered=visible.filter(r=>(job==="all"||r.job_id===job)&&(status==="all"||(status==="pending"?!r.latest_recommendation:!!r.latest_recommendation))&&[r.candidate_name,r.candidate_title,r.candidate_stage,r.job_title].join(" ").toLowerCase().includes(query.toLowerCase()));
- function open(r){setActive(r);setDecision(r.latest_recommendation||"proceed");setRating(r.latest_rating||3);setComments(r.latest_comments||"");setMessage("");}
+ function open(r){
+   setActive(r);setDecision(r.latest_recommendation||"proceed");setRating(r.latest_rating||3);
+   setComments(r.latest_comments||(designPreview?"Based on the profile, I recommend moving forward to the next interview stage.":""));
+   setMessage("");setError("");
+ }
  async function save(){
-   if(!active||saving||comments.trim().length<10)return;
-   if(designPreview){setSampleReviews(prev=>({...prev,[active.share_id]:{latest_recommendation:decision,latest_rating:Number(rating),latest_comments:comments.trim()}}));setActive(null);setMessage("Sample feedback saved in this preview only. No live data changed.");return;}
+   if(!active||saving)return;
+   if(comments.trim().length<10){setError("Please enter at least 10 characters of feedback before submitting.");return;}
+   if(designPreview){setSampleReviews(prev=>({...prev,[active.share_id]:{latest_recommendation:decision,latest_rating:Number(rating),latest_comments:comments.trim()}}));setActive(null);setError("");setMessage("Sample feedback saved successfully. Check Reviewed filter to see the updated candidate. No live data changed.");return;}
    setSaving(true);setError("");setMessage("");
    const {error:rpcError}=await supabase.rpc("submit_hiring_candidate_review",{p_share_id:active.share_id,p_recommendation:decision,p_rating:Number(rating),p_comments:comments.trim()});
    if(rpcError)setError(rpcError.message||"Could not save feedback");
@@ -73,7 +78,8 @@ export default function HiringCandidateReviews({designPreview=false,enabled=fals
     <label>Decision <select value={decision} onChange={e=>setDecision(e.target.value)}><option value="proceed">Proceed</option><option value="hold">Hold</option><option value="reject">Reject</option></select></label>
     <label>Rating (1–5) <select value={rating} onChange={e=>setRating(Number(e.target.value))}>{[1,2,3,4,5].map(n=><option key={n} value={n}>{n}</option>)}</select></label>
     <label>Feedback (at least 10 characters)<textarea value={comments} onChange={e=>setComments(e.target.value)} maxLength={5000} rows={4} style={{display:"block",width:"100%",padding:12,border:"1px solid #d4e5d9",borderRadius:9}}/></label>
-    <div style={{display:"flex",gap:10}}><button className="hm-button" disabled={saving||comments.trim().length<10} onClick={save}>{saving?"Saving…":"Submit review"}</button><button className="hm-button" disabled={saving} onClick={()=>setActive(null)}>Cancel</button></div>
+    <p className="hm-muted" role="status">{comments.trim().length}/10 minimum characters {comments.trim().length>=10?"· Ready to submit":"· Please add more feedback"}{designPreview?" · Demo only":""}</p>
+    <div style={{display:"flex",gap:10}}><button type="button" className="hm-button" disabled={saving} onClick={save}>{saving?"Saving…":"Submit Feedback"}</button><button className="hm-button" disabled={saving} onClick={()=>setActive(null)}>Cancel</button></div>
    </div>}
   </div>)}
  </section>;
