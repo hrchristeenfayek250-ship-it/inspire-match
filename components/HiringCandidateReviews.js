@@ -17,6 +17,18 @@ export default function HiringCandidateReviews({designPreview=false,enabled=fals
  const [saving,setSaving]=useState(false),[message,setMessage]=useState("");
  const [sampleReviews,setSampleReviews]=useState({});
  const [expandedProfile,setExpandedProfile]=useState(null);
+ const [liveProfile,setLiveProfile]=useState(null);
+ const [profileLoading,setProfileLoading]=useState(false);
+ const [profileError,setProfileError]=useState("");
+ async function toggleProfile(r){
+  if(expandedProfile===r.share_id){setExpandedProfile(null);return;}
+  setExpandedProfile(r.share_id);setLiveProfile(null);setProfileError("");
+  if(designPreview)return;
+  setProfileLoading(true);
+  try{const {data,error:rpcError}=await supabase.rpc("get_my_hiring_candidate_profile",{p_share_id:r.share_id});if(rpcError)throw rpcError;setLiveProfile(Array.isArray(data)?data[0]||null:null);if(!data?.length)setProfileError("Profile unavailable or access denied.");}
+  catch(e){setProfileError(e?.message||"Could not load candidate profile.");}
+  finally{setProfileLoading(false);}
+ }
  async function load(){
    if(designPreview||!enabled)return;
    setLoading(true);setError("");
@@ -62,10 +74,11 @@ export default function HiringCandidateReviews({designPreview=false,enabled=fals
    <div className="hm-row"><div><strong>{r.candidate_name||"Candidate"}</strong>{designPreview&&<span className="hm-sample">SAMPLE</span>}
    <div className="hm-detail">{[r.candidate_title,r.job_title,r.candidate_stage,r.latest_recommendation?"Reviewed: "+r.latest_recommendation:"Feedback needed"].filter(Boolean).map((v,i)=><span key={i}>{v}</span>)}</div></div>
    <div className="hm-job-actions">
-     {designPreview&&<button type="button" className="hm-button hm-button-secondary" aria-expanded={expandedProfile===r.share_id} onClick={()=>setExpandedProfile(v=>v===r.share_id?null:r.share_id)}>{expandedProfile===r.share_id?"Hide profile":"View CV profile"}</button>}
-     <button className="hm-button" disabled={!designPreview&&!enabled} onClick={()=>{open(r);setExpandedProfile(r.share_id);}}>{r.latest_recommendation?"Update feedback":"Review candidate"}</button>
+     <button type="button" className="hm-button hm-button-secondary" aria-expanded={expandedProfile===r.share_id} onClick={()=>toggleProfile(r)}>{expandedProfile===r.share_id?"Hide profile":"View profile"}</button>
+     <button className="hm-button" disabled={!designPreview&&!enabled} onClick={()=>{open(r);toggleProfile(r);}}>{r.latest_recommendation?"Update feedback":"Review candidate"}</button>
    </div></div>
    {r.latest_recommendation&&<div className="hm-job-expanded" style={{marginTop:8}}><div className="hm-panel-head"><strong>Latest Hiring Manager Feedback</strong><span className="hm-pill">{String(r.latest_recommendation).toUpperCase()}</span></div><div className="hm-detail"><span>Rating: {r.latest_rating||"—"} / 5</span>{r.reviewed_at&&<span>Reviewed: {new Date(r.reviewed_at).toLocaleDateString()}</span>}</div><p className="hm-muted" style={{whiteSpace:"pre-wrap",marginBottom:0}}>{r.latest_comments||"No comments recorded."}</p></div>}
+   {!designPreview&&expandedProfile===r.share_id&&<div className="hm-job-expanded" style={{marginTop:8}}><strong>Shared Candidate Profile</strong>{profileLoading?<p className="hm-muted">Loading profile…</p>:profileError?<p role="alert" className="hm-error">{profileError}</p>:liveProfile?<dl>{[["Name",liveProfile.candidate_name],["Current title",liveProfile.current_title],["Location",liveProfile.location],["Experience",liveProfile.years_experience],["Summary",liveProfile.professional_summary],["Skills",liveProfile.skills],["Job",liveProfile.job_title],["Stage",liveProfile.candidate_stage]].filter(([,v])=>v).map(([label,value])=><div key={label}><dt>{label}</dt><dd>{value}</dd></div>)}</dl>:null}<p className="hm-muted">Only fields approved for Hiring Manager review are displayed. CV files and compensation are not exposed.</p></div>}
    {designPreview&&expandedProfile===r.share_id&&<div className="hm-job-expanded" style={{marginTop:8}}>
      <div className="hm-panel-head"><div><strong style={{fontSize:17}}>{r.candidate_name}</strong><p className="hm-muted">{r.candidate_title} · {r.experience_years} years · {r.location}</p></div><span className="hm-sample">FICTIONAL CV</span></div>
      <p className="hm-muted">{r.summary}</p>
