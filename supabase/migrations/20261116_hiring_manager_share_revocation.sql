@@ -2,7 +2,7 @@
 -- Apply AFTER 20261116_hiring_manager_candidate_review_workflow.sql.
 -- Review against production schema before execution.
 BEGIN;
-CREATE OR REPLACE FUNCTION public.get_candidate_hiring_manager_shares(p_candidate_id uuid)
+CREATE OR REPLACE FUNCTION public.get_candidate_hiring_manager_shares(p_candidate_id bigint)
 RETURNS TABLE (
  share_id uuid, application_id bigint, job_id bigint, hiring_manager_id uuid,
  shared_at timestamptz, revoked_at timestamptz
@@ -44,8 +44,8 @@ BEGIN
  RETURN true;
 END;
 $function$;
-REVOKE ALL ON FUNCTION public.get_candidate_hiring_manager_shares(uuid) FROM PUBLIC,anon;
+REVOKE ALL ON FUNCTION public.get_candidate_hiring_manager_shares(bigint) FROM PUBLIC,anon;
 REVOKE ALL ON FUNCTION public.revoke_candidate_hiring_manager_share(uuid) FROM PUBLIC,anon;
-GRANT EXECUTE ON FUNCTION public.get_candidate_hiring_manager_shares(uuid) TO authenticated;
+GRANT EXECUTE ON FUNCTION public.get_candidate_hiring_manager_shares(bigint) TO authenticated;
 GRANT EXECUTE ON FUNCTION public.revoke_candidate_hiring_manager_share(uuid) TO authenticated;
 COMMIT;
