@@ -17,6 +17,7 @@ export default function HiringManagerPage() {
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState("");
   const [decisions, setDecisions] = useState([]);
+  const [designPreview, setDesignPreview] = useState(false);
 
   async function loadDecisions() {
     const { data, error: rpcError } = await supabase.rpc("get_my_hiring_decisions");
@@ -34,16 +35,23 @@ export default function HiringManagerPage() {
           router.replace("/app/login");
           return;
         }
+        // Design-only preview shows no live hiring decisions or candidate data.
+        // Authentication still applies, and this switch never authorizes data access.
+        const requestedPreview = new URLSearchParams(window.location.search).get("designPreview") === "1";
+        if (requestedPreview) {
+          if (active) { setDesignPreview(true); setDecisions([]); }
+          return;
+        }
         const { data: memberships, error: membershipError } = await supabase
           .from("company_members")
           .select("company_id,role")
           .eq("user_id", auth.user.id)
           .limit(2);
         if (membershipError) throw membershipError;
-        if (memberships?.length !== 1 ||
-            !memberships[0].company_id ||
-            String(memberships[0].role || "").toLowerCase() !== "hiring_manager") {
-          throw new Error("This workspace is available only to authorized Hiring Managers.");
+        const memberRole = memberships?.length === 1 && memberships[0].company_id
+          ? String(memberships[0].role || "").toLowerCase() : "";
+        if (!["hiring_manager", "admin", "hr_manager"].includes(memberRole)) {
+          throw new Error("This page requires a Hiring Manager role. To review the design without changing your role, open the Design Preview link.");
         }
         const { data, error: rpcError } = await supabase.rpc("get_my_hiring_decisions");
         if (rpcError) throw rpcError;
@@ -58,7 +66,7 @@ export default function HiringManagerPage() {
   }, [router]);
 
   async function refresh() {
-    if (refreshing) return;
+    if (refreshing || designPreview) return;
     setRefreshing(true);
     setError("");
     try {
@@ -130,10 +138,11 @@ export default function HiringManagerPage() {
               <h1>Welcome back</h1>
               <p className="hm-muted">Review decisions assigned to you, without exposure to compensation data.</p>
             </div>
-            <button className="hm-button" onClick={refresh} disabled={loading || refreshing}>
+            <button className="hm-button" onClick={refresh} disabled={loading || refreshing || designPreview}>
               {refreshing ? "Refreshing…" : "↻ Refresh decisions"}
             </button>
           </div>
+          {designPreview && <div role="status" style={{ background:"#e8f4ed", color:"#14553c", padding:"14px 18px", borderRadius:12, marginTop:22, fontSize:13, fontWeight:700 }}>Design preview only — no live recruitment records, approvals, or permissions are being displayed.</div>}
           {error && <div className="hm-error" role="alert">{error}</div>}
           {loading ? <p className="hm-muted" style={{ marginTop:28 }}>Loading your permissions and decisions…</p> :
             !error || decisions.length > 0 ? <>
@@ -149,7 +158,7 @@ export default function HiringManagerPage() {
               <section className="hm-section">
                 <div className="hm-section-head">
                   <h2>Decisions awaiting your review</h2>
-                  <Link href="/app/approvals" className="hm-link">Go to Approval Center →</Link>
+                  {!designPreview && <Link href="/app/approvals" className="hm-link">Go to Approval Center →</Link>}
                 </div>
                 {!pending.length ? <div className="hm-empty">You're all caught up. No pending decisions are assigned to you.</div> :
                   pending.map((item, index) =>
