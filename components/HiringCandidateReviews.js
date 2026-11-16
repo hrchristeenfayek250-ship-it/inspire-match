@@ -12,6 +12,7 @@ export default function HiringCandidateReviews({designPreview=false,enabled=fals
  const [query,setQuery]=useState(""),[job,setJob]=useState("all"),[status,setStatus]=useState("all");
  const [active,setActive]=useState(null),[decision,setDecision]=useState("proceed"),[rating,setRating]=useState(3),[comments,setComments]=useState("");
  const [saving,setSaving]=useState(false),[message,setMessage]=useState("");
+ const [sampleReviews,setSampleReviews]=useState({});
  async function load(){
    if(designPreview||!enabled)return;
    setLoading(true);setError("");
@@ -21,12 +22,13 @@ export default function HiringCandidateReviews({designPreview=false,enabled=fals
    setLoading(false);
  }
  useEffect(()=>{if(enabled&&!designPreview)load();},[enabled,designPreview]);
- const visible=designPreview?examples:rows;
+ const visible=designPreview?examples.map(item=>({...item,...(sampleReviews[item.share_id]||{})})):rows;
  const jobs=useMemo(()=>Array.from(new Map(visible.map(r=>[r.job_id,r.job_title])).entries()),[visible]);
  const filtered=visible.filter(r=>(job==="all"||r.job_id===job)&&(status==="all"||(status==="pending"?!r.latest_recommendation:!!r.latest_recommendation))&&[r.candidate_name,r.candidate_title,r.candidate_stage,r.job_title].join(" ").toLowerCase().includes(query.toLowerCase()));
  function open(r){setActive(r);setDecision(r.latest_recommendation||"proceed");setRating(r.latest_rating||3);setComments(r.latest_comments||"");setMessage("");}
  async function save(){
-   if(!active||saving||designPreview||comments.trim().length<10)return;
+   if(!active||saving||comments.trim().length<10)return;
+   if(designPreview){setSampleReviews(prev=>({...prev,[active.share_id]:{latest_recommendation:decision,latest_rating:Number(rating),latest_comments:comments.trim()}}));setActive(null);setMessage("Sample feedback saved in this preview only. No live data changed.");return;}
    setSaving(true);setError("");setMessage("");
    const {error:rpcError}=await supabase.rpc("submit_hiring_candidate_review",{p_share_id:active.share_id,p_recommendation:decision,p_rating:Number(rating),p_comments:comments.trim()});
    if(rpcError)setError(rpcError.message||"Could not save feedback");
@@ -36,6 +38,7 @@ export default function HiringCandidateReviews({designPreview=false,enabled=fals
  return <section className="hm-panel">
   <div className="hm-panel-head"><h2>Candidate Reviews &amp; Feedback</h2>{designPreview&&<span className="hm-sample">SAMPLE</span>}</div>
   <p className="hm-muted">Review only candidates explicitly shared by a recruiter for your assigned jobs.</p>
+  {designPreview&&<p className="hm-note">Interactive demo: review a sample candidate, add a rating and feedback, and test the filters. Changes stay in this page only.</p>}
   <div className="hm-filters">
    <input aria-label="Search candidates" placeholder="Search candidate, job or stage" value={query} onChange={e=>setQuery(e.target.value)}/>
    <select aria-label="Filter candidates by job" value={job} onChange={e=>setJob(e.target.value)}><option value="all">All jobs</option>{jobs.map(([id,title])=><option key={id} value={id}>{title}</option>)}</select>
@@ -46,7 +49,7 @@ export default function HiringCandidateReviews({designPreview=false,enabled=fals
   {loading?<div className="hm-empty">Loading shared candidates…</div>:filtered.length===0?<div className="hm-empty">No candidates match your filters.</div>:filtered.map(r=><div key={r.share_id}>
    <div className="hm-row"><div><strong>{r.candidate_name||"Candidate"}</strong>{designPreview&&<span className="hm-sample">SAMPLE</span>}
    <div className="hm-detail">{[r.candidate_title,r.job_title,r.candidate_stage,r.latest_recommendation?"Reviewed: "+r.latest_recommendation:"Feedback needed"].filter(Boolean).map((v,i)=><span key={i}>{v}</span>)}</div></div>
-   <button className="hm-button" disabled={designPreview||!enabled} onClick={()=>open(r)}>{r.latest_recommendation?"Update feedback":"Review"}</button></div>
+   <button className="hm-button" disabled={!designPreview&&!enabled} onClick={()=>open(r)}>{r.latest_recommendation?"Update feedback":"Review"}</button></div>
    {active?.share_id===r.share_id&&<div style={{padding:18,background:"#f2f8f4",borderRadius:12,display:"grid",gap:12}}>
     <label>Decision <select value={decision} onChange={e=>setDecision(e.target.value)}><option value="proceed">Proceed</option><option value="hold">Hold</option><option value="reject">Reject</option></select></label>
     <label>Rating (1–5) <select value={rating} onChange={e=>setRating(Number(e.target.value))}>{[1,2,3,4,5].map(n=><option key={n} value={n}>{n}</option>)}</select></label>
