@@ -33,6 +33,7 @@ export default function HiringManagerPage() {
   const [expandedJob,setExpandedJob] = useState(null);
   const [candidateJob,setCandidateJob] = useState("all");
   const [workspaceTab,setWorkspaceTab] = useState("all");
+  const [reviewRefreshToken,setReviewRefreshToken] = useState(0);
 
   useEffect(() => {
     let active = true;
@@ -85,6 +86,7 @@ export default function HiringManagerPage() {
       setOffers(Array.isArray(offerResult.data) ? offerResult.data : []);
       setJobs(jobResult.error ? [] : Array.isArray(jobResult.data) ? jobResult.data : []);
       setJobsError(jobResult.error ? "Assigned Jobs requires the secure Supabase migration." : "");
+      setReviewRefreshToken(n=>n+1);
     } catch(e) { setError(e?.message || "Could not refresh workspace."); }
     finally { setRefreshing(false); }
   }
@@ -165,7 +167,7 @@ export default function HiringManagerPage() {
                  </div><div className="hm-job-actions"><button type="button" className="hm-button hm-button-secondary" onClick={()=>setExpandedJob(current=>current===job.job_id?null:job.job_id)} aria-expanded={expandedJob===job.job_id}>{expandedJob===job.job_id?"Hide details":"View details"}</button><button type="button" className="hm-button" onClick={()=>{setCandidateJob(job.job_id);setWorkspaceTab("candidates");}}>Review candidates</button></div></div>{expandedJob===job.job_id && <div className="hm-job-expanded"><strong>Job Overview</strong><dl>{[["Job title",job.job_title],["Department",job.department],["Location",job.location],["Status",job.job_status],["Priority",job.priority],["Hiring deadline",job.hiring_deadline]].filter(([,v])=>v).map(([label,value])=><div key={label}><dt>{label}</dt><dd>{value}</dd></div>)}</dl><p className="hm-muted">Only approved non-financial job fields are available in this view.</p></div>}</div>)}
               <p className="hm-muted">Candidate reviews need secure recruiter-sharing permissions. Job details with salary are not linked here.</p>
             </section>}
-            {(workspaceTab==="all" || workspaceTab==="candidates") && <HiringCandidateReviews designPreview={designPreview} enabled={role === "hiring_manager"} selectedJobId={candidateJob} onJobFilterChange={setCandidateJob} />}
+            {(workspaceTab==="all" || workspaceTab==="candidates") && <HiringCandidateReviews designPreview={designPreview} enabled={role === "hiring_manager"} selectedJobId={candidateJob} onJobFilterChange={setCandidateJob} refreshToken={reviewRefreshToken} />}
             {(workspaceTab==="all" || workspaceTab==="offers") && <HiringOfferApprovals offers={visibleOffers} designPreview={designPreview} onDecided={refresh} />}
           </> : null}
         </div>
