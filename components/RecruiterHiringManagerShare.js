@@ -6,12 +6,13 @@ export default function RecruiterHiringManagerShare({candidateId}) {
  const [applications,setApplications]=useState([]);
  const [loading,setLoading]=useState(true);
  const [busy,setBusy]=useState("");
+ const [refreshing,setRefreshing]=useState(false);
  const [error,setError]=useState("");
  const [message,setMessage]=useState("");
  const [authorized,setAuthorized]=useState(false);
  async function load(){
   if(!candidateId)return;
-  setLoading(true);setError("");
+  setRefreshing(true);setError("");
   try{
    const {data:auth,error:authError}=await supabase.auth.getUser();
    if(authError||!auth?.user)throw new Error("Sign in to share candidates.");
@@ -29,7 +30,7 @@ export default function RecruiterHiringManagerShare({candidateId}) {
    const lookup=new Map((jobs||[]).map(j=>[j.id,j]));
    setApplications(apps.map(a=>({...a,job:lookup.get(a.job_id)})).filter(a=>a.job));
   }catch(e){setError(e?.message||"Could not load candidate applications.");}
-  finally{setLoading(false);}
+  finally{setLoading(false);setRefreshing(false);}
  }
  useEffect(()=>{load();},[candidateId]);
  async function share(application){
@@ -46,7 +47,7 @@ export default function RecruiterHiringManagerShare({candidateId}) {
  if(loading)return <section style={{padding:20,background:"#fff",borderRadius:14,marginBottom:20}}>Loading Hiring Manager sharing…</section>;
  if(!authorized)return null;
  return <section style={{padding:24,background:"#fff",border:"1px solid #dce9df",borderRadius:16,marginBottom:22}}>
-  <h2 style={{marginTop:0,color:"#185b3e"}}>Share with Hiring Manager</h2>
+  <div style={{display:"flex",justifyContent:"space-between",gap:12,flexWrap:"wrap",alignItems:"center"}}><h2 style={{marginTop:0,color:"#185b3e"}}>Share with Hiring Manager</h2><button type="button" onClick={load} disabled={refreshing||!!busy} style={{border:"1px solid #bcd9c5",color:"#176846",background:"#edf6ef",borderRadius:9,padding:"9px 14px",cursor:"pointer"}}>{refreshing?"Refreshing…":"Refresh assigned jobs"}</button></div>
   <p style={{color:"#6d8174",fontSize:13}}>Share this candidate for a specific job. Only the assigned Hiring Manager will receive access through the secure review workflow. No compensation is shared.</p>
   {error&&<p role="alert" style={{color:"#a52626"}}>{error}</p>}
   {message&&<p role="status" style={{color:"#176846"}}>{message}</p>}
