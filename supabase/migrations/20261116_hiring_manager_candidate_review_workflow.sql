@@ -90,7 +90,7 @@ CREATE OR REPLACE FUNCTION public.share_candidate_with_hiring_manager(
  p_application_id bigint
 ) RETURNS uuid LANGUAGE plpgsql SECURITY DEFINER SET search_path=''
 AS $function$
-DECLARE v_id uuid; v_company uuid; v_job uuid; v_manager uuid;
+DECLARE v_id uuid; v_company uuid; v_job bigint; v_manager uuid;
 BEGIN
  SELECT j.company_id,j.id,j.hiring_manager_user_id INTO v_company,v_job,v_manager
  FROM public.applications a JOIN public.jobs j ON j.id=a.job_id AND j.company_id=a.company_id
@@ -120,5 +120,5 @@ REVOKE ALL ON FUNCTION public.submit_hiring_candidate_review(uuid,text,integer,t
 REVOKE ALL ON FUNCTION public.share_candidate_with_hiring_manager(bigint) FROM PUBLIC,anon;
 GRANT EXECUTE ON FUNCTION public.get_my_hiring_candidate_reviews() TO authenticated;
 GRANT EXECUTE ON FUNCTION public.submit_hiring_candidate_review(uuid,text,integer,text) TO authenticated;
-GRANT EXECUTE ON FUNCTION public.share_candidate_with_hiring_manager(uuid) TO authenticated;
+GRANT EXECUTE ON FUNCTION public.share_candidate_with_hiring_manager(bigint) TO authenticated;
 COMMIT;
