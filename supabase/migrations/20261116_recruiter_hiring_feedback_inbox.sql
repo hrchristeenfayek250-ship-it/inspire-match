@@ -1,7 +1,7 @@
 -- Recruiter-facing hiring manager feedback for the candidate's applications.
 -- Review against live schema before applying. Read-only and tenant-scoped.
 BEGIN;
-CREATE OR REPLACE FUNCTION public.get_candidate_hiring_manager_feedback(p_candidate_id uuid)
+CREATE OR REPLACE FUNCTION public.get_candidate_hiring_manager_feedback(p_candidate_id bigint)
 RETURNS TABLE (
  job_title text,
  candidate_stage text,
@@ -27,6 +27,6 @@ AS $function$
    )
  ORDER BY r.created_at DESC;
 $function$;
-REVOKE ALL ON FUNCTION public.get_candidate_hiring_manager_feedback(uuid) FROM PUBLIC,anon;
-GRANT EXECUTE ON FUNCTION public.get_candidate_hiring_manager_feedback(uuid) TO authenticated;
+REVOKE ALL ON FUNCTION public.get_candidate_hiring_manager_feedback(bigint) FROM PUBLIC,anon;
+GRANT EXECUTE ON FUNCTION public.get_candidate_hiring_manager_feedback(bigint) TO authenticated;
 COMMIT;
