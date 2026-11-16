@@ -5,8 +5,8 @@ BEGIN;
 CREATE TABLE IF NOT EXISTS public.hiring_manager_candidate_shares (
  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
  company_id uuid NOT NULL,
- job_id uuid NOT NULL REFERENCES public.jobs(id) ON DELETE CASCADE,
- application_id uuid NOT NULL REFERENCES public.applications(id) ON DELETE CASCADE,
+ job_id bigint NOT NULL REFERENCES public.jobs(id) ON DELETE CASCADE,
+ application_id bigint NOT NULL REFERENCES public.applications(id) ON DELETE CASCADE,
  hiring_manager_id uuid NOT NULL REFERENCES auth.users(id),
  shared_by uuid NOT NULL REFERENCES auth.users(id),
  shared_at timestamptz NOT NULL DEFAULT now(),
@@ -32,7 +32,7 @@ REVOKE ALL ON public.hiring_manager_candidate_reviews FROM PUBLIC,anon,authentic
 
 CREATE OR REPLACE FUNCTION public.get_my_hiring_candidate_reviews()
 RETURNS TABLE (
- share_id uuid, application_id uuid, job_id uuid, job_title text,
+ share_id uuid, application_id bigint, job_id bigint, job_title text,
  candidate_name text, candidate_title text, candidate_stage text,
  shared_at timestamptz, latest_recommendation text, latest_rating integer,
  latest_comments text, reviewed_at timestamptz
@@ -87,7 +87,7 @@ END;
 $function$;
 
 CREATE OR REPLACE FUNCTION public.share_candidate_with_hiring_manager(
- p_application_id uuid
+ p_application_id bigint
 ) RETURNS uuid LANGUAGE plpgsql SECURITY DEFINER SET search_path=''
 AS $function$
 DECLARE v_id uuid; v_company uuid; v_job uuid; v_manager uuid;
@@ -117,7 +117,7 @@ $function$;
 
 REVOKE ALL ON FUNCTION public.get_my_hiring_candidate_reviews() FROM PUBLIC,anon;
 REVOKE ALL ON FUNCTION public.submit_hiring_candidate_review(uuid,text,integer,text) FROM PUBLIC,anon;
-REVOKE ALL ON FUNCTION public.share_candidate_with_hiring_manager(uuid) FROM PUBLIC,anon;
+REVOKE ALL ON FUNCTION public.share_candidate_with_hiring_manager(bigint) FROM PUBLIC,anon;
 GRANT EXECUTE ON FUNCTION public.get_my_hiring_candidate_reviews() TO authenticated;
 GRANT EXECUTE ON FUNCTION public.submit_hiring_candidate_review(uuid,text,integer,text) TO authenticated;
 GRANT EXECUTE ON FUNCTION public.share_candidate_with_hiring_manager(uuid) TO authenticated;
