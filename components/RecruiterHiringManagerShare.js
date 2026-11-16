@@ -10,6 +10,7 @@ export default function RecruiterHiringManagerShare({candidateId}) {
  const [error,setError]=useState("");
  const [message,setMessage]=useState("");
  const [authorized,setAuthorized]=useState(false);
+ const [shares,setShares]=useState([]);
  async function load(){
   if(!candidateId)return;
   setRefreshing(true);setError("");
@@ -20,6 +21,9 @@ export default function RecruiterHiringManagerShare({candidateId}) {
    if(memberError)throw memberError;
    if(memberships?.length!==1||!["admin","hr_manager","senior_recruiter","hr","recruiter","hr_specialist"].includes(String(memberships[0].role).toLowerCase())){setAuthorized(false);return;}
    setAuthorized(true);
+   const {data:shareData,error:shareError}=await supabase.rpc("get_candidate_hiring_manager_shares",{p_candidate_id:candidateId});
+   if(shareError)throw shareError;
+   setShares(Array.isArray(shareData)?shareData:[]);
    const companyId=memberships[0].company_id;
    const {data:apps,error:appsError}=await supabase.from("applications").select("id,job_id,stage").eq("candidate_id",candidateId).eq("company_id",companyId);
    if(appsError)throw appsError;
@@ -33,6 +37,19 @@ export default function RecruiterHiringManagerShare({candidateId}) {
   finally{setLoading(false);setRefreshing(false);}
  }
  useEffect(()=>{load();},[candidateId]);
+ async function revoke(application){
+  const shareItem=shares.find(item=>item.application_id===application.id && item.hiring_manager_id===application.job?.hiring_manager_user_id && !item.revoked_at);
+  if(!shareItem||busy)return;
+  if(!window.confirm("Revoke Hiring Manager access to this candidate for this job?"))return;
+  setBusy(application.id);setError("");setMessage("");
+  try{
+   const {error:rpcError}=await supabase.rpc("revoke_candidate_hiring_manager_share",{p_share_id:shareItem.share_id});
+   if(rpcError)throw rpcError;
+   setMessage("Candidate sharing revoked. The Hiring Manager can no longer access this review.");
+   await load();
+  }catch(e){setError(e?.message||"Could not revoke sharing.");}
+  finally{setBusy("");}
+ }
  async function share(application){
   if(busy)return;
   if(!application.job?.hiring_manager_user_id){setError("Assign a Hiring Manager to the job before sharing.");return;}
@@ -41,6 +58,7 @@ export default function RecruiterHiringManagerShare({candidateId}) {
    const {error:rpcError}=await supabase.rpc("share_candidate_with_hiring_manager",{p_application_id:application.id});
    if(rpcError)throw rpcError;
    setMessage("Candidate shared with the assigned Hiring Manager. They can now review and submit feedback in their workspace.");
+   await load();
   }catch(e){setError(e?.message||"Could not share candidate.");}
   finally{setBusy("");}
  }
@@ -53,7 +71,7 @@ export default function RecruiterHiringManagerShare({candidateId}) {
   {message&&<p role="status" style={{color:"#176846"}}>{message}</p>}
   {!applications.length?<p style={{color:"#718477"}}>Assign this candidate to a job first, then share them with its Hiring Manager.</p>:applications.map(a=><div key={a.id} style={{display:"flex",justifyContent:"space-between",alignItems:"center",gap:14,padding:"15px 0",borderTop:"1px solid #e7eee9",flexWrap:"wrap"}}>
    <div><strong>{a.job?.title||"Job"}</strong><p style={{margin:"5px 0",fontSize:12,color:"#718477"}}>Stage: {a.stage||"Applied"} · {a.job?.hiring_manager_user_id?"Hiring Manager assigned":"No Hiring Manager assigned"}</p></div>
-   <button type="button" disabled={!!busy||!a.job?.hiring_manager_user_id} onClick={()=>share(a)} style={{background:"#176846",color:"#fff",border:0,borderRadius:9,padding:"11px 16px",cursor:"pointer",opacity:(busy||!a.job?.hiring_manager_user_id)?0.5:1}}>{busy===a.id?"Sharing…":"Share Candidate"}</button>
+   {(()=>{const activeShare=shares.find(s=>s.application_id===a.id && s.hiring_manager_id===a.job?.hiring_manager_user_id && !s.revoked_at);return <div style={{display:"flex",alignItems:"center",gap:10,flexWrap:"wrap"}}>{activeShare&&<span style={{color:"#176846",fontSize:12,fontWeight:700}}>Shared · {new Date(activeShare.shared_at).toLocaleDateString()}</span>}<button type="button" disabled={!!busy||!a.job?.hiring_manager_user_id} onClick={()=>activeShare?revoke(a):share(a)} style={{background:activeShare?"#fff":"#176846",color:activeShare?"#9d2727":"#fff",border:activeShare?"1px solid #e6bcbc":"none",borderRadius:9,padding:"11px 16px",cursor:"pointer",opacity:(busy||!a.job?.hiring_manager_user_id)?0.5:1}}>{busy===a.id?"Updating…":activeShare?"Revoke Access":"Share Candidate"}</button></div>;})()}
   </div>)}
  </section>;
 }
