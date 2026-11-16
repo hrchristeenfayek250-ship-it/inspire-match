@@ -7,9 +7,12 @@ const examples=[
  {share_id:"sample-2",job_id:"demo-job-2",job_title:"React Native Developer",candidate_name:"Sample Candidate B",candidate_title:"Mobile Developer",candidate_stage:"Interview",latest_recommendation:"hold",latest_rating:3,latest_comments:"Sample feedback"}
 ];
 
-export default function HiringCandidateReviews({designPreview=false,enabled=false}) {
+export default function HiringCandidateReviews({designPreview=false,enabled=false,selectedJobId="all",onJobFilterChange}) {
  const [rows,setRows]=useState([]),[error,setError]=useState(""),[loading,setLoading]=useState(false);
- const [query,setQuery]=useState(""),[job,setJob]=useState("all"),[status,setStatus]=useState("all");
+ const [query,setQuery]=useState(""),[status,setStatus]=useState("all");
+ const [localJob,setLocalJob]=useState("all");
+ const job=onJobFilterChange?selectedJobId:localJob;
+ const setJob=onJobFilterChange||setLocalJob;
  const [active,setActive]=useState(null),[decision,setDecision]=useState("proceed"),[rating,setRating]=useState(3),[comments,setComments]=useState("");
  const [saving,setSaving]=useState(false),[message,setMessage]=useState("");
  const [sampleReviews,setSampleReviews]=useState({});
@@ -44,6 +47,7 @@ export default function HiringCandidateReviews({designPreview=false,enabled=fals
    <select aria-label="Filter candidates by job" value={job} onChange={e=>setJob(e.target.value)}><option value="all">All jobs</option>{jobs.map(([id,title])=><option key={id} value={id}>{title}</option>)}</select>
    <select aria-label="Filter review status" value={status} onChange={e=>setStatus(e.target.value)}><option value="all">All reviews</option><option value="pending">Awaiting feedback</option><option value="reviewed">Reviewed</option></select>
   </div>
+  {job!=="all"&&<button type="button" className="hm-button hm-button-secondary" onClick={()=>setJob("all")}>Clear selected job filter</button>}
   {error&&<p role="alert" className="hm-error">{error}</p>}
   {message&&<p role="status" className="hm-note">{message}</p>}
   {loading?<div className="hm-empty">Loading shared candidates…</div>:filtered.length===0?<div className="hm-empty">No candidates match your filters.</div>:filtered.map(r=><div key={r.share_id}>
