@@ -30,6 +30,9 @@ export default function HiringManagerPage() {
   const [search,setSearch] = useState("");
   const [statusFilter,setStatusFilter] = useState("all");
   const [jobFilter,setJobFilter] = useState("all");
+  const [expandedJob,setExpandedJob] = useState(null);
+  const [candidateJob,setCandidateJob] = useState("all");
+  const [workspaceTab,setWorkspaceTab] = useState("all");
 
   useEffect(() => {
     let active = true;
@@ -89,6 +92,7 @@ export default function HiringManagerPage() {
   const visibleJobs = designPreview ? sampleJobs : jobs;
   const filteredJobs = visibleJobs.filter(j => (jobFilter === "all" || j.job_id === jobFilter) && (statusFilter === "all" || String(j.job_status || "").toLowerCase() === statusFilter) && [j.job_title,j.department,j.location].join(" ").toLowerCase().includes(search.toLowerCase()));
   const visibleOffers = designPreview ? sampleOffers : offers.filter(pending);
+  const activeJobs = visibleJobs.filter(j=>String(j.job_status||"").toLowerCase()==="active").length;
   return (
     <main className="hm-shell">
       <style>{`
@@ -115,7 +119,7 @@ export default function HiringManagerPage() {
         .hm-panel h2{margin:0;font-size:20px}.hm-row{display:flex;justify-content:space-between;align-items:center;gap:14px;border-top:1px solid #eaf0eb;padding:18px 0}
         .hm-row strong{font-size:15px}.hm-detail{display:flex;gap:7px;flex-wrap:wrap;margin-top:11px}
         .hm-detail span{font-size:11px;color:#577365;background:#eff5f0;padding:6px 9px;border-radius:7px}
-        .hm-pill{font-size:11px;font-weight:800;color:#865c22;background:#fff3dc;border-radius:30px;padding:9px 12px}
+.hm-job-actions{display:flex;gap:8px;align-items:center;flex-wrap:wrap}.hm-button-secondary{background:#ecf5ee;color:#176846;border:1px solid #cfe3d3}.hm-tabs{display:flex;gap:9px;flex-wrap:wrap;margin:22px 0}.hm-tabs button{border:1px solid #d7e6dc;border-radius:99px;background:#fff;color:#356b50;padding:10px 18px;font-weight:800;cursor:pointer}.hm-tabs button.active{background:#176846;color:white;border-color:#176846}.hm-job-expanded{padding:18px;background:#f6faf7;border:1px solid #dbeadf;border-radius:12px;margin-bottom:12px}.hm-job-expanded dl{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px;margin:0}.hm-job-expanded dt{font-size:11px;color:#809285;font-weight:700}.hm-job-expanded dd{margin:6px 0 0;font-weight:700}.hm-pill{font-size:11px;font-weight:800;color:#865c22;background:#fff3dc;border-radius:30px;padding:9px 12px}
         .hm-link{color:#186e4c;text-decoration:none;font-size:13px;font-weight:800}
         .hm-empty{text-align:center;padding:34px 15px;background:#fafcfa;color:#75887d;border:1px dashed #d8e7da;border-radius:12px;font-size:13px}
         .hm-note{background:#eaf5ed;padding:15px;color:#145b3e;border-radius:11px;font-size:13px;margin:20px 0}
@@ -147,20 +151,22 @@ export default function HiringManagerPage() {
             <div className="hm-stats">
               <div className="hm-stat"><span>Jobs assigned to me</span><strong>{jobsError ? "—" : visibleJobs.length}</strong></div>
               <div className="hm-stat"><span>Job offers awaiting approval</span><strong>{visibleOffers.length}</strong></div>
+              <div className="hm-stat"><span>Active assigned jobs</span><strong>{activeJobs}</strong></div>
             </div>
-            <section className="hm-panel">
+            <nav className="hm-tabs" aria-label="Hiring workspace sections">{[["all","All"],["jobs","Assigned Jobs"],["candidates","Candidate Reviews"],["offers","Job Offers"]].map(([id,label])=><button key={id} type="button" className={workspaceTab===id?"active":""} onClick={()=>setWorkspaceTab(id)}>{label}</button>)}</nav>
+            {(workspaceTab==="all" || workspaceTab==="jobs") && <section className="hm-panel">
               <div className="hm-panel-head"><h2>My Assigned Jobs</h2>{designPreview && <span className="hm-sample">SAMPLE</span>}</div>
               <div className="hm-filters"><input aria-label="Search jobs" placeholder="Search job title, department or location" value={search} onChange={e=>setSearch(e.target.value)}/><select aria-label="Filter by job" value={jobFilter} onChange={e=>setJobFilter(e.target.value)}><option value="all">All jobs</option>{visibleJobs.map(j=><option key={j.job_id} value={j.job_id}>{j.job_title}</option>)}</select><select aria-label="Filter by status" value={statusFilter} onChange={e=>setStatusFilter(e.target.value)}><option value="all">All statuses</option><option value="active">Active</option><option value="paused">Paused</option><option value="closed">Closed</option></select></div>
               {jobsError && !designPreview ? <div className="hm-empty">Secure Assigned Jobs access has not yet been activated in Supabase.</div> :
                filteredJobs.length === 0 ? <div className="hm-empty">{role === "admin" || role === "hr_manager" ? "This manager overview does not display other users' job assignments." : "No jobs are assigned to this Hiring Manager account yet."}</div> :
-               filteredJobs.map(job => <div className="hm-row" key={job.job_id}><div><strong>{job.job_title || "Untitled job"}</strong>
+               filteredJobs.map(job => <div key={job.job_id}><div className="hm-row"><div><strong>{job.job_title || "Untitled job"}</strong>
                  {designPreview && <span className="hm-sample">SAMPLE</span>}
                  <div className="hm-detail">{[job.department,job.location,job.job_status,job.priority && job.priority+" priority"].filter(Boolean).map((v,i)=><span key={i}>{v}</span>)}</div>
-                 </div><span className="hm-pill">Assigned to me</span></div>)}
+                 </div><div className="hm-job-actions"><button type="button" className="hm-button hm-button-secondary" onClick={()=>setExpandedJob(current=>current===job.job_id?null:job.job_id)} aria-expanded={expandedJob===job.job_id}>{expandedJob===job.job_id?"Hide details":"View details"}</button><button type="button" className="hm-button" onClick={()=>{setCandidateJob(job.job_id);setWorkspaceTab("candidates");}}>Review candidates</button></div></div>{expandedJob===job.job_id && <div className="hm-job-expanded"><strong>Job Overview</strong><dl>{[["Job title",job.job_title],["Department",job.department],["Location",job.location],["Status",job.job_status],["Priority",job.priority],["Hiring deadline",job.hiring_deadline]].filter(([,v])=>v).map(([label,value])=><div key={label}><dt>{label}</dt><dd>{value}</dd></div>)}</dl><p className="hm-muted">Only approved non-financial job fields are available in this view.</p></div>}</div>)}
               <p className="hm-muted">Candidate reviews need secure recruiter-sharing permissions. Job details with salary are not linked here.</p>
-            </section>
-            <HiringCandidateReviews designPreview={designPreview} enabled={role === "hiring_manager"} />
-            <HiringOfferApprovals offers={visibleOffers} designPreview={designPreview} onDecided={refresh} />
+            </section>}
+            {(workspaceTab==="all" || workspaceTab==="candidates") && <HiringCandidateReviews designPreview={designPreview} enabled={role === "hiring_manager"} selectedJobId={candidateJob} onJobFilterChange={setCandidateJob} />}
+            {(workspaceTab==="all" || workspaceTab==="offers") && <HiringOfferApprovals offers={visibleOffers} designPreview={designPreview} onDecided={refresh} />}
           </> : null}
         </div>
       </div>
