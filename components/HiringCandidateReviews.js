@@ -3,8 +3,8 @@ import {useEffect,useMemo,useState} from "react";
 import {supabase} from "@/lib/supabase";
 
 const examples=[
- {share_id:"sample-1",job_id:"demo-job-1",job_title:"Senior Product Designer",candidate_name:"Sample Candidate A",candidate_title:"Product Designer",candidate_stage:"Shortlisted"},
- {share_id:"sample-2",job_id:"demo-job-2",job_title:"React Native Developer",candidate_name:"Sample Candidate B",candidate_title:"Mobile Developer",candidate_stage:"Interview",latest_recommendation:"hold",latest_rating:3,latest_comments:"Sample feedback"}
+ {share_id:"sample-1",job_id:"demo-job-1",job_title:"Senior Product Designer",candidate_name:"Nour Ahmed",candidate_title:"Senior Product Designer",candidate_stage:"Shortlisted",experience_years:7,location:"Cairo, Egypt",education:"BSc Graphic Design, Helwan University",summary:"Product designer with 7 years of SaaS product design, UX research and design systems experience.",skills:["Figma","UX Research","Design Systems","Prototyping","User Testing","Accessibility"],experience:["Senior Product Designer, Atlas Digital (2022–2026)","UX/UI Designer, Nova Labs (2019–2022)"],strengths:["End-to-end SaaS portfolio","Strong cross-functional collaboration"],followUps:["Validate analytics dashboard experience"]},
+ {share_id:"sample-2",job_id:"demo-job-2",job_title:"React Native Developer",candidate_name:"Omar Hassan",candidate_title:"Senior React Native Developer",candidate_stage:"Interview",experience_years:5,location:"Giza, Egypt",education:"BSc Computer Science, Cairo University",summary:"React Native engineer with TypeScript, Expo, native integrations and release automation.",skills:["React Native","TypeScript","Expo","Firebase","REST APIs","CI/CD"],experience:["Mobile Engineer, MobileWorks (2022–2026)","Frontend Developer, Appify (2020–2022)"],strengths:["Production app releases","Mobile performance troubleshooting"],followUps:["Confirm native module debugging"],latest_recommendation:"hold",latest_rating:3,latest_comments:"Sample feedback: request a technical follow-up interview."}
 ];
 
 export default function HiringCandidateReviews({designPreview=false,enabled=false,selectedJobId="all",onJobFilterChange}) {
@@ -16,6 +16,7 @@ export default function HiringCandidateReviews({designPreview=false,enabled=fals
  const [active,setActive]=useState(null),[decision,setDecision]=useState("proceed"),[rating,setRating]=useState(3),[comments,setComments]=useState("");
  const [saving,setSaving]=useState(false),[message,setMessage]=useState("");
  const [sampleReviews,setSampleReviews]=useState({});
+ const [expandedProfile,setExpandedProfile]=useState(null);
  async function load(){
    if(designPreview||!enabled)return;
    setLoading(true);setError("");
@@ -53,7 +54,21 @@ export default function HiringCandidateReviews({designPreview=false,enabled=fals
   {loading?<div className="hm-empty">Loading shared candidates…</div>:filtered.length===0?<div className="hm-empty">No candidates match your filters.</div>:filtered.map(r=><div key={r.share_id}>
    <div className="hm-row"><div><strong>{r.candidate_name||"Candidate"}</strong>{designPreview&&<span className="hm-sample">SAMPLE</span>}
    <div className="hm-detail">{[r.candidate_title,r.job_title,r.candidate_stage,r.latest_recommendation?"Reviewed: "+r.latest_recommendation:"Feedback needed"].filter(Boolean).map((v,i)=><span key={i}>{v}</span>)}</div></div>
-   <button className="hm-button" disabled={!designPreview&&!enabled} onClick={()=>open(r)}>{r.latest_recommendation?"Update feedback":"Review"}</button></div>
+   <div className="hm-job-actions">
+     {designPreview&&<button type="button" className="hm-button hm-button-secondary" aria-expanded={expandedProfile===r.share_id} onClick={()=>setExpandedProfile(v=>v===r.share_id?null:r.share_id)}>{expandedProfile===r.share_id?"Hide profile":"View CV profile"}</button>}
+     <button className="hm-button" disabled={!designPreview&&!enabled} onClick={()=>{open(r);setExpandedProfile(r.share_id);}}>{r.latest_recommendation?"Update feedback":"Review candidate"}</button>
+   </div></div>
+   {designPreview&&expandedProfile===r.share_id&&<div className="hm-job-expanded" style={{marginTop:8}}>
+     <div className="hm-panel-head"><div><strong style={{fontSize:17}}>{r.candidate_name}</strong><p className="hm-muted">{r.candidate_title} · {r.experience_years} years · {r.location}</p></div><span className="hm-sample">FICTIONAL CV</span></div>
+     <p className="hm-muted">{r.summary}</p>
+     <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(210px,1fr))",gap:18}}>
+       <div><strong>Core Skills</strong><div className="hm-detail">{(r.skills||[]).map(v=><span key={v}>{v}</span>)}</div></div>
+       <div><strong>Work Experience</strong>{(r.experience||[]).map(v=><p className="hm-muted" key={v}>{v}</p>)}</div>
+       <div><strong>Education</strong><p className="hm-muted">{r.education}</p><strong>Strengths</strong>{(r.strengths||[]).map(v=><p className="hm-muted" key={v}>✓ {v}</p>)}</div>
+       <div><strong>Suggested Interview Questions</strong>{(r.followUps||[]).map(v=><p className="hm-muted" key={v}>{v}</p>)}</div>
+     </div>
+     <p className="hm-muted" style={{fontSize:11}}>Fictional test profile only. No real CV, contact details, compensation or private data.</p>
+   </div>}
    {active?.share_id===r.share_id&&<div style={{padding:18,background:"#f2f8f4",borderRadius:12,display:"grid",gap:12}}>
     <label>Decision <select value={decision} onChange={e=>setDecision(e.target.value)}><option value="proceed">Proceed</option><option value="hold">Hold</option><option value="reject">Reject</option></select></label>
     <label>Rating (1–5) <select value={rating} onChange={e=>setRating(Number(e.target.value))}>{[1,2,3,4,5].map(n=><option key={n} value={n}>{n}</option>)}</select></label>
