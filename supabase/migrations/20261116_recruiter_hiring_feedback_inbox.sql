@@ -16,7 +16,7 @@ AS $function$
         r.comments::text,r.created_at
  FROM public.hiring_manager_candidate_reviews r
  JOIN public.hiring_manager_candidate_shares s ON s.id=r.share_id
- JOIN public.applications a ON a.id=s.application_id AND a.job_id=s.job_id
+ JOIN public.applications a ON a.id=s.application_id AND a.job_id=s.job_id AND a.company_id=s.company_id
  JOIN public.jobs j ON j.id=s.job_id AND j.company_id=s.company_id
  JOIN public.candidates c ON c.id=a.candidate_id AND c.company_id=s.company_id
  WHERE c.id=p_candidate_id AND s.revoked_at IS NULL
