@@ -7,7 +7,7 @@ const examples=[
  {share_id:"sample-2",job_id:"demo-job-2",job_title:"React Native Developer",candidate_name:"Omar Hassan",candidate_title:"Senior React Native Developer",candidate_stage:"Interview",experience_years:5,location:"Giza, Egypt",education:"BSc Computer Science, Cairo University",summary:"React Native engineer with TypeScript, Expo, native integrations and release automation.",skills:["React Native","TypeScript","Expo","Firebase","REST APIs","CI/CD"],experience:["Mobile Engineer, MobileWorks (2022–2026)","Frontend Developer, Appify (2020–2022)"],strengths:["Production app releases","Mobile performance troubleshooting"],followUps:["Confirm native module debugging"],latest_recommendation:"hold",latest_rating:3,latest_comments:"Sample feedback: request a technical follow-up interview."}
 ];
 
-export default function HiringCandidateReviews({designPreview=false,enabled=false,selectedJobId="all",onJobFilterChange}) {
+export default function HiringCandidateReviews({designPreview=false,enabled=false,selectedJobId="all",onJobFilterChange,refreshToken=0}) {
  const [rows,setRows]=useState([]),[error,setError]=useState(""),[loading,setLoading]=useState(false);
  const [query,setQuery]=useState(""),[status,setStatus]=useState("all");
  const [localJob,setLocalJob]=useState("all");
@@ -37,7 +37,7 @@ export default function HiringCandidateReviews({designPreview=false,enabled=fals
    else setRows(Array.isArray(data)?data:[]);
    setLoading(false);
  }
- useEffect(()=>{if(enabled&&!designPreview)load();},[enabled,designPreview]);
+ useEffect(()=>{if(enabled&&!designPreview)load();},[enabled,designPreview,refreshToken]);
  const visible=designPreview?examples.map(item=>({...item,...(sampleReviews[item.share_id]||{})})):rows;
  const jobs=useMemo(()=>Array.from(new Map(visible.map(r=>[r.job_id,r.job_title])).entries()),[visible]);
  const filtered=visible.filter(r=>(job==="all"||r.job_id===job)&&(status==="all"||(status==="pending"?!r.latest_recommendation:!!r.latest_recommendation))&&[r.candidate_name,r.candidate_title,r.candidate_stage,r.job_title].join(" ").toLowerCase().includes(query.toLowerCase()));
@@ -59,7 +59,7 @@ export default function HiringCandidateReviews({designPreview=false,enabled=fals
    finally {setSaving(false);}
  }
  return <section className="hm-panel">
-  <div className="hm-panel-head"><h2>Candidate Reviews &amp; Feedback</h2>{designPreview&&<span className="hm-sample">SAMPLE</span>}</div>
+  <div className="hm-panel-head"><h2>Candidate Reviews &amp; Feedback</h2><div className="hm-job-actions">{designPreview&&<span className="hm-sample">SAMPLE</span>}{!designPreview&&enabled&&<button type="button" className="hm-button hm-button-secondary" disabled={loading||saving} onClick={load}>{loading?"Refreshing…":"Refresh candidates"}</button>}</div></div>
   <p className="hm-muted">Review only candidates explicitly shared by a recruiter for your assigned jobs.</p>
   {designPreview&&<p className="hm-note">Interactive demo: review a sample candidate, add a rating and feedback, and test the filters. Changes stay in this page only.</p>}
   <div className="hm-filters">
