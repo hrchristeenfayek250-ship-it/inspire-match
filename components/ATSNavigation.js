@@ -11,6 +11,7 @@ export const ATS_NAVIGATION = [
   ["Today", "/app/today", "◷"],
   ["Notifications", "/app/notifications", "◉"],
   ["Jobs", "/app/jobs", "▣"],
+  ["Inspire Connect", "/app/inspire-connect", "⌁"],
   ["Candidates", "/app/candidates", "♙"],
   ["Recycle Bin", "/app/recycle-bin", "♻"],
   ["Pipeline", "/app/pipeline", "⇄"],
