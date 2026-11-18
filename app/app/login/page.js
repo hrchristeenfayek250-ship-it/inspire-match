@@ -16,9 +16,19 @@ export default function LoginPage() {
   const [error, setError] = useState("");
 
   useEffect(() => {
+    let active = true;
     const token = new URLSearchParams(window.location.search).get("invite") || "";
     setInviteToken(token);
-  }, []);
+    // On the same origin, skip the login form when a session already exists.
+    // Company authorization still runs in the protected root layout.
+    supabase.auth.getSession().then(({ data, error }) => {
+      if (!active || error || !data?.session) return;
+      router.replace(token
+        ? "/app/accept-invite?token=" + encodeURIComponent(token)
+        : "/app/dashboard");
+    }).catch(() => {});
+    return () => { active = false; };
+  }, [router]);
 
   const inviteDestination = inviteToken
     ? "/app/accept-invite?token=" + encodeURIComponent(inviteToken)
