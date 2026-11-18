@@ -11,6 +11,7 @@ export const ATS_NAVIGATION = [
   ["Today", "/app/today", "◷"],
   ["Notifications", "/app/notifications", "◉"],
   ["Jobs", "/app/jobs", "▣"],
+  ["Inspire Connect", "/app/inspire-connect", "⌁"],
   ["Candidates", "/app/candidates", "♙"],
   ["Recycle Bin", "/app/recycle-bin", "♻"],
   ["Pipeline", "/app/pipeline", "⇄"],
@@ -42,32 +43,44 @@ export default function ATSNavigation({
   const pathname = usePathname();
   const [canViewCompanyBilling, setCanViewCompanyBilling] = useState(false);
   const [isInternalStaff, setIsInternalStaff] = useState(false);
+  const [accessState, setAccessState] = useState("loading");
 
   useEffect(() => {
     let active = true;
     (async () => {
       const { data: { user }, error } = await supabase.auth.getUser();
-      if (error || !user || !active) return;
+      if (error || !user || !active) {
+        if (active) setAccessState("denied");
+        return;
+      }
       const [membership, internal] = await Promise.all([
-        supabase.from("company_members").select("company_id")
-          .eq("user_id", user.id).eq("role", "admin").limit(1),
+        supabase.from("company_members").select("company_id,role")
+          .eq("user_id", user.id).limit(2),
         supabase.rpc("billing_is_internal_staff")
       ]);
       if (!active) return;
-      setCanViewCompanyBilling(!membership.error && (membership.data || []).length > 0);
+      const memberships = membership.error ? [] : membership.data || [];
+      const validMembership = memberships.length === 1 && Boolean(memberships[0].company_id);
+      const role = validMembership ? String(memberships[0].role || "").toLowerCase() : "";
+      const hrRoles = ["admin", "hr_manager", "senior_recruiter", "hr", "recruiter", "hr_specialist"];
+      setCanViewCompanyBilling(validMembership && role === "admin");
       setIsInternalStaff(!internal.error && internal.data === true);
+      setAccessState(!validMembership ? "denied" : role === "hiring_manager" ? "hiring_manager" : hrRoles.includes(role) ? "hr" : "denied");
     })().catch(() => {
-      if (active) { setCanViewCompanyBilling(false); setIsInternalStaff(false); }
+      if (active) { setCanViewCompanyBilling(false); setIsInternalStaff(false); setAccessState("denied"); }
     });
     return () => { active = false; };
   }, []);
 
-  const visibleNavigation = [
-    ...ATS_NAVIGATION.filter(([label]) =>
-      label !== "Billing & Subscriptions" || canViewCompanyBilling
-    ),
-    ...(isInternalStaff ? [["Internal Sales & Finance", "/app/billing/internal", "▧"]] : [])
-  ];
+  // Fail closed: never render the HR menu while membership is unknown or invalid.
+  const visibleNavigation = accessState === "hiring_manager"
+    ? [["My Hiring Workspace", "/app/hiring-manager", "◫"], ["Approval Center", "/app/approvals", "✓"]]
+    : accessState === "hr"
+      ? [
+          ...ATS_NAVIGATION.filter(([label]) => label !== "Billing & Subscriptions" || canViewCompanyBilling),
+          ...(isInternalStaff ? [["Internal Sales & Finance", "/app/billing/internal", "▧"]] : []),
+        ]
+      : [];
 
   return (
     <nav className={className} aria-label="Main navigation">

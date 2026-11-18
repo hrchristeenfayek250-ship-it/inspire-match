@@ -99,16 +99,15 @@ export default function RootLayout({ children }) {
       setGuardError(true);
     });
 
-    // Do not make async database queries inside the auth state callback.
+    // INITIAL_SESSION may be null during restoration; do not mistake it for a logout.
+    // Route access is verified by checkAccess and the tenant gate above.
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
+    } = supabase.auth.onAuthStateChange((event) => {
       if (!active) return;
-      if (!session && !isPublicRoute(pathname)) {
+      if (event === "SIGNED_OUT" && !isPublicRoute(pathname)) {
         setVerifiedPath(null);
         router.replace("/app/login");
-      } else if (session && isLoginPage) {
-        router.replace("/app/dashboard");
       }
     });
 
