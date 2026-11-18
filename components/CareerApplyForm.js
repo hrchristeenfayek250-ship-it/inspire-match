@@ -31,6 +31,7 @@ export default function CareerApplyForm({jobId,slug}){
   }catch(e){setError(e.message||"Application failed.");}
   finally{setBusy(false);setToken("");setReady(false);if(widget.current!==null&&window.turnstile){window.turnstile.reset(widget.current)}}
  }
+ useEffect(()=>{if(!open&&widget.current!==null&&typeof window!=="undefined"&&window.turnstile){try{window.turnstile.remove(widget.current)}catch{}widget.current=null;}},[open]);
  if(!siteKey)return <p style={{fontSize:12,color:"#718678"}}>Online applications are being prepared. Please check back later.</p>;
  return <div style={{marginTop:20}}>
  {message&&<p role="status" style={{color:"#167344"}}>{message}</p>}
@@ -46,7 +47,7 @@ export default function CareerApplyForm({jobId,slug}){
   <div ref={box}/>
   {error&&<p role="alert" style={{color:"#a33232"}}>{error}</p>}
   <div style={{display:"flex",gap:12,alignItems:"center"}}>
-   <button type="submit" disabled={!ready||busy} style={{background:"#176b48",border:0,borderRadius:8,color:"#fff",padding:"11px 18px",opacity:!ready||busy?.5:1,cursor:"pointer"}}>{busy?"Submitting…":"Submit application"}</button>
+   <button type="submit" disabled={!ready||busy} style={{background:"#176b48",border:0,borderRadius:8,color:"#fff",padding:"11px 18px",opacity:(!ready||busy)?0.5:1,cursor:"pointer"}}>{busy?"Submitting…":"Submit application"}</button>
    <button type="button" onClick={()=>setOpen(false)} style={{border:0,background:"transparent",cursor:"pointer",color:"#647b6a"}}>Cancel</button>
   </div>
  </form>}
