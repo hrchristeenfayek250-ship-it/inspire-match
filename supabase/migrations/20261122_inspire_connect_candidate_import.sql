@@ -17,10 +17,7 @@ DECLARE
  v_candidate_id bigint;
  v_created boolean:=false;
 BEGIN
- -- Only the server's service role can execute this function.
- IF current_user <> 'service_role' THEN
-   RAISE EXCEPTION 'Server-only operation' USING ERRCODE='42501';
- END IF;
+ -- EXECUTE is granted exclusively to service_role; the function runs as its owner.
  SELECT * INTO v_app FROM public.inspire_career_applications
  WHERE id=p_application_id AND company_id=p_company_id FOR UPDATE;
  IF NOT FOUND THEN RAISE EXCEPTION 'Application not found'; END IF;
