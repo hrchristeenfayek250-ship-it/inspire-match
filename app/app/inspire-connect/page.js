@@ -64,14 +64,14 @@ export default function InspireConnectPage(){
  <main className="ic-main">
   <div className="ic-topbar"><div className="ic-breadcrumb">Workspace <span>/</span> Integrations <span>/</span> Inspire Connect</div><Link className="ic-toplink" href="/app/dashboard">Back to dashboard ↗</Link></div>
   <div className="ic-content">
-   <div className="ic-heading"><div><div className="ic-eyebrow">RECRUITMENT ECOSYSTEM</div><h1>Inspire Connect<span className="ic-beta">BETA</span></h1><p>Manage the channels that bring talent into your recruitment workspace.</p></div>{ready&&<Link href={careerUrl} target="_blank" rel="noopener noreferrer" className="ic-primary">View Career Page ↗</Link>}</div>
+   <div className="ic-heading"><div><div className="ic-eyebrow">RECRUITMENT ECOSYSTEM</div><h1>Inspire Connect<span className="ic-beta">BETA</span></h1><p>Manage the channels that bring talent into your recruitment workspace.</p></div><div className="ic-actions" style={{marginTop:0}}><Link href="/app/applications-inbox" className="ic-primary">Applications Inbox →</Link>{ready&&<Link href={careerUrl} target="_blank" rel="noopener noreferrer" className="ic-secondary">View Career Page ↗</Link>}</div></div>
    {error&&<div className="ic-alert ic-error" role="alert">{error}</div>}
    {notice&&<div className="ic-alert ic-success" role="status">{notice}</div>}
    {loading?<div className="ic-panel">Loading your recruitment integrations…</div>:<>
     <div className="ic-metrics">
      <div className="ic-metric"><div className="ic-metric-head">Career page <span>◈</span></div><strong>{savedSite?.is_live?"Live":"Not live"}</strong><small>{ready?"Your career portal is configured":"Set up your branded page"}</small></div>
      <div className="ic-metric"><div className="ic-metric-head">Published jobs <span>▣</span></div><strong>{published}</strong><small>Of {jobs.length} jobs in your company</small></div>
-     <div className="ic-metric"><div className="ic-metric-head">Available intake channels <span>◎</span></div><strong>1</strong><small>Career page job listings · applications pending</small></div>
+     <div className="ic-metric"><div className="ic-metric-head">Available intake channels <span>◎</span></div><strong>1</strong><small>Career page applications enabled</small></div>
     </div>
     <div className="ic-tabs" role="tablist" aria-label="Inspire Connect sections">
      {[["overview","Overview"],["career","Career Page"],["jobs","Job Publishing"],["channels","Integrations"]].map(([id,label])=><button key={id} role="tab" aria-selected={tab===id} className={tab===id?"ic-tab active":"ic-tab"} onClick={()=>setTab(id)}>{label}</button>)}
@@ -94,7 +94,7 @@ export default function InspireConnectPage(){
      {jobs.length===0?<div className="ic-empty">No jobs found for this company yet.</div>:filtered.length===0?<div className="ic-empty">No matching job titles.</div>:<div className="ic-job-list">{filtered.map(job=><div key={job.job_id} className="ic-job"><div><strong>{job.job_title}</strong><small>Job #{job.job_id}</small></div><div className="ic-job-actions"><span className={job.published?"ic-status live":"ic-status"}>{job.published?"Published":"Unpublished"}</span><button disabled={busyJob!==null||!ready} className={job.published?"ic-secondary":"ic-primary"} onClick={()=>toggleJob(job)}>{busyJob===job.job_id?"Updating…":job.published?"Unpublish":"Publish"}</button></div></div>)}</div>}
     </section>}
     {tab==="channels"&&<section className="ic-panel"><div className="ic-panel-head"><div><h2>Integration Channels</h2><p>Planned integrations are displayed for roadmap visibility, not as active connections.</p></div></div><div className="ic-channel-grid">{channels.map(c=><div className="ic-channel ic-channel-detailed" key={c.name}><span className="ic-channel-icon">{c.symbol}</span><div><strong>{c.name}</strong><small>{c.detail}</small><em>{c.tag}</em></div></div>)}</div></section>}
-    <div className="ic-note">Security note: career pages publish job listings only. Candidate application intake, CV uploads and LinkedIn synchronization have not been enabled yet.</div>
+    <div className="ic-note">Security note: applicants submit CVs into a private staging inbox. Importing into the candidate pipeline and LinkedIn synchronization are not yet enabled.</div>
    </>}
   </div>
  </main></div>;
