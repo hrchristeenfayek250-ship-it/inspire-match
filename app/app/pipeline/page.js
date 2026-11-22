@@ -45,6 +45,7 @@ export default function PipelinePage() {
   const [candidates, setCandidates] = useState([]);
   const [jobs, setJobs] = useState([]);
   const [linkedJobIds, setLinkedJobIds] = useState({});
+  const [applicationStages, setApplicationStages] = useState({});
 
   const [loading, setLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState("");
@@ -123,7 +124,7 @@ export default function PipelinePage() {
             .order("created_at", {
               ascending: false,
             }),
-          supabase.from("applications").select("candidate_id,job_id").eq("company_id", companyId),
+          supabase.from("applications").select("candidate_id,job_id,stage").eq("company_id", companyId),
         ]);
 
       if (candidateResponse.error) {
@@ -132,11 +133,14 @@ export default function PipelinePage() {
 
       if (applicationResponse.error) throw applicationResponse.error;
       const links = {};
+      const appStages = {};
       for (const a of applicationResponse.data || []) {
+        appStages[`${a.candidate_id}:${a.job_id}`] = a.stage;
         if (!links[a.candidate_id]) links[a.candidate_id] = [];
         links[a.candidate_id].push(String(a.job_id));
       }
       setLinkedJobIds(links);
+      setApplicationStages(appStages);
       setCandidates(candidateResponse.data || []);
 
       if (jobResponse.error) {
@@ -153,6 +157,7 @@ export default function PipelinePage() {
 
       setCandidates([]);
       setLinkedJobIds({});
+      setApplicationStages({});
       setJobs([]);
       setErrorMessage(error.message);
     } finally {
@@ -174,14 +179,33 @@ export default function PipelinePage() {
 
     if (!candidate) return;
 
-    if (candidate.status === stage) return;
+    const applicationKey = jobFilter !== "all" && jobFilter !== "unassigned"
+      ? `${candidateId}:${jobFilter}` : null;
+    const linkedStage = applicationKey ? applicationStages[applicationKey] : null;
+    if ((linkedStage || candidate.status) === stage) return;
 
     setUpdatingId(candidateId);
     setErrorMessage("");
     setSuccessMessage("");
 
     try {
-      const { filter } = await getCompanyScope();
+      const { filter, companyId } = await getCompanyScope();
+
+      if (linkedStage) {
+        const { data: application, error: applicationError } = await supabase
+          .from("applications")
+          .update({ stage })
+          .eq("company_id", companyId)
+          .eq("candidate_id", candidateId)
+          .eq("job_id", jobFilter)
+          .select("candidate_id,job_id,stage")
+          .maybeSingle();
+        if (applicationError) throw applicationError;
+        if (!application) throw new Error("Application stage update not permitted.");
+        setApplicationStages((previous) => ({ ...previous, [applicationKey]: stage }));
+        setSuccessMessage(`${candidate.full_name || "Candidate"} moved to ${stage} for this job.`);
+        return;
+      }
 
       const { data, error } = await supabase
         .from("candidates")
@@ -292,8 +316,11 @@ export default function PipelinePage() {
           : String(candidate.job_id) === jobFilter || (linkedJobIds[candidate.id] || []).includes(jobFilter));
 
       return matchesSearch && matchesJob;
+    }).map((candidate) => {
+      const linkedStage = applicationStages[`${candidate.id}:${jobFilter}`];
+      return linkedStage ? { ...candidate, status: linkedStage } : candidate;
     });
-  }, [candidates, search, jobFilter, linkedJobIds]);
+  }, [candidates, search, jobFilter, linkedJobIds, applicationStages]);
 
   const stageGroups = useMemo(() => {
     const groups = {};
