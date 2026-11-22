@@ -35,7 +35,7 @@ export async function GET(request){
    if(signError||!signed?.signedUrl)return err("Unable to open this CV.",503);
    return NextResponse.json({url:signed.signedUrl,filename:app.cv_filename},{headers:{"Cache-Control":"no-store"}});
   }
-  const {data,error:queryError}=await admin.from("inspire_career_applications").select("id,job_id,full_name,email,phone,cv_filename,source,status,created_at").eq("company_id",companyId).order("created_at",{ascending:false}).limit(200);
+  const {data,error:queryError}=await admin.from("inspire_career_applications").select("id,job_id,full_name,email,phone,cv_filename,source,status,created_at,imported_candidate_id").eq("company_id",companyId).order("created_at",{ascending:false}).limit(200);
   if(queryError)throw {message:"Unable to load applications.",status:503};
   const ids=[...new Set((data||[]).map(a=>a.job_id))];
   let titles={};
