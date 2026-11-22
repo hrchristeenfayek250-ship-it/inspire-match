@@ -44,6 +44,7 @@ function Metric({ label, value, icon, subtitle }) {
 export default function PipelinePage() {
   const [candidates, setCandidates] = useState([]);
   const [jobs, setJobs] = useState([]);
+  const [linkedJobIds, setLinkedJobIds] = useState({});
 
   const [loading, setLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState("");
@@ -94,7 +95,7 @@ export default function PipelinePage() {
       `company_id.eq.${companyId},` +
       `and(company_id.is.null,user_id.eq.${user.id})`;
 
-    return { filter };
+    return { filter, companyId };
   }
 
   async function loadPipeline() {
@@ -102,9 +103,9 @@ export default function PipelinePage() {
     setErrorMessage("");
 
     try {
-      const { filter } = await getCompanyScope();
+      const { filter, companyId } = await getCompanyScope();
 
-      const [candidateResponse, jobResponse] =
+      const [candidateResponse, jobResponse, applicationResponse] =
         await Promise.all([
           supabase
             .from("candidates")
@@ -122,12 +123,20 @@ export default function PipelinePage() {
             .order("created_at", {
               ascending: false,
             }),
+          supabase.from("applications").select("candidate_id,job_id").eq("company_id", companyId),
         ]);
 
       if (candidateResponse.error) {
         throw candidateResponse.error;
       }
 
+      if (applicationResponse.error) throw applicationResponse.error;
+      const links = {};
+      for (const a of applicationResponse.data || []) {
+        if (!links[a.candidate_id]) links[a.candidate_id] = [];
+        links[a.candidate_id].push(String(a.job_id));
+      }
+      setLinkedJobIds(links);
       setCandidates(candidateResponse.data || []);
 
       if (jobResponse.error) {
@@ -143,6 +152,7 @@ export default function PipelinePage() {
       console.error("Could not load pipeline:", error);
 
       setCandidates([]);
+      setLinkedJobIds({});
       setJobs([]);
       setErrorMessage(error.message);
     } finally {
@@ -279,11 +289,11 @@ export default function PipelinePage() {
         jobFilter === "all" ||
         (jobFilter === "unassigned"
           ? candidate.job_id == null
-          : String(candidate.job_id) === jobFilter);
+          : String(candidate.job_id) === jobFilter || (linkedJobIds[candidate.id] || []).includes(jobFilter));
 
       return matchesSearch && matchesJob;
     });
-  }, [candidates, search, jobFilter]);
+  }, [candidates, search, jobFilter, linkedJobIds]);
 
   const stageGroups = useMemo(() => {
     const groups = {};
