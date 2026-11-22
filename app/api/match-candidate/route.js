@@ -66,7 +66,12 @@ export async function POST(request) {
       typeof value === "string" &&
       /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(value);
 
-    if (!isUuid(jobId) || !isUuid(candidateId)) {
+    const isPositiveId = (value) =>
+      (typeof value === "number" && Number.isSafeInteger(value) && value > 0) ||
+      (typeof value === "string" && /^[1-9]\\d*$/.test(value) && Number.isSafeInteger(Number(value)));
+
+    if ((!isUuid(jobId) && !isPositiveId(jobId)) ||
+        (!isUuid(candidateId) && !isPositiveId(candidateId))) {
       return Response.json(
         { error: "Job and candidate are required." },
         { status: 400 }
