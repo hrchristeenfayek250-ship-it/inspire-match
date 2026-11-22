@@ -58,3 +58,43 @@ export async function PATCH(request){
   return NextResponse.json({application:data},{headers:{"Cache-Control":"no-store"}});
  }catch(e){return handle(e)}
 }
+
+export async function POST(request){
+ try{
+  const {admin,companyId}=await context(request);
+  const token=(request.headers.get("authorization")||"").match(/^Bearer (.+)$/i)?.[1];
+  const publicClient=createClient(process.env.NEXT_PUBLIC_SUPABASE_URL,process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY,{auth:{autoRefreshToken:false,persistSession:false}});
+  const {data:{user},error:authError}=await publicClient.auth.getUser(token);
+  if(authError||!user)return err("Please sign in again.",401);
+  let body;try{body=await request.json()}catch{return err("Invalid import request.");}
+  const id=Number(body?.id);
+  if(!Number.isSafeInteger(id)||id<1)return err("Invalid application.",400);
+  const {data:app,error:lookupError}=await admin.from("inspire_career_applications")
+    .select("id,company_id,job_id,email,status,cv_path,cv_filename,imported_candidate_id")
+    .eq("company_id",companyId).eq("id",id).maybeSingle();
+  if(lookupError||!app)return err("Application not found.",404);
+  if(app.status==="imported")return NextResponse.json({candidate_id:app.imported_candidate_id,already_imported:true},{headers:{"Cache-Control":"no-store"}});
+  const {data:job,error:jobError}=await admin.from("jobs").select("id").eq("id",app.job_id).eq("company_id",companyId).maybeSingle();
+  if(jobError||!job)return err("Job is not available for your company.",404);
+  // Duplicate candidates are linked to the application, not overwritten.
+  const {data:existing,error:existingError}=await admin.from("candidates").select("id,email").eq("company_id",companyId).ilike("email",app.email.trim()).limit(1);
+  if(existingError)return err("Unable to check existing candidates.",503);
+  let newPath=null;
+  if(!(existing||[]).length){
+   const {data:file,error:downloadError}=await admin.storage.from("inspire-career-cvs").download(app.cv_path);
+   if(downloadError||!file)return err("Unable to retrieve the original CV.",503);
+   newPath=`${companyId}/career-imports/${crypto.randomUUID()}/${app.cv_filename.replace(/[^a-zA-Z0-9._-]/g,"_")}`;
+   const {error:uploadError}=await admin.storage.from("candidate-cvs").upload(newPath,file,{upsert:false,contentType:app.cv_filename.toLowerCase().endsWith(".pdf")?"application/pdf":"application/vnd.openxmlformats-officedocument.wordprocessingml.document"});
+   if(uploadError)return err("Unable to copy CV to candidate storage.",503);
+  }
+  const {data:result,error:importError}=await admin.rpc("import_inspire_career_application",{
+   p_application_id:id,p_company_id:companyId,p_actor_id:user.id,p_cv_file_path:newPath
+  });
+  if(importError){
+   if(newPath)await admin.storage.from("candidate-cvs").remove([newPath]);
+   return err("Import failed. Check the career import database migration.",503);
+  }
+  if(newPath&&!result?.created)await admin.storage.from("candidate-cvs").remove([newPath]);
+  return NextResponse.json({candidate_id:result.candidate_id,created:result.created,already_imported:result.already_imported,status:"imported"},{headers:{"Cache-Control":"no-store"}});
+ }catch(e){return handle(e)}
+}
