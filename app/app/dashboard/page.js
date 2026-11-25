@@ -438,9 +438,7 @@ export default function DashboardPage() {
         </div>
       </div>
 
-      <div className="im-side-label">
-        WORKSPACE
-      </div>
+      
 
    <ATSNavigation
   className="im-links"
