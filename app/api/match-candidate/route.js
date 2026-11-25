@@ -60,20 +60,16 @@ export async function POST(request) {
       );
     }
 
-    const jobId = body.jobId;
-    const candidateId = body.candidateId;
-    // IDs are opaque database keys; their concrete format can vary across
-    // legacy and current records. Validate shape without guessing the schema.
-    // Tenant-scoped database lookups below remain the authorization boundary.
-    const validId = (value) =>
-      (typeof value === "number" && Number.isSafeInteger(value) && value > 0) ||
-      (typeof value === "string" && value.length > 0 && value.length <= 128 && value.trim() === value && !/[\\x00-\\x1f]/.test(value));
-
-    if (!validId(jobId) || !validId(candidateId)) {
-      return Response.json(
-        { error: "Select a valid job and candidate before matching." },
-        { status: 400, headers: { "Cache-Control": "no-store" } }
-      );
+    const normalizeId = (value) => {
+      if (typeof value !== "string" && typeof value !== "number") return null;
+      const id = String(value).trim();
+      return /^(?:[1-9][0-9]{0,18}|[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})$/i.test(id) ? id : null;
+    };
+    const jobId = normalizeId(body.jobId ?? body.job_id);
+    const candidateId = normalizeId(body.candidateId ?? body.candidate_id);
+    if (!jobId || !candidateId) {
+      console.warn("Matching input validation failed", { jobValid: !!jobId, candidateValid: !!candidateId });
+      return Response.json({ error: !jobId ? "Invalid job identifier." : "Invalid candidate identifier." }, { status: 400 });
     }
 
     const { data: memberships, error: membershipError } =
@@ -268,7 +264,7 @@ confidence to "low", and explain why.
     const result = await askClaude({
       system,
       content: analysisContent,
-      maxTokens: 1500,
+      maxTokens: 4096,
     });
 
     const numericScore = Number(result?.score);
