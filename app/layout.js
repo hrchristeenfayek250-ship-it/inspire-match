@@ -1,10 +1,12 @@
 "use client";
 
-import { Playfair_Display, Montserrat, Allura } from "next/font/google";
+import { Playfair_Display, Montserrat, Allura, Inter } from "next/font/google";
 import { useEffect, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import "./globals.css";
 import { supabase } from "@/lib/supabase";
+
+const workspaceFont = Inter({ subsets: ["latin"], variable: "--font-workspace", display: "swap" });
 
 const playfair = Playfair_Display({
   subsets: ["latin"],
@@ -122,7 +124,7 @@ export default function RootLayout({ children }) {
   return (
     <html
       lang="en"
-      className={`${playfair.variable} ${montserrat.variable} ${allura.variable}`}
+      className={`${playfair.variable} ${montserrat.variable} ${allura.variable} ${workspaceFont.variable}`}
     >
       <head>
         <title>Inspire Match | AI-Powered Recruitment by Hire &amp; Inspire</title>
