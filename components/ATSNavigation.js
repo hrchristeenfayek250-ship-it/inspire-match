@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useId } from "react";
 import { supabase } from "@/lib/supabase";
 
 
@@ -86,7 +86,8 @@ export default function ATSNavigation({
   const [canViewCompanyBilling, setCanViewCompanyBilling] = useState(false);
   const [isInternalStaff, setIsInternalStaff] = useState(false);
   const [accessState, setAccessState] = useState("loading");
-  const [moreToolsOpen, setMoreToolsOpen] = useState(false);
+  const [expanded, setExpanded] = useState({});
+  const navId = useId();
   const [collapsed, setCollapsed] = useState(false);
 
   useEffect(() => {
@@ -152,48 +153,33 @@ export default function ATSNavigation({
     );
   };
 
-  const compactNavigation = accessState !== "hr"
-    ? visibleNavigation
-    : visibleNavigation.filter(([, href]) => CORE_HR_PATHS.has(href));
-  const extraNavigation = accessState !== "hr"
-    ? []
-    : visibleNavigation.filter(([, href]) => !CORE_HR_PATHS.has(href));
-  const activeExtra = extraNavigation.some(([, href]) => isActive(href));
-  const revealExtras = !collapsed && (moreToolsOpen || activeExtra);
-
+  const groups = [
+    ["AI Studio", ["/app/matching", "/app/ai-shortlisting", "/app/ask-inspire"]],
+    ["Operations", ["/app/today", "/app/notifications", "/app/inspire-connect", "/app/recruitment-operations", "/app/interviews/kits", "/app/interviews/debrief", "/app/approvals", "/app/executive"]],
+    ["Administration", ["/app/team", "/app/billing", "/app/billing/internal", "/app/recycle-bin"]],
+  ];
+  const core = visibleNavigation.filter(([, href]) => accessState !== "hr" || CORE_HR_PATHS.has(href));
   return (
-    <nav className={`inspire-nav im3-nav ${collapsed ? "im3-nav-collapsed" : ""} ${className}`.trim()} aria-label="Main navigation">
-      <div className="im3-nav-toolbar">
-        <span className="im3-nav-heading">NAVIGATION</span>
-        <button type="button" className="im3-collapse-toggle" title={collapsed ? "Expand sidebar" : "Collapse sidebar"} aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"} aria-pressed={collapsed} onClick={() => setCollapsed((current) => !current)}>
-          {collapsed ? "»" : "«"}
-        </button>
-      </div>
-      {accessState === "hr" && (
-        <div className="inspire-nav-kicker">WORKSPACE</div>
-      )}
-      <div className="im3-primary-links">{compactNavigation.map(renderLink)}</div>
-      {extraNavigation.length > 0 && (
-        <div className="inspire-nav-secondary">
-          <div className="inspire-nav-kicker">MORE</div>
-          <button
-            type="button"
-            className="inspire-nav-more"
-            aria-expanded={revealExtras}
-            aria-controls="ats-more-tools"
-            onClick={() => setMoreToolsOpen((open) => !open)}
-          >
-            <span className="inspire-nav-symbol"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.65" strokeLinecap="round" aria-hidden="true"><circle cx="5" cy="6" r="1.3"/><circle cx="12" cy="6" r="1.3"/><circle cx="19" cy="6" r="1.3"/><circle cx="5" cy="13" r="1.3"/><circle cx="12" cy="13" r="1.3"/><circle cx="19" cy="13" r="1.3"/><circle cx="5" cy="20" r="1.3"/><circle cx="12" cy="20" r="1.3"/><circle cx="19" cy="20" r="1.3"/></svg></span>
-            <span className="inspire-nav-text">More tools</span>
-            <span aria-hidden="true">{revealExtras ? "⌃" : "⌄"}</span>
-          </button>
-          {revealExtras && (
-            <div id="ats-more-tools" className="inspire-nav-extra">
-              {extraNavigation.map(renderLink)}
-            </div>
-          )}
-        </div>
-      )}
+    <nav className={`inspire-nav ${className}`.trim()} aria-label="Main navigation">
+      <div className="inspire-nav-kicker">WORKSPACE</div>
+      {core.map(renderLink)}
+      {accessState === "hr" && <div className="inspire-nav-secondary">
+        {groups.map(([label, paths], index) => {
+          const items = visibleNavigation.filter(([, href]) => paths.includes(href));
+          if (!items.length) return null;
+          const open = expanded[label] ?? items.some(([, href]) => isActive(href));
+          return <div key={label}>
+            <button type="button" className="inspire-nav-more" aria-expanded={open}
+              aria-controls={navId + "-" + index}
+              onClick={() => setExpanded(prev => ({ ...prev, [label]: !open }))}>
+              <span className="inspire-nav-symbol"><NavigationIcon href={paths[0]} /></span>
+              <span className="inspire-nav-text">{label}</span>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true" style={{transform: open ? "rotate(180deg)" : undefined}}><path d="m6 9 6 6 6-6"/></svg>
+            </button>
+            {open && <div id={navId + "-" + index} className="inspire-nav-extra">{items.map(renderLink)}</div>}
+          </div>;
+        })}
+      </div>}
     </nav>
   );
 }
