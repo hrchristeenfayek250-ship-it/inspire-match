@@ -4,17 +4,7 @@
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { supabase } from "@/lib/supabase";
-
-const NAV = [
-  ["Overview", "/app/dashboard", "◫"],
-  ["Jobs", "/app/jobs", "▣"],
-  ["Candidates", "/app/candidates", "♙"],
-  ["Pipeline", "/app/pipeline", "⇄"],
-  ["AI Matching", "/app/matching", "✧"],
-  ["Reports", "/app/reports", "▥"],
-  ["Executive", "/app/executive", "◈"],
-  ["Team", "/app/team", "♧"],
-];
+import ATSNavigation from "@/components/ATSNavigation";
 
 const STAGES = [
   "Applied", "Screening", "Interview",
@@ -366,15 +356,11 @@ export default function MatchingPage() {
       </div>
 
       <div className="am-side-label">WORKSPACE</div>
-      <nav className="am-navigation">
-        {NAV.map(([label, href, icon]) => (
-          <Link key={href} href={href}
-            onClick={() => setMobileNav(false)}
-            className={`am-nav ${href === "/app/matching" ? "active" : ""}`}>
-            <span>{icon}</span>{label}
-          </Link>
-        ))}
-      </nav>
+      <ATSNavigation
+        className="am-navigation"
+        linkClassName="am-nav"
+        onNavigate={() => setMobileNav(false)}
+      />
 
       <div className="am-side-footer">
         <Link href="/">↗ ATS Home</Link>
