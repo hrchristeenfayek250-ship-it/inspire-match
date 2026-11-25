@@ -231,8 +231,8 @@ export default function MatchingPage() {
           Authorization: `Bearer ${session.access_token}`,
         },
         body: JSON.stringify({
-          jobId: selectedJobId,
-          candidateId,
+          jobId: /^\d+$/.test(String(selectedJobId)) ? Number(selectedJobId) : String(selectedJobId).trim(),
+          candidateId: /^\d+$/.test(String(candidateId)) ? Number(candidateId) : String(candidateId).trim(),
         }),
       });
 
