@@ -2270,3 +2270,126 @@ a {
  .im2-action-card small { font-size: 10px; }
 }
 @media(prefers-reduced-motion:reduce) {.im2-action-card { transition:none; }}
+
+
+/* INSPIRE MATCH 2.0 — BURGUNDY / SOFT IVORY SECURE LOGIN */
+.im2-auth-page {
+  max-width: none !important; width: 100%; min-height: 100vh;
+  margin: 0 !important; padding: 0 !important;
+  display: grid; grid-template-columns: minmax(350px, 48%) minmax(0, 1fr);
+  background: #faf6f3; font-family: var(--font-body), system-ui, sans-serif;
+  color: #352734;
+}
+.im2-auth-story {
+  display: flex; flex-direction: column; justify-content: space-between;
+  min-height: 100vh; padding: clamp(28px, 4vw, 62px);
+  background: radial-gradient(ellipse at 78% 24%, #763951 0%, transparent 45%),
+    linear-gradient(145deg,#54253e 0%,#39172a 76%,#2d1222 100%);
+  color: #fff9f4; overflow: hidden; position: relative;
+}
+.im2-auth-story::after {
+  content:""; position:absolute; width: 450px; height:450px;
+  border:1px solid rgba(235,212,207,.14); border-radius:50%;
+  right:-270px; bottom:-200px; pointer-events:none;
+  box-shadow:0 0 0 85px rgba(255,255,255,.018),0 0 0 160px rgba(255,255,255,.014);
+}
+.im2-auth-brand {
+  display:flex; align-items:center; gap:13px; color:#fff9f4 !important;
+  text-decoration:none !important; font-size:17px; letter-spacing:.09em;
+  font-weight:750; line-height:1.2; position:relative; z-index:1;
+}
+.im2-auth-brand b { font-weight:900; }
+.im2-auth-brand small {
+  display:block; font-size:9px; letter-spacing:.24em; font-weight:600;
+  color:#d9bdb7; margin-top:6px;
+}
+.im2-auth-monogram {
+  display:grid; place-items:center; height:43px; width:43px;
+  border:1px solid #e7c9bd; border-radius:13px; background:#f8ede7;
+  color:#471e35; font:700 24px Georgia,serif;
+}
+.im2-auth-story-content { position:relative; z-index:1; max-width:550px; padding:65px 0 75px; }
+.im2-auth-overline {
+  display:block; font-size:10px; letter-spacing:.23em; font-weight:800;
+  color:#b28b94; text-transform:uppercase;
+}
+.im2-auth-story .im2-auth-overline { color:#e0bfae; }
+.im2-auth-story h2 {
+  font-family:var(--font-body),sans-serif !important;
+  font-size:clamp(36px,4.3vw,65px); font-weight:750; line-height:1.13;
+  letter-spacing:-.055em; color:#fff9f4 !important; margin:24px 0;
+}
+.im2-auth-story h2 em { color:#e6bca9; font-style:normal; }
+.im2-auth-story-content > p { color:#ead8df; max-width:430px; font-size:14px; line-height:1.85; }
+.im2-auth-story-line { width:64px; height:2px; background:#dbc0b2; margin:40px 0 24px; }
+.im2-auth-story-points { display:flex; gap:16px 24px; flex-wrap:wrap; color:#f2e5e6; font-size:11px; }
+.im2-auth-story-points span span { color:#e0b89e; margin-right:6px; font-size:15px; }
+.im2-auth-story-footer {
+  display:flex; flex-wrap:wrap; gap:18px; justify-content:space-between;
+  font-size:9px; letter-spacing:.15em; font-weight:750; color:#e3c6c8;
+  position:relative; z-index:1;
+}
+.im2-auth-form-area {
+  display:flex; align-items:center; justify-content:center;
+  padding:45px clamp(25px,5vw,85px); min-height:100vh;
+  background:radial-gradient(circle at 100% 0%, #f4e7ea 0%,transparent 36%),#faf6f3;
+}
+.im2-auth-form-wrap { width:100%; max-width:450px; }
+.im2-auth-back {
+  display:inline-flex; gap:9px; text-decoration:none !important;
+  color:#87566d !important; font-size:12px; font-weight:700; margin-bottom:48px;
+}
+.im2-auth-back:hover { color:#471e35 !important; }
+.im2-auth-mobile-brand { display:none; }
+.im2-auth-intro { margin-bottom:31px; }
+.im2-auth-intro h1 {
+  font-family:var(--font-body),sans-serif !important; margin:13px 0 10px;
+  color:#471e35 !important; font-size:clamp(32px,3.3vw,45px);
+  letter-spacing:-.05em; font-weight:800; line-height:1.2;
+}
+.im2-auth-intro p { color:#877681; font-size:14px; margin:0; }
+.im2-auth-form { display:flex; flex-direction:column; }
+.im2-auth-form label { color:#523c4a; font-size:12px; font-weight:750; margin:0 0 9px; }
+.im2-auth-form input {
+  width:100%; min-height:51px; margin-bottom:23px; padding:14px 16px;
+  border-radius:12px; border:1px solid #e2d5dc; background:#fffdfb;
+  color:#352734; font:500 14px var(--font-body),sans-serif; outline:none;
+}
+.im2-auth-form input::placeholder { color:#a897a2; }
+.im2-auth-form input:focus-visible {
+  border-color:#995c77; outline:3px solid rgba(153,92,119,.14); outline-offset:1px;
+}
+.im2-auth-submit {
+  display:flex; align-items:center; justify-content:space-between;
+  width:100%; min-height:55px; padding:15px 20px; border:0; border-radius:12px;
+  background:#632740 !important; color:#fff !important; font-size:13px;
+  font-weight:800; cursor:pointer; box-shadow:0 12px 25px rgba(71,30,53,.14);
+}
+.im2-auth-submit:hover:not(:disabled) { background:#471e35 !important; }
+.im2-auth-submit:disabled { cursor:wait; opacity:.6; }
+.im2-auth-submit span { font-size:21px; }
+.im2-auth-invitation {
+  margin:0 0 23px; background:#f4e8ed; color:#683b53;
+  border:1px solid #e8d5df; border-radius:12px; padding:13px 15px;
+  font-size:12px; line-height:1.65;
+}
+.im2-auth-invitation span { color:#a57a89; margin-right:6px; }
+.im2-auth-message { border-radius:10px; padding:12px 14px; font-size:12px; line-height:1.7; margin:0 0 17px; }
+.im2-auth-error { color:#8a2e3c; background:#fff1ef; border:1px solid #f2d6d5; }
+.im2-auth-notice { color:#59384c; background:#f4eaf0; border:1px solid #e7d8e2; }
+.im2-auth-help { text-align:center; margin:28px 0 0; color:#877681; font-size:12px; }
+.im2-auth-help a,.im2-auth-help button {
+  color:#763951 !important; font-size:12px; font-weight:800;
+  border:0; background:none; cursor:pointer; text-decoration:none; margin-left:6px;
+}
+.im2-auth-secure { text-align:center; margin:50px 0 0; color:#9b8793; font-size:11px; }
+@media(max-width:800px) {
+  .im2-auth-page { display:block; }
+  .im2-auth-story { display:none; }
+  .im2-auth-form-area { padding:32px 24px; }
+  .im2-auth-mobile-brand { display:block; margin-bottom:45px; color:#471e35; font-weight:800; letter-spacing:.12em; }
+  .im2-auth-back { margin-bottom:23px; }
+}
+@media(prefers-reduced-motion:reduce) {
+  .im2-auth-page *, .im2-auth-page *::before, .im2-auth-page *::after { transition:none !important; }
+}
