@@ -104,11 +104,12 @@ export default function ATSNavigation({
         key={href}
         href={href}
         onClick={onNavigate}
-        className={`${linkClassName} ${active ? "active" : ""}`.trim()}
+        className={`inspire-nav-link ${linkClassName} ${active ? "active" : ""}`.trim()}
         aria-current={active ? "page" : undefined}
       >
-        <span aria-hidden="true">{icon}</span>
-        {label}
+        <span className="inspire-nav-symbol" aria-hidden="true">{icon}</span>
+        <span className="inspire-nav-text">{label}</span>
+        {active && <span className="inspire-nav-active-dot" aria-hidden="true" />}
       </Link>
     );
   };
@@ -123,41 +124,31 @@ export default function ATSNavigation({
   const revealExtras = moreToolsOpen || activeExtra;
 
   return (
-    <nav className={className} aria-label="Main navigation">
+    <nav className={`inspire-nav ${className}`.trim()} aria-label="Main navigation">
+      {accessState === "hr" && (
+        <div className="inspire-nav-kicker">WORKSPACE</div>
+      )}
       {compactNavigation.map(renderLink)}
       {extraNavigation.length > 0 && (
-        <>
+        <div className="inspire-nav-secondary">
+          <div className="inspire-nav-kicker">EXPLORE</div>
           <button
             type="button"
-            className={linkClassName}
+            className="inspire-nav-more"
             aria-expanded={revealExtras}
             aria-controls="ats-more-tools"
             onClick={() => setMoreToolsOpen((open) => !open)}
-            style={{
-              width: "100%",
-              border: 0,
-              background: "transparent",
-              color: "inherit",
-              cursor: "pointer",
-              font: "inherit",
-              textAlign: "left",
-              display: "flex",
-              alignItems: "center",
-              gap: 12,
-            }}
           >
-            <span aria-hidden="true">☷</span>
-            More tools
-            <span aria-hidden="true" style={{ marginLeft: "auto" }}>
-              {revealExtras ? "▴" : "▾"}
-            </span>
+            <span className="inspire-nav-symbol" aria-hidden="true">◈</span>
+            <span className="inspire-nav-text">Advanced tools</span>
+            <span aria-hidden="true">{revealExtras ? "⌃" : "⌄"}</span>
           </button>
           {revealExtras && (
-            <div id="ats-more-tools" style={{ display: "grid", gap: 4, paddingLeft: 10 }}>
+            <div id="ats-more-tools" className="inspire-nav-extra">
               {extraNavigation.map(renderLink)}
             </div>
           )}
-        </>
+        </div>
       )}
     </nav>
   );
