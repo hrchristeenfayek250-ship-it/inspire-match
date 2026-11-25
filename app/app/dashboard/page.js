@@ -438,9 +438,7 @@ export default function DashboardPage() {
         </div>
       </div>
 
-      <div className="im-side-label">
-        WORKSPACE
-      </div>
+      
 
    <ATSNavigation
   className="im-links"
@@ -817,7 +815,7 @@ export default function DashboardPage() {
                     margin: 0,
                   }}
                 >
-                  Recruitment Overview
+                  Hiring, beautifully organized
                 </h1>
 
                 <p
@@ -827,8 +825,7 @@ export default function DashboardPage() {
                     margin: "10px 0 0",
                   }}
                 >
-                  A clearer view of your hiring
-                  performance and talent pipeline.
+                  One focused workspace for your people, pipeline and progress.
                 </p>
               </div>
 
@@ -857,6 +854,39 @@ export default function DashboardPage() {
                 </Link>
               </div>
             </header>
+
+            <section aria-label="Quick recruiting actions" className="im2-quickstart">
+              <div className="im2-quickstart-heading">
+                <div>
+                  <span className="im2-eyebrow">YOUR DAILY WORKFLOW</span>
+                  <h2>What would you like to do today?</h2>
+                  <p>Jump straight to the work that moves hiring forward.</p>
+                </div>
+                <span className="im2-quickstart-mark" aria-hidden="true">✦</span>
+              </div>
+              <div className="im2-action-grid">
+                <Link className="im2-action-card" href="/app/jobs">
+                  <span className="im2-action-icon" aria-hidden="true">▣</span>
+                  <span><strong>Manage jobs</strong><small>Open or update requisitions</small></span>
+                  <span aria-hidden="true" className="im2-action-arrow">↗</span>
+                </Link>
+                <Link className="im2-action-card" href="/app/candidates/upload">
+                  <span className="im2-action-icon" aria-hidden="true">↥</span>
+                  <span><strong>Upload a CV</strong><small>Add talent with AI assistance</small></span>
+                  <span aria-hidden="true" className="im2-action-arrow">↗</span>
+                </Link>
+                <Link className="im2-action-card" href="/app/pipeline">
+                  <span className="im2-action-icon" aria-hidden="true">⇄</span>
+                  <span><strong>Review pipeline</strong><small>Move candidates forward</small></span>
+                  <span aria-hidden="true" className="im2-action-arrow">↗</span>
+                </Link>
+                <Link className="im2-action-card" href="/app/interviews">
+                  <span className="im2-action-icon" aria-hidden="true">◷</span>
+                  <span><strong>Interviews</strong><small>Schedule and evaluate</small></span>
+                  <span aria-hidden="true" className="im2-action-arrow">↗</span>
+                </Link>
+              </div>
+            </section>
 
             <div
               id="notifications-panel"

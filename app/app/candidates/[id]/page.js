@@ -4,6 +4,8 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { supabase } from "@/lib/supabase";
+import RecruiterHiringManagerShare from "@/components/RecruiterHiringManagerShare";
+import RecruiterHiringManagerFeedback from "@/components/RecruiterHiringManagerFeedback";
 
 const stages = [
   "Applied",
@@ -52,6 +54,9 @@ export default function CandidateProfilePage() {
  
   const [candidate, setCandidate] = useState(null);
   const [openingCV, setOpeningCV] = useState(false);
+  const [parsingStoredCV, setParsingStoredCV] = useState(false);
+  const [parsedStoredCV, setParsedStoredCV] = useState(null);
+  const [storedCVParseError, setStoredCVParseError] = useState("");
 
   const [isEditing, setIsEditing] = useState(false);
   const [editForm, setEditForm] = useState({});
@@ -91,6 +96,8 @@ export default function CandidateProfilePage() {
 
   useEffect(() => {
     if (candidateId) {
+      setParsedStoredCV(null);
+      setStoredCVParseError("");
       setCandidateIntelligence(null);
       setIntelligenceGeneratedAt(null);
       setIntelligenceError("");
@@ -100,6 +107,33 @@ export default function CandidateProfilePage() {
       loadAvailableJobs();
     }
   }, [candidateId]);
+
+  async function parseExistingCandidateCV() {
+    if (!candidate?.cv_file_url || parsingStoredCV) return;
+    setParsingStoredCV(true);
+    setStoredCVParseError("");
+    setParsedStoredCV(null);
+    try {
+      const { data: { session }, error: authError } = await supabase.auth.getSession();
+      if (authError || !session?.access_token) throw new Error("Please sign in again.");
+      const { data: blob, error: downloadError } = await supabase.storage
+        .from("candidate-cvs").download(candidate.cv_file_url);
+      if (downloadError || !blob) throw new Error("Could not read the saved CV. Verify candidate CV access.");
+      const fileName = candidate.cv_file_name || candidate.cv_file_url.split("/").pop() || "candidate.pdf";
+      const form = new FormData();
+      form.append("cv", new File([blob], fileName, { type: blob.type || "application/octet-stream" }));
+      const response = await fetch("/api/parse-cv", {
+        method: "POST", headers: { Authorization: `Bearer ${session.access_token}` }, body: form
+      });
+      const result = await response.json().catch(() => ({}));
+      if (!response.ok || !result.success) throw new Error(result.error || "CV analysis failed.");
+      setParsedStoredCV(result.candidate);
+    } catch (error) {
+      setStoredCVParseError(error?.message || "Could not analyze saved CV.");
+    } finally {
+      setParsingStoredCV(false);
+    }
+  }
 
   async function generateCandidateIntelligence(
     regenerate = false
@@ -2408,6 +2442,22 @@ company_id: candidate.company_id,
       View / Download CV
     </button>
   )}
+  {candidate.cv_file_url && (
+    <div style={{ marginTop: 12 }}>
+      <button type="button" onClick={parseExistingCandidateCV} disabled={parsingStoredCV}
+        style={{ padding: "10px 15px", border: "1px solid #245c4a", borderRadius: 8, background: "#fff", color: "#245c4a", fontWeight: 700, cursor: parsingStoredCV ? "wait" : "pointer" }}>
+        {parsingStoredCV ? "Analyzing saved CV..." : "✦ AI Parse Saved CV"}
+      </button>
+      {storedCVParseError && <p role="alert" style={{ color: "#b42318", fontSize: 13 }}>{storedCVParseError}</p>}
+      {parsedStoredCV && (
+        <div style={{ marginTop: 12, background: "#edf6f0", borderRadius: 10, padding: 14, fontSize: 13, color: "#204d3e" }}>
+          <strong>AI CV Extraction — Preview Only</strong>
+          <p style={{ margin: "6px 0 10px" }}>Review extracted information before updating any candidate records. No candidate data was changed.</p>
+          <pre style={{ whiteSpace: "pre-wrap", overflowWrap: "anywhere", maxHeight: 350, overflowY: "auto", fontSize: 12 }}>{JSON.stringify(parsedStoredCV, null, 2)}</pre>
+        </div>
+      )}
+    </div>
+  )}
 </div>
 
 
@@ -2447,6 +2497,9 @@ company_id: candidate.company_id,
       "No skills available yet."}
   </div>
 </section>
+
+        <RecruiterHiringManagerShare candidateId={candidateId} />
+        <RecruiterHiringManagerFeedback candidateId={candidateId} />
 
         {/* RECRUITMENT NOTES */}
 

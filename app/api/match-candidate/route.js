@@ -60,17 +60,16 @@ export async function POST(request) {
       );
     }
 
-    const jobId = body.jobId;
-    const candidateId = body.candidateId;
-    const isUuid = (value) =>
-      typeof value === "string" &&
-      /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(value);
-
-    if (!isUuid(jobId) || !isUuid(candidateId)) {
-      return Response.json(
-        { error: "Job and candidate are required." },
-        { status: 400 }
-      );
+    const normalizeId = (value) => {
+      if (typeof value !== "string" && typeof value !== "number") return null;
+      const id = String(value).trim();
+      return /^(?:[1-9][0-9]{0,18}|[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})$/i.test(id) ? id : null;
+    };
+    const jobId = normalizeId(body.jobId ?? body.job_id);
+    const candidateId = normalizeId(body.candidateId ?? body.candidate_id);
+    if (!jobId || !candidateId) {
+      console.warn("Matching input validation failed", { jobValid: !!jobId, candidateValid: !!candidateId });
+      return Response.json({ error: !jobId ? "Invalid job identifier." : "Invalid candidate identifier." }, { status: 400 });
     }
 
     const { data: memberships, error: membershipError } =
@@ -265,7 +264,7 @@ confidence to "low", and explain why.
     const result = await askClaude({
       system,
       content: analysisContent,
-      maxTokens: 1500,
+      maxTokens: 4096,
     });
 
     const numericScore = Number(result?.score);

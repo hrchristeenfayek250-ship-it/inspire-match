@@ -1,0 +1,30 @@
+name: Verify Hiring Manager changes
+
+on:
+  pull_request:
+    paths:
+      - 'app/app/hiring-manager/**'
+      - 'components/ATSNavigation.js'
+      - '.github/workflows/hiring-manager-build.yml'
+  push:
+    branches:
+      - 'fix/hiring-manager-access-clean-20261116'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+      - name: Install dependencies (diagnostic; lockfile currently out of sync)
+        run: npm install --no-audit --no-fund
+      - name: Build
+        run: npm run build
+        env:
+          NEXT_PUBLIC_SUPABASE_URL: https://placeholder.supabase.co
+          NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: non-secret-test-key
+          GEMINI_API_KEY: non-secret-test-key

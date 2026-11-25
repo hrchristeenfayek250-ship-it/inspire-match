@@ -156,7 +156,7 @@ EXTRACTION RULES:
 - Return valid JSON only, without markdown fences.`,
 
       content: await fileToBlocks(cv),
-      maxTokens: 2000,
+      maxTokens: 4096,
     });
 
     return Response.json({
@@ -169,26 +169,61 @@ EXTRACTION RULES:
     const providerStatus = Number(error?.status) || 0;
     const tooLarge = /larger than 4 MB/i.test(message);
     const invalidFile = /not supported|no readable text|No file received/i.test(message);
-    const code = tooLarge ? "CV_FILE_TOO_LARGE"
+    const code = /GEMINI_API_KEY/.test(message) ? "AI_NOT_CONFIGURED"
+      : error?.code === "AI_OUTPUT_TRUNCATED" ? "AI_OUTPUT_TRUNCATED"
+      : [401, 403].includes(providerStatus) ? "AI_CREDENTIALS_REJECTED"
+      : providerStatus === 400 ? "AI_REQUEST_REJECTED"
+      : /JSON|no usable response/i.test(message) ? "AI_INVALID_OUTPUT"
+      : [500, 502, 503, 504].includes(providerStatus) ? "AI_PROVIDER_UNAVAILABLE"
+      : tooLarge ? "CV_FILE_TOO_LARGE"
       : invalidFile ? "CV_FILE_UNREADABLE"
+      : error?.code === "AI_OUTPUT_TRUNCATED" || /output token limit/i.test(message) ? "AI_OUTPUT_TRUNCATED"
+      : !process.env.GEMINI_API_KEY || /GEMINI_API_KEY is missing/i.test(message) ? "AI_NOT_CONFIGURED"
+      : providerStatus === 401 || providerStatus === 403 ? "AI_CREDENTIALS_REJECTED"
       : providerStatus === 429 ? "AI_QUOTA_REACHED"
       : providerStatus === 404 ? "AI_MODEL_UNAVAILABLE"
+      : providerStatus === 400 ? "AI_FILE_REJECTED"
       : /TimeoutError|AbortError|timeout/i.test(message) ? "AI_TIMEOUT"
+      : error?.code === "AI_EMPTY_RESPONSE" ? "AI_EMPTY_RESPONSE"
+      : /JSON|no usable response/i.test(message) || error instanceof SyntaxError ? "AI_INVALID_OUTPUT"
+      : [500, 502, 503, 504].includes(providerStatus) ? "AI_PROVIDER_UNAVAILABLE"
       : "CV_PARSING_FAILED";
 
-    console.error("CV parsing failed:", { code, providerStatus: providerStatus || null });
+    // Record only operational diagnostics; never log CV content, candidate details or API keys.
+    console.error("CV parsing failed:", {
+      code,
+      providerStatus: providerStatus || null,
+      errorName: error?.name || "Error",
+      providerCode: typeof error?.code === "string" ? error.code : null,
+    });
     const messages = {
+      AI_NOT_CONFIGURED: "AI service is not configured.",
+      AI_OUTPUT_TRUNCATED: "AI output exceeded its token limit.",
+      AI_CREDENTIALS_REJECTED: "AI provider rejected the configured credentials.",
+      AI_REQUEST_REJECTED: "AI provider rejected the request configuration or file.",
+      AI_INVALID_OUTPUT: "AI returned invalid or incomplete JSON.",
+      AI_PROVIDER_UNAVAILABLE: "AI provider is temporarily unavailable.",
       CV_FILE_TOO_LARGE: "The CV is larger than 4 MB. Compress it and try again.",
       CV_FILE_UNREADABLE: "This CV could not be read. Upload a readable PDF, DOCX or TXT file.",
+      AI_OUTPUT_TRUNCATED: "The AI response exceeded its output limit. Please retry.",
+      AI_NOT_CONFIGURED: "AI service is not configured. Contact the administrator.",
+      AI_CREDENTIALS_REJECTED: "The AI service credentials were rejected. Contact the administrator.",
       AI_QUOTA_REACHED: "AI usage limit reached. Please try again later.",
       AI_MODEL_UNAVAILABLE: "The configured AI model is unavailable. Contact the administrator.",
+      AI_FILE_REJECTED: "The AI provider rejected this file. Try a text-based PDF or DOCX.",
       AI_TIMEOUT: "CV parsing timed out. Try again with a smaller file.",
-      CV_PARSING_FAILED: "Could not parse this CV. Please try again.",
+      AI_EMPTY_RESPONSE: "AI returned an empty result. Please retry.",
+      AI_INVALID_OUTPUT: "The AI response was not valid structured data. Please retry.",
+      AI_PROVIDER_UNAVAILABLE: "The AI service is temporarily unavailable. Please try again later.",
+      CV_PARSING_FAILED: "CV parsing failed. Contact support with error code CV_PARSING_FAILED.",
     };
+    const status = tooLarge ? 413 : invalidFile ? 422
+      : code === "AI_NOT_CONFIGURED" || code === "AI_CREDENTIALS_REJECTED" ? 503
+      : code === "AI_QUOTA_REACHED" || code === "AI_PROVIDER_UNAVAILABLE" || code === "AI_MODEL_UNAVAILABLE" ? 503
+      : 502;
     return Response.json(
       { error: messages[code], code },
-      { status: tooLarge ? 413 : invalidFile ? 422 : providerStatus === 429 ? 503 : 500,
-        headers: { "Cache-Control": "no-store" } }
+      { status, headers: { "Cache-Control": "no-store" } }
     );
   }
 }

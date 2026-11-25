@@ -44,6 +44,8 @@ function Metric({ label, value, icon, subtitle }) {
 export default function PipelinePage() {
   const [candidates, setCandidates] = useState([]);
   const [jobs, setJobs] = useState([]);
+  const [linkedJobIds, setLinkedJobIds] = useState({});
+  const [applicationStages, setApplicationStages] = useState({});
 
   const [loading, setLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState("");
@@ -94,7 +96,7 @@ export default function PipelinePage() {
       `company_id.eq.${companyId},` +
       `and(company_id.is.null,user_id.eq.${user.id})`;
 
-    return { filter };
+    return { filter, companyId };
   }
 
   async function loadPipeline() {
@@ -102,9 +104,9 @@ export default function PipelinePage() {
     setErrorMessage("");
 
     try {
-      const { filter } = await getCompanyScope();
+      const { filter, companyId } = await getCompanyScope();
 
-      const [candidateResponse, jobResponse] =
+      const [candidateResponse, jobResponse, applicationResponse] =
         await Promise.all([
           supabase
             .from("candidates")
@@ -122,12 +124,23 @@ export default function PipelinePage() {
             .order("created_at", {
               ascending: false,
             }),
+          supabase.from("applications").select("candidate_id,job_id,stage").eq("company_id", companyId),
         ]);
 
       if (candidateResponse.error) {
         throw candidateResponse.error;
       }
 
+      if (applicationResponse.error) throw applicationResponse.error;
+      const links = {};
+      const appStages = {};
+      for (const a of applicationResponse.data || []) {
+        appStages[`${a.candidate_id}:${a.job_id}`] = a.stage;
+        if (!links[a.candidate_id]) links[a.candidate_id] = [];
+        links[a.candidate_id].push(String(a.job_id));
+      }
+      setLinkedJobIds(links);
+      setApplicationStages(appStages);
       setCandidates(candidateResponse.data || []);
 
       if (jobResponse.error) {
@@ -143,6 +156,8 @@ export default function PipelinePage() {
       console.error("Could not load pipeline:", error);
 
       setCandidates([]);
+      setLinkedJobIds({});
+      setApplicationStages({});
       setJobs([]);
       setErrorMessage(error.message);
     } finally {
@@ -164,14 +179,33 @@ export default function PipelinePage() {
 
     if (!candidate) return;
 
-    if (candidate.status === stage) return;
+    const applicationKey = jobFilter !== "all" && jobFilter !== "unassigned"
+      ? `${candidateId}:${jobFilter}` : null;
+    const linkedStage = applicationKey ? applicationStages[applicationKey] : null;
+    if ((linkedStage || candidate.status) === stage) return;
 
     setUpdatingId(candidateId);
     setErrorMessage("");
     setSuccessMessage("");
 
     try {
-      const { filter } = await getCompanyScope();
+      const { filter, companyId } = await getCompanyScope();
+
+      if (linkedStage) {
+        const { data: application, error: applicationError } = await supabase
+          .from("applications")
+          .update({ stage })
+          .eq("company_id", companyId)
+          .eq("candidate_id", candidateId)
+          .eq("job_id", jobFilter)
+          .select("candidate_id,job_id,stage")
+          .maybeSingle();
+        if (applicationError) throw applicationError;
+        if (!application) throw new Error("Application stage update not permitted.");
+        setApplicationStages((previous) => ({ ...previous, [applicationKey]: stage }));
+        setSuccessMessage(`${candidate.full_name || "Candidate"} moved to ${stage} for this job.`);
+        return;
+      }
 
       const { data, error } = await supabase
         .from("candidates")
@@ -279,11 +313,14 @@ export default function PipelinePage() {
         jobFilter === "all" ||
         (jobFilter === "unassigned"
           ? candidate.job_id == null
-          : String(candidate.job_id) === jobFilter);
+          : String(candidate.job_id) === jobFilter || (linkedJobIds[candidate.id] || []).includes(jobFilter));
 
       return matchesSearch && matchesJob;
+    }).map((candidate) => {
+      const linkedStage = applicationStages[`${candidate.id}:${jobFilter}`];
+      return linkedStage ? { ...candidate, status: linkedStage } : candidate;
     });
-  }, [candidates, search, jobFilter]);
+  }, [candidates, search, jobFilter, linkedJobIds, applicationStages]);
 
   const stageGroups = useMemo(() => {
     const groups = {};
@@ -354,9 +391,7 @@ export default function PipelinePage() {
         </div>
       </div>
 
-      <div className="pl-sidebar-label">
-        WORKSPACE
-      </div>
+      
 
      <ATSNavigation
   className="pl-navigation"

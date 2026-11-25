@@ -396,7 +396,7 @@ export default function CandidatesPage() {
         </div>
       </div>
 
-      <div className="imc-nav-label">WORKSPACE</div>
+      
 
       <ATSNavigation
   className="imc-navigation"

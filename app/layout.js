@@ -1,10 +1,12 @@
 "use client";
 
-import { Playfair_Display, Montserrat, Allura } from "next/font/google";
+import { Playfair_Display, Montserrat, Allura, Inter } from "next/font/google";
 import { useEffect, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import "./globals.css";
 import { supabase } from "@/lib/supabase";
+
+const workspaceFont = Inter({ subsets: ["latin"], variable: "--font-workspace", display: "swap" });
 
 const playfair = Playfair_Display({
   subsets: ["latin"],
@@ -99,16 +101,15 @@ export default function RootLayout({ children }) {
       setGuardError(true);
     });
 
-    // Do not make async database queries inside the auth state callback.
+    // INITIAL_SESSION may be null during restoration; do not mistake it for a logout.
+    // Route access is verified by checkAccess and the tenant gate above.
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
+    } = supabase.auth.onAuthStateChange((event) => {
       if (!active) return;
-      if (!session && !isPublicRoute(pathname)) {
+      if (event === "SIGNED_OUT" && !isPublicRoute(pathname)) {
         setVerifiedPath(null);
         router.replace("/app/login");
-      } else if (session && isLoginPage) {
-        router.replace("/app/dashboard");
       }
     });
 
@@ -123,7 +124,7 @@ export default function RootLayout({ children }) {
   return (
     <html
       lang="en"
-      className={`${playfair.variable} ${montserrat.variable} ${allura.variable}`}
+      className={`${playfair.variable} ${montserrat.variable} ${allura.variable} ${workspaceFont.variable}`}
     >
       <head>
         <title>Inspire Match | AI-Powered Recruitment by Hire &amp; Inspire</title>
