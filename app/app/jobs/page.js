@@ -119,6 +119,7 @@ export default function JobsPage() {
   const [deletingJobId, setDeletingJobId] = useState(null);
 
   const [showForm, setShowForm] = useState(false);
+  const [showAdvancedFields, setShowAdvancedFields] = useState(false);
   const [mobileNav, setMobileNav] = useState(false);
 
   const [search, setSearch] = useState("");
@@ -228,6 +229,7 @@ async function loadHiringManagers() {
 
   function createNewJob() {
     setForm({ ...initialForm });
+    setShowAdvancedFields(false);
     setShowForm(true);
     setErrorMessage("");
     setSuccessMessage("");
@@ -254,6 +256,7 @@ async function loadHiringManagers() {
     });
 
     setShowForm(true);
+    setShowAdvancedFields(true);
     setErrorMessage("");
     setSuccessMessage("");
 
@@ -1331,94 +1334,99 @@ async function loadHiringManagers() {
                 </div>
 
                 <form onSubmit={saveJob}>
-                  {textFields.map((group) => (
-  <div
-    key={group.title}
-    className="jm-form-section"
-  >
-    <h3>{group.title}</h3>
-
-    <div className="jm-form-grid">
-      {group.fields.map((field) => (
-        <FormField
-          key={field[0]}
-          field={field}
-          form={form}
-          updateField={updateField}
-        />
-      ))}
-    </div>
-  </div>
-))}
-
-<div className="jm-form-section">
-  <h3>Hiring Manager Assignment</h3>
-
-  <div className="jm-form-grid">
-    <label className="jm-field">
-      <span>Assigned Hiring Manager</span>
-
-      <select
-        className="jm-control"
-        value={form.hiring_manager_user_id || ""}
-        onChange={(e) =>
-          updateField(
-            "hiring_manager_user_id",
-            e.target.value
-          )
-        }
-      >
-        <option value="">Select Hiring Manager</option>
-
-        {hiringManagers.map((manager) => (
-  <option
-    key={manager.user_id}
-    value={manager.user_id}
-  >
-    {manager.email}
-  </option>
-))}
-</select>
-
-<small>
-  Only registered Hiring Managers from your company
-  can be assigned.
-</small>
-</label>
-</div>
-</div>
+                  <div className="jm-form-section">
+                    <h3>Quick job setup</h3>
+                    <p style={{ margin: "0 0 18px", color: "#657285", fontSize: 13 }}>
+                      Just the essentials to get your requisition ready. Add other details only when needed.
+                    </p>
+                    <div className="jm-form-grid">
+                      {textFields[0].fields.map((field) => (
+                        <FormField
+                          key={field[0]}
+                          field={field}
+                          form={form}
+                          updateField={updateField}
+                        />
+                      ))}
+                    </div>
+                    <label className="jm-field" style={{ marginTop: 18 }}>
+                      <span>Full Job Description *</span>
+                      <textarea
+                        value={form.description}
+                        onChange={(e) => updateField("description", e.target.value)}
+                        placeholder="Paste the job description here..."
+                        rows={6}
+                        required
+                        className="jm-control jm-textarea"
+                      />
+                    </label>
+                  </div>
 
                   <div className="jm-form-section">
-                    <h3>Skills & Role Details</h3>
-
-                    <div className="jm-long-fields">
-                      {longFields.map(
-                        ([key, label, placeholder, rows]) => (
-                          <label
-                            className="jm-field"
-                            key={key}
-                          >
-                            <span>{label}</span>
-
-                            <textarea
-                              value={form[key]}
-                              onChange={(e) =>
-                                updateField(
-                                  key,
-                                  e.target.value
-                                )
-                              }
-                              placeholder={placeholder}
-                              rows={rows}
-                              required={
-                                key === "description"
-                              }
-                              className="jm-control jm-textarea"
+                    <button
+                      type="button"
+                      className="jm-secondary"
+                      onClick={() => setShowAdvancedFields((open) => !open)}
+                      aria-expanded={showAdvancedFields}
+                      aria-controls="jm-optional-fields"
+                      style={{ width: "100%", justifyContent: "space-between", fontSize: 14 }}
+                    >
+                      <span>Optional details — salary, skills &amp; hiring manager</span>
+                      <span>{showAdvancedFields ? "Hide −" : "Show +"}</span>
+                    </button>
+                    {showAdvancedFields && (
+                      <div id="jm-optional-fields" style={{ marginTop: 20 }}>
+                        <h3>Compensation &amp; Hiring</h3>
+                        <div className="jm-form-grid">
+                          {textFields[1].fields.map((field) => (
+                            <FormField
+                              key={field[0]}
+                              field={field}
+                              form={form}
+                              updateField={updateField}
                             />
+                          ))}
+                        </div>
+
+                        <h3 style={{ marginTop: 24 }}>Hiring Manager Assignment</h3>
+                        <div className="jm-form-grid">
+                          <label className="jm-field">
+                            <span>Assigned Hiring Manager</span>
+                            <select
+                              className="jm-control"
+                              value={form.hiring_manager_user_id || ""}
+                              onChange={(e) => updateField("hiring_manager_user_id", e.target.value)}
+                            >
+                              <option value="">Select Hiring Manager</option>
+                              {hiringManagers.map((manager) => (
+                                <option key={manager.user_id} value={manager.user_id}>
+                                  {manager.email}
+                                </option>
+                              ))}
+                            </select>
+                            <small>Only registered Hiring Managers from your company can be assigned.</small>
                           </label>
-                        )
-                      )}
-                    </div>
+                        </div>
+
+                        <h3 style={{ marginTop: 24 }}>Skills &amp; Role Details</h3>
+                        <div className="jm-long-fields">
+                          {longFields.filter(([key]) => key !== "description").map(
+                            ([key, label, placeholder, rows]) => (
+                              <label className="jm-field" key={key}>
+                                <span>{label}</span>
+                                <textarea
+                                  value={form[key]}
+                                  onChange={(e) => updateField(key, e.target.value)}
+                                  placeholder={placeholder}
+                                  rows={rows}
+                                  className="jm-control jm-textarea"
+                                />
+                              </label>
+                            )
+                          )}
+                        </div>
+                      </div>
+                    )}
                   </div>
 
                   <div className="jm-form-actions">
