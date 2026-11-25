@@ -20,12 +20,12 @@ export const ATS_NAVIGATION = [
   ["Interviews", "/app/interviews", "▤"],
   ["Interview Kits", "/app/interviews/kits", "▤"],
   ["Hiring Debrief", "/app/interviews/debrief", "◉"],
-  ["Offer Management", "/app/offers", "▦"],
+  ["Offers", "/app/offers", "▦"],
 ["Approval Center", "/app/approvals", "✓"],
 
   ["AI Matching", "/app/matching", "✧"],
   ["AI Shortlisting Studio", "/app/ai-shortlisting", "✦"],
-  ["Reports", "/app/reports", "▥"],
+  ["Analytics", "/app/reports", "▥"],
   ["Ask Inspire AI", "/app/ask-inspire", "✦"],
   ["Executive", "/app/executive", "◈"],
   ["Team", "/app/team", "♧"],
@@ -43,7 +43,7 @@ const CORE_HR_PATHS = new Set([
   "/app/pipeline",
   "/app/interviews",
   "/app/offers",
-  "/app/matching",
+  "/app/reports",
 ]);
 
 export default function ATSNavigation({
