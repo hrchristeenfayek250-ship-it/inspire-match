@@ -34,6 +34,18 @@ export const ATS_NAVIGATION = [
 ];
 
 
+// Daily recruiting actions stay visible. Specialized workflows remain
+// available under More tools; this does not change route permissions.
+const CORE_HR_PATHS = new Set([
+  "/app/dashboard",
+  "/app/jobs",
+  "/app/candidates",
+  "/app/pipeline",
+  "/app/interviews",
+  "/app/offers",
+  "/app/matching",
+]);
+
 export default function ATSNavigation({
   className = "",
   linkClassName = "",
@@ -43,6 +55,7 @@ export default function ATSNavigation({
   const [canViewCompanyBilling, setCanViewCompanyBilling] = useState(false);
   const [isInternalStaff, setIsInternalStaff] = useState(false);
   const [accessState, setAccessState] = useState("loading");
+  const [moreToolsOpen, setMoreToolsOpen] = useState(false);
 
   useEffect(() => {
     let active = true;
@@ -81,26 +94,71 @@ export default function ATSNavigation({
         ]
       : [];
 
+  const isActive = (href) =>
+    pathname === href || pathname.startsWith(`${href}/`);
+
+  const renderLink = ([label, href, icon]) => {
+    const active = isActive(href);
+    return (
+      <Link
+        key={href}
+        href={href}
+        onClick={onNavigate}
+        className={`${linkClassName} ${active ? "active" : ""}`.trim()}
+        aria-current={active ? "page" : undefined}
+      >
+        <span aria-hidden="true">{icon}</span>
+        {label}
+      </Link>
+    );
+  };
+
+  const compactNavigation = accessState !== "hr"
+    ? visibleNavigation
+    : visibleNavigation.filter(([, href]) => CORE_HR_PATHS.has(href));
+  const extraNavigation = accessState !== "hr"
+    ? []
+    : visibleNavigation.filter(([, href]) => !CORE_HR_PATHS.has(href));
+  const activeExtra = extraNavigation.some(([, href]) => isActive(href));
+  const revealExtras = moreToolsOpen || activeExtra;
+
   return (
     <nav className={className} aria-label="Main navigation">
-      {visibleNavigation.map(([label, href, icon]) => {
-        const active =
-          pathname === href ||
-          pathname.startsWith(`${href}/`);
-
-        return (
-          <Link
-            key={href}
-            href={href}
-            onClick={onNavigate}
-            className={`${linkClassName} ${active ? "active" : ""}`.trim()}
-            aria-current={active ? "page" : undefined}
+      {compactNavigation.map(renderLink)}
+      {extraNavigation.length > 0 && (
+        <>
+          <button
+            type="button"
+            className={linkClassName}
+            aria-expanded={revealExtras}
+            aria-controls="ats-more-tools"
+            onClick={() => setMoreToolsOpen((open) => !open)}
+            style={{
+              width: "100%",
+              border: 0,
+              background: "transparent",
+              color: "inherit",
+              cursor: "pointer",
+              font: "inherit",
+              textAlign: "left",
+              display: "flex",
+              alignItems: "center",
+              gap: 12,
+            }}
           >
-            <span aria-hidden="true">{icon}</span>
-            {label}
-          </Link>
-        );
-      })}
+            <span aria-hidden="true">☷</span>
+            More tools
+            <span aria-hidden="true" style={{ marginLeft: "auto" }}>
+              {revealExtras ? "▴" : "▾"}
+            </span>
+          </button>
+          {revealExtras && (
+            <div id="ats-more-tools" style={{ display: "grid", gap: 4, paddingLeft: 10 }}>
+              {extraNavigation.map(renderLink)}
+            </div>
+          )}
+        </>
+      )}
     </nav>
   );
 }
