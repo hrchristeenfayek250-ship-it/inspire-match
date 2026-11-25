@@ -68,7 +68,7 @@ export async function POST(request) {
 
     const isPositiveId = (value) =>
       (typeof value === "number" && Number.isSafeInteger(value) && value > 0) ||
-      (typeof value === "string" && /^[1-9]\\d*$/.test(value) && Number.isSafeInteger(Number(value)));
+      (typeof value === "string" && /^[1-9]\d*$/.test(value) && Number.isSafeInteger(Number(value)));
 
     if ((!isUuid(jobId) && !isPositiveId(jobId)) ||
         (!isUuid(candidateId) && !isPositiveId(candidateId))) {
