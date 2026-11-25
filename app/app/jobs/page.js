@@ -512,7 +512,7 @@ async function loadHiringManagers() {
         </div>
       </div>
 
-      <div className="jm-side-label">WORKSPACE</div>
+      
 
     <ATSNavigation
   className="jm-navigation"
