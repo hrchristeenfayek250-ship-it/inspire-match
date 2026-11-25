@@ -62,19 +62,17 @@ export async function POST(request) {
 
     const jobId = body.jobId;
     const candidateId = body.candidateId;
-    const isUuid = (value) =>
-      typeof value === "string" &&
-      /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(value);
-
-    const isPositiveId = (value) =>
+    // IDs are opaque database keys; their concrete format can vary across
+    // legacy and current records. Validate shape without guessing the schema.
+    // Tenant-scoped database lookups below remain the authorization boundary.
+    const validId = (value) =>
       (typeof value === "number" && Number.isSafeInteger(value) && value > 0) ||
-      (typeof value === "string" && /^[1-9]\d*$/.test(value) && Number.isSafeInteger(Number(value)));
+      (typeof value === "string" && value.length > 0 && value.length <= 128 && value.trim() === value && !/[\\x00-\\x1f]/.test(value));
 
-    if ((!isUuid(jobId) && !isPositiveId(jobId)) ||
-        (!isUuid(candidateId) && !isPositiveId(candidateId))) {
+    if (!validId(jobId) || !validId(candidateId)) {
       return Response.json(
-        { error: "Job and candidate are required." },
-        { status: 400 }
+        { error: "Select a valid job and candidate before matching." },
+        { status: 400, headers: { "Cache-Control": "no-store" } }
       );
     }
 
