@@ -169,7 +169,13 @@ EXTRACTION RULES:
     const providerStatus = Number(error?.status) || 0;
     const tooLarge = /larger than 4 MB/i.test(message);
     const invalidFile = /not supported|no readable text|No file received/i.test(message);
-    const code = tooLarge ? "CV_FILE_TOO_LARGE"
+    const code = /GEMINI_API_KEY/.test(message) ? "AI_NOT_CONFIGURED"
+      : error?.code === "AI_OUTPUT_TRUNCATED" ? "AI_OUTPUT_TRUNCATED"
+      : [401, 403].includes(providerStatus) ? "AI_CREDENTIALS_REJECTED"
+      : providerStatus === 400 ? "AI_REQUEST_REJECTED"
+      : /JSON|no usable response/i.test(message) ? "AI_INVALID_OUTPUT"
+      : [500, 502, 503, 504].includes(providerStatus) ? "AI_PROVIDER_UNAVAILABLE"
+      : tooLarge ? "CV_FILE_TOO_LARGE"
       : invalidFile ? "CV_FILE_UNREADABLE"
       : error?.code === "AI_OUTPUT_TRUNCATED" || /output token limit/i.test(message) ? "AI_OUTPUT_TRUNCATED"
       : !process.env.GEMINI_API_KEY || /GEMINI_API_KEY is missing/i.test(message) ? "AI_NOT_CONFIGURED"
@@ -191,6 +197,12 @@ EXTRACTION RULES:
       providerCode: typeof error?.code === "string" ? error.code : null,
     });
     const messages = {
+      AI_NOT_CONFIGURED: "AI service is not configured.",
+      AI_OUTPUT_TRUNCATED: "AI output exceeded its token limit.",
+      AI_CREDENTIALS_REJECTED: "AI provider rejected the configured credentials.",
+      AI_REQUEST_REJECTED: "AI provider rejected the request configuration or file.",
+      AI_INVALID_OUTPUT: "AI returned invalid or incomplete JSON.",
+      AI_PROVIDER_UNAVAILABLE: "AI provider is temporarily unavailable.",
       CV_FILE_TOO_LARGE: "The CV is larger than 4 MB. Compress it and try again.",
       CV_FILE_UNREADABLE: "This CV could not be read. Upload a readable PDF, DOCX or TXT file.",
       AI_OUTPUT_TRUNCATED: "The AI response exceeded its output limit. Please retry.",
