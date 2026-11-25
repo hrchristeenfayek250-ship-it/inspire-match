@@ -139,6 +139,8 @@ export default function ATSNavigation({
       <Link
         key={href}
         href={href}
+        title={label}
+        aria-label={label}
         onClick={onNavigate}
         className={`inspire-nav-link ${linkClassName} ${active ? "active" : ""}`.trim()}
         aria-current={active ? "page" : undefined}
