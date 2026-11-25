@@ -24,7 +24,6 @@ export const ATS_NAVIGATION = [
 ["Approval Center", "/app/approvals", "✓"],
 
   ["AI Matching", "/app/matching", "✧"],
-  ["Candidate Comparison", "/app/candidate-comparison", "⇋"],
   ["AI Shortlisting Studio", "/app/ai-shortlisting", "✦"],
   ["Reports", "/app/reports", "▥"],
   ["Ask Inspire AI", "/app/ask-inspire", "✦"],
