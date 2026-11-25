@@ -87,6 +87,7 @@ export default function ATSNavigation({
   const [isInternalStaff, setIsInternalStaff] = useState(false);
   const [accessState, setAccessState] = useState("loading");
   const [moreToolsOpen, setMoreToolsOpen] = useState(false);
+  const [collapsed, setCollapsed] = useState(false);
 
   useEffect(() => {
     let active = true;
@@ -125,8 +126,12 @@ export default function ATSNavigation({
         ]
       : [];
 
-  const isActive = (href) =>
-    pathname === href || pathname.startsWith(`${href}/`);
+  // Exact or nearest route takes precedence (e.g. Interview Kits over Interviews).
+  const activePath = visibleNavigation
+    .map(([, href]) => href)
+    .filter((href) => pathname === href || pathname.startsWith(`${href}/`))
+    .sort((a, b) => b.length - a.length)[0];
+  const isActive = (href) => activePath === href;
 
   const renderLink = ([label, href]) => {
     const active = isActive(href);
@@ -152,17 +157,23 @@ export default function ATSNavigation({
     ? []
     : visibleNavigation.filter(([, href]) => !CORE_HR_PATHS.has(href));
   const activeExtra = extraNavigation.some(([, href]) => isActive(href));
-  const revealExtras = moreToolsOpen || activeExtra;
+  const revealExtras = !collapsed && (moreToolsOpen || activeExtra);
 
   return (
-    <nav className={`inspire-nav ${className}`.trim()} aria-label="Main navigation">
+    <nav className={`inspire-nav im3-nav ${collapsed ? "im3-nav-collapsed" : ""} ${className}`.trim()} aria-label="Main navigation">
+      <div className="im3-nav-toolbar">
+        <span className="im3-nav-heading">NAVIGATION</span>
+        <button type="button" className="im3-collapse-toggle" title={collapsed ? "Expand sidebar" : "Collapse sidebar"} aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"} aria-pressed={collapsed} onClick={() => setCollapsed((current) => !current)}>
+          {collapsed ? "»" : "«"}
+        </button>
+      </div>
       {accessState === "hr" && (
         <div className="inspire-nav-kicker">WORKSPACE</div>
       )}
-      {compactNavigation.map(renderLink)}
+      <div className="im3-primary-links">{compactNavigation.map(renderLink)}</div>
       {extraNavigation.length > 0 && (
         <div className="inspire-nav-secondary">
-          <div className="inspire-nav-kicker">EXPLORE</div>
+          <div className="inspire-nav-kicker">MORE</div>
           <button
             type="button"
             className="inspire-nav-more"
@@ -171,7 +182,7 @@ export default function ATSNavigation({
             onClick={() => setMoreToolsOpen((open) => !open)}
           >
             <span className="inspire-nav-symbol"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.65" strokeLinecap="round" aria-hidden="true"><circle cx="5" cy="6" r="1.3"/><circle cx="12" cy="6" r="1.3"/><circle cx="19" cy="6" r="1.3"/><circle cx="5" cy="13" r="1.3"/><circle cx="12" cy="13" r="1.3"/><circle cx="19" cy="13" r="1.3"/><circle cx="5" cy="20" r="1.3"/><circle cx="12" cy="20" r="1.3"/><circle cx="19" cy="20" r="1.3"/></svg></span>
-            <span className="inspire-nav-text">Advanced tools</span>
+            <span className="inspire-nav-text">More tools</span>
             <span aria-hidden="true">{revealExtras ? "⌃" : "⌄"}</span>
           </button>
           {revealExtras && (
