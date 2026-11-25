@@ -2399,7 +2399,7 @@ a {
    Aligned rhythm for the four core screens, deliberately scoped so that
    status colors and unconverted routes keep their established semantics. */
 :root {
-  --im3-font: Arial, "Helvetica Neue", Helvetica, system-ui, sans-serif;
+  --im3-font: var(--font-workspace), Inter, "Helvetica Neue", Arial, system-ui, sans-serif;
   --im3-space-1: 8px;
   --im3-space-2: 16px;
   --im3-space-3: 24px;
