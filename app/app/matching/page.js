@@ -355,7 +355,7 @@ export default function MatchingPage() {
         </div>
       </div>
 
-      <div className="am-side-label">WORKSPACE</div>
+      
       <ATSNavigation
         className="am-navigation"
         linkClassName="am-nav"
