@@ -391,9 +391,7 @@ export default function PipelinePage() {
         </div>
       </div>
 
-      <div className="pl-sidebar-label">
-        WORKSPACE
-      </div>
+      
 
      <ATSNavigation
   className="pl-navigation"
