@@ -495,6 +495,48 @@ ${job.description || ""}
 
     const companyId = memberships[0].company_id;
 
+    // Prevent duplicate candidate records within the user's company.
+    const normalizedEmail = typeof candidate.email === "string"
+      ? candidate.email.trim().toLowerCase()
+      : "";
+    const normalizedPhone = typeof candidate.phone === "string"
+      ? candidate.phone.trim()
+      : "";
+
+    if (!normalizedEmail && !normalizedPhone) {
+      return {
+        status: "not_saved",
+        message: "AI ranking completed. Candidate was not automatically saved because email and phone are missing; verify identity before saving.",
+      };
+    }
+
+    let existingQuery = supabase
+      .from("candidates")
+      .select("id, full_name, email, phone")
+      .eq("company_id", companyId)
+      .is("deleted_at", null);
+
+    if (normalizedEmail) {
+      existingQuery = existingQuery.ilike("email", normalizedEmail);
+    } else {
+      existingQuery = existingQuery.eq("phone", normalizedPhone);
+    }
+
+    const { data: matches, error: lookupError } = await existingQuery.limit(3);
+    if (lookupError) throw new Error("Could not verify whether the candidate already exists.");
+    // Never treat a phone match alone as verified identity.
+    const existing = normalizedEmail
+      ? matches?.[0]
+      : matches?.find((row) => row.full_name?.trim().toLowerCase() === candidate.name?.trim().toLowerCase());
+
+    if (existing) {
+      return {
+        status: "existing",
+        candidateId: existing.id,
+        message: "Existing candidate found (ID " + existing.id + "). No duplicate created. The ranking is shown here; existing profile scores were not overwritten.",
+      };
+    }
+
     const { error } = await supabase
       .from("candidates")
       .insert([
@@ -586,6 +628,7 @@ job_id: selectedJobId ? Number(selectedJobId) : null,
         `Could not save candidate: ${error.message}`
       );
     }
+    return { status: "created", message: "New candidate saved successfully." };
   }
   /* =========================
      CRITERIA
@@ -752,15 +795,21 @@ job_id: selectedJobId ? Number(selectedJobId) : null,
             throw new Error("CV scoring returned an incomplete candidate result.");
           }
 
+          let saveInfo;
+          try {
+            saveInfo = await saveCandidate(data, file.name);
+          } catch (saveError) {
+            saveInfo = {
+              status: "save_failed",
+              message: "AI ranking completed, but candidate saving failed: " + saveError.message,
+            };
+          }
+
           update(index, {
             status: "done",
             ...data,
+            saveInfo,
           });
-
-          await saveCandidate(
-            data,
-            file.name
-          );
         } catch (error) {
           update(index, {
             status: "error",
@@ -1771,6 +1820,11 @@ job_id: selectedJobId ? Number(selectedJobId) : null,
 <div className="cand-name">
   {candidateLabel(result)}
 </div>
+                              {result.saveInfo?.message && (
+                                <div className="cand-sub" role="status" style={{ marginTop: 5, fontSize: 12 }}>
+                                  {result.saveInfo.message}
+                                </div>
+                              )}
                              
                               <div className="cand-sub">
                                 {[
