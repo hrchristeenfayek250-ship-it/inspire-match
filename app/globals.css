@@ -2003,3 +2003,216 @@ body {
 .im-home-sidebar {
   overflow-y: auto;
 }
+
+
+/* ======================================================================
+   INSPIRE MATCH 2.0 — BURGUNDY & SOFT IVORY
+   Workspace-only visual foundation. Public site, print and tenant rules
+   remain unaffected. Keep this last to supersede legacy green styles.
+   ====================================================================== */
+:root {
+  --im2-burgundy: #471e35;
+  --im2-burgundy-deep: #321627;
+  --im2-plum: #763951;
+  --im2-champagne: #c5a58b;
+  --im2-ivory: #faf6f3;
+  --im2-paper: #fffdfb;
+  --im2-ink: #2e2330;
+  --im2-muted: #776d76;
+  --im2-border: #e8dfe2;
+  --im2-lilac: #f4ebf0;
+  --im2-shadow: 0 10px 35px rgba(55, 29, 47, .055);
+}
+
+/* The many older pages each own a local style sheet; scope the new design
+   to authenticated workspace shells rather than recolouring public pages. */
+:is(.im-dashboard,.jm-root,.imc-root,.pl-root,.am-root,.im-home-root,
+    .im-root,.ir-root,.tm-root,.ex-root,.cp-root,.jd-root) {
+  --green: var(--im2-burgundy);
+  --green-soft: var(--im2-plum);
+  --nav-green: var(--im2-burgundy);
+  --nav-copper: var(--im2-champagne);
+  --nav-sage: var(--im2-lilac);
+  --paper: var(--im2-ivory);
+  --line: var(--im2-border);
+  background: var(--im2-ivory) !important;
+  color: var(--im2-ink);
+  font-family: var(--font-body), system-ui, sans-serif;
+}
+
+:is(.im-shell,.jm-shell,.imc-shell,.pl-shell,.am-shell,.ir-shell,.tm-shell,.ex-shell,.cp-shell,.jd-shell) {
+  background: var(--im2-ivory) !important;
+}
+
+/* Signature sidebar: rich burgundy, ivory labels, champagne accent. */
+:is(.im-sidebar,.jm-sidebar,.imc-sidebar,.pl-sidebar,.am-sidebar,
+    .ir-sidebar,.tm-sidebar,.ex-sidebar,.cp-sidebar,.jd-sidebar,.im-home-sidebar) {
+  background: linear-gradient(180deg, #471e35 0%, #38182b 100%) !important;
+  border-right: 1px solid rgba(255,255,255,.09) !important;
+  box-shadow: 7px 0 26px rgba(42,16,31,.09);
+  color: #f9f2f5 !important;
+}
+
+:is(.im-sidebar,.jm-sidebar,.imc-sidebar,.pl-sidebar,.am-sidebar,
+    .ir-sidebar,.tm-sidebar,.ex-sidebar,.cp-sidebar,.jd-sidebar,.im-home-sidebar)
+:is(.im-brand,.jm-brand,.imc-brand,.pl-brand,.am-brand,.ir-brand,.tm-brand,.ex-brand,.cp-brand,.jd-brand),
+:is(.im-sidebar,.jm-sidebar,.imc-sidebar,.pl-sidebar,.am-sidebar,
+    .ir-sidebar,.tm-sidebar,.ex-sidebar,.cp-sidebar,.jd-sidebar,.im-home-sidebar)
+:is(.im-brand strong,.jm-brand strong,.imc-brand strong,.pl-brand strong,.am-brand strong,.ir-brand strong,.tm-brand strong,.ex-brand strong,.cp-brand strong,.jd-brand strong) {
+  color: #fff9f6 !important;
+}
+
+:is(.im-sidebar,.jm-sidebar,.imc-sidebar,.pl-sidebar,.am-sidebar,
+    .ir-sidebar,.tm-sidebar,.ex-sidebar,.cp-sidebar,.jd-sidebar,.im-home-sidebar)
+:is(.im-logo,.jm-logo,.imc-logo,.pl-logo,.am-logo,.ir-logo,.tm-logo,.ex-logo,.cp-logo,.jd-logo) {
+  background: #f4e6dd !important;
+  color: #471e35 !important;
+  box-shadow: none !important;
+  border-radius: 13px !important;
+}
+
+/* Shared navigation component, including nested Advanced tools. */
+.inspire-nav { display: flex !important; flex-direction: column; gap: 4px; padding: 6px 8px 10px; }
+.inspire-nav-kicker {
+  color: #cfb8c5 !important;
+  font-size: 10px !important; letter-spacing: .16em !important;
+  font-weight: 800 !important; margin: 20px 12px 9px;
+}
+.inspire-nav .inspire-nav-link,
+.inspire-nav .inspire-nav-more {
+  display: flex !important; align-items: center !important; gap: 12px !important;
+  width: 100%; min-height: 44px; padding: 11px 14px !important;
+  border: 1px solid transparent !important; border-radius: 11px !important;
+  border-left: 1px solid transparent !important;
+  background: transparent !important; color: #e4d4df !important;
+  text-decoration: none !important; font-family: var(--font-body), sans-serif !important;
+  font-size: 12px !important; font-weight: 600 !important;
+  white-space: normal !important;
+  transition: background .16s ease, color .16s ease, transform .16s ease;
+}
+.inspire-nav .inspire-nav-symbol {
+  flex: 0 0 23px; width: 23px; text-align: center;
+  color: #d8afc5 !important; font-size: 18px;
+}
+.inspire-nav .inspire-nav-text { flex: 1; }
+.inspire-nav .inspire-nav-link:hover,
+.inspire-nav .inspire-nav-more:hover {
+  background: rgba(255,255,255,.09) !important; color: #fff !important;
+}
+.inspire-nav .inspire-nav-link.active,
+.inspire-nav .inspire-nav-link[aria-current="page"] {
+  background: #fff6f1 !important; color: #471e35 !important;
+  border: 1px solid rgba(197,165,139,.7) !important;
+  box-shadow: 0 5px 14px rgba(26,8,19,.12);
+  font-weight: 800 !important;
+}
+.inspire-nav .inspire-nav-link.active .inspire-nav-symbol,
+.inspire-nav .inspire-nav-link[aria-current="page"] .inspire-nav-symbol {
+  color: #763951 !important;
+}
+.inspire-nav-active-dot { width: 6px; height: 6px; border-radius: 50%; background: #b28a70; }
+.inspire-nav-secondary { border-top: 1px solid rgba(255,255,255,.15); margin-top: 16px; padding-top: 2px; }
+.inspire-nav-extra { display: grid; gap: 3px; padding-left: 12px; }
+.inspire-nav-extra .inspire-nav-link { font-size: 11px !important; min-height: 38px; }
+.inspire-nav .inspire-nav-more { cursor: pointer; text-align: left; }
+.inspire-nav .inspire-nav-more > span:last-child { margin-left: auto; }
+
+/* Old sidebars still contain their own brand/footer elements. */
+:is(.im-sidebar,.jm-sidebar,.imc-sidebar,.pl-sidebar,.am-sidebar,
+    .ir-sidebar,.tm-sidebar,.ex-sidebar,.cp-sidebar,.jd-sidebar,.im-home-sidebar)
+:is(.im-side-label,.jm-side-label,.imc-nav-label,.pl-sidebar-label,.am-side-label,.jd-side-label) {
+  color: #c6abbc !important;
+}
+:is(.im-sidebar,.jm-sidebar,.imc-sidebar,.pl-sidebar,.am-sidebar,
+    .ir-sidebar,.tm-sidebar,.ex-sidebar,.cp-sidebar,.jd-sidebar,.im-home-sidebar)
+:is(.im-side-bottom,.jm-side-footer,.imc-sidebar-footer,.pl-sidebar-footer,.am-side-footer,.jd-side-footer)
+a {
+  color: #e1cdd9 !important;
+}
+
+/* Full-width work surfaces and one consistent card language. */
+:is(.im-content,.jm-content,.imc-content,.pl-content,.am-content,.ir-content,.tm-content,.jd-content) {
+  background: #faf6f3 !important;
+}
+:is(.im-dashboard,.jm-root,.imc-root,.pl-root,.am-root,.im-home-root,.im-root,.jd-root)
+:is(.im-panel,.jm-panel,.jm-job-card,.jm-metric,.imc-panel,.imc-candidate,.imc-stat,
+    .pl-panel,.pl-metric,.pl-column,.am-card,.im-card,.im-stat,.im-metric) {
+  background: #fffdfb !important;
+  border: 1px solid #e8dfe2 !important;
+  border-radius: 17px !important;
+  box-shadow: var(--im2-shadow) !important;
+}
+:is(.im-dashboard,.jm-root,.imc-root,.pl-root,.am-root,.im-home-root,.im-root,.jd-root)
+:is(.jm-title,.imc-page-title,.pl-title,.am-title,.jd-title,.im-page-title) {
+  color: #471e35 !important; letter-spacing: -.04em !important;
+  font-family: var(--font-body), sans-serif !important;
+  font-weight: 800 !important;
+}
+:is(.im-dashboard,.jm-root,.imc-root,.pl-root,.am-root,.im-home-root,.im-root,.jd-root)
+:is(.jm-subtitle,.imc-subtitle,.pl-subtitle,.am-subtitle) { color: #887782 !important; }
+
+/* Buttons, inputs, emphasis. Don't override danger or status chips. */
+:is(.im-dashboard,.jm-root,.imc-root,.pl-root,.am-root,.im-home-root,.im-root,.jd-root)
+:is(.jm-primary,.imc-primary,.pl-primary,.am-primary,.im-run-ai-button,.im-upload-button) {
+  background: #632740 !important;
+  border-color: #632740 !important;
+  color: #fff !important;
+  border-radius: 11px !important;
+  box-shadow: 0 5px 14px rgba(71,30,53,.14);
+}
+:is(.im-dashboard,.jm-root,.imc-root,.pl-root,.am-root,.im-home-root,.im-root,.jd-root)
+:is(.jm-primary,.imc-primary,.pl-primary,.am-primary,.im-run-ai-button,.im-upload-button):hover:not(:disabled) {
+  background: #471e35 !important;
+}
+:is(.jm-root,.imc-root,.pl-root,.am-root,.im-root,.jd-root)
+:is(.jm-secondary,.imc-secondary,.pl-secondary,.am-secondary) {
+  border: 1px solid #dfd1d8 !important;
+  background: #fffdfb !important; color: #633d53 !important;
+  border-radius: 11px !important;
+}
+:is(.jm-root,.imc-root,.pl-root,.am-root,.im-root,.jd-root)
+:is(.jm-control,.imc-input,.imc-select,.pl-search,.pl-select,.am-input) {
+  border: 1px solid #e1d5da !important;
+  background: #fffdfb !important;
+  color: #2e2330 !important;
+  border-radius: 10px !important;
+}
+:is(.jm-root,.imc-root,.pl-root,.am-root,.im-root,.jd-root)
+:is(input,select,textarea):focus-visible {
+  border-color: #94536d !important;
+  outline: 3px solid rgba(148,83,109,.17) !important;
+  outline-offset: 1px;
+}
+:is(.jm-root,.imc-root,.pl-root,.am-root,.im-root,.jd-root) input[type="checkbox"] {
+  accent-color: #763951;
+}
+
+/* Dashboard cards frequently use inline styles. Restrict the visual override
+   to the dashboard surface; status-specific semantics remain untouched. */
+.im-dashboard .im-content {
+  background: radial-gradient(circle at top right, #f4e7ed 0, #faf6f3 42%) !important;
+}
+.im-dashboard .im-content .im-kpis > * {
+  border: 1px solid #e8dfe2 !important; background: #fffdfb !important;
+  box-shadow: var(--im2-shadow) !important; border-radius: 18px !important;
+}
+.im-dashboard .im-content h1 { color: #471e35 !important; font-family: var(--font-body), sans-serif !important; }
+.im-dashboard .im-content .im-top a[href="/app/jobs"] {
+  background: #632740 !important; border-radius: 11px !important; color: #fff !important;
+}
+.im-dashboard .im-charts > *, .im-dashboard .im-signals > * {
+  border-color: #e8dfe2 !important; box-shadow: var(--im2-shadow);
+}
+
+/* Keep the responsive nav behavior of each existing page. */
+@media(max-width:900px) {
+  :is(.im-mobile-menu,.jm-mobile-menu,.imc-mobile-menu,.pl-mobile-menu,.am-mobile-menu,.jd-mobile-menu) {
+    background: linear-gradient(180deg,#471e35,#38182b) !important;
+    color: #fff !important;
+  }
+  .inspire-nav { padding: 6px; }
+}
+@media(prefers-reduced-motion:reduce) {
+  .inspire-nav .inspire-nav-link,
+  .inspire-nav .inspire-nav-more { transition: none; }
+}
